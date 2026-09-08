@@ -87,3 +87,25 @@ são geradas pelo jogo e **não são declarações reais dessas pessoas ou veíc
 
 Se você é dono de alguma dessas imagens ou perfis e quer que seja retirado,
 abra uma issue — sai na hora.
+
+## Modo realista — como o dinheiro funciona
+
+Correr custa dinheiro, e quem paga é o piloto até chegar à categoria principal.
+Mas **campeão não compra vaga**: quem ganha o campeonato é disputado pelas
+equipes do degrau seguinte e sobe sem pagar. Vitórias e títulos pagam prêmio,
+e toda temporada aparece uma mesa de patrocinadores para escolher — apoio
+local, marca nacional ou grande anunciante, conforme o que você entregou na
+pista. Quem não vence continua sentindo o bolso: sem orçamento, o mercado
+mostra as escadas mais baratas em vez de encerrar a carreira.
+
+## A vida fora da pista
+
+Entre uma corrida e outra acontecem duas a quatro coisas por temporada que não
+têm nada a ver com o cronômetro: um convite para a noite antes do treino de
+simulador, uma provocação pública que vira rivalidade, um ex-piloto que se
+oferece para ser seu mentor, uma cobrança em casa, uma ordem de equipe no
+rádio a oito voltas do fim. Cada uma é uma escolha com consequência real em
+dinheiro, moral, fama, atributos e relações.
+
+Você acompanha tudo isso na tela **Gente**: engenheiro-chefe, companheiro de
+equipe, rival (com o placar de duelos), mentor e amigos do paddock.

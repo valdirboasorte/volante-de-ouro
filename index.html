@@ -2870,6 +2870,11 @@ function rankingLendas(sk, rec){
    Luxo compra visibilidade — e visibilidade vira patrocínio. Mas cada euro
    gasto num relógio é um euro que não foi para o dia de teste que faria o
    carro andar. É essa a escolha. */
+/* ex-pilotos que podem aparecer como mentores */
+const MENTORES = ['Emerson Fittipaldi','Nelson Piquet','Rubens Barrichello','Felipe Massa',
+  'Christian Fittipaldi','Raul Boesel','Roberto Moreno','Maurízio Sandro Sala','Ingo Hoffmann',
+  'Cristiano da Matta','Gil de Ferran','Tony Kanaan','Antônio Pizzonia','Ricardo Zonta'];
+
 const LUXOS = [
   { n:'Relógio suíço',        v:  90e3, fama: 2, moral: 2 },
   { n:'Carro esportivo',      v: 320e3, fama: 4, moral: 4 },
@@ -2902,6 +2907,222 @@ const RELACOES = {
               ds:'Quem escreve bem sobre você amanhã foi tratado bem hoje.',
               ok:'A imprensa ficou do seu lado por enquanto.' }
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   A VIDA FORA DA PISTA
+   Uma carreira não é só o domingo. Convite, briga, oportunidade,
+   besteira: coisas que acontecem entre uma corrida e outra e que
+   mudam o rumo tanto quanto uma ultrapassagem.
+   quando: 'sempre' | 'base' (categorias de acesso) | 'topo'
+   e: dinheiro, moral, fama, pace, race, cons, wet, dev, eng, comp,
+      teamRel, lesao (corridas fora), rival, mentor, amigo
+   ═══════════════════════════════════════════════════════════════ */
+const EVENTOS = [
+{ id:'balada', ic:'🍸', quando:'sempre', peso:3,
+  t:'Convite para a noite',
+  d:'Terminada a etapa, metade do paddock vai para uma festa na cidade. Você tem treino de simulador marcado para as sete da manhã.',
+  ops:[
+    { t:'Vai, e fica até o fim', d:'A noite é boa. O simulador de amanhã não vai ser.',
+      e:{ moral:9, fama:4, cons:-1.2, dinheiro:-8e3 } },
+    { t:'Aparece uma hora e sai', d:'Mostra a cara, aperta as mãos certas e dorme cedo.',
+      e:{ moral:4, fama:2, comp:3 } },
+    { t:'Não vai', d:'Sete da manhã, simulador, ninguém por perto.',
+      e:{ moral:-4, pace:.8, dev:.4 } }
+  ] },
+
+{ id:'convite_rival', ic:'🥊', quando:'sempre', peso:3,
+  t:'Provocação pública',
+  d:'Um piloto do grid disse numa entrevista que você "anda bem em pista fácil". A frase viralizou.',
+  ops:[
+    { t:'Responde na mesma moeda', d:'A imprensa adora. Ele também não vai esquecer.',
+      e:{ fama:7, moral:3, rival:1 } },
+    { t:'Responde na pista', d:'Nada de declaração. Você guarda.',
+      e:{ pace:.6, race:.6, rival:1, moral:2 } },
+    { t:'Ignora', d:'Não vale a energia.', e:{ moral:-2, cons:.5 } }
+  ] },
+
+{ id:'mentor', ic:'🎓', quando:'sempre', peso:2, uma:true,
+  t:'Um ex-piloto se oferece para ajudar',
+  d:'Um nome respeitado, já aposentado, procurou você. Diz que vê algo ali e quer acompanhar sua temporada de perto — sem cobrar nada por enquanto.',
+  ops:[
+    { t:'Aceita a ajuda', d:'Ele vai falar verdades que ninguém mais fala.',
+      e:{ mentor:1, race:1.2, cons:1, moral:5 } },
+    { t:'Agradece e recusa', d:'Você prefere fazer do seu jeito.',
+      e:{ moral:2, pace:.5 } }
+  ] },
+
+{ id:'familia', ic:'🏠', quando:'sempre', peso:2,
+  t:'Cobrança em casa',
+  d:'Sua família hipotecou coisas para você chegar até aqui e o assunto veio à mesa no jantar.',
+  ops:[
+    { t:'Manda dinheiro para casa', d:'É o mínimo. E é caro.',
+      e:{ dinheiro:-120e3, moral:10 } },
+    { t:'Promete que vai valer a pena', d:'Palavras custam menos e pesam mais.',
+      e:{ moral:-6, pace:.7, cons:.7 } },
+    { t:'Muda de assunto', d:'Você não tem o que responder agora.', e:{ moral:-9 } }
+  ] },
+
+{ id:'imprensa_dura', ic:'📰', quando:'sempre', peso:3,
+  t:'Entrevista difícil',
+  d:'Um jornalista pergunta, ao vivo, se você não está ali só porque alguém paga a sua vaga.',
+  ops:[
+    { t:'Sai da entrevista', d:'Vira manchete. Da pior forma.', e:{ fama:5, moral:-7, teamRel:-6 } },
+    { t:'Responde com números', d:'Você lista os resultados. Frio e certeiro.', e:{ fama:3, moral:3, teamRel:3 } },
+    { t:'Concorda em parte', d:'Honestidade desarma. E custa um pouco.', e:{ fama:-2, moral:2, teamRel:6, comp:4 } }
+  ] },
+
+{ id:'oferta_negocio', ic:'📈', quando:'sempre', peso:2,
+  t:'Proposta de investimento',
+  d:'Um conhecido do paddock oferece participação numa rede de kartódromos. Parece bom demais.',
+  ops:[
+    { t:'Entra com tudo que pode', d:'Alto risco, alto retorno.', e:{ negocio:1 } },
+    { t:'Entra com pouco', d:'O suficiente para não doer se der errado.', e:{ negocioP:1 } },
+    { t:'Passa', d:'Você já tem risco suficiente no trabalho.', e:{ moral:1 } }
+  ] },
+
+{ id:'briga_companheiro', ic:'🔥', quando:'sempre', peso:3,
+  t:'Atrito na garagem',
+  d:'Seu companheiro de equipe reclamou publicamente que você recebe peça nova antes dele. Não é verdade — mas a equipe não desmentiu.',
+  ops:[
+    { t:'Exige que a equipe se pronuncie', d:'Você tem razão. E vai cobrar por ela.',
+      e:{ teamRel:-8, comp:-12, moral:3 } },
+    { t:'Conversa com ele em particular', d:'Sem plateia, sem manchete.', e:{ comp:10, moral:2 } },
+    { t:'Deixa passar', d:'Não vale a briga agora.', e:{ comp:-4, cons:.5 } }
+  ] },
+
+{ id:'patrocinador_evento', ic:'🤝', quando:'sempre', peso:3,
+  t:'Compromisso com patrocinador',
+  d:'Um patrocinador quer você numa convenção de vendas na quinta-feira antes da corrida. Do outro lado do país.',
+  ops:[
+    { t:'Vai e sorri o dia inteiro', d:'Eles pagam a conta. Você paga com cansaço.',
+      e:{ dinheiro:60e3, fama:3, cons:-.8 } },
+    { t:'Manda um vídeo gravado', d:'Meio-termo que ninguém adora.', e:{ dinheiro:15e3, moral:1 } },
+    { t:'Recusa: fim de semana de corrida', d:'Profissionalismo tem preço.', e:{ dinheiro:-40e3, pace:.8, moral:3 } }
+  ] },
+
+{ id:'lesao_treino', ic:'🚑', quando:'sempre', peso:2,
+  t:'Queda no treino',
+  d:'Andando de bicicleta na preparação, você caiu feio. O médico fala em duas semanas de repouso.',
+  ops:[
+    { t:'Cumpre o repouso', d:'Perde uma etapa e volta inteiro.', e:{ lesao:1, moral:-5, cons:.6 } },
+    { t:'Corre dopado de analgésico', d:'Ninguém precisa saber.', e:{ moral:2, pace:-1.4, cons:-1.4, fama:2 } }
+  ] },
+
+{ id:'torcedor', ic:'💌', quando:'sempre', peso:2,
+  t:'Uma carta',
+  d:'Uma criança escreveu dizendo que começou a andar de kart por sua causa. Mandou junto um desenho do seu carro.',
+  ops:[
+    { t:'Responde e convida para os boxes', d:'Custa um dia e vale um ano.', e:{ moral:11, fama:4, dinheiro:-5e3 } },
+    { t:'Responde por carta', d:'Um envelope, dez minutos.', e:{ moral:6, fama:1 } },
+    { t:'Não vê a tempo', d:'A caixa de correio tem centenas dessas.', e:{ moral:-1 } }
+  ] },
+
+{ id:'convite_categoria', ic:'📞', quando:'base', peso:2,
+  t:'Telefonema de outro campeonato',
+  d:'Uma equipe de outra categoria ligou. Oferecem vaga paga para o ano que vem — agora, antes de você terminar a temporada.',
+  ops:[
+    { t:'Escuta e agradece', d:'Guarda o número. Nunca se sabe.', e:{ moral:4, amigo:1 } },
+    { t:'Diz que só pensa nesta temporada', d:'Foco.', e:{ pace:.7, cons:.7, moral:2 } }
+  ] },
+
+{ id:'engenheiro_saida', ic:'🧰', quando:'sempre', peso:2,
+  t:'Seu engenheiro recebeu proposta',
+  d:'O engenheiro que entende do seu jeito de pilotar foi sondado por uma equipe maior.',
+  ops:[
+    { t:'Pede à equipe que cubra a oferta', d:'Você se expõe por ele.', e:{ eng:14, teamRel:-5, dinheiro:-50e3 } },
+    { t:'Deseja boa sorte', d:'Cada um cuida da própria carreira.', e:{ eng:-16, moral:-4 } },
+    { t:'Fala com ele fora do trabalho', d:'Uma conversa longa e honesta.', e:{ eng:9, moral:3 } }
+  ] },
+
+{ id:'caridade', ic:'🎗️', quando:'sempre', peso:2,
+  t:'Projeto social',
+  d:'Um kartódromo de periferia pede ajuda para manter as aulas para crianças. É onde você aprendeu — ou poderia ter aprendido.',
+  ops:[
+    { t:'Banca o ano inteiro', d:'Sai caro. Vale.', e:{ dinheiro:-180e3, fama:7, moral:12 } },
+    { t:'Faz um dia de visita', d:'Dá o nome, não o dinheiro.', e:{ fama:4, moral:5 } },
+    { t:'Não é o momento', d:'A conta ainda não fecha nem para você.', e:{ moral:-4 } }
+  ] },
+
+{ id:'namoro', ic:'❤️', quando:'sempre', peso:2,
+  t:'Alguém importante',
+  d:'Você conheceu alguém. O calendário tem 22 fins de semana ocupados e três continentes.',
+  ops:[
+    { t:'Leva a sério', d:'Alguém para voltar. E menos tempo para tudo.', e:{ moral:12, pace:-.6, dev:-.5 } },
+    { t:'Deixa fluir', d:'Sem promessa nenhuma.', e:{ moral:5 } },
+    { t:'Agora não dá', d:'A carreira come tudo.', e:{ moral:-6, pace:.8, cons:.6 } }
+  ] },
+
+{ id:'aposta', ic:'🎰', quando:'topo', peso:2,
+  t:'Cassino em Mônaco',
+  d:'Depois do GP, a mesa está posta e as fichas são altas. Todo mundo que importa está ali.',
+  ops:[
+    { t:'Joga alto', d:'Pode dar muito certo. Costuma não dar.', e:{ aposta:1, fama:4 } },
+    { t:'Fica só na conversa', d:'Você aperta mãos e não perde nada.', e:{ amigo:1, fama:2 } },
+    { t:'Vai embora cedo', d:'Não é o seu ambiente.', e:{ moral:1, cons:.4 } }
+  ] },
+
+{ id:'documentario', ic:'🎬', quando:'topo', peso:2,
+  t:'Câmeras dentro de casa',
+  d:'Uma produtora quer fazer um documentário sobre a sua temporada, com acesso total.',
+  ops:[
+    { t:'Acesso total', d:'Sua vida vira conteúdo. Seu nome, também.', e:{ fama:14, dinheiro:400e3, moral:-5, cons:-.6 } },
+    { t:'Só o que acontece na pista', d:'Limite claro.', e:{ fama:6, dinheiro:150e3 } },
+    { t:'Recusa', d:'Silêncio é um luxo.', e:{ moral:4 } }
+  ] },
+
+{ id:'ordem_equipe', ic:'📻', quando:'topo', peso:3,
+  t:'Ordem no rádio',
+  d:'A equipe pede que você segure a posição e deixe o companheiro passar. Faltam oito voltas.',
+  ops:[
+    { t:'Obedece', d:'Você engole e cumpre.', e:{ teamRel:12, comp:8, moral:-9, fama:-2 } },
+    { t:'Ignora e ataca', d:'A rádio explode. A imprensa também.', e:{ teamRel:-14, comp:-16, moral:6, fama:8, rival:1 } },
+    { t:'Finge que o rádio falhou', d:'Um clássico do esporte.', e:{ teamRel:-6, comp:-8, fama:5, moral:3 } }
+  ] },
+
+{ id:'olheiro', ic:'👀', quando:'base', peso:3,
+  t:'Um olheiro na arquibancada',
+  d:'Correu o boato de que há um observador de equipe grande acompanhando a etapa. Você não sabe qual piloto ele veio ver.',
+  ops:[
+    { t:'Arrisca tudo para aparecer', d:'Ou brilha, ou bate.', e:{ pace:1.6, cons:-1.6, fama:5 } },
+    { t:'Corre como sempre', d:'Consistência também chama atenção.', e:{ cons:.9, moral:2 } },
+    { t:'Vai falar com ele nos boxes', d:'Cara a cara, sem intermediário.', e:{ fama:4, amigo:1, moral:3 } }
+  ] },
+
+{ id:'peso', ic:'⚖️', quando:'sempre', peso:2,
+  t:'A balança',
+  d:'A equipe avisou, sem meias palavras, que você está três quilos acima do ideal.',
+  ops:[
+    { t:'Dieta severa', d:'Funciona. E é miserável.', e:{ pace:1.1, moral:-7, cons:.4 } },
+    { t:'Ajusta aos poucos', d:'Nem milagre, nem desleixo.', e:{ pace:.4, moral:-1 } },
+    { t:'Ignora', d:'Você acha que não é isso.', e:{ teamRel:-6, moral:2 } }
+  ] },
+
+{ id:'contrato_cedo', ic:'✍️', quando:'sempre', peso:2,
+  t:'Renovação antecipada',
+  d:'A equipe oferece renovar agora, no meio do ano, por um valor abaixo do que você poderia pedir depois de uma boa temporada.',
+  ops:[
+    { t:'Assina agora', d:'Segurança vale desconto.', e:{ dinheiro:200e3, teamRel:10, moral:4 } },
+    { t:'Espera o fim da temporada', d:'Aposta em si mesmo.', e:{ teamRel:-5, moral:-2, pace:.6 } }
+  ] },
+
+{ id:'amigo_grid', ic:'🍻', quando:'sempre', peso:3,
+  t:'Um rival vira gente',
+  d:'Depois de uma briga dura na pista, o piloto do carro ao lado chamou você para tomar alguma coisa e rir do assunto.',
+  ops:[
+    { t:'Vai', d:'Rivalidade não impede amizade.', e:{ amigo:1, moral:6 } },
+    { t:'Recusa educadamente', d:'Você prefere manter distância de quem disputa a sua vaga.',
+      e:{ rival:1, cons:.5 } }
+  ] },
+
+{ id:'simulador_madrugada', ic:'🖥️', quando:'sempre', peso:3,
+  t:'Madrugada no simulador',
+  d:'A equipe liberou o simulador fora do horário. Dá para virar a noite estudando o traçado.',
+  ops:[
+    { t:'Vira a noite', d:'Você chega sabendo cada zebra.', e:{ pace:1.3, dev:.8, moral:-4 } },
+    { t:'Duas horas e vai dormir', d:'Meio-termo sensato.', e:{ pace:.5, dev:.3 } },
+    { t:'Vai descansar', d:'Corpo também é ferramenta.', e:{ cons:.7, moral:3 } }
+  ] }
+];
 
 /* ═══════════════════════════════════════════════════════════════
    ACADEMIAS DE PILOTOS
@@ -3106,6 +3327,98 @@ function elencoReal(cat, ano){
     const i = p.lastIndexOf(':');
     return { name: p.slice(0, i).replace(/_/g, ' '), cc: p.slice(i + 1) };
   });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ONDE CADA UM CORRIA
+   A equipe real de cada piloto naquela temporada. A cobertura é maior
+   nos anos recentes; onde não há registro seguro, o piloto entra na
+   equipe que a classificação sugere, como já era.
+   ═══════════════════════════════════════════════════════════════ */
+const JR_EQUIPES = {
+ f2: {
+  2017:{ 'Leclerc':'Prema', 'Fuoco':'Prema', 'Rowland':'DAMS', 'Albon':'ART', 'Matsushita':'ART',
+         'Latifi':'DAMS', 'Sette Câmara':'Carlin', 'Nato':'Campos' },
+  2018:{ 'Russell':'ART', 'Aitken':'ART', 'Norris':'Carlin', 'Sette Câmara':'Carlin',
+         'Albon':'DAMS', 'Latifi':'DAMS', 'de Vries':'Prema', 'Günther':'Prema',
+         'Boschung':'MP Motorsport', 'Makino':'Carlin' },
+  2019:{ 'de Vries':'ART', 'Aitken':'Campos', 'Latifi':'DAMS', 'Sette Câmara':'DAMS',
+         'Mick Schumacher':'Prema', 'Ghiotto':'Hitech', 'Mazepin':'ART',
+         'Boschung':'Trident', 'Alesi':'Trident', 'Delétraz':'Campos' },
+  2020:{ 'Mick Schumacher':'Prema', 'Shwartzman':'Prema', 'Tsunoda':'Carlin', 'Daruvala':'Carlin',
+         'Drugovich':'MP Motorsport', 'Lundgaard':'ART', 'Armstrong':'ART',
+         'Delétraz':'Charouz', 'Alesi':'MP Motorsport', 'Samaia':'Campos',
+         'Mazepin':'Hitech', 'Nissany':'Trident', 'Boschung':'Campos', 'Pedro Piquet':'Charouz' },
+  2021:{ 'Piastri':'Prema', 'Shwartzman':'Prema', 'Pourchaire':'ART', 'Armstrong':'DAMS',
+         'Daruvala':'Carlin', 'Ticktum':'Carlin', 'Lundgaard':'ART', 'Drugovich':'Charouz',
+         'Verschoor':'MP Motorsport', 'Vips':'Hitech', 'Lawson':'Hitech',
+         'Boschung':'Campos', 'Deledda':'Charouz', 'Nissany':'DAMS', 'Zendeli':'MP Motorsport' },
+  2022:{ 'Drugovich':'MP Motorsport', 'Verschoor':'Trident', 'Pourchaire':'ART', 'Armstrong':'Hitech',
+         'Lawson':'Carlin', 'Sargeant':'Carlin', 'Hauger':'Prema', 'Daruvala':'Prema',
+         'Iwasa':'DAMS', 'Novalak':'MP Motorsport', 'Vesti':'ART', 'Vips':'Hitech',
+         'Cordeel':'Van Amersfoort', 'Correa':'Van Amersfoort', 'Boschung':'Campos',
+         'Caldwell':'Campos', 'Beckmann':'Charouz', 'Nissany':'DAMS' },
+  2023:{ 'Pourchaire':'ART', 'Martins':'ART', 'Vesti':'Prema', 'Bearman':'Prema',
+         'Hauger':'MP Motorsport', 'Verschoor':'Van Amersfoort', 'Iwasa':'DAMS',
+         'Maloney':'Rodin', 'Crawford':'Hitech', 'Hadjar':'Hitech', 'Daruvala':'MP Motorsport',
+         'Stanek':'Trident', 'Novalak':'Trident', 'Cordeel':'Van Amersfoort',
+         'Boschung':'Campos', 'Enzo Fittipaldi':'Rodin', 'Villagómez':'Van Amersfoort' },
+  2024:{ 'Bortoleto':'Invicta', 'Maini':'Invicta', 'Hadjar':'Campos', 'Antonelli':'Prema',
+         'Bearman':'Prema', 'Martins':'ART', 'Maloney':'ART', 'Hauger':'MP Motorsport',
+         'Colapinto':'MP Motorsport', 'Verschoor':'Trident', 'Stanek':'Trident',
+         'Aron':'Hitech', 'Cordeel':'Hitech', 'Correa':'DAMS', 'Crawford':'DAMS',
+         'Miyata':'Rodin', 'Enzo Fittipaldi':'Van Amersfoort', 'Villagómez':'Van Amersfoort',
+         'Dürksen':'AIX Racing', 'Barnard':'AIX Racing' },
+  2025:{ 'Fornaroli':'Invicta', 'Crawford':'DAMS', 'Verschoor':'MP Motorsport',
+         'Beganovic':'Hitech', 'Browning':'Hitech', 'Martins':'ART', 'Lindblad':'Campos',
+         'Marti':'Campos', 'Maloney':'Rodin', 'Dürksen':'AIX Racing', 'Aron':'Trident',
+         'Villagómez':'Van Amersfoort', 'Stanek':'Invicta', 'Miyata':'Rodin' }
+ },
+ f3: {
+  2020:{ 'Piastri':'Prema', 'Sargeant':'Prema', 'Vesti':'Prema', 'Pourchaire':'ART',
+         'Lawson':'Hitech', 'Hauger':'Hitech', 'Beckmann':'Trident', 'Smolyar':'ART',
+         'Doohan':'Hitech', 'Zendeli':'Trident' },
+  2021:{ 'Hauger':'Prema', 'A. Leclerc':'Prema', 'Doohan':'Trident', 'Martins':'MP Motorsport',
+         'Stanek':'Hitech', 'Caldwell':'Prema', 'Sargeant':'Charouz', 'Vesti':'ART',
+         'Smolyar':'ART', 'Crawford':'Hitech', 'Collet':'Campos', 'Saucy':'ART' },
+  2022:{ 'Maloney':'Trident', 'Bortoleto':'Trident', 'Goethe':'Trident', 'Martins':'ART',
+         'Bearman':'Prema', 'Beganovic':'Prema', 'Collet':'MP Motorsport', 'Saucy':'ART',
+         'A. Leclerc':'ART', 'Crawford':'Hitech', 'Stanek':'Hitech', 'Barnard':'Van Amersfoort',
+         'Marti':'Campos', 'Correa':'Van Amersfoort' },
+  2023:{ 'Bortoleto':'Trident', 'Goethe':'Trident', 'Marti':'Campos', 'Aron':'Prema',
+         'Beganovic':'Prema', 'Minì':'Hitech', 'Browning':'Hitech', 'Stenshorne':'Hitech',
+         'Mansell':'Trident', 'Voisin':'ART', 'Tsolov':'ART', 'Fornaroli':'Trident' },
+  2024:{ 'Fornaroli':'Trident', 'Goethe':'ART', 'Tsolov':'ART', 'Minì':'Prema',
+         'Beganovic':'Prema', 'Lindblad':'Prema', 'Stenshorne':'Hitech', 'Wharton':'Prema',
+         'Dufek':'Van Amersfoort', 'Mansell':'Trident', 'Bedrin':'Trident',
+         'Inthraphuvasak':'Campos', 'Voisin':'ART', 'Browning':'Hitech' },
+  2025:{ 'Câmara':'Trident', 'Tsolov':'Campos', 'Badoer':'Prema', 'Taponen':'ART',
+         'Ugochukwu':'Prema', 'Stenshorne':'Hitech', 'León':'Campos', 'Naël':'ART',
+         'Bedrin':'Van Amersfoort', 'Giusti':'MP Motorsport', 'Boya':'Rodin',
+         'Wurz':'Trident', 'Dufek':'Van Amersfoort', 'Inthraphuvasak':'Campos' }
+ },
+ freg: {
+  2023:{ 'Antonelli':'Prema', 'Tsolov':'ART', 'Câmara':'Prema', 'Stenshorne':'Prema', 'Badoer':'Prema' },
+  2024:{ 'Câmara':'Prema', 'Taponen':'ART', 'Naël':'ART', 'Badoer':'Prema',
+         'Ugochukwu':'Prema', 'Giusti':'ART', 'León':'ART' },
+  2025:{ 'Taponen':'ART', 'Naël':'ART', 'Giusti':'ART', 'León':'ART' }
+ }
+};
+
+/* a equipe real de um piloto naquele ano, quando se sabe */
+function equipeReal(cat, ano, nome){
+  const id = jrCatId(cat);
+  const t = id && JR_EQUIPES[id] && JR_EQUIPES[id][ano];
+  return (t && t[nome]) || null;
+}
+/* todas as equipes que aparecem no elenco real daquele ano */
+function equipesDoAno(cat, ano){
+  const id = jrCatId(cat);
+  const t = id && JR_EQUIPES[id] && JR_EQUIPES[id][ano];
+  if(!t) return null;
+  const vistas = [];
+  for(const k in t) if(vistas.indexOf(t[k]) < 0) vistas.push(t[k]);
+  return vistas.length ? vistas : null;
 }
 
 /* nomes para preencher as categorias de base */
@@ -3524,6 +3837,15 @@ const Engine = {
                   && !(futuro && Engine.aposentouEm(S.series, p[0], S.year)))
         .map(p=>({name:p[0], cc:p[1], skill:skillEm(S.series,p[0],S.year,p[2]),
                   titular: !!(escala && escala[p[0]])}));
+      /* quem venceu a Fórmula 2 aparece aqui no ano seguinte */
+      if(futuro){
+        const jaTem0 = new Set(pool.map(p=>p.name).concat(euSou ? [euSou] : []));
+        Engine.subiramParaCima(S.year).forEach(g => {
+          if(jaTem0.has(g.name)) return;
+          jaTem0.add(g.name);
+          pool.push({ name:g.name, cc:g.cc, skill:g.skill, titular:false, geracao:true });
+        });
+      }
       /* e as gerações seguintes entram no lugar deles.
          A escolha é estratificada de propósito: pegar só os melhores de uma
          geração inteira produziria um grid sem fundo, em que o pior piloto
@@ -3707,13 +4029,14 @@ const Engine = {
          ordem em que o campeonato terminou: em 2024 a Fórmula 2 tem Bortoleto,
          Hadjar e Antonelli na sua frente. Onde a lista não cobre o grid
          inteiro, o resto continua sendo preenchido com nomes anônimos. */
-      const reais = elencoReal(cat, S.year) || [];
+      const reais = Engine.elencoDoAno(cat, S.year, S.ordemBase) || [];
       let ri = 0;
+      const equipeDe = {};
       for(let i=0;i<n;i++){
         let nm = null, cc = null;
         while(ri < reais.length && !nm){
           const r = reais[ri++];
-          if(!used.has(r.name)){ nm = r.name; cc = r.cc; }
+          if(!used.has(r.name)){ nm = r.name; cc = r.cc; equipeDe[r.name] = r.eq || equipeReal(cat, S.year, r.name); }
         }
         if(!nm){ do{ nm = R.pick(JR_NAMES); }while(used.has(nm)); cc = R.pick(JR_CC); }
         used.add(nm);
@@ -3737,6 +4060,25 @@ const Engine = {
       const meuTime = vagasJr.indexOf(S.team ? S.team.id : 'x');
       if(meuTime >= 0) vagasJr.splice(meuTime, 1);
       field.forEach((f,i)=>{ f.teamId = vagasJr[Math.min(i, vagasJr.length-1)]; });
+      /* Onde se sabe onde o piloto realmente correu, é para lá que ele vai:
+         em 2024 o Bortoleto estava na Invicta e o Hadjar na Campos. A
+         alocação é feita de uma vez, respeitando as vagas de cada equipe —
+         trocar de dois em dois embaralhava quem já estava no lugar certo. */
+      if(Object.keys(equipeDe).length){
+        const porNome = {}; teams.forEach(t => porNome[t.name] = t.id);
+        const vagas = {};
+        teams.forEach(t => vagas[t.id] = porEquipe);
+        if(S.team && vagas[S.team.id] != null) vagas[S.team.id]--;
+        const sobra = [];
+        field.forEach(f => {
+          const alvo = porNome[equipeDe[f.name]];
+          if(alvo && vagas[alvo] > 0){ f.teamId = alvo; vagas[alvo]--; }
+          else sobra.push(f);
+        });
+        const livres = [];
+        teams.forEach(t => { for(let k=0; k<vagas[t.id]; k++) livres.push(t.id); });
+        sobra.forEach((f, i) => { f.teamId = livres[Math.min(i, livres.length - 1)] || f.teamId; });
+      }
     }
     /* vieses individuais: quem classifica melhor do que corre, e vice-versa */
     field.forEach(f=>{ f.qb = R.gauss()*2.2; f.rb = R.gauss()*2.2; f.rel = R.range(-.03,.03); });
@@ -3883,7 +4225,14 @@ const Engine = {
     }
     const info = catInfo(cat, idx, len);
     const isEnd = /LMP|ELMS|Sport/.test(cat);
-    const names = Engine.jrTeamNames(cat, info.teams, era.id, sk, isEnd);
+    let names = Engine.jrTeamNames(cat, info.teams, era.id, sk, isEnd);
+    /* se há registro de quem correu por quem naquele ano, são essas as
+       equipes da temporada — senão o Bortoleto não teria uma Invicta onde ir */
+    const reaisEq = equipesDoAno(cat, year);
+    if(reaisEq){
+      const resto = names.filter(x => reaisEq.indexOf(x) < 0);
+      names = reaisEq.concat(resto).slice(0, Math.max(info.teams, reaisEq.length));
+    }
     /* Nas categorias de acesso todo mundo compra o mesmo chassi: a diferença
        entre a melhor e a pior estrutura é de alguns pontos, não de um abismo.
        (A fórmula antiga descia 15 por posição e travava metade do grid no piso.) */
@@ -4001,30 +4350,73 @@ const Engine = {
     return Math.round(custo * clamp(.45 + peso * 1.1, .35, .92));
   },
 
-  /* ── patrocinadores ──
-     O valor de um patrocínio é o seu nome vezes a vitrine da categoria.
-     Vencer traz dinheiro; sumir do noticiário tira. */
   PATROS: ['Ampla Energia','Café Serrano','Banco Aurora','Vetor Telecom','Duraflex',
            'Mineradora Ouro Preto','Rede Litoral','Frota Azul','Nordeste Bebidas',
            'Construtora Vega','Seguros Meridiano','Tecnolab','Malta Lubrificantes',
            'Grupo Amazonas','Cimento Titã','Óticas Clara','Verde Agro','Farol Seguros'],
-  patrocinioValor(){
-    const vitrine = { f1:1, indy:.42, nascar:.5, wec:.2, dtm:.16, fe:.28, stock:.14 }[S.series] || .3;
-    const topo = S.season && S.season.isTop ? 1 : .22;
-    const nome = 40e3 + S.driver.fame * 9e3 + Math.max(0, S.driver.ovr - 58) * 5e3
-               + (S.career ? S.career.wins * 9e3 + S.career.titles * 240e3 : 0);
-    return Math.round(nome * vitrine * topo / 5e3) * 5e3;
+  /* ═══ PRÊMIOS ═══
+     Vencer paga. Na base o dinheiro é curto, mas um campeonato rende o
+     suficiente para o ano seguinte deixar de ser um problema — que é o
+     ponto: quem ganha, sobe. */
+  premioCorrida(pos, sea){
+    if(!Engine.ehRealista() || !pos || pos > 6) return 0;
+    const escala = sea.isTop ? 1 : (S.catIdx + 1) / Math.max(1, S.ladder.length);
+    const base = (sea.isTop ? 180e3 : 90e3) * escala;
+    const fatia = [1, .6, .42, .3, .2, .12][pos - 1];
+    return Math.round(base * fatia / 1e3) * 1e3;
   },
+  premioCampeonato(pos, sea){
+    if(!Engine.ehRealista() || !pos || pos > 8) return 0;
+    const escala = sea.isTop ? 1 : (S.catIdx + 1) / Math.max(1, S.ladder.length);
+    const base = (sea.isTop ? 4e6 : 1.9e6) * escala;
+    const fatia = [1, .55, .38, .27, .2, .15, .11, .08][pos - 1];
+    return Math.round(base * fatia / 5e3) * 5e3;
+  },
+
+  /* ═══ A VAGA DE CAMPEÃO ═══
+     Campeão não compra vaga: a vaga vem atrás dele. É assim na vida real —
+     quem ganha a Fórmula 3 é disputado pelas equipes de Fórmula 2, não o
+     contrário. Sem isso, um piloto de origem humilde ganhava tudo e ficava
+     preso na mesma categoria por falta de orçamento. */
+  descontoCampeao(oferta, sum){
+    if(!sum || !sum.champion || !oferta.up) return 1;
+    return oferta.pulo ? .35 : 0;
+  },
+
+  /* ═══ PATROCÍNIOS ═══
+     Três faixas: quem começa arruma um apoio local, quem ganha atrai marca
+     nacional, quem chega ao topo negocia com multinacional. */
+  PATRO_FAIXA: [
+    { n:'apoio local',        mult:.55, anos:[1,2] },
+    { n:'marca nacional',     mult:1,   anos:[1,3] },
+    { n:'grande anunciante',  mult:1.9, anos:[2,3] }
+  ],
   ofertasPatrocinio(){
     const v = Engine.patrocinioValor();
-    if(v < 8e3) return [];
+    if(v < 4e3) return [];
     const usados = new Set((S.money.patros || []).map(p => p.n));
     const livres = Engine.PATROS.filter(n => !usados.has(n));
-    const quantos = clamp(1 + Math.floor(S.driver.fame / 32), 1, 3);
-    return R.shuffle(livres).slice(0, quantos).map((n, i) => ({
-      n, anos: R.int(1, 3),
-      valor: Math.round(v * R.range(.6, 1.35) / 5e3) * 5e3
-    }));
+    /* resultado atrai proposta: campeão da temporada tem a mesa cheia */
+    const ult = S.history && S.history.length ? S.history[S.history.length - 1] : null;
+    const bem = ult ? (ult.champion ? 3 : ult.pos <= 3 ? 2 : ult.pos <= 8 ? 1 : 0) : 1;
+    const quantos = clamp(2 + bem + Math.floor(S.driver.fame / 40), 2, 5);
+    return R.shuffle(livres).slice(0, quantos).map(n => {
+      const f = Engine.PATRO_FAIXA[clamp(bem - 1, 0, 2)];
+      const anos = R.int(f.anos[0], f.anos[1]);
+      return { n, anos, faixa:f.n,
+               valor: Math.round(v * f.mult * R.range(.75, 1.3) / 5e3) * 5e3,
+               bonus: R.chance(.45) ? Math.round(v * .18 / 1e3) * 1e3 : 0 };
+    });
+  },
+  patrocinioValor(){
+    const vitrine = { f1:1, indy:.45, nascar:.5, wec:.22, dtm:.18, fe:.3, stock:.16 }[S.series] || .3;
+    /* a base tem vitrine pequena, mas não irrelevante: é onde o patrocínio
+       decide quem consegue continuar */
+    const topo = S.season && S.season.isTop ? 1 : .34;
+    const c = S.career || {};
+    const nome = 55e3 + S.driver.fame * 11e3 + Math.max(0, S.driver.ovr - 58) * 6e3
+               + (c.wins || 0) * 11e3 + (c.titles || 0) * 260e3 + (c.jrTitles || 0) * 90e3;
+    return Math.round(nome * vitrine * topo / 5e3) * 5e3;
   },
 
   /* ── o caixa do ano ── */
@@ -4081,9 +4473,12 @@ const Engine = {
          categoria que não tem como pagar: desce até onde a conta fecha. */
       const teto = clamp(Engine.rungForAge(S.driver.age, escada.length), 0, escada.length - 1);
       const disponivel = (S.money ? S.money.saldo : 0) + Engine.patrocinioValor();
-      /* desce no máximo dois degraus: ninguém de 26 anos recomeça no kart —
-         se nem assim a conta fecha, essa rota simplesmente não é uma opção */
-      const piso = Math.max(0, teto - 2);
+      /* O piso é o degrau equivalente ao que você já ocupa, menos um: quem
+         está na Fórmula 3 pode aceitar uma Stock Light, não voltar ao kart.
+         Se nem assim a conta fecha, essa rota não é uma opção. */
+      const meu = S.ladder && S.ladder.length > 1
+        ? Math.round(S.catIdx / (S.ladder.length - 1) * (escada.length - 1)) : 0;
+      const piso = clamp(Math.min(teto, meu - 1), 0, escada.length - 1);
       let idx = teto;
       while(idx > piso && Engine.custoTemporada(escada[idx], idx, escada.length, k) > disponivel) idx--;
       if(Engine.custoTemporada(escada[idx], idx, escada.length, k) > disponivel) return;
@@ -4102,6 +4497,136 @@ const Engine = {
   relComp(){ return Engine.ehRealista() && S.rel ? S.rel.comp : 50; },
   bonusEngenheiro(){ return Engine.ehRealista() ? (Engine.relEng() - 50) / 100 * 1.6 : 0; },
   bonusCompanheiro(){ return Engine.ehRealista() ? (Engine.relComp() - 50) / 100 * 1.1 : 0; },
+
+  /* ═══ O MERCADO DAS CATEGORIAS DE ACESSO ═══
+     Enquanto existe registro real, o grid é o de verdade. Passado o último
+     ano documentado, ele não vira um sorteio novo a cada temporada: os mesmos
+     pilotos continuam, quem vai bem sobe de categoria no ano seguinte, quem
+     empaca três anos sai, e estreantes entram por baixo. Os primeiros da
+     Fórmula 2 passam a aparecer no grid da categoria principal — que é como
+     um grid de verdade se renova. */
+  BASE_IDS: ['f4','freg','f3','f2'],
+  SOBEM: { f4:6, freg:6, f3:6, f2:3 },
+
+  jrTamanho(id){
+    return { f4:22, freg:20, f3:20, f2:20 }[id] || 20;
+  },
+  /* nome da categoria naquele degrau da escada do jogador, se houver */
+  jrCatDe(id){
+    const l = (S && S.ladder) || [];
+    for(const c of l) if(jrCatId(c) === id) return c;
+    return { f4:'Fórmula 4', freg:'Fórmula Regional', f3:'Fórmula 3', f2:'Fórmula 2' }[id];
+  },
+
+  /* habilidade de um piloto do elenco conforme o tempo de casa */
+  jrHab(p){
+    const verde = Math.max(0, 3 - (p.anos || 0));
+    return clamp(Math.round((p.pot || 78) - verde * 3), 40, 95);
+  },
+
+  /* elenco real convertido para o formato do elenco vivo */
+  jrDoReal(cat, ano){
+    const e = elencoReal(cat, ano);
+    if(!e) return null;
+    const n = e.length;
+    return e.map((x, i) => ({
+      n: x.name, cc: x.cc, eq: equipeReal(cat, ano, x.name),
+      pot: clamp(Math.round(90 - (i / Math.max(1, n - 1)) * 20), 62, 92),
+      anos: 1
+    }));
+  },
+
+  /* estreante inventado, para quando a lista real acaba */
+  jrNovato(usados){
+    let nm, g = 0;
+    do { nm = R.pick(NOMES_FUTUROS); } while(usados.has(nm) && g++ < 80);
+    usados.add(nm);
+    /* a maioria é mediana, um punhado é muito bom, e vez ou outra nasce um fora de série */
+    const r = R.f();
+    const pot = r > .975 ? R.int(90, 94) : r > .86 ? R.int(84, 89) : r > .55 ? R.int(76, 83) : R.int(66, 75);
+    return { n: nm, cc: R.pick(JR_CC), eq: null, pot, anos: 0 };
+  },
+
+  /* garante que o elenco vivo existe e está no ano certo */
+  jrGarantir(ano, ordemDoJogador){
+    if(!S.jrPool) S.jrPool = { ano: ano - 1, cats: {}, prontos: [] };
+    const P = S.jrPool;
+    let guarda = 0;
+    while(P.ano < ano && guarda++ < 60) Engine.jrAvancar(P.ano + 1, ordemDoJogador);
+    return P;
+  },
+
+  jrAvancar(ano, ordemDoJogador){
+    const P = S.jrPool;
+    const usados = new Set();
+    const sobe = {};                       /* quem sobe para cada categoria */
+    /* 1. resolve a temporada que acabou, de cima para baixo */
+    for(let i = Engine.BASE_IDS.length - 1; i >= 0; i--){
+      const id = Engine.BASE_IDS[i];
+      let lista = P.cats[id] || [];
+      if(!lista.length) continue;
+      /* a ordem do campeonato: a real, se foi a categoria do jogador */
+      const ordem = (ordemDoJogador && ordemDoJogador.id === id && ordemDoJogador.nomes) || null;
+      if(ordem){
+        const pos = {}; ordem.forEach((n, k) => pos[n] = k);
+        lista.sort((a, b) => (pos[a.n] != null ? pos[a.n] : 99) - (pos[b.n] != null ? pos[b.n] : 99));
+      } else {
+        lista.forEach(p => p._v = Engine.jrHab(p) + ((seedOf(ano + p.n) % 100) / 100 - .5) * 9);
+        lista.sort((a, b) => b._v - a._v);
+      }
+      const k = Engine.SOBEM[id] || 4;
+      const promovidos = lista.slice(0, k);
+      const resto = lista.slice(k).filter(p => (p.anos || 0) < 3);
+      if(id === 'f2'){
+        /* da Fórmula 2 se sobe para a categoria principal */
+        P.prontos = (P.prontos || []).concat(promovidos.map(p => ({
+          n: p.n, cc: p.cc, pot: Math.min(96, p.pot + 2), estreia: ano + 1
+        }))).slice(-40);
+      } else {
+        const acima = Engine.BASE_IDS[i + 1];
+        sobe[acima] = (sobe[acima] || []).concat(promovidos.map(p => ({ ...p, anos: 0, eq: null })));
+      }
+      P.cats[id] = resto.map(p => ({ ...p, anos: (p.anos || 0) + 1, eq: null }));
+    }
+    /* 2. remonta cada categoria: real, se houver; senão os que ficaram, os
+          que subiram de baixo e estreantes até completar o grid */
+    Engine.BASE_IDS.forEach(id => {
+      const cat = Engine.jrCatDe(id);
+      const real = Engine.jrDoReal(cat, ano);
+      if(real){ P.cats[id] = real; real.forEach(p => usados.add(p.n)); return; }
+      let lista = (P.cats[id] || []).concat(sobe[id] || []);
+      lista.forEach(p => usados.add(p.n));
+      const alvo = Engine.jrTamanho(id);
+      while(lista.length < alvo) lista.push(Engine.jrNovato(usados));
+      P.cats[id] = lista.slice(0, alvo);
+    });
+    P.ano = ano;
+  },
+
+  /* o elenco de uma categoria num ano: o real, se existir; senão o vivo */
+  elencoDoAno(cat, ano, ordemDoJogador){
+    const real = elencoReal(cat, ano);
+    if(real) return real.map(x => ({ name:x.name, cc:x.cc, eq: equipeReal(cat, ano, x.name) }));
+    const id = jrCatId(cat);
+    if(!id || !S) return null;
+    const P = Engine.jrGarantir(ano, ordemDoJogador);
+    const lista = P.cats[id];
+    if(!lista || !lista.length) return null;
+    return lista.slice().sort((a, b) => Engine.jrHab(b) - Engine.jrHab(a))
+                .map(p => ({ name:p.n, cc:p.cc, eq:p.eq }));
+  },
+
+  /* quem subiu da Fórmula 2 e já deve estar no grid principal */
+  subiramParaCima(ano){
+    if(!S.jrPool || !S.jrPool.prontos) return [];
+    return S.jrPool.prontos.filter(p => p.estreia <= ano && ano - p.estreia <= 16).map(p => {
+      const exp = ano - p.estreia;
+      let hab = p.pot;
+      if(exp < 5) hab -= [11, 7, 4, 2, 1][exp];
+      if(exp > 12) hab -= (exp - 12) * 1.6;
+      return { name:p.n, cc:p.cc, skill: clamp(Math.round(hab), 55, 96) };
+    });
+  },
 
   /* ═══ AS GERAÇÕES QUE VÊM DEPOIS ═══
      Os dados reais terminam em 2026. A partir dali o grid não pode continuar
@@ -4511,7 +5036,8 @@ const Engine = {
     const devB = 1 + (a.dev-55)/160;
     /* o inverno cobra: quem se dedicou à equipe evolui menos, quem só pensou
        em si evolui mais — e vai ouvir sobre isso no fim do ano */
-    const comp = S.compromisso === 'eu' ? 1.22 : S.compromisso === 'equipe' ? .80 : 1;
+    const comp = (S.compromisso === 'eu' ? 1.22 : S.compromisso === 'equipe' ? .80 : 1)
+               * ((S.rel && S.rel.mentor) ? 1.14 : 1);
     const prep = S.prep || Engine.prepZerado();
     const treino = {};
     for(const k in Engine.PREP_ATTR) treino[Engine.PREP_ATTR[k]] = Engine.prepGanho(prep[k] || 0);
@@ -5503,6 +6029,7 @@ const UI = {
     }
     if(nx && !S.opts.fast && Engine.prepGastos() < Engine.prepTotal())
       h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">🎯 Pré-temporada · ${Engine.prepTotal()-Engine.prepGastos()}</button>`;
+    h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>`;
     if(Engine.ehRealista())
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.financas()">💰 ${fmtD(S.money.saldo)}</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()"
@@ -6019,6 +6546,14 @@ const Game = {
     const catAnterior = S.lastCatMidia;
     S.season = Engine.buildSeason();
     S.season.dilemmaAt = R.int(2, Math.max(3, S.season.calendar.length-3));
+    /* rodadas em que algo acontece fora da pista */
+    const nEv = R.int(2, 4), maxR = Math.max(2, S.season.calendar.length - 1);
+    S.season.eventosAt = [];
+    for(let i=0;i<nEv;i++){
+      const r = R.int(1, maxR);
+      if(r !== S.season.dilemmaAt && S.season.eventosAt.indexOf(r) < 0) S.season.eventosAt.push(r);
+    }
+    S.evVistos = [];
     /* estreia numa categoria nova, ou contrato assinado */
     if(catAnterior !== S.season.cat){
       Engine.noticia(catAnterior ? "subiu" : "estreia", {cat:S.season.cat});
@@ -6033,6 +6568,8 @@ const Game = {
     if(!S.compromisso) S.compromisso = 'meio';
     Game.save();
     UI.render();
+    if(Engine.ehRealista() && (S.patroOfertas || []).length && (S.money.patros || []).length < 3)
+      setTimeout(()=>{ if(!el('ov').classList.contains('on')) UI.patroModal(); }, 200);
     if(S.opts.fast) S.prep = Engine.prepAuto();
     else setTimeout(()=>{
       /* se já há uma tela aberta — a apresentação de um cenário, por exemplo —
@@ -6227,6 +6764,9 @@ const Game = {
     else if(Engine.midReview(sea)){ Game.fire(true); return; }
     /* dilema do meio de temporada */
     else if(sea.round === sea.dilemmaAt && sea.calendar[sea.round]) setTimeout(()=>Game.dilemma(), 400);
+    /* a vida fora da pista: dois a quatro acontecimentos por temporada */
+    else if(sea.eventosAt && sea.eventosAt.indexOf(sea.round) >= 0 && sea.calendar[sea.round])
+      setTimeout(()=>Game.evento(), 420);
   },
 
   /* ── demissão ── */
@@ -6269,6 +6809,20 @@ const Game = {
 
   tally(rec){
     const c = S.career;
+    /* duelo com o rival: quem chegou na frente hoje */
+    const riv = S.rel && S.rel.rival;
+    if(riv && rec.top && rec.top.length){
+      const eu = rec.pos, dele = rec.top.findIndex(x => x.n === riv.n);
+      if(eu && dele >= 0){
+        if(eu < dele + 1){ riv.v = (riv.v||0) + 1; S.driver.morale = clamp(S.driver.morale + 2, 5, 100); }
+        else { riv.p = (riv.p||0) + 1; S.driver.morale = clamp(S.driver.morale - 2, 5, 100); }
+      }
+    }
+    /* vencer paga: na base é pouco, mas é o que mantém a carreira de pé */
+    if(Engine.ehRealista() && S.money){
+      const p = Engine.premioCorrida(rec.pos, S.season);
+      if(p){ S.money.saldo += p; S.money.premios = (S.money.premios || 0) + p; }
+    }
     /* a imprensa reage ao que acabou de acontecer — quanto mais fama, mais reagem */
     const chance = clamp(.18 + S.driver.fame/160, .18, .8);
     if(rec.pos === 1) Engine.noticia("vitoria", rec);
@@ -6296,6 +6850,90 @@ const Game = {
     S._acadList = null;
     UI.close();
     Game.afterSeason(S.lastSum);
+  },
+
+  /* ── eventos de carreira ──
+     Sorteados entre as corridas, sem repetir dentro da mesma temporada.
+     Alguns só fazem sentido na base, outros só no topo. */
+  sortearEvento(){
+    if(!S.season) return null;
+    const topo = S.season.isTop;
+    const vistos = S.evVistos || [];
+    const cand = EVENTOS.filter(e =>
+      (e.quando === 'sempre' || (e.quando === 'topo') === topo) &&
+      vistos.indexOf(e.id) < 0 &&
+      !(e.uma && (S.evUsados || []).indexOf(e.id) >= 0));
+    if(!cand.length) return null;
+    /* peso: alguns acontecem mais que outros */
+    const saco = [];
+    cand.forEach(e => { for(let i=0;i<(e.peso||2);i++) saco.push(e); });
+    return R.pick(saco);
+  },
+  evento(){
+    const e = Game.sortearEvento();
+    if(!e) return;
+    S.evVistos = (S.evVistos || []).concat(e.id);
+    UI.eventoModal(e);
+  },
+  escolherEvento(i){
+    const ev = UI._ev; if(!ev) return UI.close();
+    const o = ev.ops[i]; if(!o) return UI.close();
+    const e = o.e || {};
+    const a = S.driver.attr;
+    let notas = [];
+    ['pace','race','cons','wet','dev'].forEach(k=>{
+      if(e[k]){ a[k] = clamp(Math.round((a[k] + e[k]) * 10) / 10, 20, 99); }
+    });
+    if(e.moral) S.driver.morale = clamp(S.driver.morale + e.moral, 5, 100);
+    if(e.fama)  S.driver.fame   = clamp(S.driver.fame + e.fama, 0, 100);
+    if(e.teamRel) S.teamRel = clamp((S.teamRel || 50) + e.teamRel, 0, 100);
+    if(!S.rel) S.rel = { eng:50, comp:50, amigos:[] };
+    if(e.eng)  S.rel.eng  = clamp(S.rel.eng + e.eng, 0, 100);
+    if(e.comp) S.rel.comp = clamp(S.rel.comp + e.comp, 0, 100);
+    if(e.dinheiro && S.money){
+      S.money.saldo += e.dinheiro;
+      notas.push((e.dinheiro > 0 ? '+' : '') + fmtD(e.dinheiro));
+    }
+    if(e.lesao){ S.driver.injured = (S.driver.injured || 0) + e.lesao; notas.push('fora de ' + e.lesao + ' corrida(s)'); }
+    if(e.amigo){
+      const livres = NOMES_FUTUROS.filter(x => S.rel.amigos.indexOf(x) < 0);
+      const nm = R.pick(livres);
+      if(nm){ S.rel.amigos.push(nm); notas.push('novo amigo: ' + nm); }
+    }
+    if(e.rival) Game.definirRival();
+    if(e.mentor){
+      S.rel.mentor = { n: R.pick(MENTORES), desde: S.year };
+      notas.push('mentor: ' + S.rel.mentor.n);
+    }
+    /* negócios e apostas: o resultado só aparece depois */
+    if(e.negocio || e.negocioP){
+      const v = e.negocio ? Math.min(S.money ? S.money.saldo : 0, 600e3) : 120e3;
+      if(S.money && S.money.saldo >= v){
+        S.money.saldo -= v;
+        S.money.invest = (S.money.invest || 0) + Math.round(v * (R.chance(.55) ? 1.6 : .35));
+        notas.push('investido ' + fmtD(v));
+      }
+    }
+    if(e.aposta && S.money){
+      const v = Math.min(S.money.saldo, 250e3);
+      const ganhou = R.chance(.4);
+      S.money.saldo += ganhou ? v : -v;
+      notas.push(ganhou ? 'ganhou ' + fmtD(v) + ' na mesa' : 'perdeu ' + fmtD(v) + ' na mesa');
+    }
+    S.driver.ovr = Engine.ovr(a);
+    UI.close(); UI.render(); Game.save();
+    UI.toast(o.d + (notas.length ? '  (' + notas.join(' · ') + ')' : ''));
+  },
+
+  /* o rival é sempre alguém do grid — de preferência quem está perto de você */
+  definirRival(){
+    if(!S.rel) S.rel = { eng:50, comp:50, amigos:[] };
+    if(S.rel.rival){ S.rel.rival.nivel = Math.min(3, (S.rel.rival.nivel || 1) + 1); return; }
+    const sea = S.season; if(!sea) return;
+    const perto = Engine.standings(sea).filter(d => !d.me).slice(0, 6);
+    const alvo = R.pick(perto.length ? perto : Engine.standings(sea).filter(d => !d.me));
+    if(!alvo) return;
+    S.rel.rival = { n: alvo.name, cc: alvo.cc, nivel: 1, v: 0, p: 0 };
   },
 
   /* ---- dilema ---- */
@@ -6338,6 +6976,15 @@ const Game = {
       S.teamRel = 30;
     }
     if(sum.champion){ if(sea.isTop) c.titles++; else c.jrTitles++; Engine.noticia("titulo", sum); }
+    /* premiação do campeonato */
+    if(Engine.ehRealista() && S.money){
+      const pc = Engine.premioCampeonato(sum.pos, sea);
+      if(pc){
+        S.money.saldo += pc;
+        S.money.premios = (S.money.premios || 0) + pc;
+        S.premioDoAno = pc;
+      }
+    }
 
     /* placar separado por categoria: é ele que diz em qual lista da história
        o seu piloto entra no fim */
@@ -6367,6 +7014,13 @@ const Game = {
         .map(d=>({ name:d.name, cc:d.cc, skill: sea.field.find(f=>f.id===d.id).skill }));
       S.prospects = top.concat(S.prospects||[]).slice(0,4);
     }
+
+    /* Quem foi bem na SUA categoria sobe de verdade no ano seguinte: a
+       classificação que você disputou é a que manda no mercado da base. */
+    if(!sea.isTop){
+      const id = jrCatId(sea.cat);
+      if(id) S.ordemBase = { id, nomes: Engine.standings(sea).filter(d => !d.me).map(d => d.name) };
+    } else S.ordemBase = null;
 
     const saiuDaAcademia = Engine.academyReview(sum);
     const growth = Engine.progress(sum);
@@ -6431,7 +7085,12 @@ const Game = {
         const idx = o.catIdx != null ? o.catIdx : esc2.indexOf(o.cat);
         o.custo = Engine.custoTemporada(o.cat, idx < 0 ? S.catIdx : idx, esc2.length, sk);
         o.apoio = Engine.apoioAcademia(o.custo);
-        o.paga  = o.custo === 0 ? 0 : Math.max(0, o.custo - o.apoio);
+        /* Campeão não compra vaga: são as equipes de cima que o disputam.
+           Sem isso, ganhar tudo na base e ficar preso por falta de dinheiro
+           era o caminho normal de quem não nasceu rico. */
+        o.campeao = sum && sum.champion && o.up;
+        const desc = Engine.descontoCampeao(o, sum);
+        o.paga  = o.custo === 0 ? 0 : Math.max(0, Math.round((o.custo - o.apoio) * desc));
         o.podeP = o.paga === 0 || (S.money.saldo + prev) >= o.paga;
       });
       /* As vagas fora do orçamento continuam na tela, marcadas: é importante
@@ -6830,46 +7489,7 @@ UI.financas = function(){
     </div>`, true);
 };
 
-UI.relacoes = function(){
-  if(!Engine.ehRealista()) return UI.toast('As relações só existem no modo realista.');
-  const r = S.rel, feitas = S.relFeitas || [];
-  const barra = (rot, v, ds) => `
-    <div style="margin-bottom:11px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800">
-        <span>${esc(rot)}</span><span style="color:${v>=70?'var(--green)':v>=40?'var(--gold)':'var(--red2)'}">${v}</span>
-      </div>
-      <span class="bar" style="display:block;margin:4px 0 3px"><i style="width:${v}%"></i></span>
-      <div style="font-size:11.5px;color:var(--dim2)">${esc(ds)}</div>
-    </div>`;
-  UI.modal(UI.head('Relações', 'Quem está do seu lado importa tanto quanto o carro.') +
-    `<div class="mbd">
-      ${barra('Engenheiro-chefe', r.eng, r.eng>=70 ? 'Ele acerta o carro quase antes de você pedir.'
-        : r.eng>=40 ? 'Trabalho profissional, sem intimidade.' : 'Ele te escuta por obrigação.')}
-      ${barra('Companheiro de equipe', r.comp, r.comp>=70 ? 'Dados abertos dos dois lados da garagem.'
-        : r.comp>=40 ? 'Convivência educada e nada além.' : 'Guerra fria. A equipe escolhe um lado.')}
-      <div style="margin:6px 0 14px">
-        <span class="lbl" style="display:block;margin-bottom:5px">Amigos no paddock — ${r.amigos.length}</span>
-        <div style="font-size:12.5px;color:var(--dim)">${
-          r.amigos.length ? r.amigos.map(esc).join(' · ')
-                          : 'Ninguém ainda. Vaga aparece por indicação tanto quanto por resultado.'}</div>
-      </div>
-      <span class="lbl" style="display:block;margin-bottom:7px">O que fazer nesta temporada</span>
-      ${Object.keys(RELACOES).map(k=>{
-        const a = RELACOES[k], feito = feitas.indexOf(k) >= 0;
-        const caro = a.custo && S.money.saldo < a.custo;
-        return `<button class="offer" ${feito||caro?'disabled style="opacity:.45"':''} onclick="Game.relacionar('${k}')">
-          <div class="oh"><span class="on">${a.ic} ${esc(a.n)}</span>
-            <span class="oc">${feito ? 'feito' : a.custo ? fmtD(a.custo) : 'de graça'}</span></div>
-          <div class="od">${esc(a.ds)}</div>
-        </button>`;
-      }).join('')}
-    </div>
-    <div class="mft">
-      <button class="btn btn-ghost" onclick="UI.financas()">💰 Finanças</button>
-      <span class="sp"></span>
-      <button class="btn btn-primary" onclick="UI.close()">Fechar</button>
-    </div>`, true);
-};
+UI.relacoes = function(){ UI.pessoas(); };
 
 /* ═══ RECALCULAR A ROTA ═══
    Nenhuma vaga cabe no orçamento. Em vez de encerrar a carreira, o jogo
@@ -6909,6 +7529,117 @@ UI.rotaModal = function(rotas, ofertas){
       <button class="btn btn-ghost" onclick="UI.close();Game.endCareer('semdinheiro')">Encerrar a carreira</button>
       <span class="sp"></span>
     </div>`, true);
+};
+
+/* ═══ EVENTOS DE CARREIRA ═══ */
+UI.eventoModal = function(ev){
+  UI._ev = ev;
+  UI.modal(UI.head(ev.t, `${ev.ic} ${S.year} · ${esc(S.season ? S.season.cat : '')}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(ev.d)}</div>
+      ${ev.ops.map((o,i)=>`<button class="dil" onclick="Game.escolherEvento(${i})">
+        <b>${esc(o.t)}</b><span>${esc(o.d)}</span></button>`).join('')}
+    </div>`);
+};
+
+/* ═══ RIVAIS E MENTOR ═══ */
+UI.pessoas = function(){
+  const r = S.rel || { eng:50, comp:50, amigos:[] };
+  const barra = (rot, v, ds) => `
+    <div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800">
+        <span>${esc(rot)}</span><span style="color:${v>=70?'var(--green)':v>=40?'var(--gold)':'var(--red2)'}">${v}</span>
+      </div>
+      <span class="bar" style="display:block;margin:4px 0 3px"><i style="width:${v}%"></i></span>
+      <div style="font-size:11.5px;color:var(--dim2)">${esc(ds)}</div>
+    </div>`;
+  const riv = r.rival;
+  const men = r.mentor;
+  UI.modal(UI.head('Gente', 'Quem anda com você, e quem anda contra.') +
+    `<div class="mbd">
+      ${barra('Engenheiro-chefe', r.eng, r.eng>=70?'Ele acerta o carro quase antes de você pedir.'
+        : r.eng>=40?'Trabalho profissional, sem intimidade.':'Ele te escuta por obrigação.')}
+      ${barra('Companheiro de equipe', r.comp, r.comp>=70?'Dados abertos dos dois lados da garagem.'
+        : r.comp>=40?'Convivência educada e nada além.':'Guerra fria. A equipe escolhe um lado.')}
+
+      <div style="margin:14px 0">
+        <span class="lbl" style="display:block;margin-bottom:6px">Rival</span>
+        ${riv ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);
+             border-left:3px solid var(--red2);border-radius:var(--r-sm)">
+             <span class="flag" style="font-size:20px">${flag(riv.cc)}</span>
+             <div style="flex:1">
+               <div style="font-size:14px;font-weight:900">${esc(riv.n)}</div>
+               <div style="font-size:11.5px;color:var(--dim)">${riv.v||0} duelos vencidos por você · ${riv.p||0} por ele</div>
+             </div>
+             <span class="pill rd">nível ${riv.nivel||1}</span>
+           </div>
+           <div style="font-size:12px;color:var(--dim2);margin-top:6px">
+             Bater o rival num domingo levanta você; perder para ele pesa mais do que perder para qualquer outro.</div>`
+          : '<div class="empty" style="padding:10px">Ninguém ainda. Rivalidade nasce de um toque na pista ou de uma frase mal colocada.</div>'}
+      </div>
+
+      <div style="margin:14px 0">
+        <span class="lbl" style="display:block;margin-bottom:6px">Mentor</span>
+        ${men ? `<div style="padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--gold);
+             border-radius:var(--r-sm)">
+             <div style="font-size:14px;font-weight:900">🎓 ${esc(men.n)}</div>
+             <div style="font-size:12px;color:var(--dim);margin-top:3px">
+               Acompanha você desde ${men.desde}. Enquanto estiver por perto, você aprende mais rápido.</div>
+           </div>`
+          : '<div class="empty" style="padding:10px">Sem mentor. Alguém pode aparecer.</div>'}
+      </div>
+
+      <span class="lbl" style="display:block;margin-bottom:5px">Amigos no paddock — ${(r.amigos||[]).length}</span>
+      <div style="font-size:12.5px;color:var(--dim)">${
+        (r.amigos||[]).length ? r.amigos.map(esc).join(' · ')
+        : 'Ninguém ainda. Vaga aparece por indicação tanto quanto por resultado.'}</div>
+
+      ${Engine.ehRealista() ? `<span class="lbl" style="display:block;margin:16px 0 7px">O que fazer nesta temporada</span>` +
+        Object.keys(RELACOES).map(k=>{
+          const a = RELACOES[k], feito = (S.relFeitas||[]).indexOf(k) >= 0;
+          const caro = a.custo && S.money.saldo < a.custo;
+          return `<button class="offer" ${feito||caro?'disabled style="opacity:.45"':''} onclick="Game.relacionar('${k}')">
+            <div class="oh"><span class="on">${a.ic} ${esc(a.n)}</span>
+              <span class="oc">${feito ? 'feito' : a.custo ? fmtD(a.custo) : 'de graça'}</span></div>
+            <div class="od">${esc(a.ds)}</div>
+          </button>`;
+        }).join('') : ''}
+    </div>
+    <div class="mft">
+      ${Engine.ehRealista() ? '<button class="btn btn-ghost" onclick="UI.financas()">💰 Finanças</button>' : ''}
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button>
+    </div>`, true);
+};
+
+/* ═══ PATROCÍNIOS DA TEMPORADA ═══ */
+UI.patroModal = function(){
+  const o = S.patroOfertas || [];
+  if(!o.length) return;
+  UI.modal(UI.head('Mesa de patrocínio', `${S.year} · ${(S.money.patros||[]).length} de 3 contratos ativos`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        Quem vai bem atrai dinheiro, e dinheiro é o que compra a próxima temporada.
+        Cabem três logos no macacão: escolha com cuidado, porque contrato longo
+        garante o ano que vem e contrato curto deixa você livre para pedir mais depois.
+      </div>
+      ${o.map((p,i)=>`<button class="offer" onclick="Game.assinarPatro(${i})">
+        <div class="oh">
+          <span class="on">${esc(p.n)}</span>
+          <span class="oc" style="color:var(--green)">${fmtD(p.valor)} / ano</span>
+        </div>
+        <div class="od">${esc(p.faixa)} · contrato de ${p.anos} ${p.anos===1?'temporada':'temporadas'}${
+          p.bonus ? ' · bônus de ' + fmtD(p.bonus) + ' por vitória' : ''}</div>
+      </button>`).join('')}
+      ${(S.money.patros||[]).length ? `<span class="lbl" style="display:block;margin:14px 0 6px">Já no macacão</span>` +
+        (S.money.patros||[]).map(p=>`<div style="display:flex;gap:9px;padding:6px 11px;border:1px solid var(--line);
+          border-radius:var(--r-sm);margin-bottom:5px;font-size:13px">
+          <span style="flex:1;font-weight:700">${esc(p.n)}</span>
+          <span style="color:var(--dim2);font-size:11.5px">${p.anos} ${p.anos===1?'ano':'anos'}</span>
+          <b style="color:var(--green)">${fmtD(p.valor)}</b></div>`).join('') : ''}
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Seguir para a temporada →</button></div>`);
 };
 
 /* ═══ OS MAIORES DA HISTÓRIA ═══ */
