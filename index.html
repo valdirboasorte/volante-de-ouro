@@ -564,6 +564,12 @@ img.pav{image-rendering:auto}
     </div>
 
     <div class="card pad" style="margin-top:14px">
+      <span class="lbl" style="display:block;margin-bottom:8px">Modo de jogo</span>
+      <div id="modoBox"></div>
+      <div id="origemBox"></div>
+    </div>
+
+    <div class="card pad" style="margin-top:14px">
       <label class="switch">
         <input type="checkbox" id="chkRisk" checked>
         <span class="tx"><b>Realismo histórico</b><span>Acidentes graves podem custar corridas — e, nas décadas mais perigosas, encerrar a carreira. Desligue para uma temporada sem consequências.</span></span>
@@ -2860,6 +2866,43 @@ function rankingLendas(sk, rec){
   return { tab, lista, eu, pos: lista.indexOf(eu) + 1, total: lista.length };
 }
 
+/* ═══ O QUE SE FAZ COM O DINHEIRO ═══
+   Luxo compra visibilidade — e visibilidade vira patrocínio. Mas cada euro
+   gasto num relógio é um euro que não foi para o dia de teste que faria o
+   carro andar. É essa a escolha. */
+const LUXOS = [
+  { n:'Relógio suíço',        v:  90e3, fama: 2, moral: 2 },
+  { n:'Carro esportivo',      v: 320e3, fama: 4, moral: 4 },
+  { n:'Apartamento em Mônaco',v: 3.2e6, fama: 7, moral: 6 },
+  { n:'Lancha',               v: 900e3, fama: 4, moral: 5 },
+  { n:'Helicóptero',          v: 2.4e6, fama: 6, moral: 3 },
+  { n:'Kartódromo próprio',   v: 1.6e6, fama: 5, moral: 7 }
+];
+
+/* Gestos que constroem relação. O engenheiro-chefe melhora o acerto e o
+   desenvolvimento do carro; o companheiro decide se a equipe divide os dados
+   ou esconde; os amigos do paddock abrem portas quando falta vaga. */
+const RELACOES = {
+  jantar:   { n:'Jantar com o grupo de engenharia', ic:'🍝', custo: 25e3, eng: 9,
+              ds:'Uma noite fora da pista rende mais confiança do que dez reuniões.',
+              ok:'A engenharia passou a te ouvir de outro jeito.' },
+  fabrica:  { n:'Semana na fábrica',                ic:'🏭', custo: 60e3, eng: 14,
+              ds:'Você aparece, pergunta, atrapalha um pouco e aprende muito.',
+              ok:'Você virou parte do time técnico, não só o piloto.' },
+  treinoJ:  { n:'Treinar junto com o companheiro',  ic:'🤝', custo: 15e3, comp: 12,
+              ds:'Dividir preparação física derruba muralha entre os dois lados da garagem.',
+              ok:'A garagem ficou menos dividida.' },
+  dados:    { n:'Abrir seus dados de telemetria',   ic:'📊', custo: 0, comp: 16, eng: 4,
+              ds:'Ele vai ficar mais rápido com isso. Você também.',
+              ok:'Vocês dois andaram melhor depois disso.' },
+  paddock:  { n:'Circular pelo paddock',            ic:'🥂', custo: 40e3, amigo: .6,
+              ds:'Conversa fiada com quem decide contratação. Funciona mais do que parece.',
+              ok:'Você apertou muitas mãos. Alguma vai valer.' },
+  imprensa: { n:'Almoço com a imprensa',            ic:'🎙️', custo: 30e3, amigo: .3,
+              ds:'Quem escreve bem sobre você amanhã foi tratado bem hoje.',
+              ok:'A imprensa ficou do seu lado por enquanto.' }
+};
+
 /* ═══════════════════════════════════════════════════════════════
    ACADEMIAS DE PILOTOS
    Entrar numa abre portas, acelera a evolução e coloca seu nome na
@@ -3010,6 +3053,9 @@ const JR_NAMES = ['Almeida','Antunes','Barros','Bertolini','Cabrera','Dantas','D
 'Duarte','Engel','Fontana','Guerra','Halvorsen','Iglesias','Junqueira','Klein','Lombardi','Moreau','Novak',
 'Ortiz','Pereira','Ricci','Silveira','Thiessen','Urbano','Vasquez','Weber','Zampieri','Bianchi','Costa',
 'Dubois','Ekström','Franchi','Grimaldi','Højlund','Iversen','Jelinek','Kaminski','Larsen','Meyer'];
+/* nomes das gerações que estreiam depois de 2026 */
+const NOMES_FUTUROS = [];
+
 const JR_CC = ['BR','IT','FR','GB','DE','ES','AR','NL','BE','SE','FI','CH','AT','JP','US','MX','CA','AU','PT','DK','PL','CZ','CO','NZ','ZA'];
 
 /* Pilotos anônimos que completam o fundo do grid — com sobrenomes coerentes
@@ -3036,7 +3082,7 @@ function fillerCC(sk){
 const SERIES = {
   f1: { key:'f1', name:'Fórmula 1', short:'F1', ic:'🏎️', color:'#e8112d', from:1950,
         blurb:'O topo do automobilismo mundial. Monopostos, circuitos consagrados e a pressão máxima.',
-        cal:CAL_F1, spec:1, caos:1, specSkill:1, faixa:[70,94], get eras(){ return ERAS; } },
+        cal:CAL_F1, spec:1, caos:1, specSkill:1, faixa:[70,97], get eras(){ return ERAS; } },
   indy: { key:'indy', name:'IndyCar', short:'IndyCar', ic:'🇺🇸', color:'#0057b8', from:1950,
         blurb:'Ovais a 380 km/h, circuitos de rua e as 500 Milhas de Indianápolis valendo o dobro.',
         spec:.34, caos:1.5, specSkill:1, faixa:[74,89], get eras(){ return ERAS_INDY; } },
@@ -3056,6 +3102,9 @@ const SERIES = {
         blurb:'Monopostos elétricos dentro das cidades, com a energia contada até a última volta.',
         spec:.30, caos:1.6, specSkill:1, faixa:[74,88], get eras(){ return ERAS_FE; } }
 };
+/* preenchido depois que todas as listas de nomes existem */
+NOMES_FUTUROS.push(...new Set([].concat(JR_NAMES, FILLER_US, FILLER_BR)));
+
 const SERIES_KEYS = ['f1','indy','wec','stock','nascar','dtm','fe'];
 
 /* Circuitos das categorias de entrada — o kart não corre em Spa. */
@@ -3216,6 +3265,27 @@ const R = {
   shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
 };
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* dinheiro sempre curto e legível: € 2,4 mi, € 380 mil, € 0 */
+function fmtD(v){
+  const neg = v < 0, a = Math.abs(Math.round(v));
+  const s = (neg ? '−' : '') + '€ ';
+  if(a >= 1e6) return s + (a/1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',') + ' mi';
+  if(a >= 1e3) return s + Math.round(a/1e3) + ' mil';
+  return s + a;
+}
+
+/* De onde você vem. No modo realista isso decide se a escada europeia é
+   uma opção ou uma fantasia — e é o que empurra muita gente talentosa
+   para categorias mais baratas. */
+const ORIGENS = {
+  humilde: { n:'Origem humilde', ic:'🔧', saldo:30e3, apoio:0, ate:0,
+    ds:'Kart emprestado e caminhonete do vizinho. Sem patrocínio ou academia, a escada europeia não fecha.' },
+  media:   { n:'Classe média',   ic:'🏠', saldo:150e3, apoio:45e3, ate:22,
+    ds:'A família banca o começo e aperta o cinto. Dá para começar, não para chegar sozinho.' },
+  rica:    { n:'Família rica',   ic:'💼', saldo:1.1e6, apoio:400e3, ate:24,
+    ds:'Dinheiro não é o problema. Talento continua sendo.' }
+};
 const ord=n=>n+'º';
 
 /* ─────────────── ESTADO ─────────────── */
@@ -3278,9 +3348,12 @@ const Engine = {
     /* ── curva de carreira, muito diferente de piloto para piloto ──
        Uns amadurecem cedo e apagam antes dos 35; outros só encontram o auge
        perto dos 34 e ainda correm forte depois dos 40. */
-    const peak = R.int(24, 34);
-    const decl = peak + R.int(2, 10);
-    const lastAge = clamp(decl + R.int(3, 14), Math.max(30, age + 2), 60);
+    /* Auge, começo do declínio e fim da carreira. A cauda longa continua
+       existindo — há quem corra depois dos 45 —, mas deixou de ser a regra:
+       a carreira média termina perto dos 37, como na vida real. */
+    const peak = R.int(24, 32);
+    const decl = peak + R.int(2, 8);
+    const lastAge = clamp(decl + R.int(2, 10), Math.max(28, age + 1), 52);
     return { name, num, cc, style, age, startAge:age, attr:a, pot, tal:Math.round(tal*100),
              ovr:Engine.ovr(a), fame:5, morale:60, injured:0,
              peak, decl, lastAge, durab: R.range(.55, 1.5) };
@@ -3381,9 +3454,31 @@ const Engine = {
       const euSou = S.real ? S.driver.name : null;
       /* a escalação real daquele ano, quando existe */
       const escala = lineupOf(S.series, S.year);
-      let pool = era.pilots.filter(p => dist(p) === 0 && p[0] !== euSou)
-                           .map(p=>({name:p[0], cc:p[1], skill:skillEm(S.series,p[0],S.year,p[2]),
-                                     titular: !!(escala && escala[p[0]])}));
+      /* Passado o último ano documentado, quem já devia ter parado para de
+         aparecer: ninguém corre aos 79 anos. */
+      const futuro = S.year > Engine.HORIZONTE;
+      let pool = era.pilots
+        .filter(p => dist(p) === 0 && p[0] !== euSou
+                  && !(futuro && Engine.aposentouEm(S.series, p[0], S.year)))
+        .map(p=>({name:p[0], cc:p[1], skill:skillEm(S.series,p[0],S.year,p[2]),
+                  titular: !!(escala && escala[p[0]])}));
+      /* e as gerações seguintes entram no lugar deles.
+         A escolha é estratificada de propósito: pegar só os melhores de uma
+         geração inteira produziria um grid sem fundo, em que o pior piloto
+         de 2060 seria melhor que metade do grid de 1994. Um campeonato de
+         verdade tem estrela, meio de pelotão e quem só completa. */
+      if(futuro){
+        const jaTem = new Set(pool.map(p=>p.name).concat(euSou ? [euSou] : []));
+        const g = Engine.geracaoDe(S.series, S.year).filter(x => !jaTem.has(x.name));
+        const precisa = Math.max(0, slots.length - pool.length);
+        const passo = precisa > 0 ? Math.max(1, g.length / precisa) : 1;
+        for(let k = 0; k < precisa; k++){
+          const x = g[Math.min(g.length - 1, Math.round(k * passo))];
+          if(!x || jaTem.has(x.name)) continue;
+          jaTem.add(x.name);
+          pool.push({ name:x.name, cc:x.cc, skill:x.skill, titular:false, geracao:true });
+        }
+      }
       /* Faltando gente, completa com quem correu no ano mais próximo — nunca com
          uma estrela de outra década — e, por último, com pilotos anônimos,
          que era exatamente o que preenchia o fundo daqueles grids. */
@@ -3522,13 +3617,20 @@ const Engine = {
          mantendo a ordem e as distâncias: a F1 tem o topo mais alto e o grid
          mais esticado; IndyCar, NASCAR, Stock e Fórmula E têm o pelotão
          apertado, que é o que faz ganhador diferente toda semana. */
-      const faixa = (SERIES[S.series] && SERIES[S.series].faixa) || [70, 94];
+      const faixa = (SERIES[S.series] && SERIES[S.series].faixa) || [70, 97];
       const brutos = pool.map(p => p.skill);
       const bMin = Math.min(...brutos), bMax = Math.max(...brutos);
+      /* A faixa comprime, nunca estica. Um grid já apertado deve continuar
+         apertado: esticá-lo inventava um abismo entre o primeiro e o resto
+         que não existia nos números. E o topo nunca sobe além do que o
+         melhor piloto daquele ano realmente vale. */
+      const larg = bMax - bMin;
+      const escFaixa = larg > 0 ? Math.min(1, (faixa[1] - faixa[0]) / larg) : 1;
+      const topo = Math.min(faixa[1], bMax);
       pool = pool.filter(p => destino[p.name]);
       pool.forEach((p,i)=>{
-        const hab = bMax > bMin
-          ? Math.round(faixa[0] + (p.skill - bMin) / (bMax - bMin) * (faixa[1] - faixa[0]))
+        const hab = larg > 0
+          ? clamp(Math.round(topo - (bMax - p.skill) * escFaixa), faixa[0], faixa[1])
           : Math.round((faixa[0] + faixa[1]) / 2);
         field.push({ id:'d'+i, name:p.name, cc:p.cc, skill:hab,
                      teamId: destino[p.name], rookie:!!p.rookie });
@@ -3727,7 +3829,9 @@ const Engine = {
          que você passou com os engenheiros no inverno aparecem aqui */
       const devGain = (S.driver.attr.dev - 55) / 22;
       const fabrica = ((S.prep && S.prep.eng) || 0) * .55
-                    + (S.compromisso === 'equipe' ? .9 : S.compromisso === 'eu' ? -.4 : 0);
+                    + (S.compromisso === 'equipe' ? .9 : S.compromisso === 'eu' ? -.4 : 0)
+                    + Engine.bonusEngenheiro() + Engine.bonusCompanheiro()
+                    + ((S.money && S.money.teste) || 0);
       s += (devGain * 3.4 + fabrica) * (round / Math.max(1,sea.calendar.length));
     }
     return s;
@@ -3765,6 +3869,208 @@ const Engine = {
     const esp = SERIES[S.series] && SERIES[S.series].spec != null ? SERIES[S.series].spec : 1;
     if(esp < 1){ const d = (1 - esp) * .22; car -= d; skill += d; }
     return {car, skill};
+  },
+
+  /* ═══════════════════════════════════════════════════════════════
+     MODO REALISTA — o dinheiro
+     Subir a escada europeia custa caro, e quem paga é o piloto: só na
+     categoria principal a equipe passa a pagar você. Sem patrocínio e sem
+     academia, a rota da Fórmula 1 simplesmente não fecha — e aí é preciso
+     recalcular: a Stock Car brasileira custa uma fração disso, a NASCAR e o
+     endurance também. É assim na vida real, e é assim aqui.
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* orçamento de uma temporada por degrau da escada, da base ao topo */
+  ESCALA_CUSTO: [15e3, 50e3, 130e3, 360e3, 780e3, 1.35e6, 2.4e6],
+  /* o quanto a escada de cada categoria é cara em relação à da F1 */
+  CARO: { f1:1, indy:.42, wec:.30, stock:.11, nascar:.28, dtm:.34, fe:.50 },
+  /* o que a categoria principal paga a um piloto médio de equipe média */
+  SALARIO_BASE: { f1:6.5e6, indy:1.3e6, nascar:2.4e6, wec:.9e6, dtm:.55e6, fe:1e6, stock:.35e6 },
+
+  ehRealista(){ return !!(S && S.modo === 'realista'); },
+
+  custoTemporada(cat, idx, len, sk){
+    sk = sk || S.series;
+    if(idx >= len - 1) return 0;                       /* no topo quem paga é a equipe */
+    /* a escada tem entre 5 e 8 degraus conforme a época e o país: o custo é
+       interpolado na curva, para não repetir valor de um degrau para o outro */
+    const frac = len > 2 ? idx / (len - 2) : 0;
+    const t = Engine.ESCALA_CUSTO;
+    const x = clamp(frac, 0, 1) * (t.length - 1);
+    const i0 = Math.floor(x), i1 = Math.min(t.length - 1, i0 + 1);
+    const base = t[i0] + (t[i1] - t[i0]) * (x - i0);
+    const v = base * (Engine.CARO[sk] != null ? Engine.CARO[sk] : 1);
+    return Math.round(v / 1e3) * 1e3;
+  },
+
+  /* salário na categoria principal: carro bom e nome feito pagam bem;
+     estreante em equipe pequena quase não recebe nada */
+  salarioDe(team, sk){
+    sk = sk || S.series;
+    const base = Engine.SALARIO_BASE[sk] || 1e6;
+    const carro = clamp((team.str - 58) / 38, .05, 1);
+    const nome = clamp(.30 + S.driver.fame / 150 + (S.driver.ovr - 70) / 55, .12, 2.1);
+    /* empresário, impostos e a equipe que anda com você levam a sua parte:
+       o que entra na conta é bem menos do que o número do contrato */
+    return Math.round(base * carro * nome * .62 / 1e4) * 1e4;
+  },
+
+  /* quanto a academia banca da sua temporada nas categorias de acesso */
+  apoioAcademia(custo){
+    if(!S.academy) return 0;
+    const peso = clamp((S.academy.peso || 1.1) - 1, .05, .5);   /* 0,05 a 0,5 */
+    return Math.round(custo * clamp(.45 + peso * 1.1, .35, .92));
+  },
+
+  /* ── patrocinadores ──
+     O valor de um patrocínio é o seu nome vezes a vitrine da categoria.
+     Vencer traz dinheiro; sumir do noticiário tira. */
+  PATROS: ['Ampla Energia','Café Serrano','Banco Aurora','Vetor Telecom','Duraflex',
+           'Mineradora Ouro Preto','Rede Litoral','Frota Azul','Nordeste Bebidas',
+           'Construtora Vega','Seguros Meridiano','Tecnolab','Malta Lubrificantes',
+           'Grupo Amazonas','Cimento Titã','Óticas Clara','Verde Agro','Farol Seguros'],
+  patrocinioValor(){
+    const vitrine = { f1:1, indy:.42, nascar:.5, wec:.2, dtm:.16, fe:.28, stock:.14 }[S.series] || .3;
+    const topo = S.season && S.season.isTop ? 1 : .22;
+    const nome = 40e3 + S.driver.fame * 9e3 + Math.max(0, S.driver.ovr - 58) * 5e3
+               + (S.career ? S.career.wins * 9e3 + S.career.titles * 240e3 : 0);
+    return Math.round(nome * vitrine * topo / 5e3) * 5e3;
+  },
+  ofertasPatrocinio(){
+    const v = Engine.patrocinioValor();
+    if(v < 8e3) return [];
+    const usados = new Set((S.money.patros || []).map(p => p.n));
+    const livres = Engine.PATROS.filter(n => !usados.has(n));
+    const quantos = clamp(1 + Math.floor(S.driver.fame / 32), 1, 3);
+    return R.shuffle(livres).slice(0, quantos).map((n, i) => ({
+      n, anos: R.int(1, 3),
+      valor: Math.round(v * R.range(.6, 1.35) / 5e3) * 5e3
+    }));
+  },
+
+  /* ── o caixa do ano ── */
+  balancoAno(){
+    const m = S.money;
+    const custo = Engine.custoTemporada(S.season ? S.season.cat : Engine.topCat(),
+                                        S.catIdx, S.ladder.length, S.series);
+    const apoio = Engine.apoioAcademia(custo);
+    const patros = (m.patros || []).reduce((a, p) => a + p.valor, 0);
+    const salario = (S.season && S.season.isTop && S.team) ? Engine.salarioDe(S.team, S.series) : 0;
+    return { custo, apoio, patros, salario, liquido: salario + patros + apoio - custo };
+  },
+
+  /* rendimento dos investimentos: um ano bom, um ano ruim, no longo prazo sobe */
+  renderInvestimento(){
+    const m = S.money;
+    if(!m.invest) return 0;
+    const taxa = R.gauss() * .11 + .062;
+    const g = Math.round(m.invest * taxa);
+    m.invest = Math.max(0, m.invest + g);
+    return g;
+  },
+
+  /* ── a rota alternativa ──
+     Quando o dinheiro não fecha para o degrau seguinte, o jogo não te
+     empurra para fora: mostra por onde ainda dá para correr. */
+  rotasBaratas(){
+    const nextYear = S.year + 1;
+    const fora = [];
+    SERIES_KEYS.forEach(k => {
+      if(k === S.series) return;
+      const sr = SERIES[k];
+      if(nextYear < sr.from) return;
+      const era = eraOfSeries(nextYear, k);
+      const escada = resolveLadder(era.ladder, S.driver.cc, nextYear);
+      /* Entra no degrau mais alto que a idade permite E que o bolso aguenta.
+         Um piloto de 26 anos não recomeça no kart, mas também não assina uma
+         categoria que não tem como pagar: desce até onde a conta fecha. */
+      const teto = clamp(Engine.rungForAge(S.driver.age, escada.length), 0, escada.length - 1);
+      const disponivel = (S.money ? S.money.saldo : 0) + Engine.patrocinioValor();
+      /* desce no máximo dois degraus: ninguém de 26 anos recomeça no kart —
+         se nem assim a conta fecha, essa rota simplesmente não é uma opção */
+      const piso = Math.max(0, teto - 2);
+      let idx = teto;
+      while(idx > piso && Engine.custoTemporada(escada[idx], idx, escada.length, k) > disponivel) idx--;
+      if(Engine.custoTemporada(escada[idx], idx, escada.length, k) > disponivel) return;
+      const custo = Engine.custoTemporada(escada[idx], idx, escada.length, k);
+      fora.push({ sk:k, nome:sr.name, ic:sr.ic, cor:sr.color, cat:escada[idx], idx,
+                  escada, custo, teto });
+    });
+    return fora.sort((a, b) => a.custo - b.custo);
+  },
+
+  /* ── relações ──
+     O engenheiro-chefe melhora o acerto e o desenvolvimento; o companheiro
+     de equipe decide se os dados são compartilhados ou escondidos; os amigos
+     do paddock abrem portas quando você precisa de uma vaga. */
+  relEng(){ return Engine.ehRealista() && S.rel ? S.rel.eng : 50; },
+  relComp(){ return Engine.ehRealista() && S.rel ? S.rel.comp : 50; },
+  bonusEngenheiro(){ return Engine.ehRealista() ? (Engine.relEng() - 50) / 100 * 1.6 : 0; },
+  bonusCompanheiro(){ return Engine.ehRealista() ? (Engine.relComp() - 50) / 100 * 1.1 : 0; },
+
+  /* ═══ AS GERAÇÕES QUE VÊM DEPOIS ═══
+     Os dados reais terminam em 2026. A partir dali o grid não pode continuar
+     sendo o mesmo para sempre: os pilotos de hoje envelhecem e param, e novos
+     nomes chegam todo ano. Cada geração é sorteada de forma estável a partir
+     do ano de estreia — a mesma carreira, jogada de novo, encontra os mesmos
+     rivais. A maioria é de bons pilotos; de tempos em tempos nasce um
+     fenômeno, e é ele que vai brigar com você pelo título. */
+  HORIZONTE: 2026,
+  ESTREANTES_POR_ANO: 5,
+
+  /* nome estável e sem repetição para cada vaga de cada ano */
+  nomeGeracao(sk, h, usados){
+    const pool = NOMES_FUTUROS;
+    for(let k = 0; k < pool.length; k++){
+      const nm = pool[(h + k * 7) % pool.length];
+      if(!usados.has(nm)) return nm;
+    }
+    return pool[h % pool.length] + ' Jr.';
+  },
+
+  /* quem já parou de correr: piloto real fora da sua janela de idade */
+  aposentouEm(sk, nome, ano){
+    const f = fichaDe(sk, nome);
+    if(!f) return false;
+    const idade = ano - f[0];
+    if(idade < 15) return false;
+    /* cada um para numa idade própria, entre 33 e 43, sempre a mesma */
+    const fim = 33 + (seedOf('fim' + sk + nome) % 11);
+    return idade > fim;
+  },
+
+  /* a geração ativa num ano qualquer depois do horizonte */
+  geracaoDe(sk, ano, quantos){
+    const out = [], usados = new Set();
+    for(let est = Engine.HORIZONTE + 1; est <= ano; est++){
+      for(let i = 0; i < Engine.ESTREANTES_POR_ANO; i++){
+        const h = seedOf(sk + 'ger' + est + '_' + i);
+        const idadeEstreia = 18 + (h % 6);
+        const nasc = est - idadeEstreia;
+        const idade = ano - nasc;
+        const fim = 31 + ((h >>> 3) % 12);        /* para entre 31 e 42 */
+        if(idade > fim) continue;
+        /* talento: a maioria é boa, poucos são excepcionais e raríssimos
+           são geracionais — os que ganham título em cima de você */
+        const r = ((h >>> 7) % 1000) / 1000;
+        const teto = r > .984 ? 95 + ((h >>> 17) % 3)
+                   : r > .920 ? 90 + ((h >>> 17) % 5)
+                   : r > .700 ? 84 + ((h >>> 17) % 6)
+                   : 72 + ((h >>> 17) % 12);
+        /* curva de carreira: rampa de estreia e declínio depois do auge */
+        const exp = ano - est;
+        let hab = teto;
+        if(exp < 5) hab -= [12, 8, 5, 3, 1][exp];
+        const auge = 26 + ((h >>> 12) % 6);
+        if(idade > auge) hab -= Math.min(11, (idade - auge) * 1.05);
+        const nome = Engine.nomeGeracao(sk, h % 9973, usados);
+        usados.add(nome);
+        out.push({ name: nome, cc: JR_CC[(h >>> 21) % JR_CC.length],
+                   skill: clamp(Math.round(hab), 52, 97), nasc, estreia: est, novo: exp === 0 });
+      }
+    }
+    out.sort((a, b) => b.skill - a.skill);
+    return quantos ? out.slice(0, quantos) : out;
   },
 
   /* ═══ PREPARAÇÃO DE PRÉ-TEMPORADA ═══
@@ -3842,7 +4148,8 @@ const Engine = {
   setupDica(sea, rd){
     const id = Engine.setupIdeal(sea, rd);
     /* nem um estreante fica totalmente às cegas, nem um veterano acerta sempre */
-    const conf = clamp(.18 + (S.driver.attr.dev - 45) / 45 * .55 + (S.teamRel || 50) / 100 * .30, .12, .97);
+    const conf = clamp(.18 + (S.driver.attr.dev - 45) / 45 * .55 + (S.teamRel || 50) / 100 * .30
+                     + (Engine.relEng() - 50) / 100 * .28, .12, .97);
     const pc = Math.round(conf * 100);
     /* O palpite é sempre o mesmo para a mesma etapa: o engenheiro não muda de
        ideia toda vez que você abre a tela. Ele erra, mas erra com convicção. */
@@ -4118,7 +4425,9 @@ const Engine = {
       let v;
       if(rate > 0){
         const gap = Math.max(0, pot[k] - a[k]);
-        v = gap * rate * perf * devB * comp * (1 + (treino[k] || 0)) * R.range(.6,1.4) + R.range(-.4,.6);
+        v = gap * rate * perf * devB * comp * (1 + (treino[k] || 0)) * R.range(.6,1.4) + R.range(-.5,.5);
+        /* o teto é teto: talento não se acumula para sempre */
+        if(a[k] + v > pot[k]) v = Math.max(0, pot[k] - a[k]);
       } else {
         /* pilotos resistentes perdem pouco por ano; outros despencam.
            Quem passou o inverno treinando segura a queda por mais tempo. */
@@ -4178,7 +4487,10 @@ const Engine = {
         const pi = S.catIdx + 2;
         let pTeams = Engine.teamsFor(pular, nextYear, S.series, pi, S.ladder.length);
         /* pular direto para a categoria principal não fura a regra da estreia */
-        if(pular === Engine.topCat()) pTeams = Engine.portasDaEstreia(pTeams);
+        if(pular === Engine.topCat()){
+          pTeams = Engine.portasDaEstreia(pTeams);
+          if(Engine.portaFechadaPelaIdade()) pTeams = [];
+        }
         const cand = pTeams.filter(t => jrRep >= (t.str - 40) * 1.8);
         const t = (cand.length ? cand : pTeams.slice(-2))[0];
         if(t) list.push({ type:'f1', cat:pular, team:t, years:1, up:true, pulo:true,
@@ -4189,7 +4501,10 @@ const Engine = {
       if(promote && nextCat){
         const ni = S.catIdx + 1;
         let nTeams = Engine.teamsFor(nextCat, nextYear, S.series, ni, S.ladder.length);
-        if(nextCat === Engine.topCat()) nTeams = Engine.portasDaEstreia(nTeams);
+        if(nextCat === Engine.topCat()){
+          nTeams = Engine.portasDaEstreia(nTeams);
+          if(Engine.portaFechadaPelaIdade()) nTeams = [];
+        }
         /* equipes melhores só chamam quem chegou com nome feito */
         const cands = nTeams.filter(t => jrRep >= (t.str - 44) * 1.7 - (sum.champion ? 12 : 0));
         const pick = (cands.length ? cands : nTeams.slice(-3)).slice(0, 3);
@@ -4441,6 +4756,18 @@ const Engine = {
     return teams.slice().sort((a,b)=>b.str-a.str).slice(0,4).map(t=>t.name);
   },
 
+  /* No modo realista o tempo também cobra: quem passa dos 25 ainda na base
+     deixa de ser aposta de futuro. A porta da categoria principal só continua
+     aberta para quem virou um talento inegável. */
+  portaFechadaPelaIdade(){
+    if(!Engine.ehRealista()) return false;
+    const id = S.driver.age;
+    if(id <= 24) return false;
+    if(id <= 26) return S.driver.ovr < 84;
+    if(id <= 28) return S.driver.ovr < 89;
+    return true;
+  },
+
   /* Quais portas estão realmente abertas na estreia na categoria principal.
      Abaixo de 88 de geral, as quatro grandes não te chamam — a não ser que
      você seja da academia de uma delas e ela queira te colocar lá. */
@@ -4665,6 +4992,7 @@ const UI = {
   },
 
   show(name){
+    if(name === 'new') setTimeout(()=>{ try{ UI.modoGrid(); }catch(e){} }, 0);
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
     el('scr-'+name).classList.add('on');
     window.scrollTo(0,0);
@@ -4754,7 +5082,34 @@ const UI = {
     UI.yearGrid(); UI.seriesGrid(); UI.ageChanged();
   },
 
+  modo: 'classico', origem: 'media',
+  modoGrid(){
+    if(!el('modoBox')) return;
+    const op = [
+      ['classico','🏁','Clássico','Você contra o cronômetro. Contrato, mercado e pista — sem contas para pagar.'],
+      ['realista','💰','Realista','Correr custa dinheiro. Patrocínio, academia, salário e uma escada que só sobe quem consegue pagar. Você também constrói relações no paddock e decide o que fazer com o que ganha.']
+    ];
+    el('modoBox').innerHTML = op.map(([k,ic,nm,ds])=>`
+      <button class="dil ${UI.modo===k?'sel':''}" style="${UI.modo===k?'border-color:var(--gold)':''}"
+        onclick="UI.pickModo('${k}')"><b>${ic} ${esc(nm)}</b><span>${esc(ds)}</span></button>`).join('');
+    const ob = el('origemBox');
+    if(!ob) return;
+    if(UI.modo !== 'realista'){ ob.innerHTML = ''; return; }
+    ob.innerHTML = '<span class="lbl" style="display:block;margin:14px 0 8px">De onde você vem</span>' +
+      Object.keys(ORIGENS).map(k=>{
+        const o = ORIGENS[k];
+        return `<button class="dil ${UI.origem===k?'sel':''}" style="${UI.origem===k?'border-color:var(--gold)':''}"
+          onclick="UI.pickOrigem('${k}')"><b>${o.ic} ${esc(o.n)}</b><span>${esc(o.ds)}</span>
+          <span style="display:block;font-size:11px;color:var(--gold);font-weight:800;margin-top:3px">
+            começa com ${fmtD(o.saldo)}${o.apoio ? ' · a família banca ' + fmtD(o.apoio) + ' por ano até os ' + o.ate : ''}</span>
+        </button>`;
+      }).join('');
+  },
+  pickModo(k){ UI.modo = k; UI.modoGrid(); },
+  pickOrigem(k){ UI.origem = k; UI.modoGrid(); },
+
   styleGrid(){
+
     el('styleGrid').innerHTML = Object.entries(STYLES).map(([k,v])=>`
       <button class="sty ${k===UI.style?'sel':''}" onclick="UI.pickStyle('${k}')">
         <b>${v.ic} ${v.nome}</b><span>${esc(v.ds)}</span>
@@ -4784,6 +5139,7 @@ const UI = {
   },
 
   newCareer(){
+    setTimeout(()=>{ try{ UI.modoGrid(); }catch(e){} }, 0);
     UI.show('new'); UI.yearGrid(); UI.seriesGrid(); UI.ageChanged();
     if(!el('inCountry').value) UI.pickCountry('BR');
   },
@@ -5046,6 +5402,8 @@ const UI = {
     }
     if(nx && !S.opts.fast && Engine.prepGastos() < Engine.prepTotal())
       h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">🎯 Pré-temporada · ${Engine.prepTotal()-Engine.prepGastos()}</button>`;
+    if(Engine.ehRealista())
+      h += `<button class="btn btn-ghost btn-sm" onclick="UI.financas()">💰 ${fmtD(S.money.saldo)}</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()"
               title="No modo rápido a equipe monta o carro e define o treino da pré-temporada">${S.opts.fast?'⚡ Rápido':'🔧 Completo'}</button>
       <span class="sp"></span>
@@ -5472,6 +5830,9 @@ const Game = {
         attr: Object.assign({}, o.attr)
       }),
       opts: { risk: true, fast: false },
+      modo: 'classico', origem: 'rica',
+      money: { saldo: 2e6, invest: 0, patros: [], luxo: [], hist: [], teste: 0 },
+      rel: { eng: 60, comp: 50, amigos: [] },
       startEra: era.id, startYear: o.year, year: o.year,
       ladder: escadaR, catIdx: escadaR.length - 1,
       team: { id:t.id, name:t.name, color:t.color, str:t.str },
@@ -5505,14 +5866,28 @@ const Game = {
       v: 2, series: sk,
       driver: Engine.newDriver(name, num, UI.country, UI.style, idade),
       opts: { risk: el('chkRisk').checked, fast: el('chkFast').checked },
+      modo: UI.modo || 'classico', origem: UI.origem || 'media',
+      money: { saldo: (ORIGENS[UI.origem || 'media'] || ORIGENS.media).saldo,
+               invest: 0, patros: [], luxo: [], hist: [], teste: 0 },
+      rel: { eng: 50, comp: 50, amigos: [] },
       startEra: era.id, startYear: startY,
       year: startY, ladder: escada,
       catIdx: Engine.rungForAge(idade, escada.length),
+      /* ajustado logo abaixo quando o modo realista está ligado */
       team: null, contract: { years:1 }, teamRel: 50, firedBy: null,
       prospects: [], history: [], archive: [], season: null,
       career: { gps:0, wins:0, podiums:0, poles:0, fls:0, pts:0, titles:0, jrTitles:0, seasons:0, dnfs:0, best:null },
       retired: false
     };
+    /* Modo realista: ninguém entra num degrau que não consegue pagar. Quem vem
+       de origem humilde começa mais embaixo — e é dali que precisa subir. */
+    if(Engine.ehRealista()){
+      const paga = i => {
+        const c = Engine.custoTemporada(S.ladder[i], i, S.ladder.length, S.series);
+        return c - Engine.apoioAcademia(c);
+      };
+      while(S.catIdx > 0 && paga(S.catIdx) > S.money.saldo) S.catIdx--;
+    }
     Game.startSeason();
     UI.show('career');
     UI.modal(UI.head('Bem-vindo ao paddock', `${SERIES[sk].ic} ${SERIES[sk].name} · ${era.name} · ${esc(era.tag)}`) +
@@ -5550,6 +5925,8 @@ const Game = {
     } else if(S.team && S.contract && S.contract.years >= 1 && S.career.seasons > 0){
       if(R.chance(.5)) Engine.noticia("contrato", {equipe:S.team.name, forca:S.team.str});
     }
+    const caixa = Game.fecharAno();
+    S.relFeitas = [];
     /* preparação de pré-temporada: no modo rápido a equipe resolve por você */
     S.prep = Engine.prepZerado();
     if(!S.compromisso) S.compromisso = 'meio';
@@ -5571,6 +5948,110 @@ const Game = {
     UI.prepModal();
   },
   setCompromisso(k){ S.compromisso = k; UI.prepModal(); },
+
+  /* ── o ano fecha as contas ──
+     Custo da temporada, salário, patrocínios, apoio da academia e da família,
+     rendimento dos investimentos. É aqui que a conta aperta ou sobra. */
+  fecharAno(){
+    if(!Engine.ehRealista() || !S.money) return null;
+    const m = S.money, b = Engine.balancoAno();
+    const org = ORIGENS[S.origem] || ORIGENS.media;
+    const familia = S.driver.age <= org.ate ? org.apoio : 0;
+    const rend = Engine.renderInvestimento();
+    m.saldo = Math.round(m.saldo + b.salario + b.patros + b.apoio + familia + rend - b.custo);
+    /* contratos de patrocínio correm um ano */
+    m.patros = (m.patros || []).map(p => ({ n:p.n, valor:p.valor, anos:p.anos - 1 }))
+                               .filter(p => p.anos > 0);
+    m.teste = 0;   /* o dinheiro posto em testes vale por uma temporada só */
+    /* saldo negativo é dívida: dá para correr o ano, mas o mercado seguinte
+       vai cobrar — é ali que a rota tem de mudar */
+    S.endividado = m.saldo < 0;
+    const linha = { ano:S.year, custo:b.custo, apoio:b.apoio, patros:b.patros,
+                    salario:b.salario, familia, rend, saldo:m.saldo };
+    m.hist.unshift(linha);
+    if(m.hist.length > 30) m.hist.length = 30;
+    S.patroOfertas = Engine.ofertasPatrocinio();
+    return linha;
+  },
+
+  /* nenhuma vaga cabe no orçamento: mostra as saídas em vez de encerrar */
+  recalcularRota(ofertas){
+    const rotas = Engine.rotasBaratas().filter(r => r.custo <= S.money.saldo * 1.15);
+    if(!rotas.length){ Game.endCareer('semdinheiro'); return; }
+    UI.rotaModal(rotas, ofertas);
+  },
+  tomarRota(i){
+    const r = (UI._rotas || [])[i];
+    if(!r) return;
+    if(r.custo > S.money.saldo) return UI.toast('Ainda não cabe no orçamento.');
+    S.series = r.sk;
+    S.ladder = r.escada;
+    S.catIdx = r.idx;
+    S.team = null;
+    S.contract = { years:1 };
+    S.gridMem = null;
+    S.year++;
+    S.yearsInCat = 1;
+    S.yearsInSeries = 1;
+    S.lastCatMidia = null;
+    UI.close();
+    UI.toast('Rota nova: ' + r.nome + '.');
+    Game.startSeason();
+  },
+
+  assinarPatro(i){
+    const o = (S.patroOfertas || [])[i];
+    if(!o) return;
+    if((S.money.patros || []).length >= 3) return UI.toast('Três patrocinadores é o limite do macacão.');
+    S.money.patros.push({ n:o.n, valor:o.valor, anos:o.anos });
+    S.patroOfertas.splice(i, 1);
+    UI.toast('Patrocínio fechado: ' + o.n + ', ' + fmtD(o.valor) + ' por ano.');
+    Game.save(); UI.financas();
+  },
+  investir(v){
+    const m = S.money;
+    if(v > 0 && m.saldo < v) return UI.toast('Saldo insuficiente.');
+    if(v < 0 && m.invest < -v) return UI.toast('Você não tem tudo isso investido.');
+    m.saldo -= v; m.invest += v;
+    Game.save(); UI.financas();
+  },
+  comprarLuxo(i){
+    const it = LUXOS[i]; if(!it) return;
+    if(S.money.saldo < it.v) return UI.toast('Caro demais por enquanto.');
+    S.money.saldo -= it.v;
+    S.money.luxo.push(it.n);
+    S.driver.fame = clamp(S.driver.fame + it.fama, 0, 100);
+    S.driver.morale = clamp(S.driver.morale + (it.moral || 0), 5, 100);
+    UI.toast(it.n + ' comprado. ' + (it.fama ? 'Seu nome circula mais.' : ''));
+    Game.save(); UI.financas();
+  },
+  pagarTeste(v){
+    if(S.money.saldo < v) return UI.toast('Saldo insuficiente.');
+    S.money.saldo -= v;
+    S.money.teste = (S.money.teste || 0) + v / 900e3;
+    UI.toast('Dia extra de testes contratado. O carro vai evoluir mais rápido.');
+    Game.save(); UI.financas();
+  },
+  /* Cada gesto custa dinheiro e só pode ser feito uma vez por temporada:
+     relação se constrói ao longo dos anos, não numa tacada. */
+  relacionar(k){
+    const a = RELACOES[k]; if(!a) return;
+    if(!S.relFeitas) S.relFeitas = [];
+    if(S.relFeitas.indexOf(k) >= 0) return UI.toast('Você já fez isso esta temporada.');
+    if(a.custo && S.money.saldo < a.custo) return UI.toast('Sem saldo para isso agora.');
+    if(a.custo) S.money.saldo -= a.custo;
+    S.relFeitas.push(k);
+    if(a.eng)  S.rel.eng  = clamp(S.rel.eng  + a.eng,  0, 100);
+    if(a.comp) S.rel.comp = clamp(S.rel.comp + a.comp, 0, 100);
+    let msg = a.ok;
+    if(a.amigo && R.chance(a.amigo)){
+      const livres = NOMES_FUTUROS.filter(x => S.rel.amigos.indexOf(x) < 0);
+      const nome = R.pick(livres);
+      if(nome){ S.rel.amigos.push(nome); msg = 'Você fez um amigo no paddock: ' + nome + '.'; }
+    }
+    UI.toast(msg);
+    Game.save(); UI.relacoes();
+  },
 
   /* Liga e desliga o modo rápido no meio da carreira. Ligado, a equipe monta
      o carro e distribui o treino; você continua escolhendo equipe, academia e
@@ -5817,6 +6298,45 @@ const Game = {
       offers.unshift({ type:'f1', cat:Engine.topCat(), team:{...S.team}, years:S.contract.years-1,
         note:'Seu contrato ainda está em vigor. A equipe conta com você.' });
     }
+    /* No modo realista cada vaga tem um preço, e o preço decide tanto quanto
+       o talento: sem dinheiro para o degrau seguinte, a rota tem que mudar. */
+    if(Engine.ehRealista()){
+      /* Se a escada atual travou — por dinheiro ou por idade — o mercado passa
+         a mostrar as categorias mais baratas. É o momento em que a carreira
+         deixa de mirar a Fórmula 1 e vira outra coisa, que é como acontece
+         com quase todo piloto rápido que não tinha patrocínio. */
+      const naBase = !S.season.isTop;
+      const semSubida = !offers.some(o => o.up);
+      if(naBase && (semSubida || S.endividado || Engine.portaFechadaPelaIdade())){
+        const bolso = S.money.saldo + Engine.patrocinioValor();
+        Engine.rotasBaratas().slice(0, 3).forEach(r => {
+          if(r.custo > bolso) return;
+          const times = Engine.teamsFor(r.cat, S.year + 1, r.sk, r.idx, r.escada.length);
+          const time = times[Math.max(0, Math.floor(times.length / 2))];
+          if(!time) return;
+          offers.push({ type:'f1', cat:r.cat, team:time, years:1, sk:r.sk,
+            escada:r.escada, catIdx:r.idx, rota:true,
+            note:'Trocar de país e de categoria. Custa uma fração do que a escada europeia pede — '
+               + 'e daqui também se constrói uma carreira.' });
+        });
+      }
+    }
+    if(Engine.ehRealista()){
+      const prev = Engine.patrocinioValor() + ((ORIGENS[S.origem]||ORIGENS.media).ate >= S.driver.age+1
+                    ? (ORIGENS[S.origem]||ORIGENS.media).apoio : 0);
+      offers.forEach(o => {
+        const sk = o.sk || S.series;
+        const esc2 = o.escada || S.ladder;
+        const idx = o.catIdx != null ? o.catIdx : esc2.indexOf(o.cat);
+        o.custo = Engine.custoTemporada(o.cat, idx < 0 ? S.catIdx : idx, esc2.length, sk);
+        o.apoio = Engine.apoioAcademia(o.custo);
+        o.paga  = o.custo === 0 ? 0 : Math.max(0, o.custo - o.apoio);
+        o.podeP = o.paga === 0 || (S.money.saldo + prev) >= o.paga;
+      });
+      const viaveis = offers.filter(o => o.podeP);
+      if(!viaveis.length){ Game.recalcularRota(offers); return; }
+      offers = viaveis;
+    }
     S.pendingOffers = offers;
 
     if(!offers.length){ Game.endCareer('semvaga'); return; }
@@ -5846,6 +6366,13 @@ const Game = {
             ${mudouCat ? `<div style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
                  color:${sr?sr.color:'var(--gold)'};margin-top:6px">${esc(o.cat)}</div>` : ''}
             <div class="od">${esc(o.note)}</div>
+            ${o.custo != null && o.custo > 0 ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;
+                 font-size:11.5px;font-weight:800">
+               <span style="color:${o.podeP===false?'var(--red2)':'var(--gold)'}">💰 ${fmtD(o.paga)} do seu bolso</span>
+               ${o.apoio ? `<span style="color:var(--dim2);font-weight:600">a academia banca ${fmtD(o.apoio)}</span>` : ''}
+               ${o.podeP===false ? `<span style="color:var(--red2);font-weight:600">— fora do orçamento</span>` : ''}
+             </div>` : (o.custo === 0 && Engine.ehRealista() ? `<div style="margin-top:7px;font-size:11.5px;
+                 font-weight:800;color:var(--green)">💰 aqui a equipe paga você</div>` : '')}
             <div class="carbar"><span class="vl">CARRO</span>
               <span class="bar"><i style="width:${o.team.str}%"></i></span>
               <span class="vl">${o.team.str}</span></div>
@@ -6105,6 +6632,177 @@ UI.firedModal = function(rv, mid, sum){
     </div>`);
 };
 
+/* ═══ FINANÇAS, RELAÇÕES E ROTA ═══ */
+UI.linhaCaixa = function(rot, v, cor){
+  return `<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13px">
+    <span style="color:var(--dim)">${esc(rot)}</span>
+    <b style="color:${cor || (v < 0 ? 'var(--red2)' : v > 0 ? 'var(--green)' : 'var(--dim)')}">${
+      (v > 0 ? '+' : '') + fmtD(v)}</b></div>`;
+};
+
+UI.financas = function(){
+  if(!Engine.ehRealista()) return UI.toast('As finanças só existem no modo realista.');
+  const m = S.money, b = Engine.balancoAno();
+  const org = ORIGENS[S.origem] || ORIGENS.media;
+  const familia = S.driver.age <= org.ate ? org.apoio : 0;
+  const ofertas = S.patroOfertas || [];
+  UI.modal(UI.head('Finanças', `${esc(org.n)} · saldo ${fmtD(m.saldo)}${m.invest ? ' · investido ' + fmtD(m.invest) : ''}`) +
+    `<div class="mbd">
+      <div class="mini">
+        <div><b style="font-size:15px">${fmtD(m.saldo)}</b><span>Em caixa</span></div>
+        <div><b style="font-size:15px">${fmtD(m.invest)}</b><span>Investido</span></div>
+        <div><b style="font-size:15px;color:${b.liquido + familia >= 0 ? 'var(--green)' : 'var(--red2)'}">${
+          fmtD(b.liquido + familia)}</b><span>Por temporada</span></div>
+      </div>
+
+      <span class="lbl" style="display:block;margin:14px 0 4px">O ano de ${S.year}</span>
+      <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 12px">
+        ${b.custo ? UI.linhaCaixa('Custo da temporada (' + esc(S.season ? S.season.cat : '') + ')', -b.custo) : ''}
+        ${b.apoio ? UI.linhaCaixa('Apoio da ' + esc(S.academy ? S.academy.n : 'academia'), b.apoio) : ''}
+        ${b.salario ? UI.linhaCaixa('Salário — ' + esc(S.team ? S.team.name : ''), b.salario) : ''}
+        ${b.patros ? UI.linhaCaixa('Patrocínios', b.patros) : ''}
+        ${familia ? UI.linhaCaixa('Apoio da família', familia) : ''}
+        <div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">
+          ${UI.linhaCaixa('Resultado do ano', b.liquido + familia)}
+        </div>
+      </div>
+
+      <span class="lbl" style="display:block;margin:16px 0 6px">Patrocinadores — ${(m.patros||[]).length} de 3</span>
+      ${(m.patros||[]).length ? (m.patros||[]).map(p=>`
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid var(--line);
+             border-radius:var(--r-sm);margin-bottom:6px">
+          <span style="flex:1;font-size:13.5px;font-weight:700">${esc(p.n)}</span>
+          <span style="font-size:11.5px;color:var(--dim2)">${p.anos} ${p.anos===1?'ano':'anos'}</span>
+          <b style="font-size:13px;color:var(--green)">${fmtD(p.valor)}</b>
+        </div>`).join('') : '<div class="empty" style="padding:10px">Nenhum patrocinador ainda. Apareça na pista.</div>'}
+      ${ofertas.length ? `<span class="lbl" style="display:block;margin:12px 0 6px">Propostas na mesa</span>` +
+        ofertas.map((o,i)=>`<button class="offer" onclick="Game.assinarPatro(${i})">
+          <div class="oh"><span class="on">${esc(o.n)}</span>
+            <span class="oc">${fmtD(o.valor)} / ano</span></div>
+          <div class="od">Contrato de ${o.anos} ${o.anos===1?'temporada':'temporadas'}.</div>
+        </button>`).join('') : ''}
+
+      <span class="lbl" style="display:block;margin:16px 0 6px">Investir</span>
+      <div class="res-nar" style="margin-top:0">
+        Dinheiro parado não rende. Investido, rende cerca de 6% ao ano — com anos ruins pelo meio.
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+        ${[100e3, 500e3, 2e6].map(v=>`<button class="yr-b" ${m.saldo<v?'disabled':''}
+            onclick="Game.investir(${v})">Aplicar ${fmtD(v)}</button>`).join('')}
+        ${m.invest ? `<button class="yr-b" onclick="Game.investir(-${Math.min(m.invest,1e6)})">
+            Resgatar ${fmtD(Math.min(m.invest,1e6))}</button>` : ''}
+      </div>
+
+      <span class="lbl" style="display:block;margin:16px 0 6px">Dia extra de testes</span>
+      <div class="res-nar" style="margin-top:0">
+        Comprar pista é o jeito mais direto de transformar dinheiro em ritmo:
+        o carro evolui mais rápido nesta temporada. Vale por um ano só.
+        ${m.teste ? `<b style="color:var(--gold)">Já contratado nesta temporada.</b>` : ''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${[300e3, 900e3, 2.5e6].map(v=>`<button class="yr-b" ${m.saldo<v?'disabled':''}
+            onclick="Game.pagarTeste(${v})">${fmtD(v)}</button>`).join('')}
+      </div>
+
+      <span class="lbl" style="display:block;margin:16px 0 6px">Luxo — o nome também se constrói fora da pista</span>
+      ${LUXOS.map((it,i)=>{
+        const tem = (m.luxo||[]).indexOf(it.n) >= 0;
+        return `<button class="offer" ${tem||m.saldo<it.v?'disabled style="opacity:.45"':''}
+            onclick="Game.comprarLuxo(${i})">
+          <div class="oh"><span class="on">${esc(it.n)}</span>
+            <span class="oc">${tem ? 'já é seu' : fmtD(it.v)}</span></div>
+          <div class="od">+${it.fama} de fama${it.moral?` · +${it.moral} de moral`:''}</div>
+        </button>`;
+      }).join('')}
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="UI.relacoes()">🤝 Relações</button>
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button>
+    </div>`, true);
+};
+
+UI.relacoes = function(){
+  if(!Engine.ehRealista()) return UI.toast('As relações só existem no modo realista.');
+  const r = S.rel, feitas = S.relFeitas || [];
+  const barra = (rot, v, ds) => `
+    <div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800">
+        <span>${esc(rot)}</span><span style="color:${v>=70?'var(--green)':v>=40?'var(--gold)':'var(--red2)'}">${v}</span>
+      </div>
+      <span class="bar" style="display:block;margin:4px 0 3px"><i style="width:${v}%"></i></span>
+      <div style="font-size:11.5px;color:var(--dim2)">${esc(ds)}</div>
+    </div>`;
+  UI.modal(UI.head('Relações', 'Quem está do seu lado importa tanto quanto o carro.') +
+    `<div class="mbd">
+      ${barra('Engenheiro-chefe', r.eng, r.eng>=70 ? 'Ele acerta o carro quase antes de você pedir.'
+        : r.eng>=40 ? 'Trabalho profissional, sem intimidade.' : 'Ele te escuta por obrigação.')}
+      ${barra('Companheiro de equipe', r.comp, r.comp>=70 ? 'Dados abertos dos dois lados da garagem.'
+        : r.comp>=40 ? 'Convivência educada e nada além.' : 'Guerra fria. A equipe escolhe um lado.')}
+      <div style="margin:6px 0 14px">
+        <span class="lbl" style="display:block;margin-bottom:5px">Amigos no paddock — ${r.amigos.length}</span>
+        <div style="font-size:12.5px;color:var(--dim)">${
+          r.amigos.length ? r.amigos.map(esc).join(' · ')
+                          : 'Ninguém ainda. Vaga aparece por indicação tanto quanto por resultado.'}</div>
+      </div>
+      <span class="lbl" style="display:block;margin-bottom:7px">O que fazer nesta temporada</span>
+      ${Object.keys(RELACOES).map(k=>{
+        const a = RELACOES[k], feito = feitas.indexOf(k) >= 0;
+        const caro = a.custo && S.money.saldo < a.custo;
+        return `<button class="offer" ${feito||caro?'disabled style="opacity:.45"':''} onclick="Game.relacionar('${k}')">
+          <div class="oh"><span class="on">${a.ic} ${esc(a.n)}</span>
+            <span class="oc">${feito ? 'feito' : a.custo ? fmtD(a.custo) : 'de graça'}</span></div>
+          <div class="od">${esc(a.ds)}</div>
+        </button>`;
+      }).join('')}
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="UI.financas()">💰 Finanças</button>
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button>
+    </div>`, true);
+};
+
+/* ═══ RECALCULAR A ROTA ═══
+   Nenhuma vaga cabe no orçamento. Em vez de encerrar a carreira, o jogo
+   mostra por onde ainda dá para correr — que é o que acontece de verdade
+   com a maioria dos pilotos rápidos e sem dinheiro. */
+UI.rotaModal = function(rotas, ofertas){
+  UI._rotas = rotas;
+  const saldo = S.money.saldo;
+  UI.modal(UI.head('A conta não fecha', `Saldo de ${fmtD(saldo)} para ${S.year+1}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        Você tem ritmo, mas não tem orçamento para seguir por essa escada.
+        É o momento em que muita carreira acaba — e em que outras encontram
+        um caminho mais barato e chegam mais longe do que se esperava.
+      </div>
+      ${ofertas && ofertas.length ? `<span class="lbl" style="display:block;margin-bottom:6px">O que estava na mesa</span>
+        <div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 12px;margin-bottom:14px">
+          ${ofertas.slice(0,3).map(o=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0">
+            <span style="color:var(--dim)">${esc(o.cat)}${o.team?' · '+esc(o.team.name):''}</span>
+            <b style="color:var(--red2)">${fmtD(o.paga)}</b></div>`).join('')}
+        </div>` : ''}
+      <span class="lbl" style="display:block;margin-bottom:7px">Onde dá para correr com o que você tem</span>
+      ${rotas.length ? rotas.map((r,i)=>`
+        <button class="offer" ${r.custo > saldo ? 'disabled style="opacity:.45"' : ''} onclick="Game.tomarRota(${i})">
+          <div class="oh">
+            <span class="stripe" style="background:${r.cor};height:20px;width:5px"></span>
+            <span class="on">${r.ic} ${esc(r.nome)}</span>
+            <span class="oc" style="color:${r.custo>saldo?'var(--red2)':'var(--green)'}">${
+              r.custo ? fmtD(r.custo) + ' / ano' : 'pagam você'}</span>
+          </div>
+          <div class="od">Entra na ${esc(r.cat)}. ${r.custo > saldo ? 'Ainda fora do seu alcance.'
+            : 'Cabe no orçamento e mantém a carreira viva.'}</div>
+        </button>`).join('')
+        : '<div class="empty">Nenhuma categoria cabe no seu orçamento.</div>'}
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="UI.close();Game.endCareer('semdinheiro')">Encerrar a carreira</button>
+      <span class="sp"></span>
+    </div>`, true);
+};
+
 /* ═══ OS MAIORES DA HISTÓRIA ═══ */
 UI.lendasLinha = function(x, tab){
   const medalha = x.pos === 1 ? 'var(--gold)' : x.pos <= 3 ? 'var(--gold)' : x.pos <= 10 ? 'var(--dim)' : 'var(--dim2)';
@@ -6170,6 +6868,7 @@ UI.lendas = function(sk, rec){
 
 UI.careerEnd = function(rec, reason){
   const why = { acidente:'Um acidente encerrou sua carreira.',
+                semdinheiro:'O dinheiro acabou antes do talento. Sem orçamento, não há vaga.',
                 semvaga:'Nenhuma equipe ofereceu um lugar no grid.',
                 escolha:'Você decidiu pendurar o capacete.' }[reason] || '';
   const verdict =

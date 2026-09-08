@@ -30,6 +30,18 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
 - **Modo rápido**, que se liga e desliga no meio da carreira: a equipe monta o
   carro e distribui o treino, e você cuida só de contrato, mercado e das
   decisões do piloto.
+- **Modo realista**, onde correr custa dinheiro. A escada europeia pede de
+  € 15 mil no kart regional a € 2,4 milhões na Fórmula 2, e quem paga é o
+  piloto: só na categoria principal a equipe passa a pagar você. Patrocínio,
+  apoio da academia e a origem da família decidem até onde a conta fecha — e
+  quando não fecha, o mercado passa a mostrar as escadas mais baratas
+  (Stock Car brasileira, NASCAR, endurance), que é como muita carreira rápida
+  e sem dinheiro realmente acontece. Inclui relações com o engenheiro-chefe e
+  o companheiro de equipe, amizades no paddock, investimentos, dias extras de
+  teste e o que se faz com o dinheiro fora da pista.
+- **Gerações que se renovam**: passado o último ano documentado, os pilotos de
+  hoje envelhecem, param e dão lugar a nomes novos — com um fenômeno aparecendo
+  de tempos em tempos para brigar com você pelo título.
 - **Ranking dos maiores da história** por categoria, com o seu piloto encaixado
   na posição real — títulos valem 100 pontos, vitórias valem 8, para todo mundo.
 - **Modo cenário**: assuma Massa em 2008, Hamilton em 2021, Senna a partir de
