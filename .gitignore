@@ -1,0 +1,15 @@
+# Vercel
+.vercel
+
+# Dependências (o jogo não usa nenhuma, mas o CLI pode criar)
+node_modules/
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+*.swp

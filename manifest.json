@@ -1,0 +1,21 @@
+{
+  "name": "Volante de Ouro — carreira no automobilismo",
+  "short_name": "Volante de Ouro",
+  "description": "Do kart à glória. Sete décadas de automobilismo, uma carreira só sua — com o retrospecto completo de cada corrida de cada temporada.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0d0f14",
+  "theme_color": "#0d0f14",
+  "lang": "pt-BR",
+  "categories": ["games", "sports"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230d0f14'/%3E%3Cg fill='%23f5c518'%3E%3Crect x='96' y='96' width='80' height='80'/%3E%3Crect x='256' y='96' width='80' height='80'/%3E%3Crect x='176' y='176' width='80' height='80'/%3E%3Crect x='336' y='176' width='80' height='80'/%3E%3Crect x='96' y='256' width='80' height='80'/%3E%3Crect x='256' y='256' width='80' height='80'/%3E%3Crect x='176' y='336' width='80' height='80'/%3E%3Crect x='336' y='336' width='80' height='80'/%3E%3C/g%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
