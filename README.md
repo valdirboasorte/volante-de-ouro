@@ -109,3 +109,17 @@ dinheiro, moral, fama, atributos e relações.
 
 Você acompanha tudo isso na tela **Gente**: engenheiro-chefe, companheiro de
 equipe, rival (com o placar de duelos), mentor e amigos do paddock.
+
+## Empresários
+
+Dezoito empresários reais da Fórmula 1, cada um só nos anos em que atuou de
+verdade: Bernie Ecclestone cuidando de um piloto só no fim dos anos 60, Willi
+Weber e Julian Jakobi nos 90, Flavio Briatore e Nicolas Todt depois, e hoje
+ex-pilotos que viraram empresários — Mark Webber — ou pilotos ainda na ativa
+que já cuidam da carreira de outros, como Fernando Alonso.
+
+Cada um tem três números: **mercado** (quem atende o telefone dele),
+**dinheiro** (quanto arranca no contrato e no patrocínio) e **portas** (quanto
+consegue onde normalmente não se entra). Em troca fica com 10% a 22% de tudo
+que você ganha. Os melhores não assinam com qualquer um: exigem fama ou nível
+para atender.

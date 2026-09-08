@@ -2866,6 +2866,116 @@ function rankingLendas(sk, rec){
   return { tab, lista, eu, pos: lista.indexOf(eu) + 1, total: lista.length };
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   EMPRESÁRIOS
+   Quem negocia por você. São os nomes reais que fizeram esse
+   trabalho na Fórmula 1, cada um só nos anos em que atuou — e
+   alguns são ex-pilotos que viraram empresários, como o Webber,
+   ou pilotos ainda na ativa que já cuidam da carreira de outros,
+   como o Alonso.
+   taxa: fatia do que você ganha    mercado: quem atende o telefone dele
+   dinheiro: quanto ele arranca     porta: quanto ele abre onde é difícil
+   ═══════════════════════════════════════════════════════════════ */
+const EMPRESARIOS = [
+{ id:'ecclestone', n:'Bernie Ecclestone', cc:'GB', de:1968, ate:1972, taxa:.18,
+  mercado:8, dinheiro:9, porta:6, exige:{ fama:15 },
+  ds:'Antes de comandar o esporte inteiro, ele cuidava da carreira de um piloto só. Negocia como quem já sabe o preço de tudo.',
+  not:'Jochen Rindt' },
+
+{ id:'neerpasch', n:'Jochen Neerpasch', cc:'DE', de:1980, ate:2004, taxa:.14,
+  mercado:6, dinheiro:5, porta:8, exige:{},
+  ds:'Chefe de competição virado formador. Não é o que consegue o maior contrato, é o que consegue o telefonema certo de uma fábrica alemã.',
+  not:'programas de formação alemães' },
+
+{ id:'jakobi', n:'Julian Jakobi', cc:'GB', de:1985, ate:2026, taxa:.16,
+  mercado:9, dinheiro:8, porta:7, exige:{ fama:25 },
+  ds:'Cuidou dos assuntos de Ayrton Senna e nunca mais saiu do primeiro escalão. Discreto, metódico e caro.',
+  not:'Senna, Prost, Häkkinen, Massa' },
+
+{ id:'zanarini', n:'Enrico Zanarini', cc:'IT', de:1989, ate:2020, taxa:.13,
+  mercado:6, dinheiro:6, porta:6, exige:{},
+  ds:'Trânsito livre no paddock italiano. Se a vaga for numa equipe de Maranello ou vizinhança, ele fica sabendo primeiro.',
+  not:'Alesi, Fisichella' },
+
+{ id:'weber', n:'Willi Weber', cc:'DE', de:1989, ate:2014, taxa:.20,
+  mercado:10, dinheiro:10, porta:7, exige:{ fama:35, ovr:74 },
+  ds:'Construiu a maior carreira da história do esporte e cobra como quem sabe disso. Não assina com qualquer um.',
+  not:'Michael Schumacher, Hülkenberg' },
+
+{ id:'kekerosberg', n:'Keke Rosberg', cc:'FI', de:1988, ate:2012, taxa:.15,
+  mercado:8, dinheiro:7, porta:7, exige:{ fama:20 },
+  ds:'Campeão do mundo que passou a cuidar de finlandeses rápidos. Fala pouco e resolve.',
+  not:'Häkkinen, Nico Rosberg' },
+
+{ id:'briatore', n:'Flavio Briatore', cc:'IT', de:1994, ate:2026, taxa:.22,
+  mercado:10, dinheiro:10, porta:9, exige:{ fama:30 },
+  ds:'Abre portas que não deviam estar abertas e leva a maior fatia do esporte. Com ele você vai longe — e paga por isso.',
+  not:'Alonso, Webber, Trulli' },
+
+{ id:'coton', n:'Didier Coton', cc:'BE', de:1995, ate:2026, taxa:.14,
+  mercado:7, dinheiro:7, porta:7, exige:{},
+  ds:'Trabalho de formiga, contrato bem lido e nenhuma manchete. Muita carreira longa começou com ele.',
+  not:'Häkkinen, Ocon' },
+
+{ id:'robertson', n:'David Robertson', cc:'GB', de:1999, ate:2014, taxa:.15,
+  mercado:8, dinheiro:8, porta:6, exige:{ ovr:72 },
+  ds:'Tirou um finlandês de um currículo curto e o colocou numa equipe grande em dois anos. Aposta em talento cru.',
+  not:'Kimi Räikkönen' },
+
+{ id:'marko', n:'Helmut Marko', cc:'AT', de:1999, ate:2026, taxa:.10,
+  mercado:9, dinheiro:5, porta:10, exige:{ ovr:70 },
+  ds:'A porta mais rápida do grid e a mais estreita. Ele te leva ao topo em dois anos — ou te descarta no primeiro ano ruim.',
+  not:'o programa da Red Bull' },
+
+{ id:'anthony', n:'Anthony Hamilton', cc:'GB', de:1998, ate:2011, taxa:.12,
+  mercado:6, dinheiro:6, porta:7, exige:{},
+  ds:'Trabalhou em três empregos para bancar o kart do filho e aprendeu o resto no caminho. Briga por quem representa.',
+  not:'Lewis Hamilton' },
+
+{ id:'todt', n:'Nicolas Todt', cc:'FR', de:2003, ate:2026, taxa:.17,
+  mercado:9, dinheiro:8, porta:9, exige:{ fama:25 },
+  ds:'Sobrenome que abre qualquer porta e um histórico de colocar jovens em equipes grandes cedo demais para o currículo.',
+  not:'Massa, Leclerc, Jules Bianchi' },
+
+{ id:'vermeulen', n:'Raymond Vermeulen', cc:'NL', de:2000, ate:2026, taxa:.13,
+  mercado:8, dinheiro:9, porta:7, exige:{ ovr:73 },
+  ds:'Acompanha um piloto só de cada vez, desde o kart. Quem entra na lista dele entra para ficar.',
+  not:'Max Verstappen' },
+
+{ id:'wolff', n:'Toto Wolff', cc:'AT', de:2009, ate:2016, taxa:.16,
+  mercado:8, dinheiro:8, porta:8, exige:{ fama:20 },
+  ds:'Investidor antes de ser chefe de equipe. Enxerga a carreira como um ativo e negocia como tal.',
+  not:'Wehrlein, Bottas' },
+
+{ id:'webber', n:'Mark Webber', cc:'AU', de:2018, ate:2026, taxa:.15,
+  mercado:9, dinheiro:8, porta:8, exige:{ ovr:74 },
+  ds:'Correu nove anos na Fórmula 1 e sabe exatamente onde as equipes apertam num contrato. Do outro lado da mesa agora.',
+  not:'Oscar Piastri' },
+
+{ id:'alonso', n:'Fernando Alonso', cc:'ES', de:2020, ate:2026, taxa:.16,
+  mercado:9, dinheiro:8, porta:9, exige:{ ovr:72 },
+  ds:'Ainda corre e já cuida da carreira dos outros. Ninguém no grid conhece melhor o preço de uma escolha errada.',
+  not:'Gabriel Bortoleto' },
+
+{ id:'emerson', n:'Emerson Fittipaldi', cc:'BR', de:1995, ate:2026, taxa:.12,
+  mercado:7, dinheiro:6, porta:8, exige:{},
+  ds:'Bicampeão do mundo que nunca deixou de olhar para os garotos do Brasil. Abre porta onde brasileiro costuma esbarrar.',
+  not:'jovens brasileiros' },
+
+{ id:'berger', n:'Gerhard Berger', cc:'AT', de:2003, ate:2026, taxa:.14,
+  mercado:7, dinheiro:7, porta:6, exige:{ fama:20 },
+  ds:'Dez vitórias como piloto, décadas de paddock como dirigente. Conhece todo mundo e não deve nada a ninguém.',
+  not:'pilotos austríacos e alemães' }
+];
+
+/* quem está trabalhando naquele ano e aceita você */
+function empresariosDe(ano, fama, ovr){
+  return EMPRESARIOS.filter(e => ano >= e.de && ano <= e.ate &&
+    (!e.exige.fama || fama >= e.exige.fama) &&
+    (!e.exige.ovr  || ovr  >= e.exige.ovr));
+}
+function empresarioPorId(id){ return EMPRESARIOS.find(e => e.id === id) || null; }
+
 /* ═══ O QUE SE FAZ COM O DINHEIRO ═══
    Luxo compra visibilidade — e visibilidade vira patrocínio. Mas cada euro
    gasto num relógio é um euro que não foi para o dia de teste que faria o
@@ -4317,6 +4427,15 @@ const Engine = {
 
   ehRealista(){ return !!(S && S.modo === 'realista'); },
 
+  /* ── o que o empresário muda ──
+     Ele não pilota por você. Faz o telefone tocar, arranca mais no contrato
+     e abre a porta de quem normalmente não atende — cobrando por isso. */
+  emp(){ return S.empresario ? empresarioPorId(S.empresario.id) : null; },
+  bonusMercado(){ const e = Engine.emp(); return e ? e.mercado * 2.2 : 0; },
+  bonusDinheiro(){ const e = Engine.emp(); return e ? 1 + e.dinheiro * .045 : 1; },
+  bonusPorta(){ const e = Engine.emp(); return e ? e.porta : 0; },
+  taxaEmpresario(){ const e = Engine.emp(); return e ? e.taxa : 0; },
+
   custoTemporada(cat, idx, len, sk){
     sk = sk || S.series;
     if(idx >= len - 1) return 0;                       /* no topo quem paga é a equipe */
@@ -4340,7 +4459,7 @@ const Engine = {
     const nome = clamp(.30 + S.driver.fame / 150 + (S.driver.ovr - 70) / 55, .12, 2.1);
     /* empresário, impostos e a equipe que anda com você levam a sua parte:
        o que entra na conta é bem menos do que o número do contrato */
-    return Math.round(base * carro * nome * .62 / 1e4) * 1e4;
+    return Math.round(base * carro * nome * .62 * Engine.bonusDinheiro() / 1e4) * 1e4;
   },
 
   /* quanto a academia banca da sua temporada nas categorias de acesso */
@@ -4416,7 +4535,7 @@ const Engine = {
     const c = S.career || {};
     const nome = 55e3 + S.driver.fame * 11e3 + Math.max(0, S.driver.ovr - 58) * 6e3
                + (c.wins || 0) * 11e3 + (c.titles || 0) * 260e3 + (c.jrTitles || 0) * 90e3;
-    return Math.round(nome * vitrine * topo / 5e3) * 5e3;
+    return Math.round(nome * vitrine * topo * Engine.bonusDinheiro() / 5e3) * 5e3;
   },
 
   /* ── o caixa do ano ── */
@@ -4493,10 +4612,13 @@ const Engine = {
      O engenheiro-chefe melhora o acerto e o desenvolvimento; o companheiro
      de equipe decide se os dados são compartilhados ou escondidos; os amigos
      do paddock abrem portas quando você precisa de uma vaga. */
-  relEng(){ return Engine.ehRealista() && S.rel ? S.rel.eng : 50; },
-  relComp(){ return Engine.ehRealista() && S.rel ? S.rel.comp : 50; },
-  bonusEngenheiro(){ return Engine.ehRealista() ? (Engine.relEng() - 50) / 100 * 1.6 : 0; },
-  bonusCompanheiro(){ return Engine.ehRealista() ? (Engine.relComp() - 50) / 100 * 1.1 : 0; },
+  /* Relação vale nos dois modos: os eventos que a mexem acontecem nos dois,
+     e um engenheiro do seu lado melhora o carro tanto no clássico quanto no
+     realista. O que é exclusivo do realista é o dinheiro. */
+  relEng(){ return (S && S.rel) ? S.rel.eng : 50; },
+  relComp(){ return (S && S.rel) ? S.rel.comp : 50; },
+  bonusEngenheiro(){ return (Engine.relEng() - 50) / 100 * 1.6; },
+  bonusCompanheiro(){ return (Engine.relComp() - 50) / 100 * 1.1; },
 
   /* ═══ O MERCADO DAS CATEGORIAS DE ACESSO ═══
      Enquanto existe registro real, o grid é o de verdade. Passado o último
@@ -5096,7 +5218,7 @@ const Engine = {
       const nextCat = S.ladder[S.catIdx+1];
       const jrRep = clamp(S.driver.fame*.7 + (S.driver.ovr-42)*1.5
                         + (sum.champion?24:0) + (10 - Math.min(sum.pos,12))*2.2
-                        + (S.academy ? 20 : 0), 0, 130);
+                        + (S.academy ? 20 : 0) + Engine.bonusMercado(), 0, 130);
 
       /* ── pular uma categoria inteira ──
          Só para quem foi campeão com sobra e já está claramente acima do nível
@@ -5398,7 +5520,12 @@ const Engine = {
   /* Quais portas estão realmente abertas na estreia na categoria principal.
      Abaixo de 88 de geral, as quatro grandes não te chamam — a não ser que
      você seja da academia de uma delas e ela queira te colocar lá. */
+  /* O empresário derruba parte da exigência de geral na estreia: é
+     literalmente o trabalho dele convencer uma equipe grande a arriscar. */
   portasDaEstreia(teams){
+    /* Um bom empresário derruba parte da exigência: convencer uma equipe
+       grande a arriscar num estreante é literalmente o trabalho dele. */
+    const folga = Engine.bonusPorta() * .55;
     const jaCorreu = S.career && S.career.gps > 0 && S.history &&
                      S.history.some(h => h.cat === Engine.topCat());
     if(jaCorreu) return teams;                       /* a regra vale só para a estreia */
@@ -5414,7 +5541,7 @@ const Engine = {
     }
 
     const top4 = Engine.grandes(teams);
-    if(S.driver.ovr >= 88) return lista;
+    if(S.driver.ovr >= 88 - folga) return lista;
 
     /* geral abaixo de 88: as grandes ficam de fora… */
     const fora = lista.filter(t => top4.indexOf(t.name) < 0);
@@ -5906,6 +6033,56 @@ const UI = {
       <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Confiabilidade</span><b>${Math.round(era.rel*100)}%</b></div>
       ${tm?`<div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Companheiro</span><b>${fg(tm.cc)}${esc(tm.name)}</b></div>`:''}
     </div>`;
+    /* ── widget de relações ──
+       Quem está com você e quem está contra, sempre à vista na tela da
+       carreira: o clima com a equipe, o duelo interno com o companheiro e o
+       placar contra o rival. É o que decide contrato, dado compartilhado e
+       moral no domingo. */
+    {
+      const r = S.rel || { eng:50, comp:50, amigos:[] };
+      const rel = clamp(Math.round(S.teamRel || 50), 0, 100);
+      const cor = v => v >= 70 ? 'var(--green)' : v >= 40 ? 'var(--gold)' : 'var(--red2)';
+      const linha = (rot, v, sub) => `
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800">
+            <span style="color:var(--dim)">${rot}</span>
+            <span style="color:${cor(v)}">${v}</span>
+          </div>
+          <span class="bar" style="display:block;height:5px;margin-top:3px"><i style="width:${v}%"></i></span>
+          ${sub ? `<div style="font-size:10.5px;color:var(--dim2);margin-top:2px">${sub}</div>` : ''}
+        </div>`;
+      const tmName = tm ? `${flag(tm.cc)} ${esc(tm.name)}` : '';
+      const riv = r.rival;
+      const emp = Engine.emp();
+      h += `<div class="pad-sm" style="border-top:1px solid var(--line)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span class="lbl">Relações</span>
+          <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:10.5px"
+                  onclick="UI.pessoas()">abrir</button>
+        </div>
+        ${linha('Equipe', rel, S.contract && S.contract.years > 1 ? 'contrato por mais ' + S.contract.years + ' anos' : 'contrato no último ano')}
+        ${linha('Companheiro', clamp(r.comp,0,100), tmName)}
+        ${linha('Engenheiro', clamp(r.eng,0,100), '')}
+        ${riv ? `<div style="display:flex;align-items:center;gap:7px;padding:7px 9px;margin-top:2px;
+             border-radius:var(--r-sm);background:var(--panel2);border-left:3px solid var(--red2)">
+             <span class="flag" style="font-size:14px">${flag(riv.cc)}</span>
+             <div style="flex:1;min-width:0">
+               <div style="font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;
+                    text-overflow:ellipsis">🥊 ${esc(riv.n)}</div>
+               <div style="font-size:10.5px;color:var(--dim2)">duelos ${riv.v||0} a ${riv.p||0}</div>
+             </div>
+             <span class="posbox ${(riv.v||0) >= (riv.p||0) ? 'p2' : 'dnf'}" style="min-width:24px">${
+               (riv.v||0) >= (riv.p||0) ? '▲' : '▼'}</span>
+           </div>` : ''}
+        ${emp ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;font-size:11px;color:var(--dim)">
+             <span class="flag" style="font-size:13px">${flag(emp.cc)}</span>
+             <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+               💼 ${esc(emp.n)}</span>
+             <span style="color:var(--dim2)">${Math.round(emp.taxa*100)}%</span>
+           </div>` : `<button class="btn btn-sm btn-ghost" style="width:100%;margin-top:7px;font-size:11px"
+             onclick="UI.empresarios()">💼 Contratar um empresário</button>`}
+      </div>`;
+    }
     el('sideBox').innerHTML = h;
   },
 
@@ -6029,7 +6206,8 @@ const UI = {
     }
     if(nx && !S.opts.fast && Engine.prepGastos() < Engine.prepTotal())
       h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">🎯 Pré-temporada · ${Engine.prepTotal()-Engine.prepGastos()}</button>`;
-    h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>`;
+    h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>
+      <button class="btn btn-ghost btn-sm" onclick="UI.empresarios()">💼 ${Engine.emp() ? esc(Engine.emp().n.split(' ').pop()) : 'Empresário'}</button>`;
     if(Engine.ehRealista())
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.financas()">💰 ${fmtD(S.money.saldo)}</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()"
@@ -6596,7 +6774,10 @@ const Game = {
     const org = ORIGENS[S.origem] || ORIGENS.media;
     const familia = S.driver.age <= org.ate ? org.apoio : 0;
     const rend = Engine.renderInvestimento();
-    m.saldo = Math.round(m.saldo + b.salario + b.patros + b.apoio + familia + rend - b.custo);
+    /* a fatia do empresário sai do que ele ajudou a trazer */
+    const taxa = Math.round((b.salario + b.patros) * Engine.taxaEmpresario());
+    m.saldo = Math.round(m.saldo + b.salario + b.patros + b.apoio + familia + rend - b.custo - taxa);
+    m.taxaEmp = taxa;
     /* contratos de patrocínio correm um ano */
     m.patros = (m.patros || []).map(p => ({ n:p.n, valor:p.valor, anos:p.anos - 1 }))
                                .filter(p => p.anos > 0);
@@ -6850,6 +7031,24 @@ const Game = {
     S._acadList = null;
     UI.close();
     Game.afterSeason(S.lastSum);
+  },
+
+  contratarEmpresario(id){
+    const e = empresarioPorId(id);
+    if(!e) return;
+    if(S.year < e.de || S.year > e.ate) return UI.toast('Ele não está trabalhando nesta época.');
+    if((e.exige.fama && S.driver.fame < e.exige.fama) || (e.exige.ovr && S.driver.ovr < e.exige.ovr))
+      return UI.toast('Ele não assina com você ainda.');
+    S.empresario = { id, desde: S.year };
+    UI.close(); UI.render(); Game.save();
+    UI.toast(e.n + ' passa a representar você. Ele fica com ' + Math.round(e.taxa*100) + '% do que entrar.');
+  },
+  demitirEmpresario(){
+    if(!S.empresario) return;
+    const e = Engine.emp();
+    S.empresario = null;
+    UI.close(); UI.render(); Game.save();
+    UI.toast('Você dispensou ' + (e ? e.n : 'seu empresário') + '. Agora negocia sozinho.');
   },
 
   /* ── eventos de carreira ──
@@ -7529,6 +7728,62 @@ UI.rotaModal = function(rotas, ofertas){
       <button class="btn btn-ghost" onclick="UI.close();Game.endCareer('semdinheiro')">Encerrar a carreira</button>
       <span class="sp"></span>
     </div>`, true);
+};
+
+/* ═══ MERCADO DE EMPRESÁRIOS ═══ */
+UI.empresarios = function(){
+  const meu = Engine.emp();
+  const lista = empresariosDe(S.year, S.driver.fame, S.driver.ovr);
+  const fora = EMPRESARIOS.filter(e => S.year >= e.de && S.year <= e.ate && lista.indexOf(e) < 0);
+  const barrinha = (rot, v) => `
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+      <span style="color:var(--dim2);min-width:56px">${rot}</span>
+      <span class="bar" style="flex:1;height:5px"><i style="width:${v*10}%"></i></span>
+      <b style="min-width:14px;text-align:right">${v}</b></div>`;
+  const cartao = (e, podeContratar) => `
+    <div class="offer" style="cursor:${podeContratar?'pointer':'default'};${podeContratar?'':'opacity:.5'}"
+         ${podeContratar ? `onclick="Game.contratarEmpresario('${e.id}')"` : ''}>
+      <div class="oh">
+        <span class="flag" style="font-size:17px">${flag(e.cc)}</span>
+        <span class="on">${esc(e.n)}</span>
+        <span class="oc">${Math.round(e.taxa*100)}% do que você ganha</span>
+      </div>
+      <div class="od">${esc(e.ds)}</div>
+      <div style="font-size:11px;color:var(--dim2);margin:5px 0 6px">Já cuidou de: ${esc(e.not)}</div>
+      <div style="display:grid;gap:3px">
+        ${barrinha('Mercado', e.mercado)}${barrinha('Dinheiro', e.dinheiro)}${barrinha('Portas', e.porta)}
+      </div>
+      ${!podeContratar && (e.exige.fama || e.exige.ovr) ? `<div style="font-size:11px;color:var(--red2);
+         font-weight:800;margin-top:6px">Só assina com ${e.exige.fama?'fama '+e.exige.fama:''}${
+         e.exige.fama&&e.exige.ovr?' e ':''}${e.exige.ovr?'geral '+e.exige.ovr:''}</div>` : ''}
+    </div>`;
+  UI.modal(UI.head('Empresários', meu ? `Você é representado por ${esc(meu.n)}` : `Mercado de ${S.year}`) +
+    `<div class="mbd">
+      ${meu ? `<div style="padding:12px 14px;border-radius:var(--r-sm);background:var(--panel2);
+           border:1px solid var(--line);border-left:3px solid var(--gold);margin-bottom:14px">
+           <div style="display:flex;align-items:center;gap:9px">
+             <span class="flag" style="font-size:20px">${flag(meu.cc)}</span>
+             <div style="flex:1">
+               <div style="font-size:15px;font-weight:900">${esc(meu.n)}</div>
+               <div style="font-size:11.5px;color:var(--dim)">com você desde ${S.empresario.desde} · fica com ${Math.round(meu.taxa*100)}%</div>
+             </div>
+             <button class="btn btn-sm btn-ghost" onclick="Game.demitirEmpresario()">Dispensar</button>
+           </div>
+         </div>` : `<div class="res-nar" style="margin-top:0">
+           Empresário é quem atende o telefone quando uma equipe liga, quem sabe
+           quanto pedir e quem consegue a reunião que você não conseguiria.
+           Cobra uma fatia de tudo que você ganha — e costuma valer.
+         </div>`}
+      ${lista.length ? `<span class="lbl" style="display:block;margin-bottom:7px">Aceitam representar você</span>` +
+        lista.filter(e => !meu || e.id !== meu.id).map(e => cartao(e, true)).join('')
+        : `<div class="empty">${S.year < 1968
+            ? 'Nesta época o piloto negocia sozinho: empresário de piloto ainda não é uma profissão.'
+            : 'Ninguém deste calibre atende você por enquanto. Resultado abre porta.'}</div>`}
+      ${fora.length ? `<span class="lbl" style="display:block;margin:16px 0 7px">Fora do seu alcance hoje</span>` +
+        fora.map(e => cartao(e, false)).join('') : ''}
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`, true);
 };
 
 /* ═══ EVENTOS DE CARREIRA ═══ */
