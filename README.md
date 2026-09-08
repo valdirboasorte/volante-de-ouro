@@ -123,3 +123,16 @@ Cada um tem três números: **mercado** (quem atende o telefone dele),
 consegue onde normalmente não se entra). Em troca fica com 10% a 22% de tudo
 que você ganha. Os melhores não assinam com qualquer um: exigem fama ou nível
 para atender.
+
+## As categorias nacionais são nacionais
+
+A Fórmula 4 brasileira corre no Brasil, com grid 90% brasileiro. A italiana
+corre na Itália e é a mais internacional das F4 — 55% de italianos, o resto
+vindo de fora, como na vida real. Alemã, britânica, espanhola, francesa e
+japonesa seguem a mesma regra: calendário só no próprio país, com autódromo
+em atividade, e a maioria do grid local, com nomes que combinam com a
+bandeira. Os campeonatos com poucos autódromos repetem circuito em fim de
+semana duplo, que é o que acontece de verdade.
+
+Fórmula Regional continua europeia e Fórmula 3 e Fórmula 2 continuam rodando
+o mundo nos fins de semana da Fórmula 1, porque é isso que elas são.

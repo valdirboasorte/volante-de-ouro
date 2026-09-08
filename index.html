@@ -3786,6 +3786,203 @@ const KART_BR_IDS  = ['kb_int','kb_gra','kb_ald','kb_bir','kb_lon','kb_cas','kb_
 const KART_IDS     = ['kt_int','kt_lon','kt_gen','kt_ker','kt_lem','kt_pfi','kt_zue','kt_sar','kt_wac','kt_sal','kt_alg','kt_bir'];
 const KART_IDS_US  = ['kt_new','kt_oca','kt_int','kt_pfi','kt_lem','kt_ker','kt_wac','kt_sal','kt_gen','kt_lon'];
 const KART_IDS_BR  = ['kt_int','kt_gra','kt_ald','kt_bir','kt_lon','kt_alg','kt_sar','kt_zue','kt_lem','kt_gen'];
+/* Autódromos e kartódromos que só as categorias de acesso usam: sem eles,
+   um campeonato nacional acabava correndo em circuitos históricos que já
+   não existem, ou fora do próprio país. */
+[
+/* Itália */
+['it_val','Vallelunga','Vallelunga','IT','tech',20],   ['it_cre','Cremona','Cremona','IT','fast',25],
+['it_fra','Franciacorta','Franciacorta','IT','tech',25],['it_mis','Misano','Misano','IT','tech',22],
+['it_mon','Monza','Monza','IT','fast',15],
+/* Alemanha */
+['de_osc','Oschersleben','Oschersleben','DE','tech',35],['de_sac','Sachsenring','Sachsenring','DE','tech',35],
+['de_lau','Lausitzring','Lausitzring','DE','mixed',30],
+/* Grã-Bretanha */
+['gb_oul','Oulton Park','Oulton Park','GB','tech',45],  ['gb_cro','Croft','Croft','GB','mixed',45],
+['gb_thr','Thruxton','Thruxton','GB','fast',40],        ['gb_kno','Knockhill','Knockhill','GB','tech',50],
+['gb_sil','Silverstone','Silverstone','GB','fast',30],
+/* Espanha */
+['es_ara','Motorland Aragón','Alcañiz','ES','mixed',15],['es_nav','Navarra','Los Arcos','ES','tech',18],
+['es_por','Portimão','Portimão','PT','mixed',15],
+/* França */
+['fr_nog','Nogaro','Nogaro','FR','tech',20],            ['fr_led','Lédenon','Lédenon','FR','tech',22],
+['fr_cro','Croix-en-Ternois','Croix','FR','tech',35],
+/* Japão */
+['jp_oka','Okayama','Okayama','JP','tech',30],          ['jp_fuj','Fuji','Fuji','JP','fast',35],
+/* Brasil */
+['br_vel2','Velo Città','Mogi Guaçu','BR','tech',25],   ['br_int2','Interlagos','Interlagos','BR','tech',35],
+/* kartódromos nacionais */
+['kt_adr','Adria','Adria Karting','IT','tech',20],      ['kt_fra','Franciacorta','Franciacorta Kart','IT','tech',25],
+['kt_cas2','Castelletto','Castelletto','IT','tech',25], ['kt_sie','Siena','Siena Kart','IT','tech',20],
+['kt_amp','Ampfing','Ampfing','DE','tech',35],          ['kt_osc2','Oschersleben','Kart Oschersleben','DE','tech',35],
+['kt_hah','Hahn','Hahn','DE','tech',35],
+['kt_ang','Angerville','Angerville','FR','tech',30],    ['kt_ost','Ostricourt','Ostricourt','FR','tech',35],
+['kt_var','Varennes','Varennes','FR','tech',30],
+['kt_she','Shenington','Shenington','GB','tech',45],    ['kt_row','Rowrah','Rowrah','GB','tech',50],
+['kt_whi','Whilton Mill','Whilton Mill','GB','tech',45],['kt_kim','Kimbolton','Kimbolton','GB','tech',45],
+['kt_cam','Campillos','Campillos','ES','tech',15],      ['kt_rec','Recas','Recas','ES','tech',15],
+['kt_chi2','Chiva','Chiva','ES','tech',18],
+['kt_pit','Pittsburgh','Pittsburgh Kart','US','tech',30],['kt_nor','Norway','Norway','US','tech',30],
+['kt_dou','Dousman','Dousman','US','tech',30]
+].forEach(t=>TRACKS[t[0]]={id:t[0], gp:t[1], circ:t[2], cc:t[3], type:t[4], rainP:t[5]/100});
+
+/* Os calendários que as categorias nacionais realmente usam hoje: circuito
+   em atividade, no país da categoria. Sem isso a Fórmula 4 italiana ia
+   correr em Pescara e no circuito do EUR, que fecharam há décadas. */
+const F4_PISTAS = {
+  BR: ['br_int','br_goi','br_vel','br_cas','br_cur','br_scs','br_tar'],
+  IT: ['it_mis','it_imo2','it_mug','it_mon','it_val','it_fra','it_cre'],
+  DE: ['de_osc','de_nur','de_hoc','de_lau','de_sac'],
+  GB: ['gb_bra','gb_don','gb_sil','gb_oul','gb_cro','gb_sne','gb_thr','gb_kno'],
+  ES: ['es_cat','es_ara','es_jer','es_val','es_nav','es_mad'],
+  FR: ['fr_mag','fr_ric','fr_nog','fr_led','fr_pau','fr_cro'],
+  JP: ['jp_fuj','jp_suz','jp_mot','jp_sug','jp_aut','jp_oka'],
+  US: ['us_cot','us_road','us_mid','us_seb','us_bar','us_vir'],
+  AU: ['au_mel','au_sur','au_san','au_ade'],
+  NL: ['nl','be_zol','de_osc'],
+  MX: ['mx','us_cot'],
+  AR: ['ar','ar_tdh','br_int']
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   AS CATEGORIAS NACIONAIS SÃO NACIONAIS
+   Uma Fórmula 4 brasileira corre no Brasil, com pilotos brasileiros.
+   A italiana corre na Itália e é a mais internacional das F4 — mas a
+   maioria do grid continua sendo italiana. Antes disso as divisões de
+   acesso herdavam o calendário da Fórmula 1, e a F4 Brasil ia parar
+   no Bahrein.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* circuitos de cada país, montados a partir do próprio mapa de pistas */
+const PISTAS_PAIS = {}, KART_PAIS = {};
+for(const _id in TRACKS){
+  const _t = TRACKS[_id];
+  if(/^(kt_|kb_|kr_)/.test(_id)) (KART_PAIS[_t.cc] = KART_PAIS[_t.cc] || []).push(_id);
+  else (PISTAS_PAIS[_t.cc] = PISTAS_PAIS[_t.cc] || []).push(_id);
+}
+
+/* a Fórmula Regional é europeia: roda pelo continente, não pelo mundo */
+const EUROPA_IDS = ['it_mug','it_imo2','it_mis','es_cat','es_val','fr_ric','fr_mag','be_zol',
+                    'nl','at_ost','hu','de_hoc','de_nur','pt_alg','es_jer','it_mon']
+                   .filter(id => TRACKS[id]);
+
+/* de que país é uma categoria nacional — null se for internacional */
+function paisDaCategoria(cat){
+  if(!cat) return null;
+  for(const cc in NAT){
+    const n = NAT[cc];
+    if(cat === 'Fórmula 4 ' + n.adj || cat === n.kart || cat === n.ff || cat === n.f3) return cc;
+  }
+  return null;
+}
+
+/* quanto do grid é do país da categoria.
+   A F4 brasileira é quase toda brasileira; a italiana é a porta de entrada
+   da Europa e recebe o mundo inteiro — mas o maior bloco segue sendo local. */
+function mixNacional(cat){
+  const cc = paisDaCategoria(cat);
+  if(cc){
+    if(/Kart/.test(cat))      return { cc, share: .94 };
+    if(/Fórmula 4/.test(cat)) return { cc, share: cc === 'IT' ? .55 : cc === 'ES' ? .60 : .88 };
+    return { cc, share: .78 };
+  }
+  return null;
+}
+
+/* nacionalidade de um piloto inventado, conforme a categoria */
+const VIZINHOS = {
+  IT:['IT','FR','ES','CH','AT','DE','GB','BR','NL','BE','DK','SE','FI','PL','US','JP','AU','MX','AR'],
+  ES:['ES','IT','FR','PT','NL','GB','DE','BR','BE','MX','AR'],
+  DE:['DE','AT','CH','NL','IT','FR','GB','DK','PL','CZ','BE'],
+  GB:['GB','IE','NL','DE','FR','IT','AU','NZ','ZA','BE'],
+  FR:['FR','BE','CH','IT','ES','GB','NL','MC','DE'],
+  BR:['BR','AR','UY','PT','MX','CO','CL'],
+  US:['US','CA','MX','BR','GB','AU','CO'],
+  JP:['JP','TH','MY','CN','AU','NZ','US'],
+  AU:['AU','NZ','GB','TH','JP','US'],
+  NL:['NL','BE','DE','GB','FR','DK'],
+  AR:['AR','BR','UY','CL','ES','IT'],
+  MX:['MX','US','BR','CO','AR','ES']
+};
+function ccJunior(cat){
+  const m = mixNacional(cat);
+  if(m && R.chance(m.share)) return m.cc;
+  if(m){
+    const viz = VIZINHOS[m.cc];
+    if(viz && R.chance(.6)) return R.pick(viz.slice(1));
+  }
+  if(/Fórmula Regional|Renault 2\.0/.test(cat) && R.chance(.72))
+    return R.pick(['IT','FR','ES','GB','DE','NL','BE','CH','AT','DK','SE','BR']);
+  return R.pick(JR_CC);
+}
+
+/* Sobrenomes por país, para que o grid de uma categoria nacional soe como
+   aquele país. Sem isso o campeão da Fórmula 4 italiana podia se chamar
+   Dantas com bandeira da Itália. */
+const NOMES_PAIS = {
+  IT:['Bertolini','Ferrante','Marchetti','Rossi','Zanetti','Ricci','Lombardi','Grimaldi','Franchi',
+      'Colombo','Fabbri','Gatti','Milani','Sarti','Pagani','Bellini','Conti','Rizzo','Moretti','Villa'],
+  DE:['Lehmann','Wagner','Weber','Meyer','Engel','Schuster','Brandt','Keller','Hofmann','Baumann',
+      'Krüger','Vogel','Neumann','Sommer','Reinhardt','Kaufmann','Böhm','Winkler'],
+  GB:['Whitaker','Marlowe','Beckett','Hollis','Ashcroft','Hodges','Colvin','Prescott','Radcliffe',
+      'Hargreaves','Ellery','Wexford','Padgett','Thornley','Rutherford','Vance','Alderton'],
+  ES:['Cabrera','Delgado','Escobar','Gallardo','Iglesias','Ortiz','Vasquez','Bermúdez','Nogales',
+      'Ferrer','Solano','Arriaga','Castaño','Herrero','Miralles','Quintana'],
+  FR:['Moreau','Dubois','Lefèvre','Gauthier','Renard','Marchand','Perrin','Faure','Barbier',
+      'Chevalier','Rousseau','Bertrand','Delacroix','Vasseur','Aubert','Leclère'],
+  JP:['Nakamura','Yamada','Tanaka','Okada','Fujimoto','Kaneda','Morita','Hoshino','Ishikawa',
+      'Sakamoto','Ueda','Kurosawa','Nishida','Ogawa','Takeda'],
+  NL:['Janssen','de Vos','Bakker','Visser','Hoekstra','van Dijk','Smit','Mulder','Kuiper','Dekker'],
+  AR:['Cabrera','Vasquez','Bermúdez','Quintana','Sosa','Peralta','Bustos','Ferreyra','Godoy','Ibáñez'],
+  MX:['Escobar','Gallardo','Ortiz','Delgado','Quintana','Robledo','Aguirre','Salgado','Zúñiga'],
+  AU:['Whitaker','Beckett','Hodges','Prescott','Radcliffe','Kirwan','Draper','Sutcliffe','Marchant'],
+  PT:['Tavares','Oliveira','Valente','Queiroz','Faria','Salgueiro','Feitosa','Lacerda','Quaresma'],
+  PL:['Kaminski','Novak','Jelinek','Kovac','Wisniewski','Zielinski','Adamek','Sobczak'],
+  CH:['Franchi','Keller','Baumann','Moreau','Bertolini','Vogel','Cachin','Perret'],
+  BE:['Janssen','Dubois','Bakker','Marchand','Vandeputte','Claessens','Willems','Devos'],
+  SE:['Sandberg','Ekström','Larsen','Iversen','Halvorsen','Lindqvist','Bergman','Åkerlund'],
+  DK:['Larsen','Iversen','Halvorsen','Sandberg','Kirkegaard','Nyborg','Bruun','Thomsen'],
+  FI:['Halvorsen','Iversen','Larsen','Nieminen','Rantanen','Koskinen','Salminen','Virtanen']
+};
+
+/* sobrenome que combine com a nacionalidade */
+function nomeJunior(cc, usados){
+  const pool = NOMES_PAIS[cc] || (cc === 'BR' ? FILLER_BR : cc === 'US' ? FILLER_US : JR_NAMES);
+  let nm, g = 0;
+  do { nm = R.pick(pool); } while(usados.has(nm) && g++ < 60);
+  if(usados.has(nm)){ g = 0; do { nm = R.pick(JR_NAMES); } while(usados.has(nm) && g++ < 60); }
+  return nm;
+}
+
+/* o calendário de uma categoria de acesso */
+function pistasDaCategoria(cat, sk, year){
+  if(/Kart Regional/.test(cat)) return KART_REG_IDS;
+  if(/Mundial de Kart/.test(cat)) return KART_IDS;
+  const paisK = /de Kart|Kart Nacional/.test(cat) ? paisDaCategoria(cat) : null;
+  if(paisK){
+    const p = KART_PAIS[paisK];
+    if(p && p.length >= 2) return p;
+    return paisK === 'BR' ? KART_BR_IDS : paisK === 'US' ? KART_IDS_US : KART_IDS;
+  }
+  if(/^Kart/.test(cat)) return sk === 'indy' ? KART_IDS_US : sk === 'stock' ? KART_IDS_BR : KART_IDS;
+  if(/Regionais|Nacionais|Turismo|Bairro|de Terra/.test(cat)) return REGIONAL_IDS;
+  if(/Midgets|Sprint Cars/.test(cat)) return DIRT_IDS;
+  /* Fórmula 4, Fórmula Ford e Fórmula 3 nacionais correm no próprio país */
+  const pais = paisDaCategoria(cat);
+  if(pais){
+    /* a F4 tem calendário próprio, só com autódromo em atividade */
+    if(/Fórmula 4/.test(cat)){
+      const f4 = (F4_PISTAS[pais] || []).filter(id => TRACKS[id]);
+      if(f4.length >= 3) return f4;
+    }
+    const p = (PISTAS_PAIS[pais] || []).filter(id => TRACKS[id]);
+    if(p.length >= 3) return p;
+  }
+  if(/Fórmula Regional|Renault 2\.0|Fórmula Ford$|Fórmula Renault$/.test(cat)) return EUROPA_IDS;
+  /* Fórmula 3 e Fórmula 2 da FIA correm nos fins de semana da principal */
+  return calendarFor(year, sk);
+}
+
 const REGIONAL_IDS = ['it_sir','it_bar','pt_por','fr_alb','it_mod','gb_goo','it_nap','fr_pau','gb_sne','fr_cae','be_chi','it_pes'];
 const DIRT_IDS     = ['us_spr','us_duq','us_syr','us_sac','us_irp','us_lan','us_ppk','us_mil','us_tre','us_phx'];
 
@@ -3860,19 +4057,18 @@ function calendarFor(year, sk){
 }
 /* onde as categorias de acesso correm */
 function juniorCalendar(cat, year, sk, n){
-  let pool;
-  if(/Kart Regional/.test(cat))               pool = KART_REG_IDS;
-  else if(/Mundial de Kart/.test(cat))        pool = KART_IDS;
-  else if(/de Kart|Kart Nacional/.test(cat))  pool = /Brasileiro/.test(cat) ? KART_BR_IDS
-                                                   : sk==='indy' || /Americano/.test(cat) ? KART_IDS_US
-                                                   : sk==='stock' ? KART_IDS_BR : KART_IDS;
-  else if(/^Kart/.test(cat))                  pool = sk==='indy' ? KART_IDS_US : sk==='stock' ? KART_IDS_BR : KART_IDS;
-  else if(/Regionais|Nacionais|Turismo|Bairro|de Terra/.test(cat)) pool = REGIONAL_IDS;
-  else if(/Midgets|Sprint Cars/.test(cat))    pool = DIRT_IDS;
-  else pool = calendarFor(year, sk);          /* as divisões de acesso correm nos palcos da principal */
+  const pool = pistasDaCategoria(cat, sk, year);
+  if(!pool || !pool.length) return calendarFor(year, sk).slice(0, n);
   const shuffled = seededShuffle(pool, seedOf(sk+cat+year));
-  const keep = new Set(shuffled.slice(0, Math.min(n, pool.length)));
-  return pool.filter(id => keep.has(id));
+  if(pool.length >= n){
+    const keep = new Set(shuffled.slice(0, n));
+    return pool.filter(id => keep.has(id));
+  }
+  /* Campeonato nacional com poucos autódromos repete circuito, com duas
+     provas no mesmo fim de semana — é exatamente o que acontece de verdade. */
+  const out = [];
+  for(let i = 0; i < n; i++) out.push(shuffled[i % shuffled.length]);
+  return out;
 }
 
 /* ─────────────── ESTILOS DE PILOTAGEM ─────────────── */
@@ -4301,7 +4497,7 @@ const Engine = {
           const r = reais[ri++];
           if(!used.has(r.name)){ nm = r.name; cc = r.cc; equipeDe[r.name] = r.eq || equipeReal(cat, S.year, r.name); }
         }
-        if(!nm){ do{ nm = R.pick(JR_NAMES); }while(used.has(nm)); cc = R.pick(JR_CC); }
+        if(!nm){ cc = ccJunior(cat); nm = nomeJunior(cc, used); }
         used.add(nm);
         const tier = i/n;
         /* Com nomes reais a ordem é a do campeonato daquele ano, então o
