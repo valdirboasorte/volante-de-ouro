@@ -570,7 +570,7 @@ img.pav{image-rendering:auto}
       </label>
       <label class="switch" style="margin-top:10px">
         <input type="checkbox" id="chkFast">
-        <span class="tx"><b>Carreira rápida</b><span>Menos corridas por temporada nas categorias de base. Chega à Fórmula 1 mais cedo.</span></span>
+        <span class="tx"><b>Modo rápido</b><span>Você cuida só de contrato, mercado e das decisões do piloto: a equipe monta o carro e define o treino de pré-temporada, e as categorias de base têm menos corridas. Dá para ligar e desligar no meio da carreira.</span></span>
       </label>
     </div>
 
@@ -2374,134 +2374,318 @@ const REDES = [
   bom:['{eu} em {gp} e a timeline não aguenta. CENTRAL EM FESTA 🔴⚫',
        'MEU DEUS DO CÉU O {eu} FEZ DE NOVO EM {gp}',
        'gente eu não tô legal, {eu} {pos} em {gp}, alguém me busca',
-       'PODE PARAR TUDO. {eu}. {gp}. {pos}. É isso.'],
+       'PODE PARAR TUDO. {eu}. {gp}. {pos}. É isso.',
+       'a central abre exceção e reconhece: {eu} em {gp} foi coisa de outro nível',
+       'saiu de {grid}º e chegou em {pos}. a central não vai dormir hoje',
+       'o {eu} tá fazendo a gente acreditar de novo e isso é perigosíssimo',
+       'ATENÇÃO ATENÇÃO {eu} {pos} EM {gp} REPITO {pos} EM {gp}',
+       'a {equipe} tem um piloto e a central tem um ídolo. mesmo cara',
+       'eu não devia me apegar mas o {eu} em {gp} não deixou opção',
+       'toma. {pos} em {gp}. pra quem duvidava do {eu} lá em {ano}',
+       'quem acompanha a central sabe: a gente falou do {eu} antes de todo mundo'],
   ruim:['{eu} fora em {gp}. a central declara luto de 3 dias',
         'era tão bonito e acabou em {gp}. seguimos',
         'não vou nem comentar o que aconteceu com o {eu} em {gp}. (vou sim, mas amanhã)',
-        'a central do braga lamenta profundamente o domingo do {eu}'],
+        'a central do braga lamenta profundamente o domingo do {eu}',
+        'a central entrou em modo silêncio depois de {gp}',
+        '{eu} largou de {grid}º e não chegou. o coração da central não merecia',
+        'domingo de {gp} vai ser apagado dos arquivos da central',
+        'a gente cria expectativa e {gp} vem e faz isso com a gente',
+        'ninguém fala nada até segunda-feira. combinado?',
+        'a central pede desculpas aos assinantes pelo GP de {gp}'],
   neutro:['{eu} na {equipe} em {ano}. anota aí que a central avisou primeiro',
           'confirmadíssimo: {eu} correndo na {cat}. bora acompanhar',
-          'informação da central: {eu} fechou com a {equipe}. fonte? confia.'],
+          'informação da central: {eu} fechou com a {equipe}. fonte? confia.',
+          'exclusivo da central (todo mundo já sabia): {eu} e {equipe}',
+          'a central acompanha {eu} desde antes de ser moda. contexto importa',
+          '{eu} na {cat} agora. cobertura completa por aqui',
+          'apuração da central: {eu} assinou. detalhes a gente inventa depois'],
   titulo:['CAMPEÃOOOOO. {eu} CAMPEÃO DE {ano}. A CENTRAL NÃO EXISTE MAIS, VIROU PÓ 🏆',
-          'acabei de chorar. {eu} campeão. era só o que eu queria dessa vida'] },
+          'acabei de chorar. {eu} campeão. era só o que eu queria dessa vida',
+          'a central fecha as portas hoje. {eu} é campeão de {ano} e nada mais importa',
+          'ACABOU. É NOSSO. {eu} CAMPEÃO 🏆🔴⚫',
+          'daqui a 20 anos a central ainda vai falar desse título do {eu}'] },
 
 { n:'G L O C K Ã O', h:'@glockao', foto:AVATARES['glockao'], ini:'G', cor:'#111111',
   bom:['{eu} passou geral em {gp} igual quem sabe onde tá o freio. respeito',
        '{pos} em {gp}. o cara é bom e pronto',
        'saiu de {grid}º e terminou em {pos} em {gp}. dá pra fazer isso? aparentemente dá',
-       'mano o {eu} tá jogando outro esporte em {gp}'],
+       'mano o {eu} tá jogando outro esporte em {gp}',
+       'o {eu} freando onde os outros já tinham desistido. {gp} foi dele',
+       'sem drama nenhum: {eu} foi o melhor em {gp} e acabou',
+       'tem gente rápida e tem gente que entende corrida. o {eu} é o segundo',
+       'na chuva, no seco, tanto faz. {eu} em {gp} foi {pos}',
+       'ninguém segurou o {eu} em {gp}. e olha que tentaram',
+       'o cara largou atrás e resolveu na pista. gosto disso',
+       'a {equipe} devia agradecer todo dia por ter o {eu}',
+       '{pos} lugar e nem parecia difícil. é isso'],
   ruim:['{eu} rodou sozinho em {gp}? amigo, o muro tava parado',
         'domingo do {eu} em {gp} foi tipo aquele meu 2008, mas pior',
         'ó o {eu} de novo dando problema. clássico',
-        'de {grid}º pra fora da prova em {gp}. impressionante mesmo (no mau sentido)'],
+        'de {grid}º pra fora da prova em {gp}. impressionante mesmo (no mau sentido)',
+        'errar acontece. errar assim em {gp} é escolha',
+        'o {eu} tinha corrida em {gp} e resolveu não ter',
+        'segura o carro, campeão. {gp} não pedia isso',
+        'perdi a conta de quantas o {eu} jogou fora. {gp} entra na lista',
+        'não foi azar não, gente. em {gp} foi mão pesada mesmo',
+        'a {equipe} montou o carro e o {eu} devolveu em pedaços'],
   neutro:['{eu} na {equipe}. vai dar ruim ou vai dar muito certo, não tem meio termo',
           'agora é oficial, {eu} correndo na {cat}. que venha o caos',
-          'assinou. {eu} e {equipe}. combinação perigosa'],
+          'assinou. {eu} e {equipe}. combinação perigosa',
+          '{eu} na {equipe} em {ano}. vou ficar de olho nisso de perto',
+          'esse acerto do {eu} com a {equipe} me cheira a história pra contar',
+          'promoveram o {eu} pra {cat}. agora aguenta',
+          'contrato assinado. {eu} tem carro. o resto é com ele'],
   titulo:['{eu} CAMPEÃO. eu que sei o que é perder título na última volta, então: mereceu demais 🏆',
-          'campeão! e ninguém tirou dele na última curva dessa vez'] },
+          'campeão! e ninguém tirou dele na última curva dessa vez',
+          'title do {eu} em {ano} tá guardado. ninguém rouba mais',
+          'o cara ganhou na pista, do jeito que tem que ser. campeão',
+          '{eu} campeão de {ano} e eu aqui aplaudindo de pé, sinceramente'] },
 
 { n:'KevinNicolasPF1', h:'@kevinnicolaspf1', foto:AVATARES['kevinnicolaspf1'], ini:'K', cor:'#8a5a2b',
   bom:['{eu} {pos} em {gp} e eu aqui rindo sozinho no quarto',
        'não é possível que o {eu} fez isso em {gp} kkkkkkkk que absurdo',
        'o {eu} em {gp}: 🗿 os outros: 😭',
-       'gente o {eu} tá muito bom, isso já é bullying em {gp}'],
+       'gente o {eu} tá muito bom, isso já é bullying em {gp}',
+       'largou {grid}º, chegou {pos}. o {eu} tá zoando com a cara de todo mundo',
+       'eu dormi 4 horas pra ver o {eu} fazer isso em {gp}. valeu cada minuto',
+       'o {eu} é meio injusto com o resto do grid e eu apoio',
+       'kkkkk gente para de dar carro bom pro {eu} que fica sem graça',
+       'juro que gritei sozinho quando o {eu} passou em {gp}',
+       'a {equipe} tá de parabéns por não atrapalhar o {eu} dessa vez',
+       'PRINT DISSO. {eu}, {pos} em {gp}, {ano}',
+       'meu feed hoje é 100% {eu} e tá ótimo assim'],
   ruim:['{eu} em {gp} hoje foi eu tentando acordar cedo',
         'kkkkkkk não deu certo pro {eu} em {gp}, mas segue o baile',
         'o {eu} abandonando em {gp} é literalmente eu em qualquer segunda-feira',
-        'F pro {eu}. {gp} foi cruel'],
+        'F pro {eu}. {gp} foi cruel',
+        'eu acordei 5h pra isso? {gp} me deve uma',
+        'o {eu} saiu de {grid}º e voltou pra casa mais cedo. relatable',
+        'chorei, ri, chorei de novo. o domingo do {eu} em {gp} foi uma montanha-russa',
+        'gente não zoa o {eu} não, ele já tá triste',
+        'tá tudo bem. tá tudo bem. NÃO TÁ TUDO BEM. {gp}',
+        'desisto de fazer expectativa. sério dessa vez'],
   neutro:['{eu} vai correr pela {equipe}. aceito apostas',
           '{eu} na {cat} agora. torcida montada aqui',
-          'novidade: {eu} assinou com a {equipe}. tô otimista (vou me arrepender)'],
+          'novidade: {eu} assinou com a {equipe}. tô otimista (vou me arrepender)',
+          'já tô montando a thread do {eu} na {equipe}. me aguardem',
+          '{ano} vai ser o ano do {eu}, escrevam aí (já disse isso antes, eu sei)',
+          'subiu pra {cat}!! o menino cresceu 🥹',
+          '{eu} + {equipe} = conteúdo garantido pro meu perfil'],
   titulo:['{eu} CAMPEÃO KKKKKK EU NÃO ACREDITO GENTE 🏆🏆🏆',
-          'campeão do mundo. o {eu}. em {ano}. anota na parede'] },
+          'campeão do mundo. o {eu}. em {ano}. anota na parede',
+          'EU TÔ CHORANDO E NÃO É BRINCADEIRA. {eu} CAMPEÃO',
+          'tirei print, salvei, imprimi e colei na parede. {eu} campeão de {ano}',
+          'o {eu} é campeão e eu vou usar isso em todo argumento pelos próximos 10 anos'] },
 
 { n:'EFFE', h:'@effe', foto:AVATARES['effe'], ini:'E', cor:'#ff0000',
   bom:['{eu}. {gp}. {pos}. Sem mais.',
        'ESSE CARA É BOM DEMAIS. {eu} em {gp} foi obra de arte',
        'de {grid}º pra {pos}. {eu} não veio brincar em {gp}',
-       'quem tava duvidando do {eu} pode ir se sentando'],
+       'quem tava duvidando do {eu} pode ir se sentando',
+       'não tem discussão. em {gp}, o melhor da pista foi o {eu}',
+       '{eu} entregou em {gp} o que prometeu lá atrás. respeito',
+       'a diferença entre bom e especial apareceu em {gp}. {pos} lugar',
+       'guardem essa corrida. {eu} em {gp}, {ano}',
+       'o {eu} fez parecer fácil, e não era. em nenhum momento',
+       'quando o carro deixa, o {eu} resolve. {gp} provou',
+       'domingo perfeito. {pos} em {gp} e nada a acrescentar',
+       'esse é o {eu} que a gente esperava. finalmente'],
   ruim:['{eu} fora em {gp}. dói mas faz parte',
         'não foi dessa vez em {gp}. o {eu} volta',
         'péssimo domingo do {eu}. próxima!',
-        '{gp} não vai entrar no álbum de figurinhas do {eu}'],
+        '{gp} não vai entrar no álbum de figurinhas do {eu}',
+        'era pra ser e não foi. {gp} fica pra trás',
+        'largou de {grid}º e o domingo desandou. acontece',
+        'a {equipe} e o {eu} vão ter uma conversa longa depois de {gp}',
+        'de tudo que podia dar errado em {gp}, deu',
+        'zero ponto. sem drama, sem desculpa. próxima',
+        'a temporada é longa. {gp} é só uma linha na tabela'],
   neutro:['{eu} → {equipe}. tá aí um projeto que eu quero ver',
           'oficial: {eu} na {cat} em {ano}',
-          '{eu} fechou com a {equipe}. página nova'],
+          '{eu} fechou com a {equipe}. página nova',
+          'mudança confirmada. {eu} veste as cores da {equipe} em {ano}',
+          'agora sim. {eu} na {cat}, onde ele sempre devia ter estado',
+          'assinado e entregue: {eu}, {equipe}, {ano}',
+          'a {equipe} apostou no {eu}. gostei da aposta'],
   titulo:['CAMPEÃO! O {eu} É CAMPEÃO DE {ano}! QUE TEMPORADA 🏆',
-          'entrou pra história. {eu}, campeão. simples assim'] },
+          'entrou pra história. {eu}, campeão. simples assim',
+          'do começo ao fim, o melhor da {cat}. {eu} campeão de {ano}',
+          'campeão. ponto final. {eu} 🏆',
+          'a gente viu esse título nascer. {eu}, {ano}. inesquecível'] },
 
 { n:'Blog Fórmula 1', h:'@blogformula1', foto:AVATARES['blogformula1'], ini:'F', cor:'#1a1a1a', info:true,
   bom:['{eu} ({equipe}) terminou em {pos} no GP de {gp}, largando de {grid}º.',
        'Resultado: {eu} conquista o {pos} lugar em {gp}. Confira a classificação completa.',
-       '{gp}: vitória de {eu}. Segunda posição e pódio completo no blog.'],
+       '{gp}: vitória de {eu}. Segunda posição e pódio completo no blog.',
+       '{eu} soma pontos em {gp} e melhora sua posição no campeonato de {ano}.',
+       'Classificação: {eu} largou em {grid}º e cruzou em {pos} no GP de {gp}.',
+       'A {equipe} celebra o {pos} lugar de {eu} em {gp}. Análise da prova no blog.',
+       '{eu} chega ao pódio em {gp}. Confira os tempos de volta e a estratégia.',
+       'Números do GP de {gp}: {eu}, {pos} lugar, partindo da {grid}ª posição.'],
   ruim:['{eu} ({equipe}) abandonou o GP de {gp}. A equipe ainda não divulgou a causa.',
         'Abandono de {eu} em {gp}. O piloto havia largado em {grid}º.',
-        'Fim de prova antecipado para {eu} em {gp}.'],
+        'Fim de prova antecipado para {eu} em {gp}.',
+        '{eu} não completa o GP de {gp}. A {equipe} investiga o ocorrido.',
+        'Prova encerrada antes do tempo para {eu} em {gp}. Sem pontos na etapa.',
+        'A {equipe} confirma o abandono de {eu} no GP de {gp}.',
+        '{eu} deixa o GP de {gp} sem pontuar. Campeonato segue na próxima etapa.'],
   neutro:['Confirmado: {eu} disputará a temporada de {ano} pela {equipe}.',
           '{eu} é anunciado na {cat} para {ano}. Detalhes no blog.',
-          'Mercado: {equipe} acerta com {eu} para a próxima temporada.'],
+          'Mercado: {equipe} acerta com {eu} para a próxima temporada.',
+          'Oficial: a {equipe} confirma {eu} em sua formação para {ano}.',
+          '{eu} é promovido à {cat}. A estreia acontece na abertura de {ano}.',
+          'Anúncio: {eu} assina contrato com a {equipe}. Termos não divulgados.',
+          'A {equipe} apresenta {eu} como piloto para a temporada de {ano}.'],
   titulo:['{eu} é o campeão da {cat} em {ano}. Retrospectiva completa da temporada no blog.',
-          'Título confirmado para {eu} em {ano}. Números e análise da campanha.'] },
+          'Título confirmado para {eu} em {ano}. Números e análise da campanha.',
+          'Campeonato encerrado: {eu} conquista o título de {ano} pela {equipe}.',
+          '{eu} entra para a lista de campeões da {cat}. Confira o histórico completo.',
+          'Análise: como {eu} construiu o título de {ano}, etapa por etapa.'] },
 
 { n:'Crise na Red Bull', h:'@crisenaredbull', foto:AVATARES['crisenaredbull'], ini:'⚡', cor:'#1e2a5a',
   bom:['a {equipe} tá bem e o {eu} tá voando em {gp}. crise mesmo é na outra equipe 😌',
        '{eu} {pos} em {gp}. enquanto isso, no motorhome ao lado, choro',
        'gente pelo amor, o {eu} não pode ficar assim de bom em {gp}',
-       '{eu} em {gp} é o tipo de coisa que gera reunião de emergência'],
+       '{eu} em {gp} é o tipo de coisa que gera reunião de emergência',
+       'informamos que a crise foi transferida para os rivais. {eu}, {pos} em {gp}',
+       'largou de {grid}º e chegou em {pos}. alguém vai perder o emprego por causa disso',
+       'o {eu} tá gerando crise em equipe que nem correu ainda',
+       'boletim: tudo bem na {equipe}. estranho. suspeito. bom demais',
+       'a assessoria da concorrência já pediu para não comentarmos {gp}',
+       'existe um limite pro {eu} ser bom e {gp} passou dele',
+       'crise adiada por mais uma semana graças ao {eu} 🙏',
+       'a {equipe} tá com o piloto certo e isso é péssimo pro nosso conteúdo'],
   ruim:['crise? não. o {eu} só abandonou em {gp}. tá tudo sob controle. tudo sob controle.',
         'reunião de emergência na {equipe} depois de {gp} 🚨',
         'informamos que o domingo do {eu} em {gp} não foi bom. voltamos após os comerciais',
-        'a {equipe} entrou em crise em {gp} e a culpa não foi nem do carro'],
+        'a {equipe} entrou em crise em {gp} e a culpa não foi nem do carro',
+        'CRISE INSTALADA. {eu} fora em {gp}. era isso que a gente esperava (infelizmente)',
+        'largou {grid}º, não chegou. o setor de comunicação da {equipe} pediu férias',
+        'a diretoria da {equipe} quer explicações sobre {gp}. nós também',
+        'nível de crise: {gp}',
+        'nada a declarar sobre o domingo do {eu}. só choro',
+        'a {equipe} entra em modo contenção de danos depois de {gp} 🚨🚨'],
   neutro:['{eu} assinou com a {equipe}. crise adiada por enquanto',
           'movimentação no mercado: {eu} na {equipe}. o clima interno agradece',
-          '{eu} sobe pra {cat}. mais um pra lista de quem vai dar dor de cabeça'],
+          '{eu} sobe pra {cat}. mais um pra lista de quem vai dar dor de cabeça',
+          'contratação anunciada. a {equipe} tenta comprar paz com o {eu}',
+          '{eu} em {ano} pela {equipe}. anota o prazo de validade da lua de mel',
+          'novo piloto, mesma estrutura. boa sorte, {eu}',
+          'a {equipe} apostou no {eu}. torcemos para dar certo (mas o conteúdo agradece se não der)'],
   titulo:['{eu} CAMPEÃO. dessa vez a crise foi geral, menos na {equipe} 🏆',
-          'campeão! e a crise, meus amigos, mudou de endereço'] },
+          'campeão! e a crise, meus amigos, mudou de endereço',
+          'encerramos as atividades. {eu} é campeão de {ano} e não há crise nenhuma 🏆',
+          'a {equipe} campeã e a gente aqui sem pauta. obrigado, {eu}',
+          'título do {eu} em {ano}. crise oficialmente terceirizada'] },
 
 { n:'Victor Ludgero', h:'@victorludgero', foto:AVATARES['victorludgero'], ini:'V', cor:'#0057b8',
   bom:['O que o {eu} fez em {gp} tem explicação técnica, mas é mais bonito sem ela. {pos} lugar.',
        'Saiu de {grid}º e terminou em {pos}. O {eu} entendeu a corrida melhor que todo mundo em {gp}.',
        'Vou falar disso no programa: o {eu} em {gp} foi aula.',
-       'Sem exagero: {eu} está num momento raro de carreira. {gp} confirmou.'],
+       'Sem exagero: {eu} está num momento raro de carreira. {gp} confirmou.',
+       'Tem piloto rápido e tem piloto que constrói a corrida. O {eu} construiu {gp}.',
+       'A {equipe} acertou a estratégia e o {eu} fez o resto. {pos} em {gp}.',
+       'Detalhe que passou batido em {gp}: o ritmo do {eu} no fim da prova. Impressionante.',
+       'O {pos} lugar em {gp} vale mais do que parece na tabela. Explico depois.',
+       'Poucas vezes vi alguém administrar uma corrida como o {eu} fez em {gp}.',
+       'Quem só olhou o resultado de {gp} perdeu o melhor. O {eu} foi cirúrgico.',
+       'Esse é o tipo de domingo que muda a percepção do mercado sobre um piloto.',
+       'Anotem {gp} de {ano}. Daqui a alguns anos essa corrida vai ser citada.'],
   ruim:['O abandono do {eu} em {gp} muda o campeonato inteiro. Vale a conversa.',
         'Domingo difícil para o {eu} em {gp}. Acontece — e vai render pauta.',
         'Dá pra explicar o que aconteceu com o {eu} em {gp}, mas não dá pra justificar.',
-        'Prova para esquecer do {eu} em {gp}. A resposta vem na próxima.'],
+        'Prova para esquecer do {eu} em {gp}. A resposta vem na próxima.',
+        'A {equipe} vai ter que revisar o que fez em {gp}. O piloto não foi o problema principal.',
+        'Largar de {grid}º já complicava. O que veio depois em {gp} complicou mais.',
+        'Existe uma sequência de pequenas decisões que levou ao domingo do {eu} em {gp}.',
+        'Não foi só azar. Em {gp} houve escolha, e a escolha não funcionou.',
+        'O campeonato de {ano} ficou mais caro para o {eu} depois de {gp}.',
+        'Vou defender o {eu} nesse caso, mas com ressalvas. {gp} tem contexto.'],
   neutro:['{eu} na {equipe} para {ano}. Movimento mais interessante do que parece à primeira vista.',
           'A ida do {eu} para a {cat} tem um contexto que muita gente não viu. Explico no programa.',
-          'Anotem: {eu} e {equipe} em {ano}. Vai dar assunto.'],
+          'Anotem: {eu} e {equipe} em {ano}. Vai dar assunto.',
+          'A {equipe} não contratou o {eu} por acaso. Tem projeto por trás disso.',
+          'Mudança de ares para o {eu}. Em {ano} a régua sobe.',
+          'Promoção para a {cat}. O degrau é maior do que a tabela sugere.',
+          'Contrato fechado. Agora começa a parte difícil para o {eu}.'],
   titulo:['Campeão. O {eu} construiu esse título ao longo de {ano} inteiro, não numa corrida só. 🏆',
-          '{eu} campeão de {ano}. Merecidíssimo, e os números sustentam.'] },
+          '{eu} campeão de {ano}. Merecidíssimo, e os números sustentam.',
+          'Título da {cat} para o {eu}. Vale relembrar de onde ele saiu.',
+          'A campanha de {ano} do {eu} vai ser estudada. Campeão com sobras.',
+          'Esse título não foi sorte. Foi construção. Parabéns ao {eu} e à {equipe}. 🏆'] },
 
 { n:'FUTEMENTALES', h:'@futementales', foto:AVATARES['futementales'], ini:'⚽', cor:'#00953b',
   bom:['{eu} em {gp} igual time grande em jogo pequeno: passou por cima',
        '{pos} lugar. o {eu} bateu um bolão em {gp}',
        'o {eu} em {gp} foi tipo goleada em casa, com direito a hino no fim',
-       'saiu de {grid}º e terminou em {pos}. virada digna de final'],
+       'saiu de {grid}º e terminou em {pos}. virada digna de final',
+       'o {eu} fez o gol no último minuto em {gp} e a torcida invadiu o campo',
+       'contra-ataque perfeito. {eu}, {pos} em {gp}',
+       'a {equipe} montou o time certo e o {eu} decidiu. {gp} foi jogo de camisa 10',
+       'craque é assim: aparece quando o time precisa. {gp} pediu e o {eu} entregou',
+       'o {eu} tá em fase de artilheiro isolado do campeonato',
+       'jogou bonito e ganhou. dá pra pedir mais? {pos} em {gp}',
+       'chapéu, drible e pra dentro. {gp} foi golaço do {eu}',
+       'MVP da rodada, com folga'],
   ruim:['{eu} em {gp} tomou aquele gol no último minuto. dolorido',
         'o {eu} caiu na primeira fase em {gp}. tem volta',
         'domingo do {eu} em {gp} foi rebaixamento antecipado',
-        'levou o vermelho em {gp}, o {eu}'],
+        'levou o vermelho em {gp}, o {eu}',
+        'gol contra em {gp}. dói mais que derrota normal',
+        'a {equipe} entrou desfalcada e o {eu} pagou a conta em {gp}',
+        'saiu de {grid}º e foi expulso antes do intervalo. {gp} foi difícil',
+        'pênalti perdido. é isso o domingo do {eu} em {gp}',
+        'time todo mal em {gp}. não dá pra culpar só o camisa 10',
+        'derrota em casa. {gp} vai doer a semana inteira'],
   neutro:['{eu} foi anunciado na {equipe}. contratação de peso ou aposta? o tempo dirá',
           'transferência fechada: {eu} → {equipe}. janela agitada',
-          '{eu} sobe de divisão e vai pra {cat}'],
+          '{eu} sobe de divisão e vai pra {cat}',
+          'reforço confirmado: a {equipe} apresenta o {eu} para {ano}',
+          'saiu de graça ou custou caro? o {eu} na {equipe} vale a discussão',
+          'acesso garantido! {eu} joga a {cat} em {ano}',
+          'janela de transferências: {eu} assina e vira titular absoluto'],
   titulo:['É CAMPEÃO! {eu} levanta a taça em {ano} 🏆 que campanha',
-          'campeão invicto no coração. {eu}, {ano}. inesquecível'] },
+          'campeão invicto no coração. {eu}, {ano}. inesquecível',
+          'taça na prateleira. o {eu} fez a temporada perfeita em {ano} 🏆',
+          'artilheiro e campeão. o {eu} levou tudo em {ano}',
+          'a torcida da {equipe} pode comemorar: {eu} é campeão 🏆'] },
 
 { n:'Fã de F1 atrasado', h:'@fadef1atrasado', foto:AVATARES['fadef1atrasado'], ini:'🕐', cor:'#00594f',
   bom:['acabei de ver que o {eu} foi {pos} em {gp}. isso foi semana passada né',
        'gente o {eu} ganhou em {gp}?? por que ninguém me avisou',
        'tô sabendo agora do {eu} em {gp} e vim comemorar atrasado mesmo',
-       'descobri hoje que o {eu} tá voando. atrasado mas feliz'],
+       'descobri hoje que o {eu} tá voando. atrasado mas feliz',
+       'assisti a corrida de {gp} agora. o {eu} largou de {grid}º e chegou em {pos}?? absurdo',
+       'spoiler ruim: eu já sabia do resultado. spoiler bom: comemorei igual',
+       'só eu que ainda tô processando o {eu} em {gp}?',
+       'cheguei atrasado na live mas deu pra ver o replay do {eu}. valeu a pena',
+       'gente me expliquem desde quando o {eu} tá desse jeito',
+       'atrasado eu, adiantado o {eu}. {pos} em {gp}',
+       'acabo de descobrir que o {eu} corre pela {equipe}. e que é bom. e que ganhou',
+       'meu grupo do zap tá em {gp} e eu ainda tô na corrida anterior'],
   ruim:['acabei de saber que o {eu} abandonou em {gp}. que tristeza (de ontem)',
         'espera o {eu} não terminou {gp}?? eu tava tão bem',
         'cheguei atrasado só pra ver que o {eu} já tinha batido em {gp}',
-        'alguém me explica o {eu} em {gp}, tô perdido'],
+        'alguém me explica o {eu} em {gp}, tô perdido',
+        'liguei a TV, vi bandeira amarela, desliguei. depois soube que era o {eu}',
+        'fui evitar spoiler de {gp} e mesmo assim a notícia ruim chegou',
+        'ah não. eu ia assistir {gp} hoje à noite. estraguei sozinho',
+        'passei o dia feliz sem saber do {eu} em {gp}. ignorância é uma bênção',
+        'atrasado até pra lamentar. F pro {eu} em {gp}',
+        'cheguei pra torcer e a corrida já tinha acabado pro {eu}'],
   neutro:['o {eu} tá na {equipe} desde quando??',
           'peraí, {eu} correndo na {cat}? isso é novo pra mim',
-          'só eu que não sabia que {eu} assinou com a {equipe}?'],
+          'só eu que não sabia que {eu} assinou com a {equipe}?',
+          'acabei de descobrir que o {eu} mudou de equipe em {ano}. atrasado, como sempre',
+          'me atualizando: {eu}, {equipe}, {ano}. anotado',
+          'esse anúncio do {eu} é de quando? tô sempre um mês atrás',
+          'gente o {eu} subiu pra {cat} e ninguém no meu grupo comentou'],
   titulo:['O {eu} FOI CAMPEÃO E EU SÓ FIQUEI SABENDO AGORA 🏆 que vergonha',
-          'campeão?? em {ano}?? gente eu preciso acompanhar mais'] }
+          'campeão?? em {ano}?? gente eu preciso acompanhar mais',
+          'comemorando o título do {eu} três dias depois, mas comemorando 🏆',
+          'perdi a corrida do título do {eu}. de novo. mas parabéns!',
+          'só descobri hoje que o {eu} é campeão de {ano}. melhor notícia atrasada da vida'] }
 ];
 
 const LOGOS_VEICULO = { 'Globo':'globo', 'UOL Esporte':'uol', 'Globo Esporte':'ge' };
@@ -2521,12 +2705,27 @@ function veiculoDaEpoca(ano){
 
 /* Escolhe uma mensagem cujos marcadores todos tenham valor: sem isso saía
    coisa como "Fernandes. Silverstone. —. Sem mais." quando faltava a posição. */
+/* Escolhe uma frase que possa ser preenchida por inteiro e que não tenha
+   saído há pouco tempo. Sem isso, a mesma piada volta a cada três corridas. */
 function escolherTexto(lista, d){
   const ok = lista.filter(t => (t.match(/\{(\w+)\}/g) || []).every(x => {
     const v = d[x.slice(1,-1)];
     return v !== undefined && v !== null && v !== '';
   }));
-  return R.pick(ok.length ? ok : lista);
+  return semRepetir(ok.length ? ok : lista);
+}
+
+/* memória das últimas frases usadas, para não repetir enquanto houver outra */
+function semRepetir(lista){
+  if(!lista || !lista.length) return '';
+  if(typeof S === 'undefined' || !S) return R.pick(lista);
+  if(!S.ecos) S.ecos = [];
+  const novas = lista.filter(t => S.ecos.indexOf(t) < 0);
+  const esc = R.pick(novas.length ? novas : lista);
+  S.ecos.unshift(esc);
+  /* guarda o suficiente para cobrir uma temporada de comentários */
+  if(S.ecos.length > 90) S.ecos.length = 90;
+  return esc;
 }
 
 /* troca os marcadores das mensagens pelos dados da corrida */
@@ -2539,6 +2738,126 @@ function preencher(txt, d){
     .replace(/\{equipe\}/g, d.equipe || '')
     .replace(/\{cat\}/g,    d.cat || '')
     .replace(/\{ano\}/g,    d.ano || '');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OS MAIORES DA HISTÓRIA
+   Uma lista por categoria: [nome, país, títulos, vitórias].
+   No fim da carreira o seu piloto entra nessa mesma conta e você
+   vê exatamente onde ele parou. A pontuação é a mesma para todos:
+   cada título vale 100, cada vitória vale 8.
+   ═══════════════════════════════════════════════════════════════ */
+const LENDAS = {
+ f1: { rot:'Fórmula 1', colT:'Títulos', colV:'Vitórias', lista:[
+  ['Lewis Hamilton','GB',7,105],['Michael Schumacher','DE',7,91],['Juan Manuel Fangio','AR',5,24],
+  ['Max Verstappen','NL',4,63],['Alain Prost','FR',4,51],['Sebastian Vettel','DE',4,53],
+  ['Ayrton Senna','BR',3,41],['Jackie Stewart','GB',3,27],['Niki Lauda','AT',3,25],
+  ['Nelson Piquet','BR',3,23],['Jack Brabham','AU',3,14],['Fernando Alonso','ES',2,32],
+  ['Jim Clark','GB',2,25],['Mika Häkkinen','FI',2,20],['Emerson Fittipaldi','BR',2,14],
+  ['Graham Hill','GB',2,14],['Alberto Ascari','IT',2,13],['Nigel Mansell','GB',1,31],
+  ['Nico Rosberg','DE',1,23],['Damon Hill','GB',1,22],['Kimi Räikkönen','FI',1,21],
+  ['Jenson Button','GB',1,15],['Mario Andretti','US',1,12],['Alan Jones','AU',1,12],
+  ['Jacques Villeneuve','CA',1,11],['Jody Scheckter','ZA',1,10],['Denny Hulme','NZ',1,8],
+  ['John Surtees','GB',1,6],['Jochen Rindt','AT',1,6],['Keke Rosberg','FI',1,5],
+  ['Giuseppe Farina','IT',1,5],['Phil Hill','US',1,3],['Mike Hawthorn','GB',1,3],
+  ['Stirling Moss','GB',0,16],['David Coulthard','GB',0,13],['Felipe Massa','BR',0,11],
+  ['Rubens Barrichello','BR',0,11],['Carlos Reutemann','AR',0,12],['Ronnie Peterson','SE',0,10],
+  ['Gerhard Berger','AT',0,10],['Charles Leclerc','MC',0,8],['Jacky Ickx','BE',0,8],
+  ['Mark Webber','AU',0,9],['Gilles Villeneuve','CA',0,6]
+ ]},
+ indy: { rot:'IndyCar', colT:'Títulos', colV:'Vitórias', lista:[
+  ['A.J. Foyt','US',7,67],['Scott Dixon','NZ',6,59],['Mario Andretti','US',4,52],
+  ['Sébastien Bourdais','FR',4,37],['Dario Franchitti','GB',4,31],['Alex Palou','ES',4,18],
+  ['Al Unser','US',3,39],['Rick Mears','US',3,29],['Bobby Rahal','US',3,24],
+  ['Sam Hornish Jr.','US',3,19],['Johnny Rutherford','US',2,27],['Gordon Johncock','US',2,25],
+  ['Bobby Unser','US',2,35],['Al Unser Jr.','US',2,34],['Will Power','AU',2,45],
+  ['Josef Newgarden','US',2,31],['Alex Zanardi','IT',2,15],['Gil de Ferran','BR',2,12],
+  ['Michael Andretti','US',1,42],['Paul Tracy','CA',1,31],['Emerson Fittipaldi','BR',1,22],
+  ['Ryan Hunter-Reay','US',1,18],['Tony Kanaan','BR',1,17],['Juan Pablo Montoya','CO',1,15],
+  ['Simon Pagenaud','FR',1,15],['Tom Sneva','US',1,13],['Cristiano da Matta','BR',1,11],
+  ['Jimmy Vasser','US',1,10],['Scott Sharp','US',1,9],['Nigel Mansell','GB',1,5],
+  ['Hélio Castroneves','BR',0,31],['Scott Goodyear','CA',0,3]
+ ]},
+ nascar: { rot:'NASCAR Cup', colT:'Títulos', colV:'Vitórias', lista:[
+  ['Richard Petty','US',7,200],['Dale Earnhardt','US',7,76],['Jimmie Johnson','US',7,83],
+  ['Jeff Gordon','US',4,93],['David Pearson','US',3,105],['Darrell Waltrip','US',3,84],
+  ['Cale Yarborough','US',3,83],['Lee Petty','US',3,54],['Tony Stewart','US',3,49],
+  ['Joey Logano','US',3,36],['Ned Jarrett','US',2,50],['Herb Thomas','US',2,48],
+  ['Buck Baker','US',2,46],['Tim Flock','US',2,39],['Kyle Busch','US',2,63],
+  ['Kyle Larson','US',2,31],['Terry Labonte','US',2,22],['Bobby Allison','US',1,84],
+  ['Rusty Wallace','US',1,55],['Bill Elliott','US',1,44],['Matt Kenseth','US',1,39],
+  ['Brad Keselowski','US',1,36],['Kurt Busch','US',1,34],['Martin Truex Jr.','US',1,34],
+  ['Dale Jarrett','US',1,32],['Benny Parsons','US',1,21],['Bobby Labonte','US',1,21],
+  ['Chase Elliott','US',1,19],['Ryan Blaney','US',1,13],['Alan Kulwicki','US',1,5],
+  ['Denny Hamlin','US',0,54],['Junior Johnson','US',0,50],['Mark Martin','US',0,40],
+  ['Fireball Roberts','US',0,33],['Jeff Burton','US',0,21]
+ ]},
+ wec: { rot:'Endurance', colT:'Títulos mundiais', colV:'Vitórias em Le Mans', lista:[
+  ['Tom Kristensen','DK',2,9],['Sébastien Buemi','CH',4,4],['Jacky Ickx','BE',1,6],
+  ['Derek Bell','GB',2,5],['Kazuki Nakajima','JP',3,3],['José María López','AR',3,1],
+  ['Brendon Hartley','NZ',2,3],['Timo Bernhard','DE',2,2],['André Lotterer','DE',1,3],
+  ['Marcel Fässler','CH',1,3],['Benoît Tréluyer','FR',1,3],['Allan McNish','GB',1,3],
+  ['Frank Biela','DE',0,5],['Emanuele Pirro','IT',0,5],['Henri Pescarolo','FR',0,4],
+  ['Yannick Dalmas','FR',0,4],['Olivier Gendebien','BE',0,4],['Rinaldo Capello','IT',0,3],
+  ['Hurley Haywood','US',0,3],['Al Holbert','US',0,3],['Phil Hill','US',0,3],
+  ['Romain Dumas','FR',1,2],['Mike Conway','GB',1,1],['Kamui Kobayashi','JP',1,1],
+  ['Ryō Hirakawa','JP',1,1],['Kévin Estre','FR',1,1],['Mark Webber','AU',1,0],
+  ['Anthony Davidson','GB',1,0],['Lucas di Grassi','BR',0,1]
+ ]},
+ stock: { rot:'Stock Car Brasil', colT:'Títulos', colV:'Vitórias', lista:[
+  ['Ingo Hoffmann','BR',12,66],['Cacá Bueno','BR',5,25],['Ricardo Maurício','BR',4,22],
+  ['Chico Serra','BR',3,17],['Daniel Serra','BR',3,15],['Paulo Gomes','BR',2,15],
+  ['Gabriel Casagrande','BR',2,10],['Rubens Barrichello','BR',2,8],['Thiago Camilo','BR',1,22],
+  ['Max Wilson','BR',1,12],['Átila Abreu','BR',1,10],['Felipe Fraga','BR',1,9],
+  ['Marcos Gomes','BR',1,8],['Allam Khodair','BR',1,6],['David Muffato','BR',1,6],
+  ['Popó Bueno','BR',1,5],['Valdeno Brito','BR',1,5],['Xandinho Negrão','BR',1,4],
+  ['Nonô Figueiredo','BR',1,4],['Antônio Pizzonia','BR',0,6]
+ ]},
+ dtm: { rot:'DTM', colT:'Títulos', colV:'Vitórias', lista:[
+  ['Bernd Schneider','DE',5,43],['Klaus Ludwig','DE',3,39],['René Rast','DE',3,24],
+  ['Mattias Ekström','SE',2,20],['Gary Paffett','GB',2,25],['Marco Wittmann','DE',2,12],
+  ['Timo Scheider','DE',2,8],['Bruno Spengler','CA',1,20],['Martin Tomczyk','DE',1,8],
+  ['Mike Rockenfeller','DE',1,6],['Hans-Joachim Stuck','DE',1,8],['Manuel Reuter','DE',1,5],
+  ['Kurt Thiim','DK',1,5],['Sheldon van der Linde','ZA',1,6],['Thomas Preining','AT',1,4],
+  ['Jamie Green','GB',0,17],['Nico Müller','CH',0,15],['Johnny Cecotto','VE',0,8],
+  ['Roland Asch','DE',0,6],['Timo Glock','DE',0,4]
+ ]},
+ fe: { rot:'Fórmula E', colT:'Títulos', colV:'Vitórias', lista:[
+  ['Jean-Éric Vergne','FR',2,11],['Sébastien Buemi','CH',1,13],['Lucas di Grassi','BR',1,13],
+  ['António Félix da Costa','PT',1,8],['Jake Dennis','GB',1,6],['Pascal Wehrlein','DE',1,6],
+  ['Oliver Rowland','GB',1,5],['Stoffel Vandoorne','BE',1,3],['Nyck de Vries','NL',1,2],
+  ['Nelson Piquet Jr.','BR',1,1],['Sam Bird','GB',0,13],['Mitch Evans','NZ',0,10],
+  ['Nick Cassidy','NZ',0,6],['Edoardo Mortara','CH',0,5],['Maximilian Günther','DE',0,4],
+  ['Robin Frijns','NL',0,3]
+ ]}
+};
+
+/* mesma régua para todo mundo: título vale 100, vitória vale 8 */
+function pontosLenda(t, v){ return t * 100 + v * 8; }
+
+/* Em que categoria o piloto construiu a carreira: a que tem mais títulos,
+   e em caso de empate a que teve mais temporadas. */
+function serieDaCarreira(){
+  const por = (S.career && S.career.porSerie) || {};
+  let melhor = S.series || 'f1', bt = -1, bs = -1;
+  for(const k in por){
+    const x = por[k];
+    if(x.titles > bt || (x.titles === bt && x.seasons > bs)){ melhor = k; bt = x.titles; bs = x.seasons; }
+  }
+  return LENDAS[melhor] ? melhor : 'f1';
+}
+
+/* a lista da categoria com o seu piloto encaixado na posição real */
+function rankingLendas(sk, rec){
+  const tab = LENDAS[sk] || LENDAS.f1;
+  const por = (rec.porSerie && rec.porSerie[sk]) || { titles: rec.titles, wins: rec.wins };
+  const eu = { nome: rec.name, cc: rec.cc, t: por.titles || 0, v: por.wins || 0, eu: true };
+  const lista = tab.lista.map(([nome, cc, t, v]) => ({ nome, cc, t, v, eu: false }));
+  lista.push(eu);
+  lista.forEach(x => x.p = pontosLenda(x.t, x.v));
+  lista.sort((a, b) => b.p - a.p || b.t - a.t || b.v - a.v);
+  lista.forEach((x, i) => x.pos = i + 1);
+  return { tab, lista, eu, pos: lista.indexOf(eu) + 1, total: lista.length };
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -3404,9 +3723,12 @@ const Engine = {
     const t = sea.teams.find(x=>x.id===teamId);
     let s = t.str;
     if(teamId === S.team.id){
-      /* o piloto técnico faz o carro crescer durante a temporada */
+      /* o piloto técnico faz o carro crescer durante a temporada — e as horas
+         que você passou com os engenheiros no inverno aparecem aqui */
       const devGain = (S.driver.attr.dev - 55) / 22;
-      s += devGain * (round / Math.max(1,sea.calendar.length)) * 3.4;
+      const fabrica = ((S.prep && S.prep.eng) || 0) * .55
+                    + (S.compromisso === 'equipe' ? .9 : S.compromisso === 'eu' ? -.4 : 0);
+      s += (devGain * 3.4 + fabrica) * (round / Math.max(1,sea.calendar.length));
     }
     return s;
   },
@@ -3445,12 +3767,150 @@ const Engine = {
     return {car, skill};
   },
 
+  /* ═══ PREPARAÇÃO DE PRÉ-TEMPORADA ═══
+     Cinco pontos por ano — seis com academia, sete se você já é campeão.
+     Cada ponto acelera a evolução de um atributo; o quinto, o de engenharia,
+     ajuda o carro da equipe e a sua relação com ela em vez de ajudar você.
+     Não dá para treinar tudo: é exatamente aí que está a escolha. */
+  PREP_ATTR: { fis:'cons', sim:'pace', race:'race', wet:'wet', eng:'dev' },
+  prepTotal(){
+    return 5 + (S.academy ? 1 : 0) + (S.career && S.career.titles > 0 ? 1 : 0);
+  },
+  prepGastos(){
+    const p = S.prep || {};
+    return (p.fis||0) + (p.sim||0) + (p.race||0) + (p.wet||0) + (p.eng||0);
+  },
+  prepZerado(){ return { fis:0, sim:0, race:0, wet:0, eng:0 }; },
+  /* o retorno cai a cada ponto na mesma área: martelar um só lugar rende menos */
+  prepGanho(pts){
+    const escada = [0, .42, .74, .96, 1.10, 1.20, 1.26];
+    return escada[Math.min(pts, escada.length-1)] || 0;
+  },
+  /* distribuição sensata quando você deixa a cargo da equipe (e no modo rápido) */
+  prepAuto(){
+    const p = Engine.prepZerado();
+    const a = S.driver.attr;
+    /* reforça o que está mais atrás do próprio teto, com uma parte fixa na equipe */
+    const alvo = [['sim','pace'],['race','race'],['fis','cons'],['wet','wet']]
+      .map(([k, at]) => ({ k, gap: (S.driver.pot[at] || 90) - a[at] }))
+      .sort((x,y) => y.gap - x.gap);
+    let restam = Engine.prepTotal();
+    p.eng = 1; restam--;
+    let i = 0;
+    while(restam > 0){ p[alvo[i % alvo.length].k]++; restam--; i++; }
+    return p;
+  },
+
+  /* ═══ ACERTO DO CARRO ═══
+     Três escolhas antes de cada corrida. Asa e suspensão têm um ponto certo,
+     que muda com o traçado e com a chuva; errar custa carro. O motor não tem
+     ponto certo: é troca pura — anda mais e quebra mais.
+     O boletim do tempo é probabilidade, não certeza. Montar o carro para o
+     seco e pegar chuva é a forma mais rápida de perder um domingo. */
+  ASA_ROT:   ['Descarregada','Baixa','Média','Alta','Carregada'],
+  SUSP_ROT:  ['Muito rígida','Rígida','Média','Macia','Muito macia'],
+  MOTOR_ROT: ['Conservador','Contido','Normal','Forte','No limite'],
+
+  /* sorteia o tempo da etapa uma vez só, quando você monta o carro */
+  climaDe(sea, rd){
+    if(!sea.clima) sea.clima = {};
+    if(sea.clima[rd] == null) sea.clima[rd] = R.chance(sea.calendar[rd].rainP);
+    return sea.clima[rd];
+  },
+
+  setupIdeal(sea, rd){
+    const trk = sea.calendar[rd];
+    const wet = Engine.climaDe(sea, rd);
+    let asa, susp;
+    switch(trk.type){
+      case 'oval':   asa = 0; susp = 0; break;
+      case 'fast':   asa = 1; susp = 1; break;
+      case 'street': asa = 4; susp = 3; break;
+      case 'tech':   asa = 3; susp = 3; break;
+      default:       asa = 2; susp = 2;
+    }
+    /* cada pista tem sua manha, sempre a mesma para o mesmo ano e etapa */
+    const j = seedOf(sea.year + trk.id + rd) % 3;
+    asa  = clamp(asa  + (j - 1), 0, 4);
+    susp = clamp(susp + ((seedOf(trk.id + 'x') % 3) - 1), 0, 4);
+    if(wet){ asa = clamp(asa + 1, 0, 4); susp = clamp(susp + 1, 0, 4); }
+    return { asa, susp, wet };
+  },
+
+  /* o que o engenheiro te diz. Quanto melhor você é de desenvolvimento e
+     melhor a relação com a equipe, mais perto da verdade vem o palpite. */
+  setupDica(sea, rd){
+    const id = Engine.setupIdeal(sea, rd);
+    /* nem um estreante fica totalmente às cegas, nem um veterano acerta sempre */
+    const conf = clamp(.18 + (S.driver.attr.dev - 45) / 45 * .55 + (S.teamRel || 50) / 100 * .30, .12, .97);
+    const pc = Math.round(conf * 100);
+    /* O palpite é sempre o mesmo para a mesma etapa: o engenheiro não muda de
+       ideia toda vez que você abre a tela. Ele erra, mas erra com convicção. */
+    const erra = campo => {
+      const h = seedOf('dica' + sea.year + '_' + rd + '_' + pc + campo);
+      return (h % 1000) / 1000 < (1 - conf) ? (((h >>> 10) & 1) ? 1 : -1) : 0;
+    };
+    return { asa: clamp(id.asa + erra('a'), 0, 4), susp: clamp(id.susp + erra('s'), 0, 4),
+             conf: pc };
+  },
+
+  /* efeito do acerto escolhido: ganho/perda de carro, motor e confiabilidade */
+  setupEfeito(sea, rd){
+    const st = (sea.setupRound === rd && sea.setup) ? sea.setup : null;
+    if(!st) return { car:0, rel:0, erro:null, motor:2 };
+    const id = Engine.setupIdeal(sea, rd);
+    const erro = Math.abs(st.asa - id.asa) + Math.abs(st.susp - id.susp);
+    const m = (st.motor - 2);
+    return {
+      /* a escala é centrada em zero para um acerto mediano: acertar em cheio
+         vale carro, errar feio custa muito mais do que o acerto perfeito rende */
+      car: 1.6 - erro * 1.05 + m * .9,
+      rel: -m * .022,
+      erro, motor: st.motor
+    };
+  },
+
+  /* acerto automático — modo rápido e simulação de temporada.
+     Bom, nunca perfeito: quem monta o carro na mão leva vantagem. */
+  setupAuto(sea, rd){
+    const d = Engine.setupDica(sea, rd);
+    const desvio = () => R.chance(.42) ? (R.chance(.5) ? 1 : -1) : 0;
+    return { asa: clamp(d.asa + desvio(), 0, 4), susp: clamp(d.susp + desvio(), 0, 4),
+             motor: R.chance(.25) ? 3 : 2, auto:true };
+  },
+
+  garantirSetup(sea, rd){
+    if(sea.setupRound === rd && sea.setup) return sea.setup;
+    sea.setup = Engine.setupAuto(sea, rd);
+    sea.setupRound = rd;
+    return sea.setup;
+  },
+
+  /* frase curta sobre como o carro se comportou */
+  setupNota(rec){
+    if(!rec.setup) return '';
+    const e = rec.setup.erro;
+    const m = Engine.MOTOR_ROT[rec.setup.motor] || '';
+    const base = e === 0 ? 'O carro estava exatamente onde precisava estar.'
+      : e <= 1 ? 'Acerto muito bom: o carro respondeu a semana inteira.'
+      : e <= 2 ? 'Acerto razoável — faltava um detalhe em uma ponta da pista.'
+      : e <= 4 ? 'O carro nunca ficou confortável. Deu para andar, não para brigar.'
+      : 'Acerto errado. Você passou o fim de semana lutando contra o próprio carro.';
+    const mot = rec.setup.motor >= 4 ? ' Motor no limite: rápido e à beira da quebra.'
+      : rec.setup.motor === 0 ? ' Motor poupado: sobrou confiabilidade e faltou ritmo.' : '';
+    return base + mot;
+  },
+
   /* ══ SIMULA UMA CORRIDA ══ */
   runRace(sea){
     const rd = sea.round;
     const trk = sea.calendar[rd];
     const era = Engine.eraOf(sea.year);
-    const wet = R.chance(trk.rainP);
+    /* o tempo é sorteado quando você monta o carro, não depois: senão
+       apostar no boletim não teria graça nenhuma */
+    const wet = Engine.climaDe(sea, rd);
+    Engine.garantirSetup(sea, rd);
+    const ajuste = Engine.setupEfeito(sea, rd);
     const W = Engine.trackWeights(trk.type, wet);
     /* ── quanto a corrida é uma loteria ──
        Na F1 o mais rápido quase sempre vence. Na NASCAR, na IndyCar e na
@@ -3462,7 +3922,7 @@ const Engine = {
 
     /* ── classificação ── */
     const qual = sea.field.map(f=>{
-      const car = Engine.carStr(sea, f.teamId, rd);
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.car : 0);
       const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).q : f.skill + f.qb + (wet ? R.gauss()*3 : 0), sea);
       return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
     }).sort((a,b)=>b.v-a.v);
@@ -3476,12 +3936,12 @@ const Engine = {
     const running = [];
 
     sea.field.forEach(f => {
-      const car = Engine.carStr(sea, f.teamId, rd);
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.car : 0);
       const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).r : f.skill + f.rb, sea);
       const g = grid[f.id];
 
       /* confiabilidade */
-      let relBase = era.rel + (car-70)/380 + f.rel;
+      let relBase = era.rel + (car-70)/380 + f.rel + (f.isMe ? ajuste.rel : 0);
       if(!sea.isTop) relBase = Math.min(.94, relBase + .13);
       const mech = !R.chance(clamp(relBase,.35,.97));
 
@@ -3551,7 +4011,9 @@ const Engine = {
          não enfrenta o perigo de um Nürburgring de 1963. */
       const degrau = S.ladder.length > 1 ? S.catIdx / (S.ladder.length - 1) : 1;
       const escala = sea.isTop ? 1 : Math.max(0, degrau * degrau * 0.55);
-      const dg = era.danger * escala * (wet?1.5:1) * STYLES[S.driver.style].risk;
+      /* quem passou o inverno na academia sai mais inteiro da batida */
+      const dg = era.danger * escala * (wet?1.5:1) * STYLES[S.driver.style].risk
+               / (1 + ((S.prep && S.prep.fis) || 0) * .16);
       if(R.chance(dg)){
         if(R.chance(.20)) injury = {fatal:true};
         else injury = {fatal:false, races:R.int(1, Math.min(4, sea.calendar.length-rd-1)||1)};
@@ -3560,6 +4022,8 @@ const Engine = {
 
     const rec = {
       r: rd+1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet, dbl:!!trk.dbl,
+      setup: sea.setup ? { asa:sea.setup.asa, susp:sea.setup.susp, motor:sea.setup.motor,
+                           erro: ajuste.erro, auto: !!sea.setup.auto } : null,
       grid: mine.grid, pos: mine.out ? null : mine.pos, dnf: mine.out ? mine.dnf : null,
       pts: mine.pts, fl: flId==='ME',
       tmGrid: tm ? tm.grid : null, tmPos: tm ? (tm.out?null:tm.pos) : null,
@@ -3643,15 +4107,23 @@ const Engine = {
     const perf = (sum.champion ? 1.35 : sum.pos<=3 ? 1.15 : sum.pos<=8 ? 1 : .8)
               * (S.academy ? S.academy.peso : 1);
     const devB = 1 + (a.dev-55)/160;
+    /* o inverno cobra: quem se dedicou à equipe evolui menos, quem só pensou
+       em si evolui mais — e vai ouvir sobre isso no fim do ano */
+    const comp = S.compromisso === 'eu' ? 1.22 : S.compromisso === 'equipe' ? .80 : 1;
+    const prep = S.prep || Engine.prepZerado();
+    const treino = {};
+    for(const k in Engine.PREP_ATTR) treino[Engine.PREP_ATTR[k]] = Engine.prepGanho(prep[k] || 0);
     const g = {};
     ['pace','race','cons','wet','dev'].forEach(k=>{
       let v;
       if(rate > 0){
         const gap = Math.max(0, pot[k] - a[k]);
-        v = gap * rate * perf * devB * R.range(.6,1.4) + R.range(-.4,.6);
+        v = gap * rate * perf * devB * comp * (1 + (treino[k] || 0)) * R.range(.6,1.4) + R.range(-.4,.6);
       } else {
-        /* pilotos resistentes perdem pouco por ano; outros despencam */
-        v = -R.range(.9, 2.4) * (1 + (age - d.decl) * .26) / (d.durab || 1);
+        /* pilotos resistentes perdem pouco por ano; outros despencam.
+           Quem passou o inverno treinando segura a queda por mais tempo. */
+        v = -R.range(.9, 2.4) * (1 + (age - d.decl) * .26)
+            / ((d.durab || 1) * (1 + (prep.fis || 0) * .13));
       }
       g[k] = v;
       a[k] = clamp(Math.round((a[k] + v)*10)/10, 20, 99);
@@ -3669,6 +4141,11 @@ const Engine = {
     if(!S.season.isTop) fg *= .40;
     if(sum.pos<=5) fg += 3;
     d.fame = clamp(Math.round(d.fame + fg - 2), 0, 100);
+    /* o que você entregou fora da pista também conta */
+    const rel = S.teamRel || 50;
+    const ganho = ((prep.eng || 0) * .055 + (S.compromisso === 'equipe' ? .11 : 0)) * (100 - rel);
+    const perda = S.compromisso === 'eu' ? 8 : 0;
+    if(ganho || perda) S.teamRel = clamp(Math.round(rel + ganho - perda), 0, 100);
     d.morale = clamp(Math.round(60 + (sum.champion?30: sum.pos<=3?18: sum.pos<=8?4:-14) + R.int(-5,5)),10,100);
     return g;
   },
@@ -3840,51 +4317,84 @@ const Engine = {
       vitoria: [
         `${eu} venceu em ${dados.gp}. ${fama>70?'Mais uma para a conta de quem já não surpreende mais ninguém.':'Chegou a hora dele.'}`,
         `Vitória de ${eu} em ${dados.gp}${dados.grid>3?`, saindo apenas de ${ord(dados.grid)}`:''}. ${fama<35?'Guardem esse nome.':'Domínio.'}`,
-        `${dados.gp}: ${eu} não deu chance. ${dados.fl?'Ainda cravou a volta mais rápida.':'Liderou quando precisou.'}`
+        `${dados.gp}: ${eu} não deu chance. ${dados.fl?'Ainda cravou a volta mais rápida.':'Liderou quando precisou.'}`,
+        `Mais uma de ${eu}. Em ${dados.gp} ninguém teve resposta para o ritmo dele.`,
+        `${eu} vence em ${dados.gp} e o campeonato muda de cara.`,
+        `Não teve corrida em ${dados.gp}: teve exibição de ${eu}.`,
+        `Da ${ord(dados.grid||1)} posição à vitória. O que ${eu} fez em ${dados.gp} não se explica só com o carro.`,
+        `${eu} cruza em primeiro em ${dados.gp}. ${fama>60?'Já virou hábito.':'A primeira de muitas, se depender do ritmo.'}`
       ],
       titulo: [
         `CAMPEÃO. ${eu} fecha ${S.year} no alto da ${cat}. Ninguém discute.`,
         `${eu} é campeão da ${cat}. Depois de ${S.career.seasons} temporadas, chegou lá.`,
-        `Acabou: o título de ${S.year} é de ${eu}. E dá para acreditar que não será o último.`
+        `Acabou: o título de ${S.year} é de ${eu}. E dá para acreditar que não será o último.`,
+        `O troféu de ${S.year} tem dono: ${eu}. Uma temporada construída semana a semana.`,
+        `${eu} entra para a lista de campeões da ${cat}. O nome fica.`,
+        `Título para ${eu} em ${S.year}. Quem viu de perto sabe o quanto custou.`
       ],
       podio: [
         `Pódio de ${eu} em ${dados.gp}. Consistência é o que separa quem fica de quem passa.`,
-        `${ord(dados.pos)} lugar para ${eu} em ${dados.gp}. Somando do jeito certo.`
+        `${ord(dados.pos)} lugar para ${eu} em ${dados.gp}. Somando do jeito certo.`,
+        `${eu} sobe ao pódio em ${dados.gp}. Não foi a vitória, mas foi importante.`,
+        `Bons pontos para ${eu} em ${dados.gp}: ${ord(dados.pos)} lugar e campeonato mais perto.`,
+        `${dados.gp} terminou com ${eu} no pódio. Corrida madura.`,
+        `${eu} garante o ${ord(dados.pos)} em ${dados.gp}. ${fama<40?'O paddock começou a olhar.':'Rotina de quem briga em cima.'}`
       ],
       pole: [
         `Pole de ${eu} em ${dados.gp}. Uma volta e ponto final.`,
-        `${eu} cravou a pole em ${dados.gp}. ${fama<40?'De onde saiu esse aí?':'Já virou rotina.'}`
+        `${eu} cravou a pole em ${dados.gp}. ${fama<40?'De onde saiu esse aí?':'Já virou rotina.'}`,
+        `A melhor volta do sábado em ${dados.gp} foi de ${eu}. Domingo dirá o resto.`,
+        `Primeiro lugar no grid de ${dados.gp}: ${eu}. Sem margem para discussão.`,
+        `${eu} larga na frente em ${dados.gp}. Metade do trabalho está feita.`,
+        `Pole position para ${eu}. Em ${dados.gp}, ninguém chegou perto no sábado.`
       ],
       abandono: [
         `${eu} fora em ${dados.gp}. ${dados.dnf==='MEC'?'O carro entregou antes do piloto.':'Foi cedo demais para o muro.'}`,
-        `Domingo perdido para ${eu} em ${dados.gp}. ${dados.dnf==='ACID'?'Erro caro.':'Nada que ele pudesse controlar.'}`
+        `Domingo perdido para ${eu} em ${dados.gp}. ${dados.dnf==='ACID'?'Erro caro.':'Nada que ele pudesse controlar.'}`,
+        `Abandono de ${eu} em ${dados.gp}. ${dados.dnf==='MEC'?'Mais um problema mecânico na conta da temporada.':'A corrida acabou contra a proteção.'}`,
+        `${eu} não vê a bandeirada em ${dados.gp}. Zero ponto e uma conta que fica.`,
+        `Prova encerrada antes da hora para ${eu}. ${dados.gp} ficará como oportunidade desperdiçada.`,
+        `${dados.gp} custou caro: ${eu} fora, e os rivais somando.`
       ],
       demissao: [
         `${eu} está fora da ${dados.equipe}. A conta não fechou.`,
-        `Fim de linha entre ${eu} e a ${dados.equipe}. O mercado vai falar.`
+        `Fim de linha entre ${eu} e a ${dados.equipe}. O mercado vai falar.`,
+        `A ${dados.equipe} encerra o contrato de ${eu}. Decisão que vinha sendo desenhada há semanas.`,
+        `Rompimento confirmado: ${eu} deixa a ${dados.equipe} no meio do caminho.`,
+        `${eu} perde o volante na ${dados.equipe}. Agora é procurar espaço num grid cheio.`
       ],
       contrato: [
         `${eu} assina com a ${dados.equipe} para ${S.year}. ${dados.forca>88?'Material de campeão nas mãos.':'Agora é provar.'}`,
-        `Confirmado: ${eu} na ${dados.equipe}. ${dados.forca<72?'Um degrau difícil de subir com esse carro.':'Boa chance.'}`
+        `Confirmado: ${eu} na ${dados.equipe}. ${dados.forca<72?'Um degrau difícil de subir com esse carro.':'Boa chance.'}`,
+        `A ${dados.equipe} anuncia ${eu} para ${S.year}. ${dados.forca>85?'Aposta de peso.':'Contratação discreta, resultado a ver.'}`,
+        `${eu} tem casa nova em ${S.year}: ${dados.equipe}. O mercado se movimenta.`,
+        `Acerto fechado entre ${eu} e a ${dados.equipe}. ${dados.forca>80?'O carro ajuda.':'O carro vai exigir muito do piloto.'}`
       ],
       academia: [
         `${eu} entra para a ${dados.academia}. O caminho encurtou.`,
-        `A ${dados.academia} anunciou ${eu}. Está na prateleira dos observados.`
+        `A ${dados.academia} anunciou ${eu}. Está na prateleira dos observados.`,
+        `${eu} passa a integrar o programa de formação da ${dados.academia}.`,
+        `Mais um nome na ${dados.academia}: ${eu}. Cobrança vem junto.`
       ],
       subiu: [
         `${eu} sobe para a ${dados.cat}. O degrau seguinte é sempre mais alto do que parece.`,
-        `Promoção: ${eu} corre na ${dados.cat} em ${S.year}.`
+        `Promoção: ${eu} corre na ${dados.cat} em ${S.year}.`,
+        `${eu} conquistou a vaga na ${dados.cat}. Agora a régua muda.`,
+        `Acesso garantido. ${eu} disputa a ${dados.cat} na próxima temporada.`
       ],
       estreia: [
         `${eu} estreia na ${dados.cat}. Começa aqui.`,
-        `Novo nome na ${dados.cat}: ${eu}. Vamos ver o que ele tem.`
+        `Novo nome na ${dados.cat}: ${eu}. Vamos ver o que ele tem.`,
+        `Primeira temporada de ${eu} na ${dados.cat}. O aprendizado é caro nesse nível.`,
+        `${eu} faz sua estreia na ${dados.cat} em ${S.year}.`
       ],
       fama: [
         `${eu} virou assunto. Fora das pistas também.`,
-        `De promessa a nome conhecido: ${eu} não passa mais despercebido no paddock.`
+        `De promessa a nome conhecido: ${eu} não passa mais despercebido no paddock.`,
+        `O nome de ${eu} começou a aparecer onde não aparecia. Sinal dos tempos.`,
+        `${eu} deixou de ser aposta. Virou referência.`
       ]
-    };
-    tom = (tipo==='titulo'||tipo==='vitoria'||tipo==='pole'||tipo==='podio') ? 'bom'
+    };    tom = (tipo==='titulo'||tipo==='vitoria'||tipo==='pole'||tipo==='podio') ? 'bom'
         : (tipo==='abandono'||tipo==='demissao') ? 'ruim' : 'neutro';
 
     if(v.conta){
@@ -3900,7 +4410,7 @@ const Engine = {
     } else {
       const lista = T[tipo];
       if(!lista) return;
-      txt = R.pick(lista);
+      txt = semRepetir(lista);
     }
 
     S.midia.unshift({ ano:S.year, cat, tipo, tom, ic:v.ic, rot:v.rot, autor:v.autor,
@@ -4534,7 +5044,11 @@ const UI = {
     } else {
       h = `<button class="btn btn-gold btn-lg" onclick="Game.endSeason()">Encerrar a temporada ${sea.year} →</button>`;
     }
-    h += `<span class="sp"></span>
+    if(nx && !S.opts.fast && Engine.prepGastos() < Engine.prepTotal())
+      h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">🎯 Pré-temporada · ${Engine.prepTotal()-Engine.prepGastos()}</button>`;
+    h += `<button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()"
+              title="No modo rápido a equipe monta o carro e define o treino da pré-temporada">${S.opts.fast?'⚡ Rápido':'🔧 Completo'}</button>
+      <span class="sp"></span>
       <button class="btn btn-ghost btn-sm" onclick="Game.save(true)">💾 Salvar</button>
       <button class="btn btn-ghost btn-sm" onclick="UI.confirmQuit()">Sair</button>`;
     el('actBar').innerHTML = h;
@@ -4665,6 +5179,110 @@ function classifHTML(r){
   </div>`;
 }
 
+/* ═══ PRÉ-TEMPORADA: TREINO E COMPROMISSO ═══ */
+UI.prepModal = function(){
+  const p = S.prep, sobra = Engine.prepTotal() - Engine.prepGastos();
+  const areas = [
+    ['fis',  'Preparação física', 'Aguenta o carro no fim da prova e sai mais inteiro de acidente.', 'Consistência'],
+    ['sim',  'Simulador',         'Volta atrás de volta procurando o décimo que falta.',            'Ritmo'],
+    ['race', 'Racecraft',         'Largada, defesa, ultrapassagem — a corrida de verdade.',         'Ultrapassagem'],
+    ['wet',  'Pista molhada',     'Poucos treinam. Quem treina ganha corrida no domingo de chuva.', 'Chuva'],
+    ['eng',  'Trabalho com os engenheiros', 'Você some do sofá e aparece na fábrica. O carro sente.', 'Desenvolvimento']
+  ];
+  const linha = ([k, nome, ds, atr]) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13.5px;font-weight:800">${esc(nome)}</div>
+        <div style="font-size:11.5px;color:var(--dim2)">${esc(ds)}</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:2px">→ ${esc(atr)}${k==='eng'?' · carro da equipe · relação':''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <button class="btn btn-sm btn-ghost" onclick="Game.setPrep('${k}',-1)" ${p[k]<=0?'disabled':''}>−</button>
+        <b style="min-width:20px;text-align:center;font-size:16px;color:${p[k]?'var(--gold)':'var(--dim2)'}">${p[k]}</b>
+        <button class="btn btn-sm btn-ghost" onclick="Game.setPrep('${k}',1)" ${sobra<=0?'disabled':''}>+</button>
+      </div>
+    </div>`;
+  const comp = [
+    ['eu',    'Focar em você',        'Evolui bem mais rápido, mas a equipe percebe que você só pensa em si.', '+ evolução · − relação'],
+    ['meio',  'Equilibrado',          'Nem herói nem funcionário do mês. O caminho seguro.', 'sem efeito'],
+    ['equipe','Dedicar-se à equipe',  'Menos tempo para você, muito mais crédito interno — e um carro melhor.', '− evolução · + relação e carro']
+  ];
+  UI.modal(UI.head('Pré-temporada', `${S.year} · ${esc(S.season ? S.season.cat : Engine.topCat())}${S.team?' · '+esc(S.team.name):''}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        O inverno é seu. Onde você põe as horas agora decide o que vai sobrar em novembro —
+        e ninguém consegue treinar tudo ao mesmo tempo.
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+        <span class="lbl">Pontos de preparação</span>
+        <span class="pill ${sobra>0?'':'rd'}">${sobra} restante${sobra===1?'':'s'}</span>
+      </div>
+      ${areas.map(linha).join('')}
+      <div style="margin-top:16px">
+        <span class="lbl" style="display:block;margin-bottom:7px">Compromisso da temporada</span>
+        ${comp.map(([k,tt,ds,ef])=>`<button class="dil ${S.compromisso===k?'sel':''}"
+            style="${S.compromisso===k?'border-color:var(--gold)':''}" onclick="Game.setCompromisso('${k}')">
+            <b>${esc(tt)}</b><span>${esc(ds)}</span>
+            <span style="display:block;font-size:11px;color:var(--gold);font-weight:800;margin-top:3px">${esc(ef)}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost btn-sm" onclick="Game.prepAuto()">Deixar com a equipe</button>
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();Game.save()">Começar a temporada →</button>
+    </div>`);
+};
+
+/* ═══ ACERTO DO CARRO ═══ */
+UI.setupModal = function(){
+  const sea = S.season, rd = sea.round, trk = sea.calendar[rd];
+  if(!trk) return;
+  if(sea.setupRound !== rd || !sea.setup){
+    const d = Engine.setupDica(sea, rd);
+    sea.setup = { asa:d.asa, susp:d.susp, motor:2 };
+    sea.setupRound = rd;
+  }
+  const st = sea.setup;
+  const d = Engine.setupDica(sea, rd);
+  const chuva = Math.round(trk.rainP * 100);
+  const linha = (rot, campo, lista, dica) => `
+    <div style="margin-bottom:13px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+        <span class="lbl">${rot}</span>
+        ${dica != null ? `<span style="font-size:11px;color:var(--dim2)">engenheiro: ${esc(lista[dica])}</span>` : ''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${lista.map((v,i)=>`<button class="yr-b ${st[campo]===i?'sel':''}"
+            onclick="Game.setSetup('${campo}',${i})">${esc(v)}</button>`).join('')}
+      </div>
+    </div>`;
+  UI.modal(UI.head('Acerto do carro', `${esc(trk.gp)} · ${esc(trk.circ)} · rodada ${rd+1} de ${sea.calendar.length}`, false) +
+    `<div class="mbd">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <span class="pill ${chuva>=35?'rd':''}">${chuva>=35?'🌧️':'⛅'} ${chuva}% de chance de chuva</span>
+        <span class="pill">🔧 confiança do engenheiro: ${d.conf}%</span>
+      </div>
+      <div class="res-nar" style="margin-top:0">
+        O engenheiro leu os dados e sugere um ponto de partida. Ele erra mais quando você
+        entende pouco de carro e quando a relação com a equipe está ruim —
+        e o boletim do tempo é uma probabilidade, não uma promessa.
+      </div>
+      ${linha('Asa', 'asa', Engine.ASA_ROT, d.asa)}
+      ${linha('Suspensão', 'susp', Engine.SUSP_ROT, d.susp)}
+      ${linha('Motor', 'motor', Engine.MOTOR_ROT, null)}
+      <p class="mut" style="font-size:12.5px;margin:0">
+        Asa e suspensão têm um ponto certo para cada traçado — e ele muda se chover.
+        O motor é troca pura: quanto mais forte, mais ritmo e mais chance de quebrar.
+      </p>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost btn-sm" onclick="Game.setSetupDica()">Usar a sugestão</button>
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();Game.correr()">Ir para a pista →</button>
+    </div>`);
+};
+
 UI.raceResult = function(r){
   const sea = S.season;
   const big = r.dnf ? 'ABD' : ord(r.pos);
@@ -4679,6 +5297,13 @@ UI.raceResult = function(r){
         <div class="cap">${cap}</div>
       </div>
       <div class="res-nar">${narrative(r, sea)}</div>
+      ${r.setup ? `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
+           border:1px solid var(--line);border-left:3px solid ${r.setup.erro<=1?'var(--green)':r.setup.erro<=3?'var(--gold)':'var(--red2)'};margin-bottom:14px">
+           <span class="lbl" style="display:block;margin-bottom:4px">Acerto${r.setup.auto?' (automático)':''}</span>
+           <div style="font-size:12.5px;color:var(--dim);margin-bottom:5px">
+             ${esc(Engine.ASA_ROT[r.setup.asa])} · ${esc(Engine.SUSP_ROT[r.setup.susp])} · motor ${esc((Engine.MOTOR_ROT[r.setup.motor]||'').toLowerCase())}</div>
+           <div style="font-size:13px;font-weight:700">${esc(Engine.setupNota(r))}</div>
+         </div>` : ''}
       <div class="mini">
         <div><b>${r.grid===1?'POLE':'P'+r.grid}</b><span>Classificação</span></div>
         <div><b>${r.pts}</b><span>Pontos</span></div>
@@ -4925,12 +5550,68 @@ const Game = {
     } else if(S.team && S.contract && S.contract.years >= 1 && S.career.seasons > 0){
       if(R.chance(.5)) Engine.noticia("contrato", {equipe:S.team.name, forca:S.team.str});
     }
+    /* preparação de pré-temporada: no modo rápido a equipe resolve por você */
+    S.prep = Engine.prepZerado();
+    if(!S.compromisso) S.compromisso = 'meio';
     Game.save();
     UI.render();
+    if(S.opts.fast) S.prep = Engine.prepAuto();
+    else setTimeout(()=>{
+      /* se já há uma tela aberta — a apresentação de um cenário, por exemplo —
+         a pré-temporada espera: fica o botão no hub para abrir quando quiser */
+      if(!el('ov').classList.contains('on')) UI.prepModal();
+    }, 260);
   },
 
+  setPrep(k, d){
+    if(!S.prep) S.prep = Engine.prepZerado();
+    const alvo = clamp((S.prep[k] || 0) + d, 0, Engine.prepTotal());
+    const outros = Engine.prepGastos() - (S.prep[k] || 0);
+    S.prep[k] = Math.min(alvo, Engine.prepTotal() - outros);
+    UI.prepModal();
+  },
+  setCompromisso(k){ S.compromisso = k; UI.prepModal(); },
+
+  /* Liga e desliga o modo rápido no meio da carreira. Ligado, a equipe monta
+     o carro e distribui o treino; você continua escolhendo equipe, academia e
+     as decisões do piloto — que é o que muda o rumo de uma carreira. */
+  toggleFast(){
+    S.opts.fast = !S.opts.fast;
+    if(S.opts.fast && (!S.prep || !Engine.prepGastos())) S.prep = Engine.prepAuto();
+    UI.render(); Game.save();
+    UI.toast(S.opts.fast
+      ? 'Modo rápido ligado: a equipe cuida do acerto e do treino.'
+      : 'Modo completo: o acerto do carro e a pré-temporada voltam a ser seus.');
+  },
+  prepAuto(){ S.prep = Engine.prepAuto(); UI.prepModal(); },
+
   /* ---- uma corrida ---- */
+  /* No modo completo, cada corrida começa na garagem. No modo rápido o
+     engenheiro monta o carro sozinho — bem, mas nunca tão bem quanto você. */
   nextRace(){
+    const sea = S.season;
+    if(!sea.calendar[sea.round]) return;
+    if(S.driver.injured > 0 || S.opts.fast) return Game.correr();
+    if(sea.setupRound === sea.round && sea.setup && !sea.setup.auto) return Game.correr();
+    UI.setupModal();
+  },
+
+  setSetup(campo, valor){
+    const sea = S.season;
+    if(sea.setupRound !== sea.round || !sea.setup){ sea.setup = {asa:2,susp:2,motor:2}; sea.setupRound = sea.round; }
+    sea.setup[campo] = valor;
+    sea.setup.auto = false;
+    UI.setupModal();
+  },
+  setSetupDica(){
+    const sea = S.season;
+    const d = Engine.setupDica(sea, sea.round);
+    sea.setup = { asa:d.asa, susp:d.susp, motor: sea.setup ? sea.setup.motor : 2, auto:false };
+    sea.setupRound = sea.round;
+    UI.setupModal();
+  },
+
+  correr(){
     const sea = S.season;
     if(!sea.calendar[sea.round]) return;
 
@@ -5075,6 +5756,16 @@ const Game = {
       S.teamRel = 30;
     }
     if(sum.champion){ if(sea.isTop) c.titles++; else c.jrTitles++; Engine.noticia("titulo", sum); }
+
+    /* placar separado por categoria: é ele que diz em qual lista da história
+       o seu piloto entra no fim */
+    if(!c.porSerie) c.porSerie = {};
+    const ps = c.porSerie[S.series] || (c.porSerie[S.series] = { titles:0, wins:0, podiums:0, seasons:0 });
+    ps.seasons++;
+    if(sea.isTop){
+      ps.wins += sum.wins; ps.podiums += sum.podiums;
+      if(sum.champion) ps.titles++;
+    }
 
     /* arquiva a temporada inteira, com todas as corridas */
     S.history.push({ ...sum, teamColor:S.team.color, champion:sum.champion });
@@ -5250,7 +5941,8 @@ const Game = {
       name:S.driver.name, cc:S.driver.cc, num:S.driver.num, style:S.driver.style,
       from:S.startYear, to:S.year, age:S.driver.age, ovr:S.driver.ovr,
       titles:c.titles, jrTitles:c.jrTitles, wins:c.wins, podiums:c.podiums, poles:c.poles,
-      gps:c.gps, pts:c.pts, seasons:c.seasons, reason,
+      gps:c.gps, pts:c.pts, seasons:c.seasons, reason, porSerie: c.porSerie || null,
+      serie: (function(){ try{ return serieDaCarreira(); }catch(e){ return S.series || 'f1'; } })(),
       score: c.titles*100 + c.wins*12 + c.podiums*4 + c.poles*3 + c.seasons*2
     };
     try{
@@ -5413,6 +6105,69 @@ UI.firedModal = function(rv, mid, sum){
     </div>`);
 };
 
+/* ═══ OS MAIORES DA HISTÓRIA ═══ */
+UI.lendasLinha = function(x, tab){
+  const medalha = x.pos === 1 ? 'var(--gold)' : x.pos <= 3 ? 'var(--gold)' : x.pos <= 10 ? 'var(--dim)' : 'var(--dim2)';
+  return `<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;
+       border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent);
+       ${x.eu ? 'background:color-mix(in srgb,var(--gold) 14%,transparent)' : ''}">
+    <span style="width:26px;text-align:center;font-weight:900;font-size:12.5px;color:${medalha}">${x.pos}</span>
+    <span class="flag" style="font-size:15px">${flag(x.cc)}</span>
+    <span style="flex:1;min-width:0;font-size:13.5px;${x.eu?'font-weight:900':''};
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.nome)}${x.eu?' — você':''}</span>
+    <span class="posbox ${x.t>=3?'p1':x.t>=1?'p2':''}" style="min-width:26px">${x.t}</span>
+    <span style="min-width:34px;text-align:right;font-size:12.5px;color:var(--dim)">${x.v}</span>
+    <span style="min-width:44px;text-align:right;font-weight:900;font-size:12.5px">${x.p}</span>
+  </div>`;
+};
+
+UI.lendas = function(sk, rec){
+  rec = rec || UI._lendaRec;
+  if(!rec) return;
+  UI._lendaRec = rec;
+  const r = rankingLendas(sk, rec);
+  /* mostra o topo e, se você ficou longe dele, uma janela em volta do seu nome */
+  const topo = r.lista.slice(0, 12);
+  const perto = r.pos > 13 ? r.lista.slice(Math.max(12, r.pos - 3), r.pos + 2) : [];
+  const outras = Object.keys(LENDAS).filter(k => k !== sk);
+  UI.modal(UI.head('Os maiores da história', `${esc(r.tab.rot)} · você é o ${ord(r.pos)} de ${r.total}`, true) +
+    `<div class="mbd">
+      <div class="res-hero" style="padding:2px 0 12px">
+        <div class="big ${r.pos<=3?'p1':''}" style="font-size:40px">${ord(r.pos)}</div>
+        <div class="cap">${r.pos===1 ? 'O MAIOR DE TODOS OS TEMPOS'
+                        : r.pos<=5 ? 'ENTRE OS CINCO MAIORES'
+                        : r.pos<=10 ? 'ENTRE OS DEZ MAIORES'
+                        : r.pos<=25 ? 'NOME GRAVADO NA HISTÓRIA'
+                        : 'NA LISTA — E ISSO JÁ É MUITO'}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        ${Object.keys(LENDAS).map(k=>`<button class="yr-b ${k===sk?'sel':''}"
+            onclick="UI.lendas('${k}')">${esc(LENDAS[k].rot)}</button>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 11px">
+        <span style="width:26px"></span><span style="width:15px"></span>
+        <span class="lbl" style="flex:1">Piloto</span>
+        <span class="lbl" style="min-width:26px;text-align:center">${esc(r.tab.colT)}</span>
+        <span class="lbl" style="min-width:34px;text-align:right">${esc(r.tab.colV)}</span>
+        <span class="lbl" style="min-width:44px;text-align:right">Pontos</span>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden">
+        ${topo.map(x=>UI.lendasLinha(x, r.tab)).join('')}
+        ${perto.length ? `<div style="padding:5px 11px;font-size:11px;color:var(--dim2);
+             background:var(--panel2);text-align:center">· · ·</div>` + perto.map(x=>UI.lendasLinha(x, r.tab)).join('') : ''}
+      </div>
+      <p class="mut" style="font-size:12.5px;margin:12px 0 0">
+        A conta é a mesma para todo mundo: cada ${esc(r.tab.colT.toLowerCase().replace(/s$/,''))}
+        vale 100 pontos e cada vitória vale 8. Os números dos pilotos reais são os de carreira.
+      </p>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="UI.hall()">🏆 Sua galeria</button>
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button>
+    </div>`, true);
+};
+
 UI.careerEnd = function(rec, reason){
   const why = { acidente:'Um acidente encerrou sua carreira.',
                 semvaga:'Nenhuma equipe ofereceu um lugar no grid.',
@@ -5438,13 +6193,31 @@ UI.careerEnd = function(rec, reason){
         <div><b>${rec.poles}</b><span>Poles</span></div>
         <div><b>${rec.pts}</b><span>Pontos</span></div>
       </div>
+      ${(function(){
+        try{
+          const r = rankingLendas(rec.serie || 'f1', rec);
+          const acima = r.lista[r.pos - 2], abaixo = r.lista[r.pos];
+          return `<div style="padding:13px 15px;border-radius:var(--r-sm);background:var(--panel2);
+             border:1px solid var(--line);border-left:3px solid var(--gold);margin-bottom:14px">
+            <span class="lbl" style="display:block;margin-bottom:5px">Entre os maiores da ${esc(r.tab.rot)}</span>
+            <div style="font-size:15px;font-weight:900;margin-bottom:6px">
+              ${ord(r.pos)} de ${r.total} na história</div>
+            <div style="font-size:12.5px;color:var(--dim);line-height:1.6">
+              ${acima ? `logo acima: ${esc(acima.nome)} (${acima.t}·${acima.v})<br>` : 'ninguém à sua frente.<br>'}
+              ${abaixo ? `logo abaixo: ${esc(abaixo.nome)} (${abaixo.t}·${abaixo.v})` : 'e ninguém atrás.'}
+            </div>
+          </div>`;
+        }catch(e){ return ''; }
+      })()}
       <p class="mut" style="font-size:13px">Sua carreira entrou na galeria de lendas. O arquivo de temporadas continua disponível nesta página até você começar outra.</p>
+
     </div>
     <div class="mft">
-      <button class="btn btn-ghost" onclick="UI.hall()">🏆 Galeria</button>
+      <button class="btn btn-gold" onclick="UI.lendas('${rec.serie || 'f1'}')">📜 Os maiores da história</button>
       <span class="sp"></span>
       <button class="btn btn-primary" onclick="UI.close();UI.show('intro');Game.checkSave()">Nova carreira</button>
     </div>`);
+  UI._lendaRec = rec;
 };
 
 UI.archiveSeason = function(i, fromModal){
@@ -5521,7 +6294,25 @@ UI.hall = function(){
         <div class="od">${r.titles} ${r.titles===1?'título':'títulos'} · ${r.wins} vitórias · ${r.podiums} pódios ·
           ${r.poles} poles · ${r.gps} provas · ${r.seasons} temporadas</div>
       </div>`).join('') : '<div class="empty">Nenhuma carreira encerrada ainda.</div>' }</div>
-    <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`);
+    <div class="mft">
+      ${hall.length ? `<button class="btn btn-gold" onclick="UI.abrirLendas()">📜 Os maiores da história</button>` : ''}
+      <span class="sp"></span>
+      <button class="btn btn-ghost" onclick="UI.close()">Fechar</button>
+    </div>`);
+  UI._hall = hall;
+};
+
+/* abre o ranking com a melhor carreira já encerrada — ou com a atual */
+UI.abrirLendas = function(){
+  let rec = UI._lendaRec;
+  if(!rec && UI._hall && UI._hall.length) rec = UI._hall[0];
+  if(!rec && S && S.career){
+    rec = { name:S.driver.name, cc:S.driver.cc, titles:S.career.titles, wins:S.career.wins,
+            porSerie:S.career.porSerie || null, serie:S.series || 'f1' };
+  }
+  if(!rec) return UI.toast('Encerre uma carreira para entrar na conta da história.');
+  UI._lendaRec = rec;
+  UI.lendas(rec.serie || 'f1', rec);
 };
 
 UI.records = function(){

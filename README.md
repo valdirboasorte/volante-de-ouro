@@ -19,13 +19,27 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
   521 pilotos. Senna tem 34 anos em 1994; o Alonso de 2001 é um estreante de 19,
   não o bicampeão de 2005.
 - **Retrospecto completo** de cada corrida de cada temporada.
+- **Acerto do carro** antes de cada prova: asa, suspensão e motor. Asa e
+  suspensão têm um ponto certo que muda com o traçado e com a chuva; o motor é
+  troca pura entre ritmo e confiabilidade. O engenheiro sugere, mas erra — e o
+  boletim do tempo é probabilidade, não promessa.
+- **Pré-temporada**: pontos de preparação entre físico, simulador, racecraft,
+  pista molhada e trabalho com os engenheiros, mais um compromisso que decide
+  se você cuida de si ou da equipe. Investir na fábrica melhora o carro e a
+  relação interna, e custa a sua própria evolução.
+- **Modo rápido**, que se liga e desliga no meio da carreira: a equipe monta o
+  carro e distribui o treino, e você cuida só de contrato, mercado e das
+  decisões do piloto.
+- **Ranking dos maiores da história** por categoria, com o seu piloto encaixado
+  na posição real — títulos valem 100 pontos, vitórias valem 8, para todo mundo.
 - **Modo cenário**: assuma Massa em 2008, Hamilton em 2021, Senna a partir de
   1994, Kubica a partir de 2011 — e reescreva o que veio depois.
 - **Assumir qualquer piloto real** do grid de qualquer ano, em qualquer categoria.
 - Mercado de pilotos com memória, academias de formação, contratos, demissão por
   desempenho e aposentadoria com curvas de carreira diferentes para cada piloto.
 - Área de imprensa que muda com a época: rádio até 1989, TV nos anos 90, portais
-  nos anos 2000 e 2010, redes sociais de 2020 em diante.
+  nos anos 2000 e 2010, redes sociais de 2020 em diante — com quase 300 falas
+  diferentes e memória para não repetir a mesma piada.
 
 ## Rodar localmente
 
