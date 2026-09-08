@@ -3046,6 +3046,68 @@ const SCENARIOS = [
   goal:{type:'title', txt:'Repetir o título da temporada'} }
 ];
 
+/* ═══════════════════════════════════════════════════════════════
+   OS GRIDS REAIS DAS CATEGORIAS DE ACESSO
+   Da Fórmula Regional para cima, quem está no grid ao seu lado são os
+   pilotos que realmente correram naquele ano, na ordem em que terminaram
+   o campeonato. Onde a lista não cobre o grid inteiro, o resto é
+   preenchido com nomes anônimos, como já era.
+   Formato: 'Nome:PAÍS|Nome:PAÍS|...', do campeão para baixo.
+   ═══════════════════════════════════════════════════════════════ */
+const JR_REAIS = {
+ f2: {
+  2017:'Leclerc:MC|Rowland:GB|Markelov:RU|Ghiotto:IT|Albon:TH|Fuoco:IT|Matsushita:JP|de Vries:NL|Latifi:CA|Nato:FR|Malja:SE|King:GB|Sette Câmara:BR|Boccolacci:FR|Cecotto:VE',
+  2018:'Russell:GB|Norris:GB|Albon:TH|de Vries:NL|Latifi:CA|Markelov:RU|Sette Câmara:BR|Ghiotto:IT|Aitken:GB|Günther:DE|Delétraz:CH|Fukuzumi:JP|Makino:JP|Boschung:CH|Nissany:IL|Maini:IN|Ferrucci:US|Merhi:ES',
+  2019:'de Vries:NL|Latifi:CA|Ghiotto:IT|Aitken:GB|Zhou:CN|Ilott:GB|Sette Câmara:BR|Mazepin:RU|Mick Schumacher:DE|Delétraz:CH|Matsushita:JP|King:GB|Alesi:FR|Boschung:CH|Nissany:IL|Correa:EC|Hubert:FR',
+  2020:'Mick Schumacher:DE|Ilott:GB|Shwartzman:RU|Tsunoda:JP|Zhou:CN|Ticktum:GB|Drugovich:BR|Lundgaard:DK|Ghiotto:IT|Armstrong:NZ|Daruvala:IN|Delétraz:CH|Aitken:GB|Mazepin:RU|Nissany:IL|Samaia:BR|Alesi:FR|Matsushita:JP|Verschoor:NL|Boschung:CH|Pedro Piquet:BR',
+  2021:'Piastri:AU|Zhou:CN|Ticktum:GB|Lundgaard:DK|Shwartzman:RU|Drugovich:BR|Daruvala:IN|Verschoor:NL|Vips:EE|Armstrong:NZ|Beckmann:DE|Zendeli:DE|Pourchaire:FR|Lawson:NZ|Doohan:AU|Nissany:IL|Boschung:CH|Viscaal:NL|Samaia:BR|Sato:JP|Deledda:IT',
+  2022:'Drugovich:BR|Pourchaire:FR|Lawson:NZ|Doohan:AU|Vips:EE|Iwasa:JP|Sargeant:US|Hauger:NO|Verschoor:NL|Vesti:DK|Daruvala:IN|Armstrong:NZ|Boschung:CH|Nissany:IL|Cordeel:BE|Novalak:FR|Enzo Fittipaldi:BR|Beckmann:DE|Correa:EC|Caldwell:GB',
+  2023:'Pourchaire:FR|Vesti:DK|Hauger:NO|Martins:FR|Iwasa:JP|Bearman:GB|Daruvala:IN|Maloney:BB|Verschoor:NL|Stanek:CZ|Cordeel:BE|Novalak:FR|Boschung:CH|Enzo Fittipaldi:BR|Villagómez:MX|Crawford:US|Hadjar:FR|Doohan:AU',
+  2024:'Bortoleto:BR|Hadjar:FR|Antonelli:IT|Maini:IN|Aron:EE|Verschoor:NL|Maloney:BB|Hauger:NO|Stanek:CZ|Villagómez:MX|Martins:FR|Crawford:US|Bearman:GB|Enzo Fittipaldi:BR|Barnard:GB|Cordeel:BE|Miyata:JP|Dürksen:PY|Correa:EC|Colapinto:AR',
+  2025:'Fornaroli:IT|Crawford:US|Verschoor:NL|Beganovic:SE|Browning:GB|Dürksen:PY|Martins:FR|Maloney:BB|Villagómez:MX|Aron:EE|Marti:ES|Lindblad:GB|Enzo Fittipaldi:BR|Stanek:CZ|Miyata:JP'
+ },
+ f3: {
+  2019:'Shwartzman:RU|Daruvala:IN|Vips:EE|Armstrong:NZ|Hughes:GB|Verschoor:NL|Sargeant:US|Beckmann:DE|Fernández:MX|Novalak:FR|Lundgaard:DK|Pulcini:IT|Peroni:AU|Deledda:IT',
+  2020:'Piastri:AU|Sargeant:US|Zendeli:DE|Beckmann:DE|Vesti:DK|Pourchaire:FR|Smolyar:RU|Hauger:NO|Peroni:AU|Doohan:AU|Lawson:NZ|Enzo Fittipaldi:BR|Stanek:CZ|Nannini:IT|A. Leclerc:MC',
+  2021:'Hauger:NO|Doohan:AU|Stanek:CZ|A. Leclerc:MC|Martins:FR|Caldwell:GB|Smolyar:RU|Sargeant:US|Vesti:DK|Nannini:IT|Crawford:US|Collet:BR|Saucy:CH|Edgar:GB',
+  2022:'Maloney:BB|Martins:FR|Bearman:GB|Collet:BR|Saucy:CH|A. Leclerc:MC|Crawford:US|Smolyar:RU|Stanek:CZ|Barnard:GB|Bortoleto:BR|Correa:EC|Goethe:GB|Beganovic:SE|Edgar:GB|Marti:ES|O’Sullivan:GB',
+  2023:'Bortoleto:BR|Marti:ES|Aron:EE|Goethe:GB|Beganovic:SE|Browning:GB|Mansell:GB|Minì:IT|Stenshorne:NO|Voisin:FR|Tsolov:BG|Fornaroli:IT|Barnard:GB',
+  2024:'Fornaroli:IT|Minì:IT|Beganovic:SE|Goethe:GB|Stenshorne:NO|Tsolov:BG|Wharton:AU|Inthraphuvasak:TH|Lindblad:GB|Dufek:CZ|Mansell:GB|Voisin:FR|Bedrin:RU|Browning:GB',
+  2025:'Câmara:BR|Tsolov:BG|Stenshorne:NO|León:MX|Taponen:FI|Badoer:IT|Naël:FR|Ugochukwu:US|Bedrin:RU|Giusti:FR|Boya:ES|Wurz:AT|Inthraphuvasak:TH|Dufek:CZ'
+ },
+ /* A Fórmula Regional tem cobertura mais curta: entram só os nomes de que
+    se tem registro seguro naquele ano, e o resto do grid segue anônimo. */
+ freg: {
+  2020:'Petecof:BR|Vidales:ES|Collet:BR|Hadjar:FR',
+  2021:'Saucy:CH|Hadjar:FR|Vidales:ES|Collet:BR|Barnard:GB',
+  2022:'Beganovic:SE|Marti:ES|Goethe:GB|Barnard:GB',
+  2023:'Antonelli:IT|Tsolov:BG|Câmara:BR|Stenshorne:NO|Badoer:IT',
+  2024:'Câmara:BR|Taponen:FI|Naël:FR|Badoer:IT|Ugochukwu:US|Giusti:FR|León:MX',
+  2025:'Taponen:FI|Naël:FR|Giusti:FR|León:MX'
+ }
+};
+
+/* de que categoria estamos falando, seja qual for o nome que ela tenha no ano */
+function jrCatId(cat){
+  if(!cat) return null;
+  if(/Fórmula 2|GP2/.test(cat))      return 'f2';
+  if(/Fórmula 3(?!000)/.test(cat))   return 'f3';
+  if(/Fórmula Regional/.test(cat))   return 'freg';
+  return null;
+}
+
+/* o elenco real daquela categoria naquele ano, se existir */
+function elencoReal(cat, ano){
+  const id = jrCatId(cat);
+  const tab = id && JR_REAIS[id];
+  const linha = tab && tab[ano];
+  if(!linha) return null;
+  return linha.split('|').filter(Boolean).map(p => {
+    const i = p.lastIndexOf(':');
+    return { name: p.slice(0, i).replace(/_/g, ' '), cc: p.slice(i + 1) };
+  });
+}
+
 /* nomes para preencher as categorias de base */
 const JR_NAMES = ['Almeida','Antunes','Barros','Bertolini','Cabrera','Dantas','Delgado','Escobar','Faria','Ferrante',
 'Gallardo','Hoffmann','Ivanov','Janssen','Kovac','Lehmann','Marchetti','Nakamura','Oliveira','Petrov','Queiroz',
@@ -3641,12 +3703,29 @@ const Engine = {
     } else {
       const used = new Set([S.driver.name]);
       const n = info.field - 1;
+      /* Da Fórmula Regional para cima o grid é o de verdade daquele ano, na
+         ordem em que o campeonato terminou: em 2024 a Fórmula 2 tem Bortoleto,
+         Hadjar e Antonelli na sua frente. Onde a lista não cobre o grid
+         inteiro, o resto continua sendo preenchido com nomes anônimos. */
+      const reais = elencoReal(cat, S.year) || [];
+      let ri = 0;
       for(let i=0;i<n;i++){
-        let nm; do{ nm = R.pick(JR_NAMES); }while(used.has(nm));
+        let nm = null, cc = null;
+        while(ri < reais.length && !nm){
+          const r = reais[ri++];
+          if(!used.has(r.name)){ nm = r.name; cc = r.cc; }
+        }
+        if(!nm){ do{ nm = R.pick(JR_NAMES); }while(used.has(nm)); cc = R.pick(JR_CC); }
         used.add(nm);
         const tier = i/n;
-        field.push({ id:'d'+i, name:nm, cc:R.pick(JR_CC),
-          skill: clamp(Math.round(info.base + 20*(1-tier) + R.gauss()*4), 25, 92),
+        /* Com nomes reais a ordem é a do campeonato daquele ano, então o
+           sorteio precisa ser discreto: o campeão da F2 de 2024 não pode
+           aparecer como terceiro melhor do grid. Com nomes inventados o
+           acaso continua solto, que é o que dava vida àqueles grids. */
+        const real = i < reais.length;
+        const amp = real ? 26 : 20, ruido = real ? 1.7 : 4;
+        field.push({ id:'d'+i, name:nm, cc,
+          skill: clamp(Math.round(info.base + amp*(1-tier) + R.gauss()*ruido), 25, 92),
           teamId: teams[Math.floor(i/2) % teams.length].id });
       }
       /* distribui os pilotos pelas equipes de forma equilibrada — nas categorias
@@ -3967,6 +4046,22 @@ const Engine = {
     const g = Math.round(m.invest * taxa);
     m.invest = Math.max(0, m.invest + g);
     return g;
+  },
+
+  /* Um ano parado na mesma categoria, juntando dinheiro. Só existe quando
+     não há nenhuma vaga acessível — inclusive para quem foi campeão, que de
+     resto não pode repetir a categoria. */
+  esperaForcada(){
+    if(!Engine.ehRealista() || !S.season) return null;
+    const times = Engine.teamsFor(S.season.cat, S.year + 1, S.series, S.catIdx, S.ladder.length);
+    const t = times[times.length - 1];
+    if(!t) return null;
+    const custo = Engine.custoTemporada(S.season.cat, S.catIdx, S.ladder.length, S.series);
+    const apoio = Engine.apoioAcademia(custo);
+    const paga = Math.max(0, custo - apoio);
+    if(paga > S.money.saldo + Engine.patrocinioValor()) return null;
+    return { type:'f1', cat:S.season.cat, team:t, years:1, custo, apoio, paga, podeP:true, espera:true,
+      note:'Sem orçamento para o degrau seguinte. Mais um ano aqui, juntando dinheiro e esperando a porta abrir.' };
   },
 
   /* ── a rota alternativa ──
@@ -4516,10 +4611,16 @@ const Engine = {
             : 'Subir de categoria. Material melhor, adversários mais duros.'
         }));
       }
+      /* ── campeão só anda para a frente ──
+         Ganhou o campeonato, acabou o assunto naquela categoria: repetir o ano
+         ou descer deixam de ser opção. Se o dinheiro não permitir subir, o
+         mercado ainda mostra as rotas mais baratas — e, em último caso, um
+         ano de espera aparece explicitamente como o que é. */
+      const soParaFrente = sum.champion;
       /* ficar mais um ano — com escolha de equipe */
-      const cTeams = Engine.teamsFor(S.season.cat, nextYear, S.series, S.catIdx, S.ladder.length);
+      const cTeams = soParaFrente ? [] : Engine.teamsFor(S.season.cat, nextYear, S.series, S.catIdx, S.ladder.length);
       const stayCands = cTeams.filter(t => jrRep >= (t.str - 46) * 1.6).slice(0, 3);
-      (stayCands.length ? stayCands : cTeams.slice(-2)).forEach(t => list.push({
+      (stayCands.length ? stayCands : cTeams.slice(-2)).slice(0, soParaFrente ? 0 : 3).forEach(t => list.push({
         type:'f1', cat:S.season.cat, team:t, years:1,
         note: t.name === (S.team && S.team.name)
           ? 'Renovar onde você já está. Eles conhecem o seu jeito.'
@@ -6333,9 +6434,15 @@ const Game = {
         o.paga  = o.custo === 0 ? 0 : Math.max(0, o.custo - o.apoio);
         o.podeP = o.paga === 0 || (S.money.saldo + prev) >= o.paga;
       });
-      const viaveis = offers.filter(o => o.podeP);
-      if(!viaveis.length){ Game.recalcularRota(offers); return; }
-      offers = viaveis;
+      /* As vagas fora do orçamento continuam na tela, marcadas: é importante
+         ver o que ficou de fora e por quanto, não só o que sobrou. */
+      if(!offers.some(o => o.podeP)){
+        /* nada cabe no bolso: um ano de espera aparece explicitamente como o
+           que é — juntar dinheiro — e só se nem isso couber a rota muda */
+        const espera = Engine.esperaForcada();
+        if(espera) offers.push(espera);
+        else { Game.recalcularRota(offers); return; }
+      }
     }
     S.pendingOffers = offers;
 
@@ -6357,7 +6464,7 @@ const Game = {
           else if(o.down) tag = '⬇️ Recomeço';
           else tag = `${o.years} ${o.years>1?'anos':'ano'}`;
           const mudouCat = o.cat !== S.season.cat || !!sr;
-          return `<button class="offer" onclick="Game.takeOffer(${i})">
+          return `<button class="offer" ${o.podeP===false?'style="opacity:.5"':''} onclick="Game.takeOffer(${i})">
             <div class="oh">
               <span class="stripe" style="background:${o.team.color};height:20px;width:5px"></span>
               <span class="on">${esc(o.team.name)}</span>
@@ -6386,6 +6493,7 @@ const Game = {
   takeOffer(i){
     const o = S.pendingOffers[i];
     if(!o) return;
+    if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
     const trocouEquipe = !o.team || !S.team || o.team.name !== S.team.name;
     /* trocar de equipe não apaga o currículo: só uma boa temporada limpa a ficha */
     if(trocouEquipe) S.teamRel = 50;
