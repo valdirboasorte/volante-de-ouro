@@ -3172,6 +3172,90 @@ const RELACOES = {
 };
 
 /* ═══════════════════════════════════════════════════════════════
+   IDENTIDADE DE CADA CATEGORIA
+   Correr não é a mesma coisa em todo lugar. A Fórmula 1 premia quem
+   é rápido numa volta e tem o melhor carro; a NASCAR premia quem
+   sobrevive a quinhentas milhas em pelotão; a Fórmula E premia quem
+   entende energia. Cada categoria tem a sua curva, o seu teto, o seu
+   tempo de adaptação e a sua dificuldade para ser dominada.
+
+   variancia    — o quanto o acaso pesa num domingo qualquer
+   estrategia   — o quanto a corrida se decide fora do volante
+   pesoExp      — o quanto conhecer a categoria vale
+   pesoCons     — o quanto terminar todas vale mais do que ser rápido
+   adaptaAno    — quanto de adaptação uma temporada inteira acrescenta
+   idadeIdeal   — a idade em que se anda melhor ali
+   tolIdade     — quantos anos em volta disso ainda rendem
+   compressao   — o quanto o grid é apertado (1 = como é, <1 comprime)
+   erro         — a chance base de o piloto jogar uma corrida fora
+   confia       — o quanto a mecânica falha além da época
+   ═══════════════════════════════════════════════════════════════ */
+const PERFIS = {
+  f1: { variancia:1.00, estrategia:.85, pesoExp:.55, pesoCons:.85, adaptaAno:26,
+        idadeIdeal:28, tolIdade:7, compressao:1.00, erro:.030, confia:1.00,
+        n:'A Fórmula 1 premia a volta rápida e o melhor carro.' },
+  indy:{ variancia:1.42, estrategia:1.30, pesoExp:1.00, pesoCons:1.05, adaptaAno:19,
+        idadeIdeal:31, tolIdade:9, compressao:.62, erro:.048, confia:1.06,
+        n:'Na IndyCar o carro é quase igual para todo mundo, e o oval é outro esporte.' },
+  nascar:{variancia:1.55, estrategia:1.35, pesoExp:1.15, pesoCons:1.20, adaptaAno:16,
+        idadeIdeal:33, tolIdade:11, compressao:.55, erro:.055, confia:1.12,
+        n:'Quinhentas milhas em pelotão: sobreviver vale mais do que ser rápido.' },
+  fe:  { variancia:1.48, estrategia:1.45, pesoExp:1.10, pesoCons:.95, adaptaAno:17,
+        idadeIdeal:30, tolIdade:8, compressao:.58, erro:.050, confia:.95,
+        n:'A Fórmula E se decide na energia, e o mais rápido raramente ganha.' },
+  dtm: { variancia:1.22, estrategia:1.10, pesoExp:.90, pesoCons:1.00, adaptaAno:21,
+        idadeIdeal:30, tolIdade:9, compressao:.70, erro:.045, confia:1.02,
+        n:'No DTM os carros são irmãos e o para-lama resolve o que o motor não resolve.' },
+  stock:{variancia:1.50, estrategia:1.25, pesoExp:1.05, pesoCons:1.10, adaptaAno:18,
+        idadeIdeal:32, tolIdade:11, compressao:.55, erro:.052, confia:1.05,
+        n:'Stock Car: grid invertido, carro igual e ninguém dá passagem.' },
+  wec: { variancia:1.10, estrategia:1.40, pesoExp:.95, pesoCons:1.25, adaptaAno:22,
+        idadeIdeal:32, tolIdade:12, compressao:.80, erro:.035, confia:1.15,
+        n:'No endurance a corrida é longa demais para um herói e curta demais para um erro.' }
+};
+
+/* ── o quanto o que você sabe numa categoria serve na outra ──
+   Um monoposto ensina outro monoposto. Um carro de teto ensina outro
+   carro de teto. E um oval não se parece com nada. */
+const PARENTESCO = {
+  f1:    { indy:.52, wec:.46, dtm:.34, fe:.50, nascar:.14, stock:.26 },
+  indy:  { f1:.52, nascar:.46, stock:.40, wec:.44, dtm:.34, fe:.42 },
+  nascar:{ stock:.58, indy:.46, dtm:.32, wec:.28, f1:.14, fe:.16 },
+  stock: { nascar:.58, dtm:.44, indy:.40, wec:.34, f1:.26, fe:.24 },
+  dtm:   { stock:.44, wec:.50, nascar:.32, indy:.34, f1:.34, fe:.30 },
+  wec:   { dtm:.50, f1:.46, indy:.44, stock:.34, nascar:.28, fe:.34 },
+  fe:    { f1:.50, indy:.42, dtm:.30, wec:.34, stock:.24, nascar:.16 }
+};
+
+/* ── quatro maneiras de ser rápido ──
+   Nem todo piloto rápido é rápido do mesmo jeito, e é isso que decide
+   campeonato. O metrônomo perde corridas para o meteoro e ganha o ano. */
+const ARQUETIPOS = [
+  { k:'meteoro',   n:'Meteoro',            p:.16,
+    d:'Voa numa volta e joga corridas fora.',        q:+3.4, r:-.6, cons:-16, tem:.9 },
+  { k:'metronomo', n:'Metrônomo',          p:.18,
+    d:'Nunca é o mais rápido e nunca falta.',        q:-1.6, r:+1.1, cons:+18, tem:1.15 },
+  { k:'domingueiro',n:'Piloto de corrida', p:.16,
+    d:'Larga mal e chega bem.',                      q:-2.2, r:+2.6, cons:+4,  tem:1.0 },
+  { k:'sabadista', n:'Especialista de sábado', p:.13,
+    d:'Pole atrás de pole, domingo esquecível.',     q:+3.0, r:-1.6, cons:0,   tem:1.0 },
+  { k:'bruto',     n:'Bate e leva',         p:.11,
+    d:'Ninguém passa por ele. Nem ele passa incólume.', q:+.4, r:+1.4, cons:-12, tem:.85 },
+  { k:'completo',  n:'Completo',            p:.10,
+    d:'Bom em tudo, excepcional em nada.',           q:+1.0, r:+1.0, cons:+6,  tem:1.05 },
+  { k:'irregular', n:'Irregular',           p:.16,
+    d:'Um fim de semana genial, três esquecíveis.',  q:0,    r:0,    cons:-22, tem:.95 }
+];
+
+/* ── especialidade de traçado ──
+   O sujeito que é imbatível em Long Beach e desaparece em Indianápolis.
+   Vale para todo o grid, e é o que faz pilotos diferentes dominarem
+   circuitos diferentes dentro da mesma temporada. */
+const TIPOS_PISTA = ['oval','fast','street','tech','mixed'];
+const TIPO_NOME = { oval:'ovais', fast:'circuitos rápidos', street:'circuitos de rua',
+                    tech:'circuitos técnicos', road:'circuitos mistos' };
+
+/* ═══════════════════════════════════════════════════════════════
    TRAÇOS
    Todo piloto tem duas ou três coisas que ninguém contou para ele.
    Elas valem desde a primeira corrida, mas não aparecem em lugar
@@ -5250,6 +5334,20 @@ const Engine = {
   /* ---- monta a temporada ---- */
   buildSeason(){
     const era = Engine.eraOf(S.year, S.series);
+    /* uma vez por ano: quem correu aprende a categoria, quem ficou longe
+       enferruja. Fica no motor de propósito — depender da tela fazia com que
+       o piloto nunca se adaptasse nas simulações e nos anos pulados. */
+    if(S.adaptAno !== S.year){
+      if(S.lastSeries){
+        const completa = !!(S.season && S.season.results &&
+                            S.season.results.length >= S.season.calendar.length * .7);
+        Engine.moverAdapt(S.lastSeries, completa);
+        if(!S.driver.anosEm) S.driver.anosEm = {};
+        S.driver.anosEm[S.lastSeries] = (S.driver.anosEm[S.lastSeries] || 0) + 1;
+      }
+      Engine.garantirAdapt(S.series);
+      S.adaptAno = S.year;
+    }
     /* A escada é revalidada todo ano: quem chega no degrau da F4 em 2025 sendo
        brasileiro encontra a F4 Brasil, que não existia quando a carreira começou. */
     if(S.driver && S.driver.cc){
@@ -5544,6 +5642,8 @@ const Engine = {
       S.gridMem = {}; S.gridMemSerie = S.series; S.gridMemEra = era.id;
       field.forEach(f => { const t = teams.find(x => x.id === f.teamId); if(t) S.gridMem[f.name] = t.name; });
     } else {
+      /* o nível de quem está correndo aqui, para ancorar o grid */
+      const meuNivel = Engine.meSkill(false).r;
       const used = new Set([S.driver.name]);
       const n = info.field - 1;
       /* Da Fórmula Regional para cima o grid é o de verdade daquele ano, na
@@ -5568,8 +5668,13 @@ const Engine = {
            acaso continua solto, que é o que dava vida àqueles grids. */
         const real = i < reais.length;
         const amp = real ? 26 : 20, ruido = real ? 1.7 : 4;
+        /* topo do grid: o nível natural do degrau, puxado para perto de quem
+           está correndo ali. Nunca abaixo do natural — subir de categoria
+           continua sendo subir de nível. */
+        const natural = info.base + amp;
+        const topoGrid = Math.max(natural, natural * .30 + meuNivel * .70 + R.range(-1, 4));
         field.push({ id:'d'+i, name:nm, cc,
-          skill: clamp(Math.round(info.base + amp*(1-tier) + R.gauss()*ruido), 25, 92),
+          skill: clamp(Math.round(topoGrid - amp + amp*(1-tier) + R.gauss()*ruido), 25, 96),
           teamId: teams[Math.floor(i/2) % teams.length].id });
       }
       /* distribui os pilotos pelas equipes de forma equilibrada — nas categorias
@@ -5619,6 +5724,10 @@ const Engine = {
          nas categorias de carro igual */
       mediaSkill: field.filter(f=>!f.isMe).reduce((a,f)=>a+f.skill,0) /
                   Math.max(1, field.filter(f=>!f.isMe).length),
+      /* média de carro do grid — base para comprimir onde o chassi é o mesmo */
+      mediaCarro: teams.reduce((a,t)=>a+t.str,0) / Math.max(1, teams.length),
+      /* o melhor do grid: acima dele o talento rende cada vez menos */
+      altoSkill: field.filter(f=>!f.isMe).reduce((a,f)=>Math.max(a,f.skill), 0) || null,
       results:[], dstand:{}, cstand:{}, fin:{}
     };
   },
@@ -5773,6 +5882,9 @@ const Engine = {
   carStr(sea, teamId, round){
     const t = sea.teams.find(x=>x.id===teamId);
     let s = t.str;
+    const esp = (SERIES[S.series] && SERIES[S.series].spec != null) ? SERIES[S.series].spec : 1;
+    if(sea.isTop && esp < 1 && sea.mediaCarro != null)
+      s = sea.mediaCarro + (s - sea.mediaCarro) * (.30 + esp * .70);
     if(teamId === S.team.id){
       /* a promessa que se cumpriu — o motor novo que realmente chegou em maio */
       s += S.bonusCarro || 0;
@@ -5792,9 +5904,16 @@ const Engine = {
      todo mundo classifica em meio segundo. Comprime a escala de habilidade em
      torno da média do grid — vale igual para você e para os rivais. */
   compSkill(v, sea){
-    const e = SERIES[S.series] && SERIES[S.series].specSkill;
-    if(!e || e >= 1 || !sea || !sea.isTop) return v;
-    return sea.mediaSkill + (v - sea.mediaSkill) * e;
+    if(!sea || !sea.isTop) return v;
+    const p = PERFIS[S.series];
+    const legado = SERIES[S.series] && SERIES[S.series].specSkill;
+    const e = p ? p.compressao : (legado != null ? legado : 1);
+    let r = (!e || e >= 1) ? v : sea.mediaSkill + (v - sea.mediaSkill) * e;
+    const topo = sea.altoSkill != null
+               ? (!e || e >= 1 ? sea.altoSkill : sea.mediaSkill + (sea.altoSkill - sea.mediaSkill) * e)
+               : null;
+    if(topo != null && r > topo) r = topo + (r - topo) * .58;
+    return r;
   },
 
   /* ---- habilidades efetivas do jogador ---- */
@@ -5818,7 +5937,7 @@ const Engine = {
     if(wet){ car -= .13; skill += .13; }
     /* onde o carro é praticamente igual, o piloto pesa mais na conta */
     const esp = SERIES[S.series] && SERIES[S.series].spec != null ? SERIES[S.series].spec : 1;
-    if(esp < 1){ const d = (1 - esp) * .22; car -= d; skill += d; }
+    if(esp < 1){ const d = (1 - esp) * .11; car -= d; skill += d; }
     return {car, skill};
   },
 
@@ -6801,6 +6920,174 @@ const Engine = {
      ajuda o carro da equipe e a sua relação com ela em vez de ajudar você.
      Não dá para treinar tudo: é exatamente aí que está a escolha. */
   PREP_ATTR: { fis:'cons', sim:'pace', race:'race', wet:'wet', eng:'dev' },
+  /* ═══ IDENTIDADE DA CATEGORIA ═══ */
+  perfil(sk){ return PERFIS[sk || S.series] || PERFIS.f1; },
+
+  /* ═══ ADAPTAÇÃO ═══
+     Talento é uma coisa; saber correr naquela categoria é outra. Um campeão
+     de Fórmula 1 que desembarca na IndyCar sabe pilotar — não sabe oval, não
+     sabe as bandeiras, não sabe economizar combustível, e não conhece os
+     caras que vão brigar com ele. Isso se aprende, leva tempo, e se perde
+     quando você passa anos longe. */
+  adaptDe(sk){
+    if(!S.driver.adapt) S.driver.adapt = {};
+    return S.driver.adapt[sk] != null ? S.driver.adapt[sk] : null;
+  },
+  /* quanto você já sabe ao chegar numa categoria pela primeira vez */
+  adaptInicial(sk){
+    const par = PARENTESCO[sk] || {};
+    let melhor = 0;
+    Object.keys(S.driver.adapt || {}).forEach(k => {
+      if(k === sk) return;
+      const t = (par[k] || .2) * (S.driver.adapt[k] || 0);
+      if(t > melhor) melhor = t;
+    });
+    /* quem nunca correu em lugar nenhum começa cru; quem vem de perto, menos */
+    return clamp(Math.round(14 + melhor * .78), 10, 62);
+  },
+  garantirAdapt(sk){
+    if(!S.driver.adapt) S.driver.adapt = {};
+    if(S.driver.adapt[sk] == null) S.driver.adapt[sk] = Engine.adaptInicial(sk);
+    return S.driver.adapt[sk];
+  },
+  /* a virada de ano: quem correu aprende, quem ficou longe esquece */
+  moverAdapt(skAtual, temporadaCompleta){
+    if(!S.driver.adapt) S.driver.adapt = {};
+    const p = Engine.perfil(skAtual);
+    Object.keys(S.driver.adapt).forEach(k => {
+      if(k === skAtual) return;
+      /* ferrugem: perde-se ritmo específico, nunca talento */
+      const piso = 22 + (S.career && S.career.titles ? 6 : 0);
+      S.driver.adapt[k] = clamp(Math.round(S.driver.adapt[k] - R.range(6, 13)), piso, 100);
+    });
+    const v = Engine.garantirAdapt(skAtual);
+    const ganho = p.adaptaAno * (temporadaCompleta ? 1 : .55)
+                * (1 + (S.driver.attr.dev - 60) / 180)          /* quem entende carro aprende antes */
+                * (100 - v) / 100 * 1.7;                        /* o primeiro ano ensina muito mais */
+    S.driver.adapt[skAtual] = clamp(Math.round(v + ganho), 0, 100);
+  },
+  adaptTxt(v){
+    return v >= 88 ? 'você conhece esta categoria como a palma da mão'
+         : v >= 70 ? 'você já está em casa aqui'
+         : v >= 52 ? 'você entende o essencial, falta o detalhe'
+         : v >= 34 ? 'você ainda está aprendendo a categoria'
+         :           'tudo aqui é novo para você';
+  },
+
+  /* ═══ ESPECIALIDADE DE TRAÇADO ═══
+     Construída correndo. Quem passa cinco anos na IndyCar vira bom de oval;
+     quem passa a carreira em Mônaco vira bom de muro. */
+  espDe(tipo){
+    if(!S.driver.esp) S.driver.esp = {};
+    return S.driver.esp[tipo] || 0;
+  },
+  /* cada corrida deixa um resíduo, medido contra o companheiro de equipe */
+  aprenderPista(rec){
+    if(!S.driver.esp) S.driver.esp = {};
+    const t = rec.type || 'tech';
+    const d = (rec.tmPos != null && rec.pos != null) ? (rec.tmPos - rec.pos)
+            : (rec.tmGrid != null && rec.grid != null) ? (rec.tmGrid - rec.grid) : 0;
+    const passo = clamp(d * .055, -.20, .20);
+    S.driver.esp[t] = clamp((S.driver.esp[t] || 0) + passo, -2.6, 2.6);
+    /* o que você não visita, você desaprende devagar */
+    TIPOS_PISTA.forEach(o => {
+      if(o === t && S.driver.esp[o] != null) return;
+      if(S.driver.esp[o]) S.driver.esp[o] *= .992;
+    });
+  },
+
+  /* ═══ QUEM SÃO OS OUTROS ═══
+     Um número de habilidade não é um piloto. O grid passa a ter metrônomos,
+     meteoros, especialistas de sábado e gente que bate. É isso que faz um
+     campeonato ir para a última prova. */
+  arquetipoDe(nome){
+    const h = seedOf('arq' + nome);
+    let t = (h % 1000) / 1000, acc = 0;
+    for(const a of ARQUETIPOS){ acc += a.p; if(t < acc) return a; }
+    return ARQUETIPOS[ARQUETIPOS.length - 1];
+  },
+  perfilRival(f, sea){
+    const arq = Engine.arquetipoDe(f.name);
+    const h = seedOf('pf' + f.name);
+    const g = seedOf('pf' + f.name + sea.year);
+    const p = Engine.perfil(S.series);
+    f.arq = arq.k;
+    /* viés de sábado e domingo: agora vem do arquétipo, não só do acaso */
+    f.qb = arq.q + ((h % 100) / 100 - .5) * 2.6;
+    f.rb = arq.r + (((h >>> 7) % 100) / 100 - .5) * 2.6;
+    /* consistência: a chance de jogar um domingo fora */
+    f.cons = clamp(52 + arq.cons + (((h >>> 13) % 100) - 50) * .55
+                 + (f.skill - 78) * .55, 12, 96);
+    /* a mecânica dele: uns têm sorte, outros não */
+    f.rel = R.range(-.035, .035) * (arq.tem ? (2 - arq.tem) : 1);
+    /* especialidade de traçado, para a vida inteira dele */
+    f.esp = {};
+    TIPOS_PISTA.forEach((t, i) => {
+      f.esp[t] = ((((h >>> (i * 5 + 3)) % 100) / 100) - .5) * 5.2
+                 * (Engine.perfil(S.series).pesoExp + .45);
+    });
+    /* forma do ano: a temporada da vida acontece, e a temporada perdida também */
+    f.formAno = R.gauss() * 1.5 * p.variancia;
+    /* fome de campeonato: quem está brigando por título arrisca menos e some menos */
+    f.fome = clamp(.35 + (f.skill - 74) / 26 + (((g >>> 3) % 100) / 100 - .5) * .5, 0, 1);
+    return f;
+  },
+
+  /* quantos pilotos brigam pelo título de verdade nesta categoria */
+  definirCandidatos(sea){
+    const p = Engine.perfil(S.series);
+    /* grid apertado, mais gente viva: a IndyCar chega em cinco na última prova
+       e a Fórmula 1 raramente passa de três */
+    const alvo = clamp(Math.round(2 + (1 - p.compressao) * 8), 2, 6);
+    const forca = f => {
+      const t = sea.teams.find(x => x.id === f.teamId);
+      return (f.skill || 70) + ((t ? t.str : 70) - 70) * (1 - Engine.perfil(S.series).compressao * .5) * .55
+           + (f.formAno || 0);
+    };
+    const ordem = sea.field.filter(f => !f.isMe).sort((a, b) => forca(b) - forca(a));
+    ordem.slice(0, alvo).forEach((f, i) => {
+      f.candidato = true;
+      /* quem briga por título não joga corrida fora: é isso que ganha ano */
+      f.cons = clamp(Math.max(f.cons, 66 + (alvo - i) * 2.5), 12, 97);
+      f.fome = clamp(.78 + (alvo - i) * .04, 0, 1);
+      /* e a equipe cuida melhor do carro de quem está brigando */
+      f.rel = Math.max(f.rel, -.008);
+    });
+    sea.candidatos = ordem.slice(0, alvo).map(f => f.id);
+  },
+
+  /* ═══ O QUE VOCÊ VALE HOJE, AQUI ═══
+     Não é o overall. É o overall filtrado pela adaptação à categoria, pela
+     especialidade naquele traçado, pela idade em relação ao que a categoria
+     pede, e pela experiência acumulada. */
+  fatorCategoria(sk, tipo){
+    const p = Engine.perfil(sk);
+    const ad = Engine.garantirAdapt(sk);
+    /* adaptação: de -8 (cru) a 0 (em casa). Os nativos já estão em 100. */
+    const fAd = -((100 - clamp(ad, 0, 100)) / 100) * 8.2 * p.pesoExp;
+    /* idade: cada categoria tem a sua janela */
+    const dist = Math.abs(S.driver.age - p.idadeIdeal);
+    const fId = -Math.max(0, dist - p.tolIdade) * .38;
+    /* traçado: o que você aprendeu correndo */
+    const fEs = Engine.espDe(tipo || 'tech');
+    /* experiência bruta na categoria */
+    const anos = (S.driver.anosEm && S.driver.anosEm[sk]) || 0;
+    const fEx = Math.min(anos, 8) * .16 * p.pesoExp;
+    return { adapt:fAd, idade:fId, esp:fEs, exp:fEx,
+             total: fAd + fId + fEs + fEx };
+  },
+
+  /* ═══ ERRO DO PILOTO ═══
+     A diferença entre rápido e campeão. Não é acidente: é a curva perdida, o
+     pneu bloqueado, a saída de pista boba que custa quinze segundos. */
+  chanceErro(cons, sk, wet, aperto){
+    const p = Engine.perfil(sk);
+    let c = p.erro * (1 + (62 - clamp(cons, 0, 100)) / 46);
+    if(wet) c *= 1.55;
+    if(aperto) c *= 1.20;                       /* pressão de campeonato */
+    return clamp(c, .004, .30);
+  },
+
   /* ═══ TRAÇOS ═══
      Duas coisas que ninguém te contou sobre você. Valem desde a primeira
      corrida; a descoberta vem depois, olhando o que acontece domingo após
@@ -7390,12 +7677,43 @@ const Engine = {
        de combustível e de energia: dá para vencer sem ser o mais rápido, e um
        piloto de nota menor briga de igual para igual muito mais vezes. */
     const caos = (SERIES[S.series] && SERIES[S.series].caos) || 1;
-    const noise = (wet ? 5.4 : 3.4) * (sea.isTop ? caos : 1);
+    const perf = Engine.perfil(S.series);
+    /* ── quanto o domingo é loteria ──
+       Sai da época, do tempo, da categoria e do traçado. Um oval de pelotão
+       e um circuito de rua não têm a mesma quantidade de acaso. */
+    const varTrk = trk.type === 'oval' ? 1.30 : trk.type === 'street' ? 1.12
+                 : trk.type === 'fast' ? .94 : 1;
+    const degrauBase = S.ladder && S.ladder.length > 1
+                     ? 1 - clamp(S.catIdx / (S.ladder.length - 1), 0, 1) : 0;
+    const noise = (wet ? 5.4 : 3.4) * varTrk
+                * (sea.isTop ? Math.max(caos, perf.variancia)
+                             : 1.06 + degrauBase * .42);
+    /* o campeonato aperta: quem está brigando por título sente */
+    const faltam = sea.calendar.length - rd;
+    const aperto = sea.isTop && rd > sea.calendar.length * .55 && faltam <= 6;
+
+    /* perfil de cada rival, uma vez por temporada */
+    if(!sea._perfilado){
+      sea.field.forEach(f => { if(!f.isMe) Engine.perfilRival(f, sea); });
+      Engine.definirCandidatos(sea);
+      /* a sua forma do ano: sai do moral, da relação com a equipe e do acaso.
+         Não aparece em lugar nenhum — você descobre correndo. */
+      sea.minhaForma = R.gauss() * 1.45 * perf.variancia
+                     + (S.driver.morale - 60) / 45
+                     + ((S.teamRel || 50) - 50) / 60;
+      sea._perfilado = true;
+    }
+    /* o que você vale nesta categoria, neste traçado, nesta idade */
+    const meuFator = sea.isTop ? Engine.fatorCategoria(S.series, trk.type) : { total:0 };
 
     /* ── classificação ── */
     const qual = sea.field.map(f=>{
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
-      const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).q + tr.q : f.skill + f.qb + (wet ? R.gauss()*3 : 0), sea);
+      const bruto = f.isMe
+        ? Engine.meSkill(wet).q + tr.q + meuFator.total + (sea.minhaForma || 0)
+        : f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0)
+          + (wet ? R.gauss()*3 : 0);
+      const sk = Engine.compSkill(bruto, sea);
       return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
     }).sort((a,b)=>b.v-a.v);
     const grid = {}; qual.forEach((q,i)=>grid[q.f.id]=i+1);
@@ -7403,35 +7721,60 @@ const Engine = {
     /* ── corrida ── */
     let passW = trk.type==='street' ? .62 : trk.type==='fast' ? .20 : .36;
     /* onde se corre em pelotão, a posição de largada segura muito menos */
-    passW /= (SERIES[S.series] && SERIES[S.series].caos) || 1;
+    passW /= Math.max(caos, sea.isTop ? perf.variancia : 1);
     const out = [];
     const running = [];
+    const notas = [];
 
     sea.field.forEach(f => {
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR + clima.car : 0);
-      const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).r + tr.r : f.skill + f.rb, sea);
+      const bruto = f.isMe
+        ? Engine.meSkill(wet).r + tr.r + meuFator.total + (sea.minhaForma || 0)
+        : f.skill + f.rb + (f.esp ? (f.esp[trk.type] || 0) * .7 : 0) + (f.formAno || 0);
+      const sk = Engine.compSkill(bruto, sea);
       const g = grid[f.id];
 
-      /* confiabilidade */
+      /* ── confiabilidade ──
+         Existe um azar que nenhum acerto evita. Mesmo o melhor carro da
+         história quebra algumas vezes por ano, e é isso que separa um
+         campeonato ganho de um campeonato perdido. */
       let relBase = era.rel + (car-70)/380 + f.rel + (f.isMe ? ajuste.rel + clima.rel + tr.rel : 0);
       if(!sea.isTop) relBase = Math.min(.94, relBase + .13);
-      const mech = !R.chance(clamp(relBase,.35,.97));
+      /* o teto de confiabilidade depende da categoria: endurance e NASCAR
+         castigam mais do que a Fórmula 1 moderna */
+      const teto = clamp(.975 - (perf.confia - 1) * .35, .90, .978);
+      const mech = !R.chance(clamp(relBase, .35, teto));
+
+      /* ── erro do piloto ──
+         Não é batida: é a curva perdida, o pneu bloqueado, o giro na saída
+         dos boxes. Custa posições e às vezes custa a corrida. */
+      const consF = f.isMe
+        ? clamp(S.driver.attr.cons + (S.driver.morale - 60) * .12, 10, 99)
+        : (f.cons != null ? f.cons : 55);
+      const errou = R.chance(Engine.chanceErro(consF, S.series, wet, aperto && (f.isMe || (f.fome||0) > .6)));
+      /* quem tem fome de campeonato arrisca menos e some menos */
+      const seguro = !f.isMe && (f.fome || 0) > .72 ? .55 : 1;
 
       /* erro / acidente */
-      let crashP = (sea.isTop ? .055 : .045) * (wet ? 1.9 : 1);
+      let crashP = (sea.isTop ? .050 : .042) * (wet ? 1.9 : 1) * (perf.variancia * .55 + .45);
       if(f.isMe){
         crashP *= STYLES[S.driver.style].risk;
         crashP *= (1 - (S.driver.attr.cons-50)/135);
         crashP *= tr.crash;
       } else {
-        crashP *= (1 - (f.skill-70)/230);
+        crashP *= (1 - (f.skill-70)/230) * seguro;
       }
+      if(errou) crashP *= 2.1;                 /* quem já errou uma vez erra de novo */
       const crash = R.chance(clamp(crashP,.005,.35));
 
       if(mech || crash){
         out.push({ f, grid:g, dnf: crash ? 'ACID' : 'MEC' });
+        if(f.isMe) notas.push(crash ? 'erro' : 'mecanica');
       } else {
-        const v = W.car*car + W.skill*sk + R.gauss()*noise*1.15 - (g-1)*passW;
+        /* o erro que não tira da corrida ainda custa caro */
+        const custoErro = errou ? (3.2 + R.f() * 4.5) * seguro : 0;
+        if(errou && f.isMe) notas.push('escorregao');
+        const v = W.car*car + W.skill*sk + R.gauss()*noise*1.15 - (g-1)*passW - custoErro;
         running.push({ f, grid:g, v });
       }
     });
@@ -7503,11 +7846,16 @@ const Engine = {
       tmGrid: tm ? tm.grid : null, tmPos: tm ? (tm.out?null:tm.pos) : null,
       top: finish.slice(0,10).map(x=>({ n:x.f.name, cc:x.f.cc, t:sea.teams.find(t=>t.id===x.f.teamId).name,
                                         me:!!x.f.isMe, pos:x.out?null:x.pos, dnf:x.out?x.dnf:null })),
-      champ: 0, injury
+      champ: 0, injury,
+      /* o que decidiu o domingo: azar mecânico, erro seu, ou nada disso */
+      notas: notas.slice(0, 3),
+      arq: null
     };
 
     /* o que a corrida mostrou sobre esta pista fica guardado para a próxima vez */
     Engine.gravarPista(trk.id, Engine.setores(sea, rd), sea.year);
+    /* e o que ela ensinou sobre este tipo de traçado fica com o piloto */
+    if(sea.isTop) Engine.aprenderPista(rec);
 
     sea.results.push(rec);
     sea.round++;
