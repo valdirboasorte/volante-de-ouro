@@ -6251,6 +6251,166 @@ const Engine = {
     return col;
   },
 
+  /* ═══ ACADEMIA E LEALDADE ═══
+     Um piloto da academia da Ferrari pode correr pela Ferrari e pela Haas.
+     Se assinar com a Mercedes, sai do programa — e sair tem preço. */
+  ALIADOS: {
+    'Red Bull Junior Team': ['Red Bull','Toro Rosso','AlphaTauri','RB','Racing Bulls','Minardi'],
+    'Ferrari Driver Academy': ['Ferrari','Haas','Sauber','Alfa Romeo','Kick Sauber','Audi'],
+    'Mercedes Junior': ['Mercedes','Williams','Aston Martin','Racing Point','Force India','McLaren'],
+    'Alpine Academy': ['Alpine','Renault','Lotus'],
+    'Renault Sport Academy': ['Renault','Alpine','Lotus','McLaren'],
+    'McLaren Young Driver': ['McLaren'],
+    'Williams Driver Academy': ['Williams'],
+    'Sauber Junior Team': ['Sauber','Alfa Romeo','Kick Sauber','Audi'],
+    'Toyota Young Drivers': ['Toyota'],
+    'Honda Formula Dream': ['Honda','BAR','Toro Rosso','AlphaTauri','Red Bull','RB','Racing Bulls'],
+    'Nissan Driver Development': ['Nissan'],
+    'Porsche Junior': ['Porsche'],
+    'BMW Junior Team': ['BMW','Sauber','BMW Sauber'],
+    'Audi Sport Academy': ['Audi','Sauber']
+  },
+  academiaAceita(nomeEquipe){
+    if(!S.academy) return true;
+    const lista = Engine.ALIADOS[S.academy.n];
+    /* sem lista conhecida, vale a equipe-mãe do programa */
+    const alvo = lista || (S.academy.t ? [S.academy.t] : null);
+    if(!alvo) return true;
+    return alvo.some(x => (nomeEquipe || '').indexOf(x) >= 0 || x.indexOf(nomeEquipe || '§') >= 0);
+  },
+  /* sair do programa: perde apoio, perde porta, e a imprensa comenta */
+  sairDaAcademia(motivo, nomeEquipe){
+    const a = S.academy;
+    if(!a) return null;
+    S.academy = null;
+    S.exAcademia = { n:a.n, ano:S.year, motivo };
+    S.driver.morale = clamp(S.driver.morale - 8, 5, 100);
+    S.driver.fame = clamp(S.driver.fame - 2, 0, 100);
+    if(S.marcas) S.marcas.porta = Math.max(0, (S.marcas.porta || 0) - 1);
+    /* quem te levou até ali não gosta de saber pela imprensa */
+    const men = Engine.genteAtiva ? Engine.genteAtiva().find(p => p.papel === 'mentor') : null;
+    if(men) Engine.mexerRel(men, { tens: 10, conf: -6 });
+    return { academia:a.n, equipe:nomeEquipe,
+             txt: 'Assinar com ' + (nomeEquipe || 'outra equipe') + ' encerrou o seu vínculo com o ' + a.n + '.' };
+  },
+
+  /* ═══ MERCADO DE OUTRAS CATEGORIAS ═══
+     O telefone não toca só da Fórmula 1. Um piloto em atividade recebe
+     convite da Indy, da NASCAR, do endurance — para a temporada inteira ou
+     só para uma prova que vale a carreira. */
+  seriesDisponiveis(ano){
+    return SERIES_KEYS.filter(k => k !== S.series && ano >= SERIES[k].from
+                                && eraOfSeries(ano, k));
+  },
+  /* o quanto uma categoria se interessa por você */
+  interesseDe(sk, ano){
+    const par = (PARENTESCO[S.series] || {})[sk] || .2;
+    const c = S.career || {};
+    const rep = clamp(S.driver.fame * .8 + (S.driver.ovr - 60) * 1.6
+                    + (c.titles || 0) * 14 + (c.wins || 0) * .8, 0, 160);
+    /* categorias americanas olham mais para quem já ganhou; o endurance
+       chama gente rápida de qualquer lugar */
+    const abre = sk === 'wec' ? 46 : sk === 'stock' ? 40 : sk === 'dtm' ? 52
+               : sk === 'fe' ? 62 : sk === 'nascar' ? 72 : 60;
+    return clamp((rep - abre) / 70 + par * .55 + Engine.bonusPorta() * .05, 0, 1);
+  },
+  /* propostas de fora, no fim de cada temporada */
+  ofertasDeFora(sum){
+    if(!S.season || !S.season.isTop) return [];
+    const ano = S.year + 1;
+    const out = [];
+    Engine.seriesDisponiveis(ano).forEach(sk => {
+      const inter = Engine.interesseDe(sk, ano);
+      if(inter < .18 || !R.chance(clamp(inter * .34, .04, .32))) return;
+      const era2 = eraOfSeries(ano, sk);
+      if(!era2) return;
+      const esc2 = resolveLadder(era2.ladder, S.driver.cc, ano);
+      const cat2 = esc2[esc2.length - 1];
+      const times = Engine.teamsFor(cat2, ano, sk, esc2.length - 1, esc2.length);
+      if(!times || !times.length) return;
+      /* quanto melhor a sua reputação, melhor a equipe que liga */
+      const alvo = times[clamp(Math.round((1 - inter) * (times.length - 1)) + R.int(-1, 1), 0, times.length - 1)];
+      if(!alvo) return;
+      out.push({ type:'f1', cat:cat2, team:alvo, years:R.int(1,2), sk, escada:esc2,
+        catIdx:esc2.length - 1, up:false, fora:true,
+        note: Engine.CONVITE[sk] || ('A ' + SERIES[sk].name + ' quer você para a temporada inteira.') });
+    });
+    return out;
+  },
+  CONVITE: {
+    indy:  'Uma equipe da IndyCar quer você para a temporada inteira. Carro igual para todo mundo, oval de 380 por hora e um mundo que você não conhece.',
+    nascar:'Uma equipe da NASCAR ligou. Trinta e poucas corridas, pelotão e cultura própria — nada do que você aprendeu vale automaticamente ali.',
+    wec:   'O endurance quer você. Protótipo, revezamento e Le Mans decidindo o ano.',
+    dtm:   'O DTM tem uma vaga. Carros irmãos, corridas curtas e para-lama amassado como regra.',
+    fe:    'A Fórmula E quer você. Energia contada até a última volta e um campeonato que ninguém domina.',
+    stock: 'A Stock Car brasileira ligou. Grid invertido, carro igual e ninguém dando passagem.',
+    f1:    'Uma equipe de Fórmula 1 quer você.'
+  },
+
+  /* ═══ ATIVIDADE PARALELA ═══
+     Correr em duas categorias no mesmo ano é coisa antiga no automobilismo,
+     desde que o calendário deixe e a equipe principal permita. */
+  PARALELAS: {
+    wec:   { n:'as 24 Horas', d:'Uma prova só, no meio da temporada, com revezamento e madrugada.',
+             provas:1, fama:9, dinheiro:280e3, risco:.10, cansaco:6, adapta:5 },
+    dtm:   { n:'algumas etapas do DTM', d:'Três fins de semana de carro de teto entre as suas corridas.',
+             provas:3, fama:5, dinheiro:160e3, risco:.07, cansaco:9, adapta:7 },
+    indy:  { n:'as 500 Milhas', d:'A prova mais importante do mundo fora da sua categoria, e um mês de treinos.',
+             provas:1, fama:14, dinheiro:420e3, risco:.14, cansaco:8, adapta:6 },
+    stock: { n:'a Corrida de Duplas', d:'Um fim de semana no Brasil, com um convite e uma dupla.',
+             provas:1, fama:4, dinheiro:70e3, risco:.05, cansaco:3, adapta:4 },
+    nascar:{ n:'uma prova da NASCAR', d:'Um convite para um oval, num carro que não se parece com nada.',
+             provas:1, fama:7, dinheiro:190e3, risco:.11, cansaco:5, adapta:5 }
+  },
+  /* o contrato deixa? */
+  clausulaAtual(){ return (S.contract && S.contract.clausula) || 'padrao'; },
+  podeParalela(sk){
+    const cl = Engine.clausulaAtual();
+    if(cl === 'exclusivo') return false;
+    if(cl === 'livre') return true;
+    /* padrão: endurance e provas avulsas sim, temporada paralela não */
+    return sk === 'wec' || sk === 'stock' || (Engine.PARALELAS[sk] && Engine.PARALELAS[sk].provas <= 1);
+  },
+  /* o que aparece como convite paralelo nesta temporada */
+  convitesParalelos(){
+    if(!S.season || !S.season.isTop) return [];
+    const ano = S.year;
+    const out = [];
+    Object.keys(Engine.PARALELAS).forEach(sk => {
+      if(sk === S.series) return;
+      if(ano < SERIES[sk].from || !eraOfSeries(ano, sk)) return;
+      const inter = Engine.interesseDe(sk, ano);
+      if(inter < .22) return;
+      const p = Engine.PARALELAS[sk];
+      out.push({ sk, nome:p.n, d:p.d, provas:p.provas, permitido: Engine.podeParalela(sk),
+                 fama:p.fama, dinheiro:p.dinheiro, risco:p.risco, cansaco:p.cansaco, adapta:p.adapta });
+    });
+    return out;
+  },
+  /* corre a prova paralela e devolve o que aconteceu */
+  correrParalela(c){
+    const era2 = eraOfSeries(S.year, c.sk);
+    const ad = Engine.garantirAdapt(c.sk);
+    /* você chega cru: é a graça e é o risco */
+    const nivel = Engine.meSkill(false).r - (100 - ad) / 100 * 9
+                + R.gauss() * (Engine.perfil(c.sk).variancia * 3.6);
+    const teto = (SERIES[c.sk].faixa || [74, 90])[1];
+    const pos = clamp(Math.round(1 + Math.max(0, teto + 2 - nivel) * 1.35 + R.gauss() * 2.4), 1, 26);
+    const bateu = R.chance(c.risco);
+    const r = { sk:c.sk, nome:c.nome, ano:S.year, pos: bateu ? null : pos, bateu };
+    /* consequências */
+    if(!S.driver.adapt) S.driver.adapt = {};
+    S.driver.adapt[c.sk] = clamp(Math.round(ad + c.adapta), 0, 100);
+    S.driver.fame = clamp(S.driver.fame + (bateu ? 1 : pos <= 3 ? c.fama : Math.round(c.fama * .4)), 0, 100);
+    if(S.money) S.money.saldo += bateu ? Math.round(c.dinheiro * .4) : c.dinheiro;
+    S.driver.morale = clamp(S.driver.morale + (bateu ? -10 : pos <= 3 ? 8 : 2), 5, 100);
+    /* cansaço: o resto da temporada principal sente */
+    S.cansaco = clamp((S.cansaco || 0) + c.cansaco, 0, 40);
+    if(bateu && S.opts.risk && R.chance(.35)) S.driver.injured = (S.driver.injured || 0) + R.int(1, 2);
+    S.paralelas = (S.paralelas || []).concat([r]);
+    return r;
+  },
+
   /* ═══ O QUE SE SABE, E DE QUEM ═══
      Contrato não se assina com planilha: se assina com o que te contaram.
      A equipe promete, o empresário garante, um jornalista jura que ouviu, e
@@ -7749,7 +7909,7 @@ const Engine = {
          Não é batida: é a curva perdida, o pneu bloqueado, o giro na saída
          dos boxes. Custa posições e às vezes custa a corrida. */
       const consF = f.isMe
-        ? clamp(S.driver.attr.cons + (S.driver.morale - 60) * .12, 10, 99)
+        ? clamp(S.driver.attr.cons + (S.driver.morale - 60) * .12 - (S.cansaco || 0) * .35, 10, 99)
         : (f.cons != null ? f.cons : 55);
       const errou = R.chance(Engine.chanceErro(consF, S.series, wet, aperto && (f.isMe || (f.fome||0) > .6)));
       /* quem tem fome de campeonato arrisca menos e some menos */
@@ -9064,6 +9224,21 @@ const UI = {
             S.contract && S.contract.years > 1 ? 'contrato por mais ' + S.contract.years + ' anos' : 'contrato no último ano'}</div>
         </div>
         ${pessoa(eng)}${pessoa(cmp)}${pessoa(riv)}${pessoa(men)}
+        ${(function(){
+          const cl = Engine.clausulaAtual();
+          if(cl === 'padrao' && !(S.paralelas || []).length && !(S.cansaco || 0)) return '';
+          const CL = { exclusivo:['🔒','contrato exclusivo','var(--red2)'],
+                       padrao:['📄','contrato padrão','var(--dim2)'],
+                       livre:['🔓','contrato livre','var(--green)'] }[cl] || ['📄','',''];
+          const ult = (S.paralelas || [])[(S.paralelas || []).length - 1];
+          return `<div style="font-size:10.5px;color:var(--dim2);padding:5px 0 0;
+               border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent);margin-top:5px">
+            <span style="color:${CL[2]}">${CL[0]} ${esc(CL[1])}</span>
+            ${ult ? ' · ' + esc(SERIES[ult.sk].short) + ' ' + ult.ano + ': ' +
+                     (ult.bateu ? 'abandono' : ord(ult.pos)) : ''}
+            ${(S.cansaco || 0) >= 5 ? ' · <span style="color:var(--red2)">cansado</span>' : ''}
+          </div>`;
+        })()}
         ${riv && riv.duelos ? `<div style="font-size:10.5px;color:var(--dim2);padding:3px 0 0">
              🥊 duelos com ${esc(riv.n.split(' ').pop())}: ${riv.duelos.v||0} a ${riv.duelos.p||0}</div>` : ''}
         ${emp ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;font-size:11px;color:var(--dim)">
@@ -9930,6 +10105,21 @@ const Game = {
     }, 260);
   },
 
+  /* ── correr em dois lugares ── */
+  aceitarParalela(i){
+    const c = (UI._paralelas || [])[i];
+    if(!c || !c.permitido) return;
+    S.paralelaFeita = c.sk;
+    const r = Engine.correrParalela(c);
+    Game.save();
+    UI.paralelaResultado(r);
+  },
+  recusarParalela(){
+    S.paralelaFeita = 'recusou';
+    UI.close();
+    UI.toast('Você escolheu a sua temporada.');
+  },
+
   /* ── o inverno ── */
   marcarInverno(k){
     S.invernoSel = S.invernoSel || [];
@@ -10210,6 +10400,10 @@ const Game = {
 
     if(rec.injury) setTimeout(()=>UI.toast(`Acidente grave: você fica fora de ${rec.injury.races} corrida(s).`), 700);
     else if(Engine.midReview(sea)){ Game.fire(true); return; }
+    /* convite para correr em paralelo — uma vez por temporada, no meio dela */
+    else if(sea.isTop && !S.paralelaFeita && sea.round === Math.round(sea.calendar.length * .35)
+            && Engine.convitesParalelos().length && R.chance(.6))
+      setTimeout(()=>UI.paralelaModal(), 420);
     /* meio de temporada: o que te prometeram em novembro se confirma ou não */
     else if(sea.round >= Math.round(sea.calendar.length * .45) && (S.promessasAtivas || []).some(p => !p.conferida))
       setTimeout(()=>{ const nt = Engine.conferirPromessas(); if(nt) UI.promessasModal(nt); }, 420);
@@ -10780,6 +10974,16 @@ const Game = {
         else { Game.recalcularRota(offers); return; }
       }
     }
+    /* o telefone não toca só da sua categoria */
+    Engine.ofertasDeFora(sum).forEach(o => offers.push(o));
+    /* cláusula de cada contrato: exclusivo, padrão ou livre */
+    offers.forEach(o => {
+      if(o.clausula) return;
+      const h = seedOf('cl' + (o.team ? o.team.name : '') + o.cat + S.year);
+      const r = (h % 100) / 100;
+      o.clausula = o.fora ? (r < .25 ? 'exclusivo' : r < .70 ? 'padrao' : 'livre')
+                 : (r < .38 ? 'exclusivo' : r < .82 ? 'padrao' : 'livre');
+    });
     /* cada vaga vem com o que alguém garantiu — verdade escondida */
     offers.forEach((o, i) => { o.promessas = Engine.promessasDaOferta(o, i); });
     S.pendingOffers = offers;
@@ -10835,6 +11039,14 @@ const Game = {
                 </span>
                 <span class="vl">${L.erro <= 2 ? L.centro : L.lo + '–' + L.hi}</span></div>`;
             })()}
+            ${(function(){
+              const CL = { exclusivo:['🔒 Contrato exclusivo','var(--red2)','Nenhuma outra categoria durante o ano.'],
+                           padrao:['📄 Contrato padrão','var(--dim2)','Provas avulsas de endurance liberadas.'],
+                           livre:['🔓 Contrato livre','var(--green)','Você pode correr em paralelo onde quiser.'] };
+              const c = CL[o.clausula || 'padrao'];
+              return `<div style="margin-top:6px;font-size:11px;font-weight:800;color:${c[1]}">
+                ${c[0]} <span style="font-weight:600;color:var(--dim2)">— ${esc(c[2])}</span></div>`;
+            })()}
             ${(o.promessas || []).length ? `<div style="margin-top:7px;padding-top:6px;
                  border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
               ${o.promessas.map(p => `<div style="font-size:11.5px;color:var(--dim);padding:2px 0">
@@ -10855,7 +11067,16 @@ const Game = {
     const o = S.pendingOffers[i];
     /* o que te garantiram na hora de assinar fica anotado, e cobra em julho */
     if(o){ S.promessasAtivas = (o.promessas || []).map(p => Object.assign({}, p));
-           S.bonusCarro = 0; }
+           S.bonusCarro = 0;
+           S.cansaco = 0; S.paralelaFeita = null;
+           /* a cláusula decide o que você pode fazer fora dali */
+           if(S.contract) S.contract.clausula = o.clausula || 'padrao';
+           S._clausulaNova = o.clausula || 'padrao';
+           /* academia: assinar com equipe incompatível encerra o vínculo */
+           if(o.team && !Engine.academiaAceita(o.team.name)){
+             const saida = Engine.sairDaAcademia('contrato', o.team.name);
+             if(saida) setTimeout(()=>UI.toast(saida.txt), 900);
+           } }
     if(!o) return;
     if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
     const trocouEquipe = !o.team || !S.team || o.team.name !== S.team.name;
@@ -10883,7 +11104,7 @@ const Game = {
       const idx = S.ladder.indexOf(o.cat);
       if(idx >= 0) S.catIdx = idx;
       S.team = { id:o.team.id, name:o.team.name, color:o.team.color, str:o.team.str };
-      S.contract = { years:o.years || 1 };
+      S.contract = { years:o.years || 1, clausula: o.clausula || 'padrao' };
     } else if(o.type === 'up'){
       S.catIdx++; S.team = null; S.contract = { years:1 };
     } else if(o.type === 'down'){
@@ -11373,6 +11594,64 @@ UI.sementeModal = function(sem){
       ${def.ops.map((o, i) => `<button class="dil" onclick="Game.escolherSemente(${i})">
         <b>${esc(o.t)}</b><span>${esc(Engine.tomLabel(o.tom))}</span></button>`).join('')}
     </div>`);
+};
+
+/* ═══ CORRER EM DOIS LUGARES ═══
+   Um convite para uma prova que não é da sua categoria. O que ele custa
+   depende do contrato que você assinou em novembro. */
+UI.paralelaModal = function(){
+  const lista = Engine.convitesParalelos();
+  if(!lista.length) return;
+  UI._paralelas = lista;
+  const cl = Engine.clausulaAtual();
+  const clTxt = cl === 'exclusivo' ? 'Você assinou contrato exclusivo. A equipe não libera nada.'
+    : cl === 'livre' ? 'Seu contrato é livre: a equipe não pode impedir.'
+    : 'Seu contrato é o padrão: prova avulsa a equipe libera, temporada paralela não.';
+  UI.modal(UI.head('Convite de fora', S.year + ' · ' + esc(S.team ? S.team.name : ''), false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        Chegou convite para correr fora da sua categoria neste ano. ${esc(clTxt)}
+      </div>
+      ${lista.map((c, i) => {
+        const bloq = !c.permitido;
+        return `<button class="dil" ${bloq ? 'disabled style="opacity:.42"' : ''}
+            onclick="Game.aceitarParalela(${i})">
+          <b>${SERIES[c.sk].ic} ${esc(SERIES[c.sk].name)} — ${esc(c.nome)}${bloq ? ' · bloqueado pelo contrato' : ''}</b>
+          <span>${esc(c.d)} ${c.provas === 1 ? 'Uma prova.' : c.provas + ' provas.'}
+          Você chega cru: quanto menos conhece a categoria, mais difícil.</span></button>`;
+      }).join('')}
+      <p class="mut" style="font-size:12px;margin:8px 0 0">
+        Correr fora rende fama, dinheiro e adaptação naquela categoria — e cobra em cansaço
+        no resto da temporada, com risco de acidente num carro que você não conhece.
+      </p>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost btn-sm" onclick="Game.recusarParalela()">Focar na temporada</button>
+      <span class="sp"></span></div>`);
+};
+
+/* o que aconteceu naquele fim de semana fora */
+UI.paralelaResultado = function(r){
+  const bom = !r.bateu && r.pos <= 3;
+  const cor = r.bateu ? 'var(--red2)' : bom ? 'var(--green)' : 'var(--gold)';
+  UI.modal(UI.head(esc(SERIES[r.sk].name), esc(r.nome) + ' · ' + r.ano, false) +
+    `<div class="mbd">
+      <div class="res-hero">
+        <div class="big ${r.bateu ? 'dnf' : r.pos === 1 ? 'p1' : ''}">${r.bateu ? 'ABD' : ord(r.pos)}</div>
+        <div class="cap">${r.bateu ? 'FORA' : r.pos === 1 ? 'VITÓRIA' : r.pos <= 3 ? 'PÓDIO' : 'CHEGOU'}</div>
+      </div>
+      <div class="res-nar" style="border-left:3px solid ${cor}">${esc(
+        r.bateu ? 'Você bateu num carro que ainda não conhecia. Volta para a sua temporada machucado de orgulho, e talvez não só.'
+        : r.pos === 1 ? 'Você ganhou numa categoria que não é a sua. Isso não se esquece.'
+        : r.pos <= 3 ? 'Pódio fora de casa. O paddock inteiro reparou.'
+        : r.pos <= 10 ? 'Chegou inteiro e aprendeu muito. É o que dava para pedir.'
+        : 'Foi difícil do começo ao fim. A categoria cobrou o que você não sabia.')}</div>
+      <div style="font-size:12px;color:var(--dim2)">
+        Você volta com mais estrada naquela categoria — e com o corpo mais cansado do que estava.
+      </div>
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();UI.render()">Voltar para a temporada</button></div>`);
 };
 
 /* ═══ PLAYOFF ═══
