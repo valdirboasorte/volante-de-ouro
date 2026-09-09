@@ -7442,6 +7442,245 @@ const Engine = {
     return p;
   },
 
+  /* ═══ O FIM DE SEMANA ═══
+     Sexta é treino, sábado é classificação, domingo é corrida — e cada época
+     fez isso de um jeito. Em 1955 você tinha duas tardes e voltas à vontade;
+     em 2003, uma volta só, na ordem do resultado anterior; hoje, três sessões
+     de corte. O que o jogador decide é quando colocar o carro na pista, e
+     isso muda tudo: pista limpa, borracha, tráfego, vento e a chuva que
+     chega antes da hora. */
+
+  formatoQuali(year, sk){
+    if(sk === 'nascar'){
+      if(year <= 2013) return { k:'volta', sessoes:1, voltas:2, ordem:'sorteio',
+        n:'Tomada de tempo individual', d:'Um carro por vez na pista, ordem sorteada. Duas voltas, a melhor conta.' };
+      return { k:'grupos', sessoes:2, voltas:0, ordem:'grupos',
+        n:'Classificação em grupos', d:'Dois grupos e uma sessão final. Tráfego e vácuo decidem tanto quanto o carro.' };
+    }
+    if(sk === 'indy'){
+      if(year <= 1997) return { k:'volta', sessoes:1, voltas:4, ordem:'sorteio',
+        n:'Quatro voltas cronometradas', d:'Carro sozinho na pista, quatro voltas, média das quatro. Não existe segunda chance.' };
+      return { k:'sessoes', sessoes:2, voltas:0, ordem:'tempo',
+        n:'Classificação em duas fases', d:'Uma sessão geral e uma final entre os mais rápidos.' };
+    }
+    if(sk === 'fe') return { k:'grupos', sessoes:2, voltas:0, ordem:'campeonato',
+      n:'Grupos e duelos', d:'Grupos definidos pela posição no campeonato: quem lidera sai com a pista pior.' };
+    if(sk === 'wec') return { k:'sessoes', sessoes:1, voltas:0, ordem:'tempo',
+      n:'Sessão única', d:'Uma sessão, média dos tempos dos pilotos do carro.' };
+    if(sk === 'dtm' || sk === 'stock') return { k:'sessoes', sessoes:2, voltas:0, ordem:'tempo',
+      n:'Duas sessões', d:'Uma sessão de corte e uma final.' };
+    /* Fórmula 1, por época */
+    if(year <= 1995) return { k:'aberta', sessoes:2, voltas:0, ordem:'livre',
+      n:'Duas tardes de treino cronometrado', d:'Sexta e sábado, voltas à vontade e o melhor tempo das duas tardes. Quem escolhe a hora certa da tarde ganha meio segundo.' };
+    if(year <= 2002) return { k:'aberta', sessoes:1, voltas:12, ordem:'livre',
+      n:'Uma hora, doze voltas', d:'Sessão única de uma hora com no máximo doze voltas. A hora em que você sai é a decisão do fim de semana.' };
+    if(year === 2003) return { k:'volta', sessoes:1, voltas:1, ordem:'inverso',
+      n:'Volta única', d:'Uma volta, uma tentativa, na ordem inversa do resultado da corrida anterior. Errar é acabar com o domingo.' };
+    if(year <= 2005) return { k:'volta', sessoes:2, voltas:1, ordem:'inverso',
+      n:'Duas voltas únicas', d:'Uma volta no sábado e uma no domingo de manhã, somadas. Nenhuma delas se repete.' };
+    if(year <= 2015) return { k:'corte', sessoes:3, voltas:0, ordem:'tempo', combustivel: year <= 2009,
+      n:'Q1, Q2 e Q3', d:'Três sessões de corte.' + (year <= 2009 ? ' Quem chega ao Q3 larga com o combustível da corrida.' : '') };
+    if(year === 2016) return { k:'corte', sessoes:3, voltas:0, ordem:'tempo', eliminacao:true,
+      n:'Eliminação progressiva', d:'A cada 90 segundos o último cai. Quem espera demais fica sem tempo de completar a volta.' };
+    return { k:'corte', sessoes:3, voltas:0, ordem:'tempo',
+      n:'Q1, Q2 e Q3', d:'Três sessões de corte, com a pista melhorando a cada minuto.' };
+  },
+
+  /* ── quando entrar na pista ──
+     Cada janela tem um preço. A pista evolui com borracha, mas o tráfego
+     aumenta, o risco de bandeira aumenta e o tempo pode virar. */
+  JANELAS: [
+    { k:'cedo', n:'Sair primeiro', d:'Pista limpa e vazia. A borracha ainda não está lá.',
+      pista:-1.15, trafego:.05, risco:.04, chuvaSeg:.85 },
+    { k:'meio', n:'Sair no meio da sessão', d:'O que quase todo mundo faz. Sem vantagem e sem risco.',
+      pista:0, trafego:.22, risco:.09, chuvaSeg:.5 },
+    { k:'tarde', n:'Esperar o fim', d:'A pista no melhor momento — se der tempo de completar a volta.',
+      pista:1.35, trafego:.38, risco:.22, chuvaSeg:.12 },
+    { k:'vacuo', n:'Procurar vácuo', d:'Colar num carro na reta. Ganha em reta, perde em curva — e depende de achar alguém.',
+      pista:.35, trafego:.55, risco:.14, chuvaSeg:.35, vacuo:true },
+    { k:'sozinho', n:'Pista livre a qualquer custo', d:'Esperar espaço e sair sozinho, mesmo que sobre pouco tempo.',
+      pista:.45, trafego:.02, risco:.26, chuvaSeg:.2 }
+  ],
+  janelasDe(fmt, trk){
+    /* volta única e ordem sorteada não deixam escolher a hora */
+    if(fmt.ordem === 'sorteio' || fmt.ordem === 'inverso') return [];
+    const base = Engine.JANELAS.filter(j => j.k !== 'vacuo');
+    /* vácuo só faz sentido onde a reta decide */
+    if(trk && (trk.type === 'oval' || trk.type === 'fast')) return base.concat([Engine.JANELAS[3]]);
+    return base;
+  },
+
+  /* condição escondida da sessão, sorteada uma vez por etapa */
+  condQuali(sea, rd){
+    const trk = sea.calendar[rd];
+    const h = seedOf('qc' + sea.year + '_' + rd + '_' + trk.id);
+    const chuvaChega = Engine.climaDe(sea, rd) && ((h >>> 5) % 100) / 100 < .45;
+    return {
+      /* quanto a pista evolui do começo ao fim da sessão */
+      evolucao: .6 + ((h % 100) / 100) * 1.5,
+      /* quanto tráfego existe naquele traçado */
+      trafego: (trk.type === 'street' ? 1.5 : trk.type === 'oval' ? .4 : 1) * (.7 + ((h >>> 9) % 100) / 100 * .7),
+      /* chance de bandeira que estraga a volta de quem está na pista */
+      bandeira: (trk.type === 'street' ? .16 : .07) * (.6 + ((h >>> 13) % 100) / 100 * .9),
+      chuvaChega
+    };
+  },
+
+  /* ── a sessão de classificação ── */
+  rodarQuali(sea, rd, escolha){
+    const trk = sea.calendar[rd];
+    const wet = Engine.climaDe(sea, rd);
+    const era = Engine.eraOf(sea.year);
+    const fmt = Engine.formatoQuali(sea.year, S.series);
+    const cond = Engine.condQuali(sea, rd);
+    const W = Engine.trackWeights(trk.type, wet);
+    const perf = Engine.perfil(S.series);
+    const ajuste = Engine.setupEfeito(sea, rd);
+    const clima = Engine.bonusGente();
+    const tr = Engine.tracoEfeito(wet);
+    const caos = (SERIES[S.series] && SERIES[S.series].caos) || 1;
+    const noise = (wet ? 5.4 : 3.4) * (sea.isTop ? Math.max(caos, perf.variancia) : 1.1);
+    const meuFator = sea.isTop ? Engine.fatorCategoria(S.series, trk.type) : { total:0 };
+    if(!sea._perfilado){
+      sea.field.forEach(f => { if(!f.isMe) Engine.perfilRival(f, sea); });
+      Engine.definirCandidatos(sea);
+      sea.minhaForma = R.gauss() * 1.45 * perf.variancia
+                     + (S.driver.morale - 60) / 45 + ((S.teamRel || 50) - 50) / 60;
+      sea._perfilado = true;
+    }
+
+    /* o que a sua escolha de janela rendeu — e o que ela custou */
+    const j = Engine.JANELAS.find(x => x.k === escolha) || Engine.JANELAS[1];
+    let bonus = j.pista * cond.evolucao;
+    const notas = [];
+    if(j.vacuo){
+      /* vácuo depende de achar alguém no lugar certo */
+      if(R.chance(.55)){ bonus += 1.5; notas.push('Você achou vácuo na reta e ganhou um tempo que o carro não tinha.'); }
+      else { bonus -= .6; notas.push('Ninguém apareceu na hora certa. Você deu a volta sozinho e sem ganho.'); }
+    }
+    if(R.chance(j.trafego * cond.trafego)){
+      bonus -= 1.4 + R.f() * 1.6;
+      notas.push('Você pegou tráfego na volta lançada. Não deu para repetir.');
+    }
+    if(R.chance(j.risco * (cond.bandeira / .1))){
+      bonus -= 2.6 + R.f() * 2.2;
+      notas.push('Bandeira amarela no meio da sua volta. A sessão acabou assim.');
+    }
+    if(cond.chuvaChega && R.chance(1 - j.chuvaSeg)){
+      bonus -= 3.4;
+      notas.push('Começou a chover antes de você entrar na pista. O tempo bom ficou com quem saiu cedo.');
+    } else if(cond.chuvaChega && j.k === 'cedo'){
+      bonus += 1.8;
+      notas.push('Choveu no fim da sessão. Você já tinha o seu tempo guardado.');
+    }
+    /* o trabalho de sexta paga aqui */
+    bonus += Engine.ganhoTreino('quali');
+
+    const qual = sea.field.map(f => {
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
+      const bruto = f.isMe
+        ? Engine.meSkill(wet).q + tr.q + meuFator.total + (sea.minhaForma || 0) + bonus
+        : f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0)
+          + (wet ? R.gauss()*3 : 0)
+          /* os rivais também escolhem a hora, e também erram */
+          + R.gauss() * cond.evolucao * .5;
+      const sk = Engine.compSkill(bruto, sea);
+      return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
+    }).sort((a,b)=>b.v-a.v);
+
+    const grid = {}; qual.forEach((q,i)=>grid[q.f.id]=i+1);
+    return { grid, ordem: qual.map(q => ({ id:q.f.id, name:q.f.name, cc:q.f.cc, me:!!q.f.isMe })),
+             notas, fmt, janela: j.k, minha: grid['ME'] };
+  },
+
+  /* ═══ TREINOS ═══
+     Sexta-feira tem um número limitado de horas e mais coisas para fazer do
+     que cabem nelas. Cada sessão serve para uma coisa, e o que você não
+     testar você vai descobrir domingo. */
+  TREINOS: [
+    { k:'acerto', ic:'🔧', n:'Trabalhar o acerto',
+      d:'Voltas curtas mudando o carro. O engenheiro sai daqui sabendo mais — ou achando que sabe.' },
+    { k:'quali',  ic:'⚡', n:'Simulação de classificação',
+      d:'Tanque vazio, pneu novo, uma volta. Você chega ao sábado sabendo onde o carro está.' },
+    { k:'corrida',ic:'🏁', n:'Simulação de corrida',
+      d:'Tanque cheio e stint longo. Ensina o que o carro faz quando o pneu acaba.' },
+    { k:'pneu',   ic:'🛞', n:'Testar os compostos',
+      d:'Duas ou três séries curtas para entender a degradação. Domingo agradece.' },
+    { k:'trafego',ic:'🚦', n:'Trabalhar com tráfego',
+      d:'Andar no meio dos outros de propósito, para saber como o carro se comporta em ar sujo.' },
+    { k:'poupar', ic:'💤', n:'Poupar o carro',
+      d:'Voltas de instalação e nada mais. Não ensina nada e preserva motor, câmbio e pneu.' }
+  ],
+  sessoesDe(year, sk){
+    if(sk === 'nascar' || sk === 'stock') return year <= 2000 ? 2 : 1;
+    if(sk === 'fe') return 2;
+    if(sk === 'indy') return year <= 1995 ? 3 : 2;
+    if(sk === 'wec') return 3;
+    if(year <= 1990) return 2;
+    if(year <= 2020) return 3;
+    return 2;
+  },
+  garantirFds(sea, rd){
+    if(!sea.fds || sea.fds.rd !== rd){
+      sea.fds = { rd, etapa:'treino', treinos:[], quali:null,
+                  sessoes: Engine.sessoesDe(sea.year, S.series) };
+    }
+    return sea.fds;
+  },
+  /* o que cada sessão de treino rendeu, acumulado no fim de semana */
+  ganhoTreino(area){
+    const sea = S.season;
+    if(!sea || !sea.fds) return 0;
+    const feitos = sea.fds.treinos || [];
+    let g = 0;
+    feitos.forEach(t => {
+      if(t.k === area) g += t.ganho;
+      else if(area === 'quali' && t.k === 'acerto') g += t.ganho * .30;
+      else if(area === 'corrida' && (t.k === 'pneu' || t.k === 'trafego')) g += t.ganho * .55;
+      else if(area === 'corrida' && t.k === 'acerto') g += t.ganho * .30;
+    });
+    return g;
+  },
+  /* uma sessão de treino: o que se aprende, e o que se acha que aprendeu */
+  correrTreino(sea, rd, k){
+    const item = Engine.TREINOS.find(x => x.k === k) || Engine.TREINOS[0];
+    const conf = Engine.confEng();
+    const dev = S.driver.attr.dev;
+    /* a chance de a sessão render é do piloto, do engenheiro e da sorte */
+    const ch = clamp(.30 + (dev - 60) / 100 * .40 + conf * .30
+                   + ((S.teamRel || 50) - 50) / 100 * .12, .08, .90);
+    const nivel = Engine.resolver(ch);
+    const valor = { otimo:1.9, bom:1.05, morno:.30, ruim:-.85 }[nivel];
+    const r = { k, ic:item.ic, n:item.n, nivel, ganho: k === 'poupar' ? 0 : valor };
+    /* Poupar o carro não ensina — mas evita o problema mecânico do domingo. */
+    if(k === 'poupar'){ sea.fds.poupou = true; r.ganho = 0; }
+    /* o engenheiro conta o que achou. Nem sempre é o que aconteceu. */
+    const acertou = nivel === 'otimo' || nivel === 'bom';
+    const mente = R.chance(clamp(1 - conf, .08, .55));
+    r.fala = mente
+      ? (acertou ? 'Ele não gostou do que viu, e você achou que o carro estava bom.'
+                 : 'Ele acha que encontrou alguma coisa.')
+      : (nivel === 'otimo' ? 'Ele está convencido de que achou o carro. E desta vez está mesmo.'
+        : nivel === 'bom'  ? 'Ele acha que melhorou. Melhorou.'
+        : nivel === 'morno'? 'Sessão sem conclusão. Ninguém aprendeu nada.'
+        : 'Vocês foram atrás da coisa errada e perderam a sessão.');
+    r.verdade = acertou;
+    r.mentiu = mente;
+    /* fica anotado se o engenheiro acertou o diagnóstico do treino */
+    if(!S.engTreino) S.engTreino = { certo:0, errado:0 };
+    if(mente) S.engTreino.errado++; else S.engTreino.certo++;
+    sea.fds.treinos.push(r);
+    return r;
+  },
+  engTreinoFama(){
+    const h = S.engTreino;
+    if(!h || (h.certo + h.errado) < 6) return null;
+    const p = h.certo / (h.certo + h.errado);
+    return p >= .74 ? 'no treino ele costuma saber do que está falando'
+         : p >= .52 ? 'no treino ele acerta um pouco mais do que erra'
+         :            'no treino ele se empolga com qualquer coisa';
+  },
+
   /* ═══ ACERTO DO CARRO ═══
      Um fim de semana não é três barras para arrastar. É um engenheiro que
      olhou os dados de sexta e te conta o que achou — com o que ele mediu, o
@@ -7867,16 +8106,24 @@ const Engine = {
     const meuFator = sea.isTop ? Engine.fatorCategoria(S.series, trk.type) : { total:0 };
 
     /* ── classificação ── */
-    const qual = sea.field.map(f=>{
-      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
-      const bruto = f.isMe
-        ? Engine.meSkill(wet).q + tr.q + meuFator.total + (sea.minhaForma || 0)
-        : f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0)
-          + (wet ? R.gauss()*3 : 0);
-      const sk = Engine.compSkill(bruto, sea);
-      return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
-    }).sort((a,b)=>b.v-a.v);
-    const grid = {}; qual.forEach((q,i)=>grid[q.f.id]=i+1);
+    /* Se o sábado foi disputado na mão, o grid é o do sábado. Só quando a
+       classificação não acontece — modo rápido, temporada simulada, piloto
+       machucado — é que ela é resolvida aqui de uma vez. */
+    let grid;
+    if(sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid){
+      grid = sea.fds.quali.grid;
+    } else {
+      const qual = sea.field.map(f=>{
+        const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
+        const bruto = f.isMe
+          ? Engine.meSkill(wet).q + tr.q + meuFator.total + (sea.minhaForma || 0)
+          : f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0)
+            + (wet ? R.gauss()*3 : 0);
+        const sk = Engine.compSkill(bruto, sea);
+        return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
+      }).sort((a,b)=>b.v-a.v);
+      grid = {}; qual.forEach((q,i)=>grid[q.f.id]=i+1);
+    }
 
     /* ── corrida ── */
     let passW = trk.type==='street' ? .62 : trk.type==='fast' ? .20 : .36;
@@ -7891,7 +8138,7 @@ const Engine = {
       const bruto = f.isMe
         ? Engine.meSkill(wet).r + tr.r + meuFator.total + (sea.minhaForma || 0)
         : f.skill + f.rb + (f.esp ? (f.esp[trk.type] || 0) * .7 : 0) + (f.formAno || 0);
-      const sk = Engine.compSkill(bruto, sea);
+      const sk = Engine.compSkill(bruto, sea) + (f.isMe ? Engine.ganhoTreino('corrida') : 0);
       const g = grid[f.id];
 
       /* ── confiabilidade ──
@@ -7903,6 +8150,8 @@ const Engine = {
       /* o teto de confiabilidade depende da categoria: endurance e NASCAR
          castigam mais do que a Fórmula 1 moderna */
       const teto = clamp(.975 - (perf.confia - 1) * .35, .90, .978);
+      /* quem poupou o carro na sexta chega no domingo com menos quilometragem */
+      if(f.isMe && sea.fds && sea.fds.rd === rd && sea.fds.poupou) relBase += .022;
       const mech = !R.chance(clamp(relBase, .35, teto));
 
       /* ── erro do piloto ──
@@ -9635,6 +9884,123 @@ UI.tracosModal = function(){
       <button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`, true);
 };
 
+/* ═══ SEXTA-FEIRA: OS TREINOS ═══
+   Um número limitado de horas e mais coisas para fazer do que cabem nelas.
+   O que você não testar na sexta você descobre no domingo. */
+UI.treinoModal = function(){
+  const sea = S.season, rd = sea.round, trk = sea.calendar[rd];
+  if(!trk) return;
+  const fds = Engine.garantirFds(sea, rd);
+  const feitas = fds.treinos || [];
+  const num = feitas.length + 1;
+  const prev = Engine.previsao(sea, rd);
+  const fama = Engine.engTreinoFama();
+  UI.modal(UI.head(`Treino livre ${num}`,
+      `${esc(trk.gp)} · ${esc(trk.circ)} · sessão ${num} de ${fds.sessoes}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        <b style="display:block;margin-bottom:3px">🌤️ O céu</b>${esc(prev.texto)}
+      </div>
+      ${feitas.length ? `<div style="margin:12px 0 4px">
+        <span class="lbl" style="display:block;margin-bottom:5px">O que já foi feito</span>
+        ${feitas.map(f => `<div style="font-size:12px;color:var(--dim);padding:2px 0">
+          ${f.ic} ${esc(f.n)} — <span style="color:${f.nivel==='otimo'?'var(--green)':f.nivel==='ruim'?'var(--red2)':'var(--dim2)'}">${esc(f.fala)}</span>
+        </div>`).join('')}
+      </div>` : ''}
+      ${fama ? `<div style="font-size:12px;color:var(--dim2);margin:8px 0 4px;padding:8px 11px;
+         border-radius:var(--r-sm);border:1px dashed var(--line)">🔧 ${esc(fama)}</div>` : ''}
+      <span class="lbl" style="display:block;margin:14px 0 7px">O que fazer com esta sessão</span>
+      ${Engine.TREINOS.map(x => `<button class="dil" onclick="Game.fazerTreino('${x.k}')">
+        <b>${x.ic} ${esc(x.n)}</b><span>${esc(x.d)}</span></button>`).join('')}
+      <p class="mut" style="font-size:12px;margin:10px 0 0">
+        Nem toda sessão rende. E o que o engenheiro conclui não é necessariamente o que aconteceu.
+      </p>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost btn-sm" onclick="Game.pularTreinos()">Deixar a equipe conduzir a sexta</button>
+      <span class="sp"></span>
+    </div>`);
+};
+
+UI.treinoResultado = function(r, acabou){
+  const cor = r.nivel === 'otimo' ? 'var(--green)' : r.nivel === 'bom' ? 'var(--gold)'
+            : r.nivel === 'morno' ? 'var(--dim2)' : 'var(--red2)';
+  UI.modal(UI.head(esc(r.n), `${r.ic} sessão encerrada`, false) +
+    `<div class="mbd">
+      <div style="padding:12px 14px;border-radius:var(--r-sm);background:var(--panel2);
+           border:1px solid var(--line);border-left:3px solid ${cor};margin-bottom:12px">
+        <span class="lbl" style="display:block;margin-bottom:5px;color:${cor}">O engenheiro</span>
+        <div style="font-size:13.5px;line-height:1.55">— ${esc(r.fala)}</div>
+      </div>
+      <p class="mut" style="font-size:12px;margin:0">
+        Você vai saber no sábado se ele tinha razão.
+      </p>
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();Game.nextRace()">
+        ${acabou ? 'Ir para o acerto →' : 'Próxima sessão →'}</button></div>`);
+};
+
+/* ═══ SÁBADO: A CLASSIFICAÇÃO ═══
+   O formato é o daquele ano. O que você decide é quando colocar o carro na
+   pista — e cada janela cobra uma coisa diferente. */
+UI.qualiModal = function(){
+  const sea = S.season, rd = sea.round, trk = sea.calendar[rd];
+  if(!trk) return;
+  const fmt = Engine.formatoQuali(sea.year, S.series);
+  const janelas = Engine.janelasDe(fmt, trk);
+  const prev = Engine.previsao(sea, rd);
+  const mem = Engine.memPista(trk.id);
+  UI.modal(UI.head(fmt.n, `${esc(trk.gp)} · ${esc(trk.circ)} · ${sea.year}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(fmt.d)}</div>
+      <div style="font-size:12.5px;color:var(--dim);margin:10px 0 4px">🌤️ ${esc(prev.texto)}</div>
+      ${mem && mem.visitas ? `<div style="font-size:11.5px;color:var(--dim2);margin-bottom:8px">
+        📓 Você já correu aqui ${mem.visitas === 1 ? 'uma vez' : mem.visitas + ' vezes'}.</div>` : ''}
+      ${janelas.length ? `
+        <span class="lbl" style="display:block;margin:14px 0 7px">Quando entrar na pista</span>
+        ${janelas.map(j => `<button class="dil" onclick="Game.fazerQuali('${j.k}')">
+          <b>${esc(j.n)}</b><span>${esc(j.d)}</span></button>`).join('')}
+        <p class="mut" style="font-size:12px;margin:10px 0 0">
+          A pista melhora com borracha, e piora com tráfego, bandeira e tempo que vira.
+          Ninguém sabe de antemão qual das três pesa mais hoje.
+        </p>`
+      : `<div class="empty" style="padding:14px">
+          Neste formato você não escolhe a hora: a ordem é definida pelo regulamento
+          e você tem uma tentativa só.
+        </div>
+        <button class="dil" onclick="Game.fazerQuali('meio')">
+          <b>Fazer a sua volta</b><span>Uma tentativa. É o que existe.</span></button>`}
+    </div>
+    <div class="mft"><span class="sp"></span></div>`);
+};
+
+UI.qualiResultado = function(q){
+  const sea = S.season;
+  const p = q.minha;
+  const cap = p === 1 ? 'POLE POSITION' : p <= 3 ? 'PRIMEIRA FILA' : p <= 10 ? 'DENTRO DOS DEZ' : 'GRID DE TRÁS';
+  UI.modal(UI.head('Classificação', `${esc(q.fmt.n)} · ${sea.year}`, false) +
+    `<div class="mbd">
+      <div class="res-hero">
+        <div class="big ${p === 1 ? 'p1' : ''}">${p === 1 ? 'POLE' : ord(p)}</div>
+        <div class="cap">${cap}</div>
+      </div>
+      ${q.notas.length ? `<div class="res-nar">${q.notas.map(esc).join(' ')}</div>` : ''}
+      <span class="lbl" style="display:block;margin:14px 0 7px">Os dez primeiros</span>
+      ${q.ordem.slice(0, 10).map((x, i) => `<div style="display:flex;align-items:center;gap:8px;
+         padding:5px 9px;border-radius:var(--r-sm);margin-bottom:3px;
+         background:${x.me ? 'color-mix(in srgb,var(--gold) 14%,transparent)' : 'var(--panel2)'};
+         border:1px solid ${x.me ? 'var(--gold)' : 'var(--line)'}">
+        <span style="font-size:11px;color:var(--dim2);min-width:20px">${i+1}</span>
+        <span class="flag">${flag(x.cc)}</span>
+        <span style="flex:1;min-width:0;font-size:13px;font-weight:${x.me?900:700};
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</span>
+      </div>`).join('')}
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();Game.correr()">Domingo →</button></div>`);
+};
+
 /* ═══ ACERTO DO CARRO ═══
    Nenhum número aparece aqui. O que aparece é o que o engenheiro trouxe da
    sexta-feira — o que ele mediu, o que ele acha e o que ficou sem olhar — o
@@ -9749,7 +10115,7 @@ UI.setupModal = function(){
     <div class="mft">
       <button class="btn btn-ghost btn-sm" onclick="Game.setupNoEngenheiro()">Deixar com o engenheiro</button>
       <span class="sp"></span>
-      <button class="btn btn-primary" onclick="UI.close();Game.correr()">Ir para a pista →</button>
+      <button class="btn btn-primary" onclick="UI.close();Game.aoSabado()">Ir para a classificação →</button>
     </div>`);
 };
 
@@ -10320,13 +10686,53 @@ const Game = {
   /* ---- uma corrida ---- */
   /* No modo completo, cada corrida começa na garagem. No modo rápido o
      engenheiro monta o carro sozinho — bem, mas nunca tão bem quanto você. */
+  /* ── o fim de semana ──
+     Sexta é treino, sábado é classificação, domingo é corrida. No modo
+     rápido e com o piloto machucado a equipe resolve tudo sozinha. */
   nextRace(){
     if(S.retired) return UI.toast('Sua carreira acabou. Daqui em diante você só acompanha os números.');
     const sea = S.season;
     if(!sea.calendar[sea.round]) return;
     if(S.driver.injured > 0 || S.opts.fast) return Game.correr();
-    if(sea.setupRound === sea.round && sea.setup && !sea.setup.auto) return Game.correr();
-    UI.setupModal();
+    const fds = Engine.garantirFds(sea, sea.round);
+    if(fds.etapa === 'treino'){
+      if((fds.treinos || []).length >= fds.sessoes){ fds.etapa = 'acerto'; return Game.nextRace(); }
+      return UI.treinoModal();
+    }
+    if(fds.etapa === 'acerto'){
+      if(sea.setupRound === sea.round && sea.setup && !sea.setup.auto){ fds.etapa = 'quali'; return Game.nextRace(); }
+      return UI.setupModal();
+    }
+    if(fds.etapa === 'quali'){
+      if(fds.quali){ fds.etapa = 'corrida'; return Game.nextRace(); }
+      return UI.qualiModal();
+    }
+    Game.correr();
+  },
+
+  /* uma sessão de treino */
+  fazerTreino(k){
+    const sea = S.season;
+    const fds = Engine.garantirFds(sea, sea.round);
+    const r = Engine.correrTreino(sea, sea.round, k);
+    Game.save();
+    UI.treinoResultado(r, (fds.treinos || []).length >= fds.sessoes);
+  },
+  pularTreinos(){
+    const sea = S.season;
+    const fds = Engine.garantirFds(sea, sea.round);
+    while((fds.treinos || []).length < fds.sessoes) Engine.correrTreino(sea, sea.round, 'acerto');
+    fds.etapa = 'acerto';
+    UI.close(); Game.nextRace();
+  },
+  /* a classificação, com a janela escolhida */
+  fazerQuali(janela){
+    const sea = S.season;
+    const fds = Engine.garantirFds(sea, sea.round);
+    fds.quali = Engine.rodarQuali(sea, sea.round, janela);
+    fds.etapa = 'corrida';
+    Game.save();
+    UI.qualiResultado(fds.quali);
   },
 
   /* ── o fim de semana na garagem ──
@@ -10355,6 +10761,12 @@ const Game = {
     st.resp[i] = (st.resp[i] === v) ? 0 : v;
     Game.aplicarResp();
     UI.setupModal();
+  },
+  aoSabado(){
+    const sea = S.season;
+    const fds = Engine.garantirFds(sea, sea.round);
+    fds.etapa = 'quali';
+    Game.nextRace();
   },
   setFilo(k){ const st = Game.garantirResp(); st.filo = k; st.auto = false; Game.aplicarResp(); UI.setupModal(); },
   setMotor(v){ const st = Game.garantirResp(); st.motor = v; st.auto = false; UI.setupModal(); },
