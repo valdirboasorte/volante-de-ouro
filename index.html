@@ -5475,6 +5475,9 @@ const Engine = {
   },
 
   /* em que degrau da escada alguém entra, pela idade */
+  /* uma vez fora do kart, nunca mais o kart */
+  jaSaiuDoKart(){ return !!(S.anosKart && !Engine.ehKart(S.ladder[S.catIdx])); },
+
   rungForAge(age, ladderLen){
     /* 13 anos entra no primeiro degrau; 27 ou mais entra direto na principal */
     const t = clamp((age - 13) / 13, 0, 1);
@@ -5531,6 +5534,10 @@ const Engine = {
     const isTop = cat === Engine.topCat();
     const info = catInfo(cat, S.catIdx, S.ladder.length);
     S.yearsInCat = (S.lastCat === cat) ? (S.yearsInCat||1) + 1 : 1;
+    if(S.lastCat !== cat || S.anosKartAno !== S.year){
+      if(Engine.ehKart(cat)) S.anosKart = (S.anosKart || 0) + 1;
+      S.anosKartAno = S.year;
+    }
     S.lastCat = cat;
     S.yearsInSeries = (S.lastSeries === S.series) ? (S.yearsInSeries||0) + 1 : 1;
     S.lastSeries = S.series;
@@ -5826,7 +5833,7 @@ const Engine = {
            está correndo ali. Nunca abaixo do natural — subir de categoria
            continua sendo subir de nível. */
         const natural = info.base + amp;
-        const topoGrid = Math.max(natural, natural * .30 + meuNivel * .70 + R.range(-1, 4));
+        const topoGrid = Math.max(natural, natural * .34 + meuNivel * .66 + R.range(-1.5, 3.5));
         field.push({ id:'d'+i, name:nm, cc,
           skill: clamp(Math.round(topoGrid - amp + amp*(1-tier) + R.gauss()*ruido), 25, 96),
           teamId: teams[Math.floor(i/2) % teams.length].id });
@@ -6157,6 +6164,28 @@ const Engine = {
     ['gps','wins','podiums','poles','fls','dnfs','pts'].forEach(k => c[k] = topo[k]);
     if(topo.best != null) c.best = topo.best;
     return true;
+  },
+
+  /* sobrenome de exibição, pulando Jr., Sr. e numerais */
+  sobrenome(nome){
+    const p = String(nome || '').trim().split(/\s+/).filter(Boolean);
+    if(p.length < 2) return p[0] || '';
+    let i = p.length - 1;
+    while(i > 0 && /^(jr\.?|sr\.?|i{1,3}|iv|neto|filho)$/i.test(p[i])) i--;
+    const suf = p.slice(i + 1).join(' ');
+    return p[i] + (suf ? ' ' + suf : '');
+  },
+
+  ehKart(cat){ return /kart/i.test(cat || ''); },
+  /* o primeiro degrau de carro acima de onde você está */
+  primeiroCarro(){
+    for(let i = S.catIdx + 1; i < S.ladder.length; i++)
+      if(!Engine.ehKart(S.ladder[i])) return { cat: S.ladder[i], idx: i };
+    return null;
+  },
+  KART_MAX: 2,
+  kartEsgotado(){
+    return Engine.ehKart(S.ladder[S.catIdx]) && (S.anosKart || 0) >= Engine.KART_MAX;
   },
 
   ehRealista(){ return !!(S && S.modo === 'realista'); },
@@ -7397,7 +7426,7 @@ const Engine = {
     const p = Engine.perfil(sk);
     const ad = Engine.garantirAdapt(sk);
     /* adaptação: de -8 (cru) a 0 (em casa). Os nativos já estão em 100. */
-    const fAd = -((100 - clamp(ad, 0, 100)) / 100) * 8.2 * p.pesoExp;
+    const fAd = -((100 - clamp(ad, 0, 100)) / 100) * 7.2 * p.pesoExp;
     /* idade: cada categoria tem a sua janela */
     const dist = Math.abs(S.driver.age - p.idadeIdeal);
     const fId = -Math.max(0, dist - p.tolIdade) * .38;
@@ -7758,7 +7787,7 @@ const Engine = {
     if(bateuCedo.length && R.chance(chanceSC)){
       const b = R.pick(bateuCedo);
       sc = { de: b.voltaOut, ate: Math.min(N - 1, b.voltaOut + R.int(2, 4)) };
-      eventos.push({ v: sc.de, tipo:'sc', txt:'Safety car — ' + b.name.split(' ').pop() + ' parou na pista.' });
+      eventos.push({ v: sc.de, tipo:'sc', txt:'Safety car — ' + Engine.sobrenome(b.name) + ' parou na pista.' });
       eventos.push({ v: sc.ate, tipo:'verde', txt:'Bandeira verde. A corrida recomeça.' });
     }
     /* chuva chegando no meio */
@@ -7813,7 +7842,7 @@ const Engine = {
       carros.forEach(c => {
         if(c.out && c.voltaOut === v)
           eventos.push({ v, tipo: c.dnf === 'ACID' ? 'batida' : 'quebra', quem: c.id,
-            txt: c.name.split(' ').pop() + (c.dnf === 'ACID' ? ' bateu.' : ' parou com problema mecânico.') });
+            txt: Engine.sobrenome(c.name) + (c.dnf === 'ACID' ? ' bateu.' : ' parou com problema mecânico.') });
       });
       voltas.push({ v, ordem, boxes: nosBoxes, sc: !!(sc && v >= sc.de && v <= sc.ate) });
     }
@@ -7840,6 +7869,15 @@ const Engine = {
      chega antes da hora. */
 
   formatoQuali(year, sk){
+    /* categorias de acesso: sessão única, e no kart é a tomada de tempo de
+       sempre — nenhuma delas jamais teve corte em três partes */
+    if(S && S.season && !S.season.isTop){
+      const cat = S.season.cat || '';
+      if(Engine.ehKart(cat)) return { k:'aberta', sessoes:1, voltas:0, ordem:'livre',
+        n:'Tomada de tempo', d:'Uma sessão curta, pista pequena e trânsito por todo lado. Achar espaço é metade do trabalho.' };
+      return { k:'aberta', sessoes:1, voltas:0, ordem:'livre',
+        n:'Sessão única de classificação', d:'Uma sessão, voltas à vontade e o melhor tempo. Quem escolhe a hora certa leva vantagem.' };
+    }
     if(sk === 'nascar'){
       if(year <= 2013) return { k:'volta', sessoes:1, voltas:2, ordem:'sorteio',
         n:'Tomada de tempo individual', d:'Um carro por vez na pista, ordem sorteada. Duas voltas, a melhor conta.' };
@@ -8001,6 +8039,9 @@ const Engine = {
       d:'Voltas de instalação e nada mais. Não ensina nada e preserva motor, câmbio e pneu.' }
   ],
   sessoesDe(year, sk){
+    /* na base não existem três treinos livres: existe o que a organização deu */
+    if(S && S.season && !S.season.isTop)
+      return Engine.ehKart(S.season.cat || '') ? 1 : 2;
     if(sk === 'nascar' || sk === 'stock') return year <= 2000 ? 2 : 1;
     if(sk === 'fe') return 2;
     if(sk === 'indy') return year <= 1995 ? 3 : 2;
@@ -8875,7 +8916,13 @@ const Engine = {
 
     const venc = finish.find(x => x.pos === 1 && !x.out);
     if(venc && p.pts[venc.f.id] != null && p.rodadas){
-      if(p.passaram.indexOf(venc.f.id) < 0){ p.passaram.push(venc.f.id); nota.passou = venc.f.name; }
+      if(p.passaram.indexOf(venc.f.id) < 0){
+        p.passaram.push(venc.f.id);
+        nota.passou = venc.f.name;
+        /* vencer dentro da rodada é vaga garantida na seguinte, e é isso que
+           faz a NASCAR ser mata-mata e não somatório */
+        p.garantidos = (p.garantidos || []).concat([{ id: venc.f.id, rodada: p.rodadas[p.rodadaAtual].n }]);
+      }
     }
 
     if(!p.rodadas){
@@ -9085,8 +9132,12 @@ const Engine = {
       const yrs = S.yearsInCat || 1;
       let need = yrs >= 4 ? 9 : yrs >= 3 ? 7 : yrs >= 2 ? 5 : 4;
       if(S.opts.fast) need += 2;
-      const promote = sum.champion || sum.pos <= need;
-      const nextCat = S.ladder[S.catIdx+1];
+      /* duas temporadas de kart e a escada segue: o kart é passagem, não
+         carreira, e ficar ali até os dezenove não acontece com ninguém */
+      const saiDoKart = Engine.kartEsgotado();
+      const carro = saiDoKart ? Engine.primeiroCarro() : null;
+      const promote = sum.champion || sum.pos <= need || saiDoKart;
+      const nextCat = carro ? carro.cat : S.ladder[S.catIdx+1];
       const jrRep = clamp(S.driver.fame*.7 + (S.driver.ovr-42)*1.5
                         + (sum.champion?24:0) + (10 - Math.min(sum.pos,12))*2.2
                         + (S.academy ? 20 : 0) + Engine.bonusMercado(), 0, 130);
@@ -9113,7 +9164,7 @@ const Engine = {
 
       /* subir de degrau */
       if(promote && nextCat){
-        const ni = S.catIdx + 1;
+        const ni = carro ? carro.idx : S.catIdx + 1;
         let nTeams = Engine.teamsFor(nextCat, nextYear, S.series, ni, S.ladder.length);
         if(nextCat === Engine.topCat()){
           nTeams = Engine.portasDaEstreia(nTeams);
@@ -9135,7 +9186,7 @@ const Engine = {
          ou descer deixam de ser opção. Se o dinheiro não permitir subir, o
          mercado ainda mostra as rotas mais baratas — e, em último caso, um
          ano de espera aparece explicitamente como o que é. */
-      const soParaFrente = sum.champion;
+      const soParaFrente = sum.champion || saiDoKart;
       /* ficar mais um ano — com escolha de equipe */
       const cTeams = soParaFrente ? [] : Engine.teamsFor(S.season.cat, nextYear, S.series, S.catIdx, S.ladder.length);
       const stayCands = cTeams.filter(t => jrRep >= (t.str - 46) * 1.6).slice(0, 3);
@@ -9147,7 +9198,7 @@ const Engine = {
                      : 'Repetir a categoria com outra equipe e provar seu valor.')
       }));
       /* descer, se a temporada foi um desastre */
-      if(!promote && sum.pos > 12 && S.catIdx > 0){
+      if(!promote && sum.pos > 12 && S.catIdx > 0 && !Engine.ehKart(S.ladder[S.catIdx-1])){
         const back = S.ladder[S.catIdx-1];
         const bTeams = Engine.teamsFor(back, nextYear, S.series, S.catIdx-1, S.ladder.length);
         list.push({ type:'f1', cat:back, team:bTeams[R.int(0,2)], years:1, down:true,
@@ -9977,7 +10028,7 @@ const UI = {
           </div>`;
         })()}
         ${riv && riv.duelos ? `<div style="font-size:10.5px;color:var(--dim2);padding:3px 0 0">
-             🥊 duelos com ${esc(riv.n.split(' ').pop())}: ${riv.duelos.v||0} a ${riv.duelos.p||0}</div>` : ''}
+             🥊 duelos com ${esc(Engine.sobrenome(riv.n))}: ${riv.duelos.v||0} a ${riv.duelos.p||0}</div>` : ''}
         ${emp ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;font-size:11px;color:var(--dim)">
              <span class="flag" style="font-size:13px">${flag(emp.cc)}</span>
              <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
@@ -10127,6 +10178,9 @@ const UI = {
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.tracosModal()">🧭 Como você anda</button>`;
     if(S.season && S.season.playoff)
       h += `<button class="btn btn-gold btn-sm" onclick="UI.playoffModal()">🏆 ${esc(S.season.playoff.nome)}</button>`;
+    if(S.series === 'indy' && Engine.cisaoAtiva(S.year))
+      h += `<button class="btn btn-ghost btn-sm" onclick="UI.ladoModal()">${
+        Engine.LADOS[S.ladoIndy || 'cart'].ic} ${esc(Engine.LADOS[S.ladoIndy || 'cart'].n)}</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>
       <button class="btn btn-ghost btn-sm" onclick="UI.empresarios()">💼 ${Engine.emp() ? esc(Engine.emp().n.split(' ').pop()) : 'Empresário'}</button>`;
     if(Engine.ehRealista())
@@ -10215,7 +10269,31 @@ const UI = {
     m.innerHTML = html;
     el('ov').classList.add('on');
   },
-  close(){ el('ov').classList.remove('on'); },
+  aberta(){ return el('ov').classList.contains('on'); },
+  /* fila de janelas: nada nunca abre por cima do que está na tela */
+  _fila: [],
+  FILA_MAX: 3,
+  depois(fn, ms){
+    if(typeof fn !== 'function') return;
+    if(UI.aberta()){
+      UI._fila.push(fn);
+      while(UI._fila.length > UI.FILA_MAX) UI._fila.shift();
+      return;
+    }
+    if(ms) setTimeout(()=>{ if(UI.aberta()) UI._fila.push(fn); else fn(); }, ms);
+    else fn();
+  },
+  proxima(){
+    if(!UI._fila.length || UI.aberta()) return;
+    const fn = UI._fila.shift();
+    try { fn(); } catch(e){ UI.proxima(); }
+  },
+  limparFila(){ UI._fila = []; },
+  close(){
+    el('ov').classList.remove('on');
+    /* dá um instante para a saída e chama quem estava esperando */
+    setTimeout(()=>UI.proxima(), 130);
+  },
   head(title, sub, closable){
     return `<div class="mhd"><div class="tx"><h2>${title}</h2>${sub?`<div class="sb">${sub}</div>`:''}</div>
       ${closable===false?'':'<button class="mclose" onclick="UI.close()">✕</button>'}</div>`;
@@ -10374,136 +10452,98 @@ UI.tracosModal = function(){
 };
 
 /* ═══ A CORRIDA AO VIVO ═══
-   Uma representação simples da pista com os carros andando. Não é simulação
-   gráfica: é o resultado do motor mostrado acontecendo, com as posições
-   mudando, as paradas, as batidas, o safety car e a bandeira quadriculada. */
-UI.PISTAS_SVG = {
-  oval:   'M 120 40 L 460 40 Q 540 40 540 120 L 540 200 Q 540 280 460 280 L 120 280 Q 40 280 40 200 L 40 120 Q 40 40 120 40 Z',
-  fast:   'M 60 60 L 500 60 Q 550 60 550 105 Q 550 150 500 150 L 300 150 Q 250 150 250 195 Q 250 240 300 240 L 520 240 Q 560 240 560 275 L 60 275 Q 30 275 30 220 L 30 110 Q 30 60 60 60 Z',
-  street: 'M 50 50 L 250 50 L 250 110 L 420 110 L 420 55 L 555 55 L 555 175 L 470 175 L 470 250 L 270 250 L 270 195 L 150 195 L 150 270 L 50 270 Z',
-  tech:   'M 70 80 Q 140 30 210 80 Q 260 118 210 160 Q 150 200 220 235 L 380 235 Q 450 235 450 190 Q 450 150 390 150 L 330 150 Q 280 150 300 105 Q 330 50 420 60 L 520 70 Q 570 80 560 150 L 545 230 Q 535 275 470 275 L 120 275 Q 45 275 45 200 L 45 130 Q 45 100 70 80 Z',
-  mixed:  'M 60 70 L 420 60 Q 500 58 520 110 Q 540 165 470 180 L 330 195 Q 260 203 280 245 L 470 260 Q 540 265 520 285 L 90 285 Q 35 285 35 220 L 35 120 Q 35 72 60 70 Z'
-};
-
+   Não é uma animação de carrinhos: é a tabela da corrida mudando de verdade,
+   volta a volta, com quem subiu, quem caiu, quem está nos boxes e quem
+   abandonou. É o que se vê num telão de autódromo. */
 UI.corridaAoVivo = function(rec, tl, aoFim){
-  UI._tlStop = true;                                  /* encerra qualquer animação anterior */
+  UI._tlStop = true;
   if(UI._tlTimer){ clearInterval(UI._tlTimer); UI._tlTimer = null; }
-  const trk = { type: rec.type || 'mixed' };
-  const d = UI.PISTAS_SVG[trk.type] || UI.PISTAS_SVG.mixed;
   const carros = tl.carros;
   const porId = {}; carros.forEach(c => porId[c.id] = c);
   const N = tl.voltas.length;
 
   UI.modal(UI.head(`GP ${esc(rec.gp)}`,
       `${esc(rec.circ)} · ${rec.wet ? 'pista molhada' : 'pista seca'} · ao vivo`, false) +
-    `<div class="mbd" style="padding-bottom:6px">
-      <div style="position:relative;border-radius:var(--r-sm);overflow:hidden;
-           background:var(--panel2);border:1px solid var(--line)">
-        <svg id="tlSvg" viewBox="0 0 600 330" style="display:block;width:100%;height:auto">
-          <path id="tlPath" d="${d}" fill="none" stroke="color-mix(in srgb,var(--line) 90%,transparent)"
-                stroke-width="17" stroke-linejoin="round"/>
-          <path d="${d}" fill="none" stroke="var(--panel)" stroke-width="13" stroke-linejoin="round"/>
-          <path d="${d}" fill="none" stroke="color-mix(in srgb,var(--line) 60%,transparent)"
-                stroke-width="1" stroke-dasharray="5 9"/>
-          <g id="tlCarros"></g>
-        </svg>
-        <div id="tlFlag" style="position:absolute;inset:0;pointer-events:none;opacity:0;
-             transition:opacity .25s"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+    `<div class="mbd" style="padding-bottom:8px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap">
         <span class="pill" id="tlVolta">Volta 1</span>
         <span class="pill" id="tlPos" style="border-color:var(--gold);color:var(--gold)">—</span>
+        <span class="pill" id="tlBand" style="display:none">🟡 SAFETY CAR</span>
         <span class="sp"></span>
         <button class="btn btn-ghost btn-sm" onclick="UI.tlPular()">Pular para o resultado</button>
       </div>
-      <div id="tlNarra" style="margin-top:9px;min-height:42px;font-size:12.5px;color:var(--dim);
+      <div id="tlNarra" style="margin-bottom:10px;min-height:38px;font-size:12.5px;color:var(--dim);
            padding:8px 11px;border-radius:var(--r-sm);background:var(--panel2);
            border-left:3px solid var(--line)">A largada está próxima.</div>
-      <div id="tlTop" style="margin-top:9px"></div>
+      <div id="tlTab" style="border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden"></div>
     </div>`);
 
-  const svg = el('tlSvg'), path = el('tlPath'), g = el('tlCarros');
-  if(!svg || !path){ if(aoFim) aoFim(); return; }
-  const L = path.getTotalLength();
-  /* um ponto por carro */
-  const nodes = {};
-  carros.forEach(c => {
-    const ns = 'http://www.w3.org/2000/svg';
-    const gr = document.createElementNS(ns, 'g');
-    const ci = document.createElementNS(ns, 'circle');
-    ci.setAttribute('r', c.me ? 7.5 : 5.5);
-    ci.setAttribute('fill', c.me ? 'var(--gold)' : c.cor);
-    ci.setAttribute('stroke', c.me ? '#000' : 'rgba(0,0,0,.45)');
-    ci.setAttribute('stroke-width', c.me ? 2.4 : 1.2);
-    gr.appendChild(ci);
-    if(c.me){
-      const tx = document.createElementNS(ns, 'text');
-      tx.setAttribute('y', -12); tx.setAttribute('text-anchor', 'middle');
-      tx.setAttribute('font-size', '11'); tx.setAttribute('font-weight', '900');
-      tx.setAttribute('fill', 'var(--gold)');
-      tx.textContent = 'VOCÊ';
-      gr.appendChild(tx);
-    }
-    g.appendChild(gr);
-    nodes[c.id] = gr;
-  });
-
+  if(!el('tlTab')){ if(aoFim) aoFim(); return; }
   UI._tlStop = false;
   let t0 = null;
-  const dur = 13000;                        /* a corrida inteira em treze segundos */
+  const dur = 12000;
   const evVistos = {};
+  let ultimaOrdem = null;
+
+  const linha = (id, i, boxes, mudou) => {
+    const c = porId[id]; if(!c) return '';
+    const seta = mudou > 0 ? `<span style="color:var(--green);font-size:10px;font-weight:900">▲${mudou}</span>`
+               : mudou < 0 ? `<span style="color:var(--red2);font-size:10px;font-weight:900">▼${-mudou}</span>`
+               : `<span style="color:var(--dim2);font-size:10px">–</span>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;
+         border-bottom:1px solid color-mix(in srgb,var(--line) 45%,transparent);
+         background:${c.me ? 'color-mix(in srgb,var(--gold) 15%,transparent)' : 'transparent'};
+         ${boxes ? 'opacity:.55' : ''}">
+      <b style="min-width:20px;font-size:12px;color:${i < 3 ? 'var(--gold)' : 'var(--dim2)'}">${i+1}</b>
+      <span style="width:4px;height:15px;border-radius:2px;background:${c.cor};flex:none"></span>
+      <span class="flag" style="font-size:12px">${flag(c.cc)}</span>
+      <span style="flex:1;min-width:0;font-size:12.5px;font-weight:${c.me?900:600};
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</span>
+      ${boxes ? '<span style="font-size:10px;color:var(--gold);font-weight:800">BOXES</span>' : seta}
+    </div>`;
+  };
 
   const desenhar = (frac) => {
     const fv = clamp(frac, 0, .9999) * (N - 1);
-    const i = Math.floor(fv), f = fv - i;
-    const A = tl.voltas[i], B = tl.voltas[Math.min(N - 1, i + 1)];
+    const i = Math.floor(fv);
+    const A = tl.voltas[i];
     const volta = Math.min(N, i + 1);
-    /* posição de cada carro, interpolada entre as duas voltas */
-    carros.forEach(c => {
-      const nd = nodes[c.id]; if(!nd) return;
-      const a = A.ordem.indexOf(c.id), b = B.ordem.indexOf(c.id);
-      if(a < 0 && b < 0){ nd.style.display = 'none'; return; }
-      nd.style.display = '';
-      const p = (a < 0 ? b : b < 0 ? a : a + (b - a) * f);
-      /* o líder na frente, o resto atrás dele ao longo da volta */
-      const gap = p * (L / (carros.length + 2)) * .92;
-      const avanca = (frac * (L * 2.4)) % L;
-      let s = (avanca - gap) % L; if(s < 0) s += L;
-      const pt = path.getPointAtLength(s);
-      /* quem está nos boxes sai da trajetória */
-      const nosBoxes = (A.boxes || []).indexOf(c.id) >= 0;
-      nd.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ',' +
-        (pt.y + (nosBoxes ? 15 : 0)).toFixed(1) + ')');
-      nd.style.opacity = nosBoxes ? .5 : 1;
-    });
+    const boxes = A.boxes || [];
+    /* quantas posições cada um ganhou ou perdeu desde a volta anterior */
+    const antes = ultimaOrdem || A.ordem;
+    const html = A.ordem.map((id, k) => {
+      const a = antes.indexOf(id);
+      return linha(id, k, boxes.indexOf(id) >= 0, a >= 0 ? a - k : 0);
+    }).join('');
+    /* quem abandonou fica listado no fim, para dar a sensação de corrida */
+    const fora = carros.filter(c => c.out && c.voltaOut && c.voltaOut <= volta);
+    const htmlFora = fora.length ? `<div style="padding:5px 10px;background:var(--panel2);
+        font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--dim2)">FORA</div>` +
+      fora.map(c => `<div style="display:flex;align-items:center;gap:8px;padding:4px 10px;opacity:.45;
+           border-bottom:1px solid color-mix(in srgb,var(--line) 30%,transparent)">
+        <b style="min-width:20px;font-size:11px;color:var(--red2)">—</b>
+        <span style="width:4px;height:13px;border-radius:2px;background:${c.cor};flex:none"></span>
+        <span class="flag" style="font-size:11px">${flag(c.cc)}</span>
+        <span style="flex:1;min-width:0;font-size:12px;font-weight:${c.me?900:600}">${esc(c.name)}</span>
+        <span style="font-size:10px;color:var(--red2);font-weight:800">${c.dnf === 'ACID' ? 'ACIDENTE' : 'MECÂNICO'}</span>
+      </div>`).join('') : '';
+    el('tlTab').innerHTML = html + htmlFora;
+    ultimaOrdem = A.ordem.slice();
+
     el('tlVolta').textContent = 'Volta ' + volta + ' de ' + N;
     const minha = A.ordem.indexOf('ME');
     el('tlPos').textContent = minha >= 0 ? ord(minha + 1) : 'fora';
-    /* bandeira e narração */
-    if(A.sc) el('tlFlag').style.background = 'linear-gradient(0deg,rgba(255,200,0,.16),rgba(255,200,0,.05))';
-    else el('tlFlag').style.background = '';
-    el('tlFlag').style.opacity = A.sc ? 1 : 0;
+    const band = el('tlBand');
+    if(band) band.style.display = A.sc ? '' : 'none';
     tl.eventos.forEach((e, k) => {
       if(e.v <= volta && !evVistos[k]){
         evVistos[k] = 1;
-        const n = el('tlNarra'); if(!n) return;
-        n.textContent = e.txt;
-        n.style.borderLeftColor = e.tipo === 'sc' ? 'var(--gold)'
-          : e.tipo === 'batida' ? 'var(--red2)' : e.tipo === 'chuva' ? 'var(--blue,#3d8bfd)' : 'var(--line)';
+        const nn = el('tlNarra'); if(!nn) return;
+        nn.textContent = e.txt;
+        nn.style.borderLeftColor = e.tipo === 'sc' ? 'var(--gold)'
+          : e.tipo === 'batida' ? 'var(--red2)' : e.tipo === 'chuva' ? '#3d8bfd' : 'var(--line)';
       }
     });
-    /* os cinco primeiros */
-    const topo = el('tlTop');
-    if(topo) topo.innerHTML = A.ordem.slice(0, 5).map((id, k) => {
-      const c = porId[id]; if(!c) return '';
-      return `<div style="display:flex;align-items:center;gap:7px;padding:3px 8px;border-radius:var(--r-sm);
-           margin-bottom:2px;font-size:12px;background:${c.me?'color-mix(in srgb,var(--gold) 15%,transparent)':'transparent'}">
-        <span style="color:var(--dim2);min-width:16px">${k+1}</span>
-        <span style="width:8px;height:8px;border-radius:50%;background:${c.cor};flex:none"></span>
-        <span style="flex:1;min-width:0;font-weight:${c.me?900:600};white-space:nowrap;
-              overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</span>
-      </div>`;
-    }).join('');
   };
 
   const agora = () => (window.performance && performance.now) ? performance.now() : Date.now();
@@ -10522,7 +10562,8 @@ UI.corridaAoVivo = function(rec, tl, aoFim){
   UI._tlFim = aoFim;
   if(UI._tlTimer) clearInterval(UI._tlTimer);
   passo();
-  UI._tlTimer = setInterval(passo, 34);
+  /* uma volta a cada meio segundo, como um telão de autódromo */
+  UI._tlTimer = setInterval(passo, Math.max(180, Math.round(dur / N)));
 };
 
 UI.tlPular = function(){
@@ -11081,6 +11122,7 @@ const Game = {
   },
 
   startSeason(){
+    UI.limparFila();
     const catAnterior = S.lastCatMidia;
     S.season = Engine.buildSeason();
     S.season.dilemmaAt = R.int(2, Math.max(3, S.season.calendar.length-3));
@@ -11108,11 +11150,13 @@ const Game = {
     Engine.espelharRel();
     if(cobrancas.length) setTimeout(()=>UI.toast(cobrancas[0]), 1400);
     /* conta antiga que venceu no inverno bate à porta antes da primeira corrida */
-    if(Engine.temSemente()) setTimeout(()=>{
-      if(el('ov').classList.contains('on')) return;
+    /* dois campeonatos americanos: é preciso escolher um */
+    if(S.series === 'indy' && Engine.cisaoAtiva(S.year) && !S.ladoIndy)
+      UI.depois(()=>UI.ladoModal(true));
+    if(Engine.temSemente()) UI.depois(()=>{
       const sm = Engine.colherSemente();
       if(sm) UI.sementeModal(sm);
-    }, 900);
+    });
     S.relFeitas = [];
     /* preparação de pré-temporada: no modo rápido a equipe resolve por você */
     S.prep = Engine.prepZerado();
@@ -11122,13 +11166,23 @@ const Game = {
     Game.save();
     UI.render();
     if(Engine.ehRealista() && (S.patroOfertas || []).length && (S.money.patros || []).length < 3)
-      setTimeout(()=>{ if(!el('ov').classList.contains('on')) UI.patroModal(); }, 200);
+      UI.depois(()=>UI.patroModal(), 200);
     if(S.opts.fast) Game.invernoAuto();
-    else setTimeout(()=>{
-      /* se já há uma tela aberta — a apresentação de um cenário, por exemplo —
-         a pré-temporada espera: fica o botão no hub para abrir quando quiser */
-      if(!el('ov').classList.contains('on')) UI.prepModal();
+    else UI.depois(()=>{
+      /* o inverno espera a vez como todo o resto; se você fechar sem escolher,
+         o botão continua no hub */
+      UI.prepModal();
     }, 260);
+  },
+
+  /* ── de que lado da cisão americana você corre ── */
+  escolherLado(k){
+    S.ladoIndy = k;
+    S.ladoAno = S.year;
+    UI.close();
+    /* a escolha refaz a temporada: outras equipes, outro calendário */
+    Game.startSeason();
+    UI.toast('Você vai correr na ' + Engine.LADOS[k].n + '.');
   },
 
   /* ── correr em dois lugares ── */
@@ -11484,16 +11538,16 @@ const Game = {
     /* convite para correr em paralelo — uma vez por temporada, no meio dela */
     else if(sea.isTop && !S.paralelaFeita && sea.round === Math.round(sea.calendar.length * .35)
             && Engine.convitesParalelos().length && R.chance(.6))
-      setTimeout(()=>UI.paralelaModal(), 420);
+      UI.depois(()=>UI.paralelaModal());
     /* meio de temporada: o que te prometeram em novembro se confirma ou não */
     else if(sea.round >= Math.round(sea.calendar.length * .45) && (S.promessasAtivas || []).some(p => !p.conferida))
-      setTimeout(()=>{ const nt = Engine.conferirPromessas(); if(nt) UI.promessasModal(nt); }, 420);
+      UI.depois(()=>{ const nt = Engine.conferirPromessas(); if(nt) UI.promessasModal(nt); });
     /* dilema do meio de temporada */
-    else if(sea.round === sea.dilemmaAt && sea.calendar[sea.round]) setTimeout(()=>Game.dilemma(), 400);
+    else if(sea.round === sea.dilemmaAt && sea.calendar[sea.round]) UI.depois(()=>Game.dilemma());
     /* a vida fora da pista: dois a quatro acontecimentos por temporada */
     else if(sea.eventosAt && sea.eventosAt.indexOf(sea.round) >= 0 && sea.calendar[sea.round])
       /* às vezes o que acontece fora da pista é alguém querendo algo de você */
-      setTimeout(()=>{ if(!(R.chance(.42) && Game.pedido())) Game.evento(); }, 420);
+      UI.depois(()=>{ if(!(R.chance(.42) && Game.pedido())) Game.evento(); });
   },
 
   /* ── demissão ── */
@@ -12767,46 +12821,128 @@ UI.paralelaResultado = function(r){
       <button class="btn btn-primary" onclick="UI.close();UI.render()">Voltar para a temporada</button></div>`);
 };
 
-/* ═══ PLAYOFF ═══
-   Um campeonato que muda de natureza em setembro. Quem liderou o ano inteiro
-   volta ao zero, e quem entrou em décimo sexto tem dez corridas para virar
-   tudo. */
+/* ═══ DOIS CAMPEONATOS, UM VOLANTE ═══
+   Nos anos da cisão americana havia duas categorias de monoposto no país, e
+   um piloto corria em uma delas. A escolha muda equipe, calendário, força de
+   carro e se você disputa ou não as 500 Milhas de Indianápolis. */
+UI.ladoModal = function(forcado){
+  const ano = S.year;
+  const org = Engine.orgIndy(ano);
+  if(!Engine.cisaoAtiva(ano)) return;
+  const opc = (k) => {
+    const L = Engine.LADOS[k];
+    const nome = k === 'cart' ? (org.k === 'split2' ? L.nome2 : L.n) : L.n;
+    const era2 = eraOfSeries(ano, 'indy');
+    const todas = [];
+    era2.teams.forEach((tt, i) => { const r = Engine.resolveTeam(tt, i, ano, 'indy'); if(r) todas.push(r); });
+    /* mesma regra do grid: as próprias, as sem registro e, faltando gente,
+       as estruturas menores do outro lado */
+    const proprias = todas.filter(x => Engine.ladoDaEquipe(x.name, ano) === k);
+    const soltas = todas.filter(x => Engine.ladoDaEquipe(x.name, ano) == null);
+    let dela = proprias.concat(soltas);
+    if(dela.length < 3){
+      const resto = todas.filter(x => dela.indexOf(x) < 0).sort((a, b) => a.str - b.str);
+      dela = dela.concat(resto.slice(0, 3 - dela.length));
+    }
+    const exemplos = dela.slice(0, 3).map(x => x.name).join(', ');
+    const sel = (S.ladoIndy || 'cart') === k;
+    return `<button class="dil ${sel ? 'sel' : ''}" style="${sel ? 'border-color:var(--gold)' : ''}"
+        onclick="Game.escolherLado('${k}')">
+      <b>${L.ic} ${esc(nome)}</b>
+      <span>${esc(L.d)}${exemplos ? ' Equipes como ' + esc(exemplos) + '.' : ''}</span></button>`;
+  };
+  UI.modal(UI.head(esc(org.n), ano + ' · o esporte partido em dois', forcado ? false : undefined) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(org.d)}</div>
+      <span class="lbl" style="display:block;margin:14px 0 7px">Onde você vai correr</span>
+      ${opc('cart')}${opc('irl')}
+      <p class="mut" style="font-size:12px;margin:10px 0 0">
+        Dá para trocar de lado no mercado de fim de temporada. As 500 Milhas são da IRL —
+        de fora, elas só aparecem como inscrição isolada.
+      </p>
+    </div>`);
+};
+
+/* ═══ O MATA-MATA DA NASCAR ═══
+   Um chaveamento de verdade: as rodadas em colunas, quem passou, quem caiu,
+   e quem garantiu a vaga vencendo uma corrida — que é como funciona. */
 UI.playoffModal = function(){
   const sea = S.season, p = sea && sea.playoff;
   if(!p) return UI.toast('O playoff ainda não começou.');
   const seed = id => (p.seeds.find(x => x.id === id) || {});
-  const linha = (id, i, viva) => {
+  const passouAqui = id => (p.passaram || []).indexOf(id) >= 0;
+
+  const chip = (id, estado) => {
     const sd = seed(id);
     const eu = sd.me;
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--r-sm);
-         margin-bottom:4px;background:${eu ? 'color-mix(in srgb,var(--gold) 14%,transparent)' : 'var(--panel2)'};
-         border:1px solid ${eu ? 'var(--gold)' : 'var(--line)'};opacity:${viva ? 1 : .45}">
-      <span style="font-size:11px;color:var(--dim2);min-width:22px">#${sd.seed || '—'}</span>
-      <span class="flag">${flag(sd.cc)}</span>
-      <span style="flex:1;min-width:0;font-size:13px;font-weight:${eu ? 900 : 700};
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(sd.name || id)}</span>
-      <b style="font-size:13px">${Engine.ptsDe(sea, id)}</b>
+    const cor = estado === 'campeao' ? 'var(--gold)'
+              : estado === 'fora' ? 'var(--red2)'
+              : estado === 'garantido' ? 'var(--green)' : 'var(--line)';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:var(--r-sm);
+         margin-bottom:4px;border:1px solid ${cor};
+         background:${eu ? 'color-mix(in srgb,var(--gold) 15%,transparent)' : 'var(--panel2)'};
+         opacity:${estado === 'fora' ? .5 : 1}">
+      <span style="font-size:10px;color:var(--dim2);min-width:18px">#${sd.seed || '—'}</span>
+      <span class="flag" style="font-size:11px">${flag(sd.cc)}</span>
+      <span style="flex:1;min-width:0;font-size:11.5px;font-weight:${eu?900:600};
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(Engine.sobrenome(sd.name||id))}</span>
+      ${estado === 'garantido' ? '<span style="font-size:9px;color:var(--green);font-weight:900">VENCEU</span>'
+        : estado === 'campeao' ? '<span style="font-size:9px;color:var(--gold);font-weight:900">CAMPEÃO</span>'
+        : estado === 'fora' ? '<span style="font-size:9px;color:var(--red2);font-weight:900">FORA</span>'
+        : `<b style="font-size:11px">${Engine.ptsDe(sea, id)}</b>`}
     </div>`;
   };
-  const cortadosPorRodada = {};
-  p.cortados.forEach(c => { (cortadosPorRodada[c.rodada] = cortadosPorRodada[c.rodada] || []).push(c); });
-  const rod = p.rodadas ? p.rodadas[Math.min(p.rodadaAtual, p.rodadas.length - 1)] : null;
+
+  /* quem estava vivo em cada fase, reconstruído a partir dos cortes */
+  const fases = [];
+  if(p.rodadas){
+    let vivos = p.seeds.map(x => x.id);
+    p.rodadas.forEach((r, i) => {
+      const caem = p.cortados.filter(c => c.rodada === r.n).map(c => c.id);
+      fases.push({ n:r.n, provas:r.provas, sobram:r.sobram, membros:vivos.slice(), caem,
+                   atual: i === p.rodadaAtual });
+      vivos = vivos.filter(id => caem.indexOf(id) < 0);
+    });
+  }
+
+  const coluna = (f) => `
+    <div style="flex:1;min-width:132px">
+      <div style="font-size:10.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;
+           color:${f.atual ? 'var(--gold)' : 'var(--dim2)'};margin-bottom:6px;
+           padding-bottom:4px;border-bottom:1px solid ${f.atual ? 'var(--gold)' : 'var(--line)'}">
+        ${esc(f.n)}
+        <span style="display:block;font-size:9px;font-weight:600;letter-spacing:0;text-transform:none;
+              color:var(--dim2)">${f.provas} ${f.provas === 1 ? 'prova' : 'provas'} · ficam ${f.sobram}</span>
+      </div>
+      ${f.membros.map(id => chip(id,
+        p.campeao === id ? 'campeao'
+        : f.caem.indexOf(id) >= 0 ? 'fora'
+        : (f.atual && passouAqui(id)) ? 'garantido' : 'vivo')).join('')}
+    </div>`;
+
   UI.modal(UI.head(p.nome, `${sea.year} · ${p.vivos.length} ${p.vivos.length === 1 ? 'piloto vivo' : 'pilotos vivos'}`) +
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">${esc(p.desc)}</div>
-      ${rod ? `<div style="display:flex;align-items:baseline;gap:8px;margin:14px 0 8px">
-        <span class="lbl">${esc(rod.n)}</span><span class="sp"></span>
-        <span style="font-size:11px;color:var(--gold);font-weight:800">
-          ${p.feitasNaRodada} de ${rod.provas} ${rod.provas === 1 ? 'prova' : 'provas'}</span>
-      </div>` : '<span class="lbl" style="display:block;margin:14px 0 8px">Quem está vivo</span>'}
-      ${p.vivos.map((id, i) => linha(id, i, true)).join('')}
-      ${Object.keys(cortadosPorRodada).map(r => `
-        <span class="lbl" style="display:block;margin:12px 0 6px;color:var(--red2)">Eliminados no ${esc(r)}</span>
-        ${cortadosPorRodada[r].map(c => linha(c.id, 0, false)).join('')}`).join('')}
+      ${p.rodadas ? `
+        <div style="font-size:12px;color:var(--dim2);margin:12px 0 8px">
+          🏁 Vencer uma corrida dentro da rodada garante a vaga na rodada seguinte,
+          independentemente de pontos. Quem não vence, entra por pontuação.
+        </div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px">
+          ${fases.map(coluna).join('')}
+        </div>`
+      : `<span class="lbl" style="display:block;margin:14px 0 7px">Quem está na briga</span>
+         ${p.vivos.map(id => chip(id, p.campeao === id ? 'campeao' : 'vivo')).join('')}
+         ${p.cortados.length ? `<span class="lbl" style="display:block;margin:12px 0 6px;color:var(--red2)">Fora</span>
+           ${p.cortados.map(c => chip(c.id, 'fora')).join('')}` : ''}`}
       ${p.campeao ? `<div style="margin-top:14px;padding:12px 14px;border-radius:var(--r-sm);
          border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 10%,transparent)">
-         <span class="lbl" style="display:block;color:var(--gold)">Campeão</span>
-         <b style="font-size:15px">${esc(seed(p.campeao).name || '')}</b></div>` : ''}
+         <span class="lbl" style="display:block;color:var(--gold)">Campeão da temporada</span>
+         <b style="font-size:15px">${esc(seed(p.campeao).name || '')}</b>
+         <div style="font-size:12px;color:var(--dim);margin-top:3px">${esc(
+           p.rodadas ? 'Melhor colocado entre os quatro finalistas na última corrida do ano.'
+                     : 'Somou mais pontos nas corridas decisivas.')}</div>
+       </div>` : ''}
     </div>
     <div class="mft"><span class="sp"></span>
       <button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`, true);

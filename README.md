@@ -129,9 +129,10 @@ Fórmula E. Onde o regulamento permite, você decide quando entrar na pista —
 pista limpa e sem borracha, o fim da sessão com a pista no ponto e o risco de
 não completar a volta, vácuo na reta, ou espaço para andar sozinho.
 
-E o domingo acontece na tela: um traçado com o formato da pista e os carros
-andando nele, posições mudando volta a volta, paradas nos boxes, batidas,
-safety car e a narração do que está acontecendo.
+E o domingo acontece na tela como num telão de autódromo: a tabela da corrida
+volta a volta, com o grid inteiro, quem subiu e quem caiu, quem está nos
+boxes, quem abandonou e por quê, a bandeira amarela e a narração do que está
+acontecendo.
 
 ## Campeonatos com regulamento de verdade
 
@@ -292,6 +293,19 @@ Quem está na Ferrari Driver Academy pode correr por Ferrari, Haas ou Sauber.
 Assinar com Mercedes, McLaren ou Williams encerra o vínculo na hora — com
 perda de apoio, de porta aberta, de moral e com o mentor cobrando explicação.
 Vale para os catorze programas, cada um com as suas equipes aliadas.
+
+## O kart é passagem, não carreira
+
+Duas temporadas de kart e a escada segue, campeão ou não — e nunca se volta
+para o kart. Um garoto que entra aos treze está em carro aos quinze, que é
+como acontece de verdade. As categorias de acesso seguintes admitem mais
+tempo, e se a conta não fecha o mercado mostra rotas mais baratas.
+
+## Uma janela por vez
+
+Nada nunca abre por cima do que você está lendo. Acontecimento, cobrança de
+promessa, convite de outra categoria, mesa de patrocínio, inverno: quem chega
+e encontra a tela ocupada entra numa fila e espera a vez.
 
 ## As categorias nacionais são nacionais
 
