@@ -70,6 +70,93 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
   nos anos 2000 e 2010, redes sociais de 2020 em diante — com quase 300 falas
   diferentes e memória para não repetir a mesma piada.
 
+## Ganhar campeonato é difícil
+
+Um piloto muito bom tem vantagem e nenhuma garantia. Com o melhor carro do
+grid e adaptação completa, o título da Fórmula 1 sai em cerca de um terço das
+temporadas — o resto se divide entre vice, azar mecânico e a temporada em que
+nada funciona. Nas categorias de carro igual é mais difícil ainda: NASCAR e
+Fórmula E chegam à última prova com três ou quatro pilotos vivos, contra um ou
+dois na Fórmula 1.
+
+No kart, o título no primeiro ano fica entre 20% e 45% conforme talento e
+equipamento, com vice e pódio muito prováveis. O grid de base acompanha o
+nível de quem está correndo nele: um campeonato de kart é cheio de gente
+talentosa, e sempre tem alguém tão rápido quanto você.
+
+## Talento não é a mesma coisa que saber correr ali
+
+Cada categoria tem identidade própria — variância, peso da experiência, peso
+da consistência, idade ideal, tempo de adaptação e o quanto o grid é apertado.
+E cada piloto tem uma **adaptação** por categoria, construída correndo e
+perdida ficando longe. Um campeão de Fórmula 1 que desembarca na IndyCar sabe
+pilotar; não sabe oval, bandeira, combustível nem os caras que vão brigar com
+ele. Chegar ao nível dos nativos não dá vantagem — apenas para de atrasar.
+
+O parentesco entre categorias decide quanto do que você sabe serve: um
+monoposto ensina outro monoposto, um carro de teto ensina outro carro de teto,
+e um oval não se parece com nada.
+
+Há também a **especialidade de traçado**, medida contra o companheiro de
+equipe — mesmo carro, mesma garagem, mesmo fim de semana. É o que permite a um
+especialista de oval bater um campeão de F1 em Indianápolis tendo overall
+inferior.
+
+## Quem está no grid
+
+Sete arquétipos: meteoro, metrônomo, piloto de domingo, especialista de
+sábado, o que bate, o completo e o irregular. Cada rival tem consistência
+própria, especialidade de traçado para a vida inteira e forma do ano. O erro
+de piloto é coisa separada do acidente — a curva perdida que custa quinze
+segundos é o que separa rápido de campeão.
+
+Três a seis candidatos ao título por temporada concentram os pontos, para que
+o campeonato vá até o fim.
+
+## O fim de semana
+
+Sexta tem duas ou três sessões de treino, e cada uma serve para uma coisa só:
+acerto, simulação de classificação, simulação de corrida, teste de compostos,
+trabalho em tráfego ou poupar o carro. O engenheiro conclui alguma coisa ao
+fim de cada sessão — e nem sempre é o que aconteceu.
+
+A classificação é a daquele ano: duas tardes cronometradas até 1995, uma hora
+com doze voltas até 2002, a volta única de 2003, as duas voltas somadas de
+2004-2005, Q1/Q2/Q3 com combustível de corrida até 2009, a eliminação
+progressiva de 2016, tomada de tempo individual na NASCAR, quatro voltas
+cronometradas na IndyCar até 1997, grupos por posição no campeonato na
+Fórmula E. Onde o regulamento permite, você decide quando entrar na pista —
+pista limpa e sem borracha, o fim da sessão com a pista no ponto e o risco de
+não completar a volta, vácuo na reta, ou espaço para andar sozinho.
+
+E o domingo acontece na tela: um traçado com o formato da pista e os carros
+andando nele, posições mudando volta a volta, paradas nos boxes, batidas,
+safety car e a narração do que está acontecendo.
+
+## Campeonatos com regulamento de verdade
+
+A **NASCAR** deixou de ser somatório: Chase de dez a partir de 2004, de doze
+com bônus por vitória até 2010, com convidados até 2013, e o playoff
+eliminatório de dezesseis desde 2014 — três cortes e quatro finalistas
+decidindo numa corrida só. O líder da temporada regular perde o título em 85%
+dos anos no formato eliminatório.
+
+A **IndyCar** nunca foi uma coisa só: AAA até 1955, USAC até 1978, a CART até
+1995, a cisão com a IRL de 1996 a 2007 e a reunificação em 2008. Nos anos da
+cisão existem dois campeonatos, com equipes, calendários e força de carro
+diferentes — e as 500 Milhas de um lado só.
+
+## Correr em dois lugares
+
+Todo contrato tem cláusula: exclusivo, padrão ou livre. No meio da temporada
+chega convite para as 24 Horas, as 500 Milhas, etapas do DTM, a Corrida de
+Duplas ou um oval da NASCAR. Aceitar rende fama, dinheiro e adaptação naquela
+categoria, e cobra cansaço e risco num carro que você não conhece.
+
+O mercado do fim de ano também não olha só para a sua categoria: IndyCar,
+NASCAR, endurance, DTM, Fórmula E e Stock Car podem ligar, conforme a sua
+reputação e o parentesco entre as categorias.
+
 ## Rodar localmente
 
 Abra o `index.html` no navegador. É só isso.
@@ -198,6 +285,13 @@ Cada um tem três números: **mercado** (quem atende o telefone dele),
 consegue onde normalmente não se entra). Em troca fica com 10% a 22% de tudo
 que você ganha. Os melhores não assinam com qualquer um: exigem fama ou nível
 para atender.
+
+## Academias com lealdade
+
+Quem está na Ferrari Driver Academy pode correr por Ferrari, Haas ou Sauber.
+Assinar com Mercedes, McLaren ou Williams encerra o vínculo na hora — com
+perda de apoio, de porta aberta, de moral e com o mentor cobrando explicação.
+Vale para os catorze programas, cada um com as suas equipes aliadas.
 
 ## As categorias nacionais são nacionais
 
