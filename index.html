@@ -5541,6 +5541,9 @@ const Engine = {
     let ids;
     if(isTop){
       ids = calendarFor(S.year, S.series);
+      /* a IRL ficou com os ovais e com Indianápolis; a CART, com o mundo */
+      if(S.series === 'indy' && Engine.cisaoAtiva(S.year))
+        ids = Engine.calendarioDoLado(ids, S.year, Engine.ladoAtual(S.year));
     } else {
       let n = info.races; if(S.opts.fast) n = Math.max(5, Math.round(n*.6));
       ids = juniorCalendar(cat, S.year, S.series, n);
@@ -5869,6 +5872,9 @@ const Engine = {
 
     return {
       year:S.year, era:era.id, eraName:era.name, cat, isTop, pts,
+      /* que campeonato é este, historicamente: AAA, USAC, CART, IRL ou IndyCar */
+      org: S.series === 'indy' ? Engine.orgIndy(S.year) : null,
+      lado: S.series === 'indy' ? Engine.ladoAtual(S.year) : null,
       calendar, teams, field, round:0,
       teammateId: teammate ? teammate.id : null,
       /* média de habilidade do grid — base para comprimir as diferenças
@@ -6002,6 +6008,22 @@ const Engine = {
     if(isTop){
       const out = [];
       era.teams.forEach((t,i)=>{ const r = Engine.resolveTeam(t, i, year, sk); if(r) out.push(r); });
+      /* nos anos da cisão, cada campeonato tem as suas equipes */
+      if(sk === 'indy' && Engine.cisaoAtiva(year)){
+        const lado = Engine.ladoAtual(year);
+        const proprias = out.filter(x => Engine.ladoDaEquipe(x.name, year) === lado);
+        const soltas   = out.filter(x => Engine.ladoDaEquipe(x.name, year) == null);
+        let grid = proprias.concat(soltas);
+        if(grid.length < 8){
+          /* completa com as estruturas menores do outro lado */
+          const resto = out.filter(x => grid.indexOf(x) < 0).sort((a, b) => a.str - b.str);
+          grid = grid.concat(resto.slice(0, 8 - grid.length));
+        }
+        /* o lado sem as estrelas anda um degrau abaixo, como andava */
+        if(lado === 'irl' && year <= 2001)
+          grid = grid.map(x => Object.assign({}, x, { str: clamp(Math.round(x.str - 4), 40, 99) }));
+        if(grid.length >= 5) return grid;
+      }
       return out;
     }
     const info = catInfo(cat, idx, len);
@@ -8654,6 +8676,103 @@ const Engine = {
     return rec;
   },
 
+  /* ═══ AS CATEGORIAS AMERICANAS NÃO FORAM SEMPRE A MESMA COISA ═══
+     A "IndyCar" mudou de dono, de nome, de calendário e de gente várias
+     vezes. Foi AAA até 55, USAC até 78, CART/PPG Indy Car World Series dos
+     anos 80 até 96, e aí o esporte se partiu em dois: a IRL, dona das 500
+     Milhas, e a CART — depois Champ Car — dona dos circuitos mistos e das
+     estrelas. Só em 2008 voltou a ser um campeonato só. */
+  ORG_INDY: [
+    { de:1950, ate:1955, k:'aaa',  n:'AAA National Championship', s:'AAA',
+      d:'O campeonato nacional da AAA, com Indianápolis valendo pontos do Mundial de Fórmula 1.' },
+    { de:1956, ate:1978, k:'usac', n:'USAC National Championship', s:'USAC',
+      d:'A USAC no comando: roadsters, ovais de terra e as 500 Milhas como a corrida mais importante do mundo.' },
+    { de:1979, ate:1995, k:'cart', n:'PPG Indy Car World Series', s:'CART',
+      d:'A CART levou a categoria para o mundo: circuitos de rua, permanentes e ovais, e campeões de Fórmula 1 cruzando o Atlântico.' },
+    { de:1996, ate:2003, k:'split', n:'CART e IRL', s:'CISÃO',
+      d:'O esporte partido em dois. A IRL ficou com as 500 Milhas e os ovais; a CART, com os circuitos mistos e quase todas as estrelas.' },
+    { de:2004, ate:2007, k:'split2', n:'Champ Car e IRL', s:'CISÃO',
+      d:'A CART virou Champ Car e definhou; a IRL cresceu com Indianápolis. Os dois campeonatos ainda existem, e um deles não vai sobreviver.' },
+    { de:2008, ate:9999, k:'unificada', n:'IndyCar Series', s:'IndyCar',
+      d:'Reunificada. Chassi único, ovais, ruas e circuitos mistos no mesmo campeonato.' }
+  ],
+  orgIndy(ano){
+    return Engine.ORG_INDY.find(o => ano >= o.de && ano <= o.ate) || Engine.ORG_INDY[Engine.ORG_INDY.length-1];
+  },
+  cisaoAtiva(ano){ const o = Engine.orgIndy(ano); return o.k === 'split' || o.k === 'split2'; },
+  ladoAtual(ano){
+    if(!Engine.cisaoAtiva(ano)) return null;
+    return S.ladoIndy || 'cart';
+  },
+  LADOS: {
+    cart: { n:'CART', nome2:'Champ Car', ic:'🌎',
+            d:'Circuitos de rua e permanentes pelo mundo, os melhores pilotos e nenhuma 500 Milhas.' },
+    irl:  { n:'IRL', nome2:'Indy Racing League', ic:'🥛',
+            d:'Ovais americanos e as 500 Milhas de Indianápolis — a corrida que sozinha vale uma carreira.' }
+  },
+
+  /* de que lado cada equipe estava, e quando trocou */
+  EQUIPE_LADO: {
+    'Penske':          [['cart',1979,2001],['irl',2002,9999]],
+    'Chip Ganassi':    [['cart',1990,2002],['irl',2003,9999]],
+    'Rahal/Hogan':     [['cart',1992,1999]],
+    'Rahal Letterman': [['cart',2000,2003],['irl',2004,9999]],
+    'Newman/Haas':     [['cart',1983,2008]],
+    'Team Green':      [['cart',1994,2002]],
+    'Andretti Green':  [['irl',2003,9999]],
+    'Walker Racing':   [['cart',1991,2004]],
+    'All American Racers': [['cart',1990,1999]],
+    'Forsythe':        [['cart',1993,2007]],
+    'Patrick Racing':  [['cart',1990,2003]],
+    'Bettenhausen':    [['cart',1990,1999]],
+    'Arciero-Wells':   [['cart',1994,1999]],
+    'PacWest':         [['cart',1994,2002]],
+    'Galles Racing':   [['cart',1990,1997]],
+    'Hall Racing':     [['cart',1990,1996]],
+    'Truesports':      [['cart',1990,1993]],
+    'KV Racing':       [['cart',2003,2007],['irl',2008,9999]],
+    'Payton/Coyne':    [['cart',1990,2007],['irl',2008,9999]],
+    'Panther':         [['irl',1997,9999]],
+    'Foyt':            [['irl',1996,9999]],
+    'Hemelgarn':       [['irl',1996,9999]],
+    'Dreyer & Reinbold':[['irl',2000,9999]],
+    'Vision':          [['irl',2007,9999]]
+  },
+  ladoDaEquipe(nome, ano){
+    const j = Engine.EQUIPE_LADO[nome];
+    if(!j) return null;                                  /* sem registro: serve para os dois */
+    const w = j.find(x => ano >= x[1] && ano <= x[2]);
+    return w ? w[0] : null;
+  },
+  /* a equipe cabe no campeonato que você escolheu? */
+  equipeDoLado(nome, ano, lado){
+    if(!lado) return true;
+    const l = Engine.ladoDaEquipe(nome, ano);
+    return l == null || l === lado;
+  },
+
+  /* ── o calendário de cada lado ──
+     A IRL correu em oval e ficou com Indianápolis. A CART correu no mundo,
+     em rua e circuito misto, e ficou sem as 500 Milhas até 2000. */
+  calendarioDoLado(ids, ano, lado){
+    if(!lado) return ids;
+    const indy500 = 'indy';
+    const filtra = ids.filter(id => {
+      const t = TRACKS[id];
+      if(!t) return false;
+      /* As 500 Milhas foram da IRL do primeiro ano da cisão até a
+         reunificação. As inscrições isoladas de equipes da CART em 2000 e
+         2001 foram exatamente isso: inscrições isoladas, não etapa do
+         campeonato — no jogo elas aparecem como convite paralelo. */
+      if(id === indy500) return lado === 'irl';
+      const oval = t.type === 'oval';
+      return lado === 'irl' ? (oval || t.cc === 'US') : !oval || t.cc !== 'US';
+    });
+    /* nenhum dos dois fica sem calendário */
+    if(filtra.length >= 6) return filtra;
+    return ids;
+  },
+
   /* ═══ O PLAYOFF DA NASCAR ═══
      A NASCAR deixou de ser somatório em 2004, e mudou de regulamento quatro
      vezes desde então. Um piloto que liderou a temporada inteira pode perder
@@ -9881,7 +10000,8 @@ const UI = {
           <span class="cat">${esc(sea.cat)}</span>
         </div>
         <div class="yr">${sea.year}</div>
-        <div class="era">${esc(S.team.name)} · ${esc(sea.eraName)}</div>
+        <div class="era">${esc(S.team.name)} · ${esc(sea.eraName)}${
+          sea.org ? ' · ' + esc(sea.lado ? Engine.LADOS[sea.lado].n : sea.org.s) : ''}</div>
       </div>
       <span class="sp"></span>
       <div class="pos-big"><b>${sum.races ? ord(sum.pos) : '—'}</b><span>no campeonato</span></div>
@@ -11937,6 +12057,24 @@ const Game = {
     }
     /* o telefone não toca só da sua categoria */
     Engine.ofertasDeFora(sum).forEach(o => offers.push(o));
+    /* nos anos da cisão americana, os dois campeonatos existem e disputam você */
+    if(S.series === 'indy' && Engine.cisaoAtiva(S.year + 1)){
+      const outro = Engine.ladoAtual(S.year) === 'irl' ? 'cart' : 'irl';
+      const era2 = eraOfSeries(S.year + 1, 'indy');
+      const esc2 = resolveLadder(era2.ladder, S.driver.cc, S.year + 1);
+      const cat2 = esc2[esc2.length - 1];
+      const todas = [];
+      era2.teams.forEach((tt, i) => { const r = Engine.resolveTeam(tt, i, S.year + 1, 'indy'); if(r) todas.push(r); });
+      const dela = todas.filter(x => Engine.equipeDoLado(x.name, S.year + 1, outro));
+      if(dela.length){
+        const rep = clamp(S.driver.fame * .8 + (S.driver.ovr - 60) * 1.6, 0, 160);
+        const alvo = dela[clamp(Math.round((1 - rep / 160) * (dela.length - 1)), 0, dela.length - 1)];
+        const L = Engine.LADOS[outro];
+        offers.push({ type:'f1', cat:cat2, team:alvo, years:R.int(1,2), sk:'indy',
+          escada:esc2, catIdx:esc2.length - 1, ladoIndy:outro, cisao:true,
+          note: L.ic + ' Mudar de lado na guerra americana: ' + L.d });
+      }
+    }
     /* cláusula de cada contrato: exclusivo, padrão ou livre */
     offers.forEach(o => {
       if(o.clausula) return;
@@ -12032,6 +12170,8 @@ const Game = {
            S.cansaco = 0; S.paralelaFeita = null;
            /* a cláusula decide o que você pode fazer fora dali */
            if(S.contract) S.contract.clausula = o.clausula || 'padrao';
+           /* trocar de lado na cisão americana */
+           if(o.ladoIndy) S.ladoIndy = o.ladoIndy;
            S._clausulaNova = o.clausula || 'padrao';
            /* academia: assinar com equipe incompatível encerra o vínculo */
            if(o.team && !Engine.academiaAceita(o.team.name)){
