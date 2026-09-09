@@ -5229,16 +5229,354 @@ const Engine = {
   },
 
   /* ═══ ACERTO DO CARRO ═══
-     Três escolhas antes de cada corrida. Asa e suspensão têm um ponto certo,
-     que muda com o traçado e com a chuva; errar custa carro. O motor não tem
-     ponto certo: é troca pura — anda mais e quebra mais.
-     O boletim do tempo é probabilidade, não certeza. Montar o carro para o
-     seco e pegar chuva é a forma mais rápida de perder um domingo. */
+     Um fim de semana não é três barras para arrastar. É um engenheiro que
+     olhou os dados de sexta e te conta o que achou — com o que ele mediu, o
+     que ele acha e o que ele não teve tempo de olhar. Você responde a cada
+     trecho da pista, sabendo que não dá para resolver tudo em duas horas.
+     O ponto certo existe e nunca aparece na tela. O que aparece é o que
+     alguém te disse, e o que você aprendeu vindo aqui antes. */
   ASA_ROT:   ['Descarregada','Baixa','Média','Alta','Carregada'],
   SUSP_ROT:  ['Muito rígida','Rígida','Média','Macia','Muito macia'],
   MOTOR_ROT: ['Conservador','Contido','Normal','Forte','No limite'],
 
-  /* sorteia o tempo da etapa uma vez só, quando você monta o carro */
+  /* como o carro é montado, e o que cada escolha cobra */
+  FILOSOFIAS: [
+    { k:'equilibrio', ic:'⚖️', n:'Carro de fim de semana',
+      d:'Nada de extremo. Anda em tudo, não brilha em nada.',
+      q:0, r:0, pen:1, rel:0 },
+    { k:'quali', ic:'⚡', n:'Montado para o sábado',
+      d:'Uma volta rápida e limpa. Domingo o pneu paga a conta.',
+      q:1.3, r:-.95, pen:1, rel:0 },
+    { k:'corrida', ic:'🏁', n:'Montado para o domingo',
+      d:'Larga mais atrás e chega mais na frente do que devia.',
+      q:-1.15, r:1.25, pen:1, rel:0 },
+    { k:'janela', ic:'🛡️', n:'Janela larga',
+      d:'Erro de acerto machuca menos. Acerto perfeito rende menos.',
+      q:-.4, r:-.2, pen:.6, rel:.008 },
+    { k:'limite', ic:'🔪', n:'Faca no osso',
+      d:'Se estiver certo, é o carro mais rápido da pista. Se não, é o pior.',
+      q:.75, r:.75, pen:1.55, rel:-.016 }
+  ],
+  filo(k){ return Engine.FILOSOFIAS.find(f => f.k === k) || Engine.FILOSOFIAS[0]; },
+
+  /* frase estavel: o engenheiro nao muda de palavra toda vez que voce abre a tela */
+  frase(lista, sem){ return lista[(sem >>> 0) % lista.length]; },
+
+  /* o que um trecho de pista pede, na boca de quem trabalha ali */
+  SETOR_FALA: {
+    apoio: {
+      '1': ['o carro está solto na entrada das rápidas — falta carga em cima dele',
+            'a dianteira desiste no meio da curva longa; é apoio que falta',
+            'sem asa você não segura o carro nas mudanças de direção daqui'],
+      '-1':['você está perdendo tempo demais na reta, o carro está arrastando',
+            'dá para tirar asa aqui — a curva aguenta, a reta não perdoa',
+            'todo mundo passa você no fim da reta; o problema é arrasto']
+    },
+    mec: {
+      '1': ['o carro não coloca a potência no chão na saída da lenta',
+            'as zebras estão jogando o carro para fora; ele precisa absorver mais',
+            'está travando demais o traseiro na freada forte'],
+      '-1':['o carro rola demais na mudança de direção, precisa de plataforma',
+            'está afundando na freada e perdendo referência de entrada',
+            'faltou firmeza — o carro se mexe todo e você não sabe onde ele vai parar']
+    }
+  },
+  SETOR_NOME: ['primeiro setor','segundo setor','terceiro setor'],
+
+  /* ── o que a pista realmente pede ──
+     Três trechos, cada um puxando um eixo do carro para um lado, cada um
+     valendo um tanto de tempo. O ótimo dos dois eixos é, por construção,
+     exatamente o mesmo ponto certo que o jogo já usava — o histórico de
+     traçado, tipo de pista e chuva continua valendo. */
+  _ganhoSetor(setores, ax, v){
+    let g = -.22 * Math.abs(v - 2);
+    for(const s of setores) if(s.ax === ax) g += s.peso * clamp(s.dir * (v - 2) / s.need, -1.5, 1);
+    return g;
+  },
+  _otimoEixo(setores, ax){
+    let bv = 0, bg = -1e9;
+    for(let v = 0; v <= 4; v++){
+      const g = Engine._ganhoSetor(setores, ax, v);
+      if(g > bg + 1e-9){ bg = g; bv = v; }
+    }
+    return bv;
+  },
+  _setoresForcados(id, sem){
+    const um = (d, ax, i) => ({ i, ax,
+      dir:  d === 0 ? (((sem >>> i) & 1) ? 1 : -1) : (d > 0 ? 1 : -1),
+      need: d === 0 ? 2 : Math.min(2, Math.abs(d)),
+      peso: d === 0 ? .35 : 1.25 });
+    const a = um(id.asa - 2, 'apoio', 0), b = um(id.susp - 2, 'mec', 1);
+    /* o terceiro trecho fica no eixo que já está no ponto e puxa contra o
+       outro: existe, pesa, e no fim se anula — que é o que o jogador tem
+       de perceber sozinho */
+    const eixoLivre = (id.asa - 2) === 0 ? 'apoio' : 'mec';
+    const par = eixoLivre === 'apoio' ? a : b;
+    const s = [ a, b, { i:2, ax: eixoLivre, dir: -par.dir, need: par.need, peso: par.peso } ];
+    /* o terceiro trecho não pode desmentir o ponto certo: ele encolhe até caber */
+    let guarda = 8;
+    while(guarda-- > 0 && s[2].peso > .05 &&
+         (Engine._otimoEixo(s,'apoio') !== id.asa || Engine._otimoEixo(s,'mec') !== id.susp))
+      s[2].peso = Math.round((s[2].peso - .1) * 100) / 100;
+    return s;
+  },
+  setores(sea, rd){
+    const trk = sea.calendar[rd];
+    const wet = Engine.climaDe(sea, rd);
+    const chave = sea.year + '|' + rd + '|' + trk.id + '|' + (wet ? 'w' : 'd');
+    if(Engine._setCache && Engine._setCache.k === chave) return Engine._setCache.v;
+    const id = Engine.setupIdeal(sea, rd);
+    /* a natureza de cada trecho é da pista, não do ano: quem já correu aqui
+       sabe que o segundo setor é aerodinâmico. O quanto ele pesa neste carro,
+       e para que lado, é o que muda de temporada para temporada. */
+    const primeiro = (seedOf('eixo' + trk.id) & 1) ? 'apoio' : 'mec';
+    const eixos = [primeiro, primeiro === 'apoio' ? 'mec' : 'apoio',
+                   (seedOf('eixo3' + trk.id + sea.year) & 1) ? 'apoio' : 'mec'];
+    const PESOS = [.35, .55, .8, 1.1, 1.35];
+    const sem = seedOf('sec' + sea.year + '_' + rd + '_' + trk.id + (wet ? 'w' : ''));
+    let achado = null, melhorNota = -1;
+    for(let t = 0; t < 260; t++){
+      const h = seedOf('v' + t + '_' + sem);
+      const cand = eixos.map((ax, i) => ({
+        i, ax,
+        dir:  ((h >>> (i * 7)) & 1) ? 1 : -1,
+        need: ((h >>> (i * 7 + 1)) & 1) ? 2 : 1,
+        peso: PESOS[(h >>> (i * 7 + 2)) % 5]
+      }));
+      if(Engine._otimoEixo(cand,'apoio') !== id.asa || Engine._otimoEixo(cand,'mec') !== id.susp) continue;
+      /* nota: soma dos pesos, com bônus para trechos de peso alto e para a
+         briga interna — dois trechos do mesmo eixo puxando para lados opostos */
+      let nota = cand.reduce((a, c) => a + c.peso, 0);
+      nota += cand.filter(c => c.peso >= 1.1).length * .55;
+      for(let a = 0; a < 3; a++) for(let b = a + 1; b < 3; b++)
+        if(cand[a].ax === cand[b].ax && cand[a].dir !== cand[b].dir)
+          nota += Math.min(cand[a].peso, cand[b].peso) * .9;
+      if(nota > melhorNota){ melhorNota = nota; achado = cand; }
+    }
+    const v = achado || Engine._setoresForcados(id, sem);
+    /* peso relativo, para a narrativa depois da corrida saber o que decidiu */
+    const soma = v.reduce((a,s)=>a + s.peso, 0) || 1;
+    v.forEach(s => s.share = s.peso / soma);
+    Engine._setCache = { k: chave, v };
+    return v;
+  },
+
+  /* ── o quanto o engenheiro enxerga ──
+     Sai do seu entendimento de carro, da relação com a equipe, do trabalho de
+     pré-temporada com os engenheiros e da época: em 1954 ninguém tinha
+     telemetria, e o que se sabia vinha do cronômetro e do olho. */
+  confEng(){
+    const era = Engine.eraOf(S.year || 2000);
+    const dado = clamp(((S.year || 2000) - 1950) / 62, 0, 1);
+    return clamp(.10 + (S.driver.attr.dev - 45) / 45 * .40
+               + (S.teamRel || 50) / 100 * .22 + (Engine.relEng() - 50) / 100 * .22
+               + ((S.prep && S.prep.eng) || 0) * .035 + dado * .18, .08, .95);
+  },
+
+  /* o boletim de sexta: o que ele mediu, o que ele acha, o que ficou sem olhar */
+  boletim(sea, rd){
+    const st = Engine.setores(sea, rd);
+    const conf = Engine.confEng();
+    const pc = Math.round(conf * 100);
+    return st.map((s, i) => {
+      const h = seedOf('bol' + sea.year + '_' + rd + '_' + i + '_' + pc + sea.calendar[rd].id);
+      const r = (h % 1000) / 1000;
+      let estado = 'firme', dir = s.dir, peso = s.peso, need = s.need;
+      if(r > .80 + conf * .18) estado = 'vazio';
+      else if(r < conf * .88 * .09){
+        /* telemetria também mente: o dado de sexta era com pista suja, com
+           tanque cheio, com o vento de outro lado. Raro, e por isso caro. */
+        if(((h >>> 13) % 100) / 100 < .55) dir = -dir; else need = need === 2 ? 1 : 2;
+      }
+      else if(r > conf * .88){
+        estado = 'duvida';
+        if(((h >>> 11) % 100) / 100 < .40) dir = -dir;
+        peso = clamp(peso + (((h >>> 17) & 1) ? .45 : -.45), .2, 1.5);
+        if(((h >>> 19) % 100) / 100 < .30) need = need === 2 ? 1 : 2;
+      }
+      return { i, ax: s.ax, dir, peso, need, estado,
+               palpite: ((h >>> 23) & 1) ? 1 : -1,
+               fala: Engine.frase(Engine.SETOR_FALA[s.ax][dir > 0 ? '1' : '-1'], h + i) };
+    });
+  },
+
+  /* ── o histórico de quem te informa ──
+     A informação vale o quanto a fonte vale, e o jogador só descobre isso
+     vendo o boletim bater ou não bater domingo após domingo. */
+  anotarEngenheiro(rev){
+    if(!rev || !rev.length) return;
+    if(!S.engHist) S.engHist = { certo:0, errado:0, vazio:0 };
+    rev.forEach(r => {
+      if(r.estado === 'vazio') S.engHist.vazio++;
+      else if(r.certo) S.engHist.certo++;
+      else S.engHist.errado++;
+    });
+  },
+  engFama(){
+    const h = S.engHist;
+    if(!h || (h.certo + h.errado) < 6) return null;
+    const p = h.certo / (h.certo + h.errado);
+    return p >= .78 ? 'ele quase nunca erra o diagnóstico.'
+         : p >= .58 ? 'ele acerta mais do que erra.'
+         : p >= .42 ? 'metade do que ele diz se confirma na pista.'
+         :            'você já perdeu domingos demais seguindo o boletim dele.';
+  },
+
+  /* ── memória de pista ──
+     O que você descobriu correndo aqui antes. Não é o palpite de ninguém:
+     é o que a corrida mostrou. Vale para as próximas visitas. */
+  memPista(trkId){ return (S.pistaMem && S.pistaMem[trkId]) || null; },
+  gravarPista(trkId, setores, ano){
+    if(!S.pistaMem) S.pistaMem = {};
+    const m = S.pistaMem[trkId] || (S.pistaMem[trkId] = { visitas:0, eixos:[null,null,null], anos:[] });
+    m.visitas++;
+    setores.forEach((s, i) => { if(i < 3) m.eixos[i] = s.ax; });
+    m.chave = setores[0] && setores.reduce((a, s) => s.peso > (a ? a.peso : 0) ? s : a, null);
+    if(m.chave) m.chave = m.chave.i;
+    if(m.anos.indexOf(ano) < 0) m.anos.push(ano);
+    if(m.anos.length > 6) m.anos.shift();
+  },
+
+  /* o que você mandou fazer no carro vira asa e suspensão de verdade */
+  setupDeRespostas(sea, rd, resp){
+    const bol = Engine.boletim(sea, rd);
+    const r = resp || [0, 0, 0];
+    let apoio = 2, mec = 2;
+    bol.forEach((b, i) => {
+      const mov = clamp(r[i] | 0, 0, 2);
+      if(!mov) return;
+      /* sem dado, a equipe vai no palpite — e palpite erra metade das vezes */
+      const d = b.estado === 'vazio' ? b.palpite : b.dir;
+      if(b.ax === 'apoio') apoio += d * mov; else mec += d * mov;
+    });
+    return { asa: clamp(apoio, 0, 4), susp: clamp(mec, 0, 4) };
+  },
+
+  /* quantos trechos você ainda pode atacar de verdade neste fim de semana */
+  ATAQUES_MAX: 2,
+  ataquesUsados(resp){ return (resp || []).filter(x => x === 2).length; },
+
+  /* ── o boletim do tempo ──
+     Ninguém te dá porcentagem. Te dão o céu, o vento e a opinião de quem
+     está ali há trinta anos. Às vezes eles estão errados. */
+  CEU_CHUVA: [
+    'O céu fechou ainda ontem à noite e não abriu mais. O pessoal do tempo aposta em chuva antes da largada.',
+    'Está pesado desde cedo, e o vento virou. A meteorologia da equipe diz que chove.',
+    'Chuva forte no fim da manhã em toda a região. A frente vem na direção do circuito.'
+  ],
+  CEU_SECO: [
+    'Céu limpo desde sexta. A meteorologia da equipe não vê nada chegando.',
+    'Manhã fria e seca. A frente que preocupava passou ao norte durante a noite.',
+    'Sol firme. O asfalto está quente e ninguém na garagem fala em pneu de chuva.'
+  ],
+  CEU_DUVIDA: [
+    'Nuvens carregadas se acumulando a oeste, mas ainda longe. Ninguém garante nada.',
+    'O boletim mudou três vezes desde ontem. Metade da garagem monta para seco, metade não sabe.',
+    'Chuva de manhã, sol ao meio-dia, nublado agora. O tempo aqui não se decide.'
+  ],
+  previsao(sea, rd){
+    const trk = sea.calendar[rd];
+    const wet = Engine.climaDe(sea, rd);
+    /* quanto mais recente a época, melhor o radar. Nos anos 50 se olhava o céu. */
+    const acerto = clamp(.42 + ((sea.year - 1950) / 76) * .34 + Engine.confEng() * .14, .38, .84);
+    const h = seedOf('prev' + sea.year + '_' + rd + '_' + trk.id);
+    const r = (h % 1000) / 1000;
+    let aponta;
+    if(r < acerto) aponta = wet;                        /* acertou */
+    else if(r < acerto + (1 - acerto) * .55) aponta = null;  /* em cima do muro */
+    else aponta = !wet;                                  /* errou feio */
+    const lista = aponta === true ? Engine.CEU_CHUVA : aponta === false ? Engine.CEU_SECO : Engine.CEU_DUVIDA;
+    return { aponta, texto: Engine.frase(lista, h), firme: aponta !== null && trk.rainP < .18 };
+  },
+
+  /* efeito do acerto escolhido: ganho/perda de carro, motor e confiabilidade */
+  setupEfeito(sea, rd){
+    const st = (sea.setupRound === rd && sea.setup) ? sea.setup : null;
+    if(!st) return { car:0, carQ:0, carR:0, rel:0, erro:null, motor:2, filo:'equilibrio' };
+    const id = Engine.setupIdeal(sea, rd);
+    const erro = Math.abs(st.asa - id.asa) + Math.abs(st.susp - id.susp);
+    const m = (st.motor - 2);
+    const f = Engine.filo(st.filo);
+    /* a escala é centrada em zero para um acerto mediano: acertar em cheio
+       vale carro, errar feio custa muito mais do que o acerto perfeito rende */
+    const base = 1.6 - erro * 1.05 * f.pen + m * .9;
+    return { car: base, carQ: base + f.q, carR: base + f.r,
+             rel: -m * .022 + (f.rel || 0), erro, motor: st.motor, filo: f.k };
+  },
+
+  /* acerto automático — modo rápido e simulação de temporada.
+     Bom, nunca perfeito: quem monta o carro na mão leva vantagem. */
+  setupAuto(sea, rd){
+    const bol = Engine.boletim(sea, rd);
+    /* a equipe ataca os dois trechos que o engenheiro julga mais caros */
+    const ordem = bol.map((b, i) => [i, b.peso, b.need]).sort((a, b) => b[1] - a[1]);
+    const resp = [0, 0, 0];
+    let ataques = 0;
+    ordem.forEach((o, k) => {
+      const [i, peso, need] = o;
+      if(peso < .5 && k > 0) return;                       /* não vale o tempo de pista */
+      let mov = need;
+      if(mov === 2 && ataques >= Engine.ATAQUES_MAX) mov = 1;
+      if(mov === 2 && R.chance(.18)) mov = 1;              /* nem a equipe acerta sempre */
+      if(mov === 2) ataques++;
+      resp[i] = mov;
+    });
+    const s = Engine.setupDeRespostas(sea, rd, resp);
+    return { asa: s.asa, susp: s.susp, motor: R.chance(.25) ? 3 : 2,
+             filo: R.chance(.22) ? 'corrida' : 'equilibrio', resp, auto: true };
+  },
+
+  garantirSetup(sea, rd){
+    if(sea.setupRound === rd && sea.setup) return sea.setup;
+    sea.setup = Engine.setupAuto(sea, rd);
+    sea.setupRound = rd;
+    return sea.setup;
+  },
+
+  /* ── o que a corrida mostrou ──
+     Depois da bandeirada o engenheiro volta com o dado real. É aqui que o
+     jogador descobre se o boletim de sexta valia alguma coisa — e é isso que
+     fica guardado sobre a pista e sobre o engenheiro. */
+  setupRevisao(sea, rd, resp){
+    const verd = Engine.setores(sea, rd);
+    const bol  = Engine.boletim(sea, rd);
+    const r = resp || [0, 0, 0];
+    return verd.map((s, i) => {
+      const b = bol[i];
+      const certo = b.estado !== 'vazio' && b.dir === s.dir;
+      const mov = clamp(r[i] | 0, 0, 2);
+      const fez = b.estado === 'vazio' ? (b.palpite === s.dir) : certo;
+      /* o tamanho do problema: mexer pela metade num trecho que pedia tudo
+         é tão errado quanto atacar um trecho que pedia um dedo */
+      const passoCerto = mov === 0 ? null : mov === s.need;
+      return {
+        i, ax: s.ax, dir: s.dir, share: s.share, estado: b.estado, mov,
+        certo, acertou: mov > 0 ? fez : null, passoCerto,
+        need: s.need, needDito: b.need, peso: s.peso, pesoDito: b.peso
+      };
+    });
+  },
+  NOTA_EIXO: { apoio:'aerodinâmico', mec:'mecânico' },
+
+  /* frase curta sobre como o carro se comportou */
+  setupNota(rec){
+    if(!rec.setup) return '';
+    const e = rec.setup.erro;
+    const base = e === 0 ? 'O carro estava exatamente onde precisava estar.'
+      : e <= 1 ? 'Acerto muito bom: o carro respondeu a semana inteira.'
+      : e <= 2 ? 'Acerto razoável — faltava um detalhe em uma ponta da pista.'
+      : e <= 4 ? 'O carro nunca ficou confortável. Deu para andar, não para brigar.'
+      : 'Acerto errado. Você passou o fim de semana lutando contra o próprio carro.';
+    const mot = rec.setup.motor >= 4 ? ' Motor no limite: rápido e à beira da quebra.'
+      : rec.setup.motor === 0 ? ' Motor poupado: sobrou confiabilidade e faltou ritmo.' : '';
+    const fk = rec.setup.filo;
+    const fil = fk === 'quali' ? ' Montado para o sábado: uma volta só.'
+      : fk === 'corrida' ? ' Montado para o domingo: o carro cresceu com a corrida.'
+      : fk === 'janela' ? ' Janela larga: nada de extremo, e nada deu muito errado.'
+      : fk === 'limite' ? ' Faca no osso — tudo ou nada.' : '';
+    return base + mot + fil;
+  },
+
   climaDe(sea, rd){
     if(!sea.clima) sea.clima = {};
     if(sea.clima[rd] == null) sea.clima[rd] = R.chance(sea.calendar[rd].rainP);
@@ -5264,71 +5602,6 @@ const Engine = {
     return { asa, susp, wet };
   },
 
-  /* o que o engenheiro te diz. Quanto melhor você é de desenvolvimento e
-     melhor a relação com a equipe, mais perto da verdade vem o palpite. */
-  setupDica(sea, rd){
-    const id = Engine.setupIdeal(sea, rd);
-    /* nem um estreante fica totalmente às cegas, nem um veterano acerta sempre */
-    const conf = clamp(.18 + (S.driver.attr.dev - 45) / 45 * .55 + (S.teamRel || 50) / 100 * .30
-                     + (Engine.relEng() - 50) / 100 * .28, .12, .97);
-    const pc = Math.round(conf * 100);
-    /* O palpite é sempre o mesmo para a mesma etapa: o engenheiro não muda de
-       ideia toda vez que você abre a tela. Ele erra, mas erra com convicção. */
-    const erra = campo => {
-      const h = seedOf('dica' + sea.year + '_' + rd + '_' + pc + campo);
-      return (h % 1000) / 1000 < (1 - conf) ? (((h >>> 10) & 1) ? 1 : -1) : 0;
-    };
-    return { asa: clamp(id.asa + erra('a'), 0, 4), susp: clamp(id.susp + erra('s'), 0, 4),
-             conf: pc };
-  },
-
-  /* efeito do acerto escolhido: ganho/perda de carro, motor e confiabilidade */
-  setupEfeito(sea, rd){
-    const st = (sea.setupRound === rd && sea.setup) ? sea.setup : null;
-    if(!st) return { car:0, rel:0, erro:null, motor:2 };
-    const id = Engine.setupIdeal(sea, rd);
-    const erro = Math.abs(st.asa - id.asa) + Math.abs(st.susp - id.susp);
-    const m = (st.motor - 2);
-    return {
-      /* a escala é centrada em zero para um acerto mediano: acertar em cheio
-         vale carro, errar feio custa muito mais do que o acerto perfeito rende */
-      car: 1.6 - erro * 1.05 + m * .9,
-      rel: -m * .022,
-      erro, motor: st.motor
-    };
-  },
-
-  /* acerto automático — modo rápido e simulação de temporada.
-     Bom, nunca perfeito: quem monta o carro na mão leva vantagem. */
-  setupAuto(sea, rd){
-    const d = Engine.setupDica(sea, rd);
-    const desvio = () => R.chance(.42) ? (R.chance(.5) ? 1 : -1) : 0;
-    return { asa: clamp(d.asa + desvio(), 0, 4), susp: clamp(d.susp + desvio(), 0, 4),
-             motor: R.chance(.25) ? 3 : 2, auto:true };
-  },
-
-  garantirSetup(sea, rd){
-    if(sea.setupRound === rd && sea.setup) return sea.setup;
-    sea.setup = Engine.setupAuto(sea, rd);
-    sea.setupRound = rd;
-    return sea.setup;
-  },
-
-  /* frase curta sobre como o carro se comportou */
-  setupNota(rec){
-    if(!rec.setup) return '';
-    const e = rec.setup.erro;
-    const m = Engine.MOTOR_ROT[rec.setup.motor] || '';
-    const base = e === 0 ? 'O carro estava exatamente onde precisava estar.'
-      : e <= 1 ? 'Acerto muito bom: o carro respondeu a semana inteira.'
-      : e <= 2 ? 'Acerto razoável — faltava um detalhe em uma ponta da pista.'
-      : e <= 4 ? 'O carro nunca ficou confortável. Deu para andar, não para brigar.'
-      : 'Acerto errado. Você passou o fim de semana lutando contra o próprio carro.';
-    const mot = rec.setup.motor >= 4 ? ' Motor no limite: rápido e à beira da quebra.'
-      : rec.setup.motor === 0 ? ' Motor poupado: sobrou confiabilidade e faltou ritmo.' : '';
-    return base + mot;
-  },
-
   /* ══ SIMULA UMA CORRIDA ══ */
   runRace(sea){
     const rd = sea.round;
@@ -5350,7 +5623,7 @@ const Engine = {
 
     /* ── classificação ── */
     const qual = sea.field.map(f=>{
-      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.car : 0);
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ : 0);
       const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).q : f.skill + f.qb + (wet ? R.gauss()*3 : 0), sea);
       return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
     }).sort((a,b)=>b.v-a.v);
@@ -5364,7 +5637,7 @@ const Engine = {
     const running = [];
 
     sea.field.forEach(f => {
-      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.car : 0);
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR : 0);
       const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).r : f.skill + f.rb, sea);
       const g = grid[f.id];
 
@@ -5451,7 +5724,8 @@ const Engine = {
     const rec = {
       r: rd+1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet, dbl:!!trk.dbl,
       setup: sea.setup ? { asa:sea.setup.asa, susp:sea.setup.susp, motor:sea.setup.motor,
-                           erro: ajuste.erro, auto: !!sea.setup.auto } : null,
+                           erro: ajuste.erro, auto: !!sea.setup.auto, filo: ajuste.filo,
+                           rev: Engine.setupRevisao(sea, rd, sea.setup.resp) } : null,
       grid: mine.grid, pos: mine.out ? null : mine.pos, dnf: mine.out ? mine.dnf : null,
       pts: mine.pts, fl: flId==='ME',
       tmGrid: tm ? tm.grid : null, tmPos: tm ? (tm.out?null:tm.pos) : null,
@@ -5459,6 +5733,9 @@ const Engine = {
                                         me:!!x.f.isMe, pos:x.out?null:x.pos, dnf:x.out?x.dnf:null })),
       champ: 0, injury
     };
+
+    /* o que a corrida mostrou sobre esta pista fica guardado para a próxima vez */
+    Engine.gravarPista(trk.id, Engine.setores(sea, rd), sea.year);
 
     sea.results.push(rec);
     sea.round++;
@@ -6802,50 +7079,119 @@ UI.prepModal = function(){
     </div>`);
 };
 
-/* ═══ ACERTO DO CARRO ═══ */
+/* ═══ ACERTO DO CARRO ═══
+   Nenhum número aparece aqui. O que aparece é o que o engenheiro trouxe da
+   sexta-feira — o que ele mediu, o que ele acha e o que ficou sem olhar — o
+   céu lá fora e o que você já aprendeu vindo a esta pista antes. */
 UI.setupModal = function(){
   const sea = S.season, rd = sea.round, trk = sea.calendar[rd];
   if(!trk) return;
-  if(sea.setupRound !== rd || !sea.setup){
-    const d = Engine.setupDica(sea, rd);
-    sea.setup = { asa:d.asa, susp:d.susp, motor:2 };
-    sea.setupRound = rd;
-  }
-  const st = sea.setup;
-  const d = Engine.setupDica(sea, rd);
-  const chuva = Math.round(trk.rainP * 100);
-  const linha = (rot, campo, lista, dica) => `
-    <div style="margin-bottom:13px">
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-        <span class="lbl">${rot}</span>
-        ${dica != null ? `<span style="font-size:11px;color:var(--dim2)">engenheiro: ${esc(lista[dica])}</span>` : ''}
+  const st = Game.garantirResp();
+  const bol = Engine.boletim(sea, rd);
+  const prev = Engine.previsao(sea, rd);
+  const mem = Engine.memPista(trk.id);
+  const usados = Engine.ataquesUsados(st.resp);
+  const restam = Engine.ATAQUES_MAX - usados;
+
+  const ESTADO = {
+    firme:  { r:'medido',       c:'var(--green)', d:'Saiu da telemetria. Ele tem dado para sustentar.' },
+    duvida: { r:'impressão',    c:'var(--gold)',  d:'É o que ele achou olhando você passar. Pode não ser isso.' },
+    vazio:  { r:'sem dado',     c:'var(--red2)',  d:'Não deu tempo de olhar este trecho. Se você mandar mexer, a equipe vai no palpite.' }
+  };
+  const PESO_TXT = p => p >= 1.15 ? 'é aqui que o tempo está'
+                      : p >= .75  ? 'vale um bom tanto de tempo'
+                      : p >= .5   ? 'vale alguma coisa'
+                      :             'quase não vale tempo';
+  const TAM_TXT = d => d === 2 ? 'e o problema é grande' : 'e é ajuste de detalhe';
+  const OPS = [['Deixar','não mexe neste trecho'],
+               ['Um passo','ajuste pequeno, sem custo de tempo de pista'],
+               ['Ir até o fim','muda o carro de verdade — consome tempo de pista']];
+
+  const setorHtml = (b) => {
+    const e = ESTADO[b.estado];
+    const sabido = mem && mem.eixos[b.i] === b.ax && mem.visitas > 0;
+    return `<div style="border:1px solid var(--line);border-left:3px solid ${e.c};border-radius:var(--r-sm);
+         padding:11px 13px;margin-bottom:10px;background:var(--panel2)">
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:5px">
+        <b style="font-size:13.5px">${esc(Engine.SETOR_NOME[b.i])}</b>
+        <span style="font-size:11px;color:var(--dim2)">${esc(Engine.NOTA_EIXO[b.ax])}</span>
+        <span class="sp"></span>
+        <span class="pill" style="color:${e.c};border-color:${e.c}55">${e.r}</span>
+      </div>
+      <div style="font-size:13px;color:var(--dim);margin-bottom:4px">
+        ${b.estado === 'vazio'
+          ? '— Aqui eu não tenho nada. A sexta não deu tempo.'
+          : '— ' + esc(b.fala) + '.'}
+      </div>
+      <div style="font-size:11.5px;color:var(--dim2);margin-bottom:8px">
+        ${b.estado === 'vazio' ? esc(e.d)
+          : 'Na conta dele, ' + PESO_TXT(b.peso) + ', ' + TAM_TXT(b.need) + '. ' + esc(e.d)}
+        ${sabido ? `<span style="color:var(--gold)"> · você já correu aqui: este trecho sempre foi ${esc(Engine.NOTA_EIXO[b.ax])}.</span>` : ''}
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:5px">
-        ${lista.map((v,i)=>`<button class="yr-b ${st[campo]===i?'sel':''}"
-            onclick="Game.setSetup('${campo}',${i})">${esc(v)}</button>`).join('')}
+        ${OPS.map((o, v) => {
+          const sel = (st.resp[b.i] | 0) === v || (v === 0 && !st.resp[b.i]);
+          const bloq = v === 2 && st.resp[b.i] !== 2 && restam <= 0;
+          return `<button class="yr-b ${sel ? 'sel' : ''}" ${bloq ? 'disabled style="opacity:.35"' : ''}
+             onclick="Game.setResp(${b.i},${v})" title="${esc(o[1])}">${esc(o[0])}</button>`;
+        }).join('')}
       </div>
     </div>`;
-  UI.modal(UI.head('Acerto do carro', `${esc(trk.gp)} · ${esc(trk.circ)} · rodada ${rd+1} de ${sea.calendar.length}`, false) +
+  };
+
+  const carro = `${esc(Engine.ASA_ROT[st.asa])} · ${esc((Engine.SUSP_ROT[st.susp] || '').toLowerCase())}`;
+
+  UI.modal(UI.head('Sexta-feira na garagem',
+      `${esc(trk.gp)} · ${esc(trk.circ)} · rodada ${rd + 1} de ${sea.calendar.length}`, false) +
     `<div class="mbd">
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-        <span class="pill ${chuva>=35?'rd':''}">${chuva>=35?'🌧️':'⛅'} ${chuva}% de chance de chuva</span>
-        <span class="pill">🔧 confiança do engenheiro: ${d.conf}%</span>
-      </div>
       <div class="res-nar" style="margin-top:0">
-        O engenheiro leu os dados e sugere um ponto de partida. Ele erra mais quando você
-        entende pouco de carro e quando a relação com a equipe está ruim —
-        e o boletim do tempo é uma probabilidade, não uma promessa.
+        <b style="display:block;margin-bottom:3px">🌤️ O céu</b>${esc(prev.texto)}
       </div>
-      ${linha('Asa', 'asa', Engine.ASA_ROT, d.asa)}
-      ${linha('Suspensão', 'susp', Engine.SUSP_ROT, d.susp)}
-      ${linha('Motor', 'motor', Engine.MOTOR_ROT, null)}
-      <p class="mut" style="font-size:12.5px;margin:0">
-        Asa e suspensão têm um ponto certo para cada traçado — e ele muda se chover.
-        O motor é troca pura: quanto mais forte, mais ritmo e mais chance de quebrar.
+
+      <div style="display:flex;align-items:baseline;gap:8px;margin:16px 0 8px">
+        <span class="lbl">O que o engenheiro trouxe</span>
+        <span class="sp"></span>
+        <span style="font-size:11px;color:${restam ? 'var(--gold)' : 'var(--red2)'};font-weight:800">
+          ${restam ? restam + (restam === 1 ? ' ataque restante' : ' ataques restantes') : 'sem tempo de pista'}</span>
+      </div>
+      ${bol.map(setorHtml).join('')}
+      ${bol.every(x => x.estado === 'vazio' || x.peso < .55) ? `<div style="font-size:12px;color:var(--dim2);
+           margin:-2px 0 12px;padding:8px 11px;border-radius:var(--r-sm);border:1px dashed var(--line)">
+           🤷 — Sinceramente? O carro já nasceu perto do ponto nesta pista. Não vejo muito a ganhar
+           mexendo, e vejo bastante a perder.</div>` : ''}
+
+      ${Engine.engFama() ? `<div style="font-size:12px;color:var(--dim2);margin:-2px 0 10px;padding:8px 11px;
+           border-radius:var(--r-sm);border:1px dashed var(--line)">
+           🔧 O histórico dele com você: ${esc(Engine.engFama())}</div>` : ''}
+
+      ${mem && mem.visitas ? `<div style="font-size:12px;color:var(--dim2);margin:-2px 0 14px;padding:8px 11px;
+           border-radius:var(--r-sm);border:1px dashed var(--line)">
+           📓 Você já correu aqui ${mem.visitas === 1 ? 'uma vez' : mem.visitas + ' vezes'}${
+             mem.anos && mem.anos.length ? ' (' + mem.anos.slice(-3).join(', ') + ')' : ''}.
+           O que a corrida mostrou fica com você; o que muda todo ano é o quanto cada trecho pesa neste carro.
+         </div>` : ''}
+
+      <span class="lbl" style="display:block;margin:16px 0 7px">Como o carro sai da garagem</span>
+      ${Engine.FILOSOFIAS.map(f => `<button class="dil ${st.filo === f.k ? 'sel' : ''}"
+          style="${st.filo === f.k ? 'border-color:var(--gold)' : ''}" onclick="Game.setFilo('${f.k}')">
+          <b>${f.ic} ${esc(f.n)}</b><span>${esc(f.d)}</span></button>`).join('')}
+
+      <span class="lbl" style="display:block;margin:16px 0 7px">Quanto você pede do motor</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+        ${Engine.MOTOR_ROT.map((v, i) => `<button class="yr-b ${st.motor === i ? 'sel' : ''}"
+            onclick="Game.setMotor(${i})">${esc(v)}</button>`).join('')}
+      </div>
+      <p class="mut" style="font-size:12px;margin:0 0 12px">
+        Mais motor é mais ritmo e mais chance de o fim de semana acabar no muro de boxes.
       </p>
+
+      <div style="padding:10px 13px;border-radius:var(--r-sm);background:var(--panel2);border:1px solid var(--line)">
+        <span class="lbl" style="display:block;margin-bottom:3px">O carro que vai para a pista</span>
+        <div style="font-size:13px;font-weight:700">${carro}</div>
+      </div>
     </div>
     <div class="mft">
-      <button class="btn btn-ghost btn-sm" onclick="Game.setSetupDica()">Usar a sugestão</button>
+      <button class="btn btn-ghost btn-sm" onclick="Game.setupNoEngenheiro()">Deixar com o engenheiro</button>
       <span class="sp"></span>
       <button class="btn btn-primary" onclick="UI.close();Game.correr()">Ir para a pista →</button>
     </div>`);
@@ -6871,6 +7217,30 @@ UI.raceResult = function(r){
            <div style="font-size:12.5px;color:var(--dim);margin-bottom:5px">
              ${esc(Engine.ASA_ROT[r.setup.asa])} · ${esc(Engine.SUSP_ROT[r.setup.susp])} · motor ${esc((Engine.MOTOR_ROT[r.setup.motor]||'').toLowerCase())}</div>
            <div style="font-size:13px;font-weight:700">${esc(Engine.setupNota(r))}</div>
+           ${r.setup.rev ? `<div style="margin-top:9px;border-top:1px solid var(--line);padding-top:8px">
+             <span class="lbl" style="display:block;margin-bottom:5px">O que o dado real mostrou</span>
+             ${r.setup.rev.map(v => {
+               const eixo = Engine.NOTA_EIXO[v.ax];
+               const dito = v.estado === 'vazio' ? 'Ele não tinha dado aqui.'
+                 : v.certo ? 'O diagnóstico dele estava certo.'
+                 : 'O diagnóstico dele estava errado — o trecho pedia o contrário.';
+               const fez = !v.mov ? (v.need >= 2 ? 'Você não mexeu, e este trecho pedia muito.'
+                                                 : 'Você não mexeu.')
+                 : !v.acertou ? (v.mov === 2 ? 'Você foi até o fim no sentido errado e piorou o carro.'
+                                             : 'Você mexeu para o lado errado.')
+                 : v.passoCerto ? (v.mov === 2 ? 'Você foi até o fim, e era isso que ele pedia.'
+                                               : 'Um passo no sentido certo, que era o tamanho do problema.')
+                 : v.mov < v.need ? 'Sentido certo, mas você parou no meio do caminho.'
+                                  : 'Sentido certo, só que você passou do ponto.';
+               const peso = v.share >= .42 ? 'Era o trecho que decidia a volta.'
+                 : v.share >= .28 ? 'Contava, mas não era tudo.'
+                 : 'No fim, era o trecho que menos importava.';
+               return `<div style="font-size:12px;color:var(--dim);padding:4px 0;border-bottom:1px solid
+                    color-mix(in srgb,var(--line) 45%,transparent)">
+                    <b style="color:var(--dim2)">${esc(Engine.SETOR_NOME[v.i])}</b> ·
+                    ${esc(eixo)} — ${esc(dito)} ${esc(fez)} ${esc(peso)}</div>`;
+             }).join('')}
+           </div>` : ''}
          </div>` : ''}
       <div class="mini">
         <div><b>${r.grid===1?'POLE':'P'+r.grid}</b><span>Classificação</span></div>
@@ -7303,18 +7673,41 @@ const Game = {
     UI.setupModal();
   },
 
-  setSetup(campo, valor){
+  /* ── o fim de semana na garagem ──
+     Você não arrasta barras: você responde ao que o engenheiro trouxe.
+     Atacar um trecho de verdade custa tempo de pista, e tempo de pista
+     não sobra: dois trechos por fim de semana, no máximo. */
+  garantirResp(){
     const sea = S.season;
-    if(sea.setupRound !== sea.round || !sea.setup){ sea.setup = {asa:2,susp:2,motor:2}; sea.setupRound = sea.round; }
-    sea.setup[campo] = valor;
-    sea.setup.auto = false;
+    if(sea.setupRound !== sea.round || !sea.setup){
+      sea.setup = { asa:2, susp:2, motor:2, filo:'equilibrio', resp:[0,0,0], auto:false };
+      sea.setupRound = sea.round;
+    }
+    if(!sea.setup.resp) sea.setup.resp = [0,0,0];
+    if(!sea.setup.filo) sea.setup.filo = 'equilibrio';
+    return sea.setup;
+  },
+  aplicarResp(){
+    const sea = S.season, st = sea.setup;
+    const v = Engine.setupDeRespostas(sea, sea.round, st.resp);
+    st.asa = v.asa; st.susp = v.susp; st.auto = false;
+  },
+  setResp(i, v){
+    const st = Game.garantirResp();
+    if(v === 2 && st.resp[i] !== 2 && Engine.ataquesUsados(st.resp) >= Engine.ATAQUES_MAX)
+      return UI.toast('Não dá tempo. Dois trechos por fim de semana é o que a equipe consegue atacar.');
+    st.resp[i] = (st.resp[i] === v) ? 0 : v;
+    Game.aplicarResp();
     UI.setupModal();
   },
-  setSetupDica(){
+  setFilo(k){ const st = Game.garantirResp(); st.filo = k; st.auto = false; Game.aplicarResp(); UI.setupModal(); },
+  setMotor(v){ const st = Game.garantirResp(); st.motor = v; st.auto = false; UI.setupModal(); },
+  setupNoEngenheiro(){
     const sea = S.season;
-    const d = Engine.setupDica(sea, sea.round);
-    sea.setup = { asa:d.asa, susp:d.susp, motor: sea.setup ? sea.setup.motor : 2, auto:false };
+    sea.setup = Engine.setupAuto(sea, sea.round);
+    sea.setup.auto = false;
     sea.setupRound = sea.round;
+    UI.toast('O engenheiro montou o carro do jeito dele.');
     UI.setupModal();
   },
 
@@ -7399,6 +7792,9 @@ const Game = {
 
   tally(rec){
     const c = S.career;
+    /* o boletim de sexta bateu ou não bateu: é assim que se aprende
+       quanto vale a palavra do engenheiro */
+    if(rec.setup && rec.setup.rev) Engine.anotarEngenheiro(rec.setup.rev);
     /* duelo com o rival: quem chegou na frente hoje */
     const riv = S.rel && S.rel.rival;
     if(riv && rec.top && rec.top.length){
