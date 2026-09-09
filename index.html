@@ -3396,11 +3396,18 @@ const OBJETIVOS = {
   amigo: {
     companhia:{ t:'alguém para conversar no paddock',  d:'O circo é solitário para todo mundo, não só para você.' },
     troca:    { t:'trocar informação',                 d:'Ele sabe de coisa. Você também. Isso vale.' }
+  },
+  jornalista: {
+    furo:      { t:'a informação antes de todo mundo',  d:'Você é fonte antes de ser assunto. Cuidado com o que fala perto dele.' },
+    verdade:   { t:'contar o que realmente aconteceu',  d:'Não vai te poupar, e também não vai inventar nada.' },
+    audiencia: { t:'a manchete que roda o mundo',       d:'A sua carreira é matéria-prima. Boa ou ruim, tanto faz.' },
+    acesso:    { t:'ser o jornalista de confiança de alguém', d:'Quer estar por dentro, e paga com cobertura generosa.' }
   }
 };
 
 const PAPEL_NOME = { eng:'Engenheiro de pista', comp:'Companheiro de equipe', rival:'Rival',
-                     mentor:'Mentor', chefe:'Chefe de equipe', amigo:'Amigo no paddock' };
+                     mentor:'Mentor', chefe:'Chefe de equipe', amigo:'Amigo no paddock',
+                     jornalista:'Quem cobre a categoria' };
 
 const NOMES_ENG = ['Alan','Andrea','Bruno','Carlos','Daniel','Diego','Eduardo','Fábio','Gianni','Hugo',
   'Iain','Jean','Klaus','Luca','Marc','Nigel','Otto','Paulo','Rafael','Sergio','Thomas','Vitor','Xavier'];
@@ -3971,6 +3978,152 @@ const EVENTOS = [
     { t:'Duas horas e vai dormir', d:'Meio-termo sensato.', e:{ pace:.5, dev:.3 } },
     { t:'Vai descansar', d:'Corpo também é ferramenta.', e:{ cons:.7, moral:3 } }
   ] }
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   JORNALISTAS
+   Quem cobre a categoria não é um alto-falante neutro. Cada um tem
+   um critério próprio do que é um bom piloto, e escreve a partir
+   dele. O mesmo quarto lugar vira "sólido" para um e "mais do
+   mesmo" para outro. Eles se lembram de como você os tratou, e o
+   que escrevem chega ao mercado antes de você.
+   ═══════════════════════════════════════════════════════════════ */
+const JORNALISTAS = [
+  { n:'Vera Antunes',     cc:'BR', pers:'frio',      vies:'tecnica',
+    ds:'Cobre o esporte há vinte anos e desconfia de qualquer coisa que não esteja no cronômetro.' },
+  { n:'Duarte Salgado',   cc:'PT', pers:'politico',  vies:'polemica',
+    ds:'Escreve o que dá manchete. Nunca inventou nada, e nunca deixou uma boa história esfriar.' },
+  { n:'Helena Prado',     cc:'BR', pers:'leal',      vies:'pessoa',
+    ds:'Escreve sobre gente. Se ela gostar de você, o país inteiro vai gostar junto.' },
+  { n:'Renaud Vasseur',   cc:'FR', pers:'orgulhoso', vies:'resultado',
+    ds:'Só existe pódio. O resto é matéria de segunda-feira.' },
+  { n:'Ian Prescott',     cc:'GB', pers:'cansado',   vies:'tecnica',
+    ds:'Já viu trinta talentos gerados e vinte e nove sumirem. Não se empolga com ninguém.' },
+  { n:'Nora Bellini',     cc:'IT', pers:'ambicioso', vies:'polemica',
+    ds:'Constrói e destrói reputação na mesma semana, e vive disso.' },
+  { n:'Gustavo Meireles', cc:'BR', pers:'inseguro',  vies:'pessoa',
+    ds:'Quer ser amigo dos pilotos, e por isso escreve macio até se sentir traído.' }
+];
+
+/* como cada um lê o mesmo domingo */
+const LEITURAS = {
+  tecnica: {
+    bom:  ['O tempo de volta sustenta o resultado. Não foi sorte de estratégia.',
+           'Andou dentro do que o carro dava, sem inventar. É isso que se pede.',
+           'A consistência de setor por setor explica o resultado melhor que o pódio.'],
+    ruim: ['O resultado esconde um fim de semana ruim de ritmo.',
+           'Faltou ler o carro. Passou o domingo lutando contra o próprio acerto.',
+           'Os números não sustentam a versão que ele deu na entrevista.'] },
+  resultado: {
+    bom:  ['Chegou onde tinha que chegar. É só isso que conta.',
+           'Pódio. Fim da discussão.',
+           'Quem ganha não precisa explicar nada.'],
+    ruim: ['Não pontuou. Não existe leitura boa para isso.',
+           'Mais um domingo em que o nome dele não aparece na primeira página.',
+           'A conta do ano não fecha com resultados assim.'] },
+  pessoa: {
+    bom:  ['Passou meia hora com os torcedores depois da bandeirada. Isso também é carreira.',
+           'Falou do mecânico pelo nome na entrevista. Detalhe pequeno, diz muito.',
+           'É o tipo de piloto que a categoria precisa ter por perto.'],
+    ruim: ['Saiu sem falar com ninguém. De novo.',
+           'Respondeu de má vontade, e dá para entender por quê — mas não ajuda.',
+           'Perdeu uma boa chance de mostrar quem é.'] },
+  polemica: {
+    bom:  ['Ganhou, e ganhou incomodando muita gente. Melhor ainda.',
+           'O resultado tem gosto de recado. E o recado foi entendido.',
+           'Alguém no paddock não dormiu bem depois desse domingo.'],
+    ruim: ['Já se fala em substituto, e não é de hoje.',
+           'A equipe não defendeu ele na coletiva. Isso nunca é acaso.',
+           'Se este for o nível, o contrato do ano que vem é conversa curta.'] }
+};
+
+/* o que se pergunta a um jornalista, e o que ele pergunta a você */
+const CONVERSAS_JORNAL = [
+{ id:'jorn_off', papel:'jornalista', peso:3, cd:2,
+  sub:'Nem tudo o que se fala precisa sair publicado.',
+  t:'Conversar em off',
+  abre:{
+    politico:'— Off de verdade? Porque eu já ouvi essa palavra ser usada de muitas maneiras.',
+    frio:'Ele liga o gravador, você olha para o gravador, ele desliga.',
+    leal:'— Pode falar. O que for off fica off.',
+    padrao:'— Off, então. Estou ouvindo.'
+  },
+  ops:[
+    { t:'Contar o que está realmente acontecendo na equipe', tom:'informacao', base:.5, dim:'conf', attr:null,
+      otimo:{ t:'Ele usou a informação sem citar você e a matéria colocou a equipe na parede. Você ficou de fora e ganhou um aliado.',
+              e:{ conf:15, afeto:8, boato:1 } },
+      bom:  { t:'Ele entendeu o quadro e passou a te tratar com mais cuidado.', e:{ conf:9, afeto:4 } },
+      morno:{ t:'Ele agradeceu e não fez nada com aquilo.', e:{ conf:3 } },
+      ruim: { t:'Saiu publicado com "fontes próximas ao piloto". A equipe leu e entendeu na hora.',
+              e:{ conf:-8, tens:10, teamRel:-12 } } },
+    { t:'Falar de si mesmo, sem cálculo', tom:'pessoal', base:.55, dim:'afeto', attr:null,
+      otimo:{ t:'Ele escreveu um perfil que virou a referência sobre você por anos.',
+              e:{ afeto:16, conf:8, fama:11 } },
+      bom:  { t:'A matéria saiu boa e o tom mudou desde então.', e:{ afeto:9, fama:5 } },
+      morno:{ t:'Conversa agradável, nada publicado.', e:{ afeto:4 } },
+      ruim: { t:'Ele publicou a parte que você não queria ver publicada.', e:{ afeto:-6, tens:8, fama:4, moral:-7 } } },
+    { t:'Perguntar o que se fala de você', tom:'informacao', base:.52, dim:'conf', attr:'fame',
+      otimo:{ t:'Ele te contou quem está de olho em você e quem já te descartou. Vale mais que dinheiro.',
+              e:{ conf:8, porta:1, boato:1 } },
+      bom:  { t:'Ele deu o quadro geral. Nada que você não pudesse imaginar, mas confirmado.', e:{ conf:5 } },
+      morno:{ t:'— Falam pouco. Ele não estava mentindo, e isso doeu.', e:{ moral:-4 } },
+      ruim: { t:'Ele te contou uma coisa que não era verdade, e você acreditou.',
+              e:{ conf:-4, boatoFalso:1 } } }
+  ] },
+
+{ id:'jorn_cobranca', papel:'jornalista', peso:2, cd:3,
+  sub:'A matéria de domingo não foi generosa com você.',
+  t:'Cobrar uma matéria',
+  abre:{
+    orgulhoso:'— Eu escrevi o que eu vi. Se você viu outra coisa, me mostra.',
+    inseguro:'Ele já começa se explicando, o que é pior.',
+    ambicioso:'— Deu audiência. Você queria o quê?',
+    padrao:'Ele fecha o caderno e cruza os braços.'
+  },
+  ops:[
+    { t:'Rebater com dados', tom:'tecnico', base:.5, dim:'resp', attr:'dev',
+      otimo:{ t:'Ele publicou uma retificação por conta própria. Ninguém faz isso.', e:{ resp:14, conf:8, fama:4 } },
+      bom:  { t:'Ele reconheceu que faltou contexto.', e:{ resp:7 } },
+      morno:{ t:'Ele ouviu, anotou e não mudou uma vírgula.', e:{ tens:3 } },
+      ruim: { t:'Ele te desmontou com os próprios números da telemetria pública.',
+              e:{ resp:-9, tens:9, moral:-8 } } },
+    { t:'Cobrar na frente dos outros jornalistas', tom:'publico', base:.3, dim:'resp', attr:'fame',
+      otimo:{ t:'A sala inteira ficou do seu lado. Ele passou a te tratar com respeito.',
+              e:{ resp:11, tens:8, fama:7 } },
+      bom:  { t:'Ele engoliu. Os outros anotaram que você não é fácil.', e:{ resp:5, tens:9 } },
+      morno:{ t:'Virou constrangimento e nada mais.', e:{ tens:9, fama:2 } },
+      ruim: { t:'Ele te ridicularizou na frente de todos e a cena viralizou.',
+              e:{ resp:-10, tens:16, afeto:-14, fama:8, moral:-11 } } },
+    { t:'Levar numa boa e convidar para um café', tom:'pessoal', base:.58, dim:'afeto', attr:null,
+      otimo:{ t:'Vocês passaram duas horas conversando e ele virou o jornalista que mais te defende.',
+              e:{ afeto:16, conf:12, tens:-12 } },
+      bom:  { t:'O clima melhorou e a próxima matéria foi justa.', e:{ afeto:8, tens:-6 } },
+      morno:{ t:'Café educado, nada mudou.', e:{ afeto:3 } },
+      ruim: { t:'Ele entendeu como tentativa de compra e escreveu sobre isso.',
+              e:{ afeto:-8, tens:12, fama:5, moral:-7 } } }
+  ] }
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   O QUE TE PROMETEM PARA VOCÊ ASSINAR
+   Toda vaga vem com uma ou duas garantias. Metade delas se cumpre.
+   Qual metade, você descobre em julho do ano seguinte.
+   ═══════════════════════════════════════════════════════════════ */
+const PROMESSAS = [
+  { k:'motor',    t:'o motor novo chega em maio e muda o patamar do carro', ef:{ carro:3.5 } },
+  { k:'vento',    t:'o túnel de vento novo já está rodando e a atualização do meio do ano é grande',
+    ef:{ carro:2.8 } },
+  { k:'numero1',  t:'você é o número um da equipe e o outro carro trabalha para você',
+    ef:{ igualdade:1 }, so:'topo' },
+  { k:'patro',    t:'o patrocínio principal está fechado para os próximos dois anos',
+    ef:{ dinheiro:380e3 } },
+  { k:'estrutura',t:'três engenheiros de uma equipe grande já assinaram com a gente',
+    ef:{ eng:10, carro:1.6 } },
+  { k:'saida',    t:'se aparecer coisa melhor no meio do ano, a gente libera você',
+    ef:{ porta:1 } },
+  { k:'promocao', t:'um ano bom aqui e você vai para a equipe principal', ef:{ porta:2 } },
+  { k:'teste',    t:'você vai ter dias de teste que ninguém mais no grid vai ter',
+    ef:{ carro:1.4, dev:.6 } }
 ];
 
 /* ═══════════════════════════════════════════════════════════════
@@ -5101,14 +5254,30 @@ const Engine = {
        brasileiro encontra a F4 Brasil, que não existia quando a carreira começou. */
     if(S.driver && S.driver.cc){
       const nova = resolveLadder(era.ladder, S.driver.cc, S.year);
+      /* o degrau que você assinou tem nome, e é o nome que manda */
+      const alvo = S.catAlvo || S.ladder[S.catIdx];
       if(nova.length && nova.join('|') !== S.ladder.join('|')){
-        const rel = S.ladder.length > 1 ? S.catIdx / (S.ladder.length - 1) : 0;
-        S.catIdx = nova.length === S.ladder.length
-                 ? S.catIdx
-                 : clamp(Math.round(rel * (nova.length - 1)), 0, nova.length - 1);
+        let i = nova.indexOf(alvo);
+        if(i < 0 && S.catAlvo) i = nova.indexOf(S.ladder[S.catIdx]);
+        if(i < 0){
+          const rel = S.ladder.length > 1 ? S.catIdx / (S.ladder.length - 1) : 0;
+          i = clamp(Math.round(rel * (nova.length - 1)), 0, nova.length - 1);
+          /* o nome sumiu da escada: o que não pode sumir é o sentido do
+             movimento. Quem subiu tem de acordar acima de onde estava. */
+          const antes = S.catAnterior ? nova.indexOf(S.catAnterior) : -1;
+          if(antes >= 0){
+            if(S.catSubiu && i <= antes) i = Math.min(antes + 1, nova.length - 1);
+            else if(!S.catSubiu && i > antes) i = antes;
+          }
+        }
+        S.catIdx = i;
         S.ladder = nova;
+      } else if(S.catAlvo){
+        const i = S.ladder.indexOf(S.catAlvo);
+        if(i >= 0) S.catIdx = i;
       }
     }
+    S.catAlvo = null; S.catAnterior = null; S.catSubiu = false;
     const cat = S.ladder[S.catIdx];
     const isTop = cat === Engine.topCat();
     const info = catInfo(cat, S.catIdx, S.ladder.length);
@@ -5605,6 +5774,8 @@ const Engine = {
     const t = sea.teams.find(x=>x.id===teamId);
     let s = t.str;
     if(teamId === S.team.id){
+      /* a promessa que se cumpriu — o motor novo que realmente chegou em maio */
+      s += S.bonusCarro || 0;
       /* o piloto técnico faz o carro crescer durante a temporada — e as horas
          que você passou com os engenheiros no inverno aparecem aqui */
       const devGain = (S.driver.attr.dev - 55) / 22;
@@ -5892,6 +6063,182 @@ const Engine = {
   /* Relação vale nos dois modos: os eventos que a mexem acontecem nos dois,
      e um engenheiro do seu lado melhora o carro tanto no clássico quanto no
      realista. O que é exclusivo do realista é o dinheiro. */
+  /* ═══ JORNALISTAS ═══
+     Cada um lê o mesmo domingo pelo próprio critério. O quarto lugar que é
+     "sólido" para um é "mais do mesmo" para outro, e o que eles escrevem
+     chega ao mercado antes de você. */
+  PAPEL_JORNAL: 'jornalista',
+  garantirJornalistas(){
+    const g = Engine.gente();
+    const ativos = g.filter(p => p.papel === 'jornalista' && !p.saiu);
+    if(ativos.length >= 2) return ativos;
+    /* prioriza quem é do seu país: é quem cobre a sua carreira de perto */
+    const usados = g.filter(p => p.papel === 'jornalista').map(p => p.n);
+    const pool = JORNALISTAS.filter(j => usados.indexOf(j.n) < 0)
+      .sort((a, b) => (b.cc === S.driver.cc ? 1 : 0) - (a.cc === S.driver.cc ? 1 : 0));
+    while(ativos.length < 2 && pool.length){
+      const j = pool.shift();
+      const p = Engine.novaPessoa('jornalista', { n:j.n, cc:j.cc, pers:j.pers });
+      p.vies = j.vies; p.ds = j.ds;
+      g.push(p); ativos.push(p);
+    }
+    return ativos;
+  },
+  /* o que ele acha de você, em uma frase */
+  opiniaoJornal(p){
+    const v = Engine.nota(p);
+    return v >= 74 ? 'escreve sobre você como quem acredita'
+         : v >= 56 ? 'te trata bem quando você merece'
+         : v >= 38 ? 'é neutro, e neutro não ajuda ninguém'
+         : v >= 20 ? 'cobra você mais do que cobra os outros'
+         :           'não perde uma chance de te esculachar';
+  },
+  /* o mesmo resultado, lido por critérios diferentes */
+  colunaDe(p, rec){
+    const sea = S.season;
+    if(!sea) return null;
+    const bom = rec.pos && rec.pos <= Math.max(3, Math.round(sea.field.length * .3));
+    const gente = Engine.nota(p);
+    /* o viés decide o que ele valoriza — e a opinião dele inclina a leitura */
+    let positivo;
+    switch(p.vies){
+      case 'resultado': positivo = !!(rec.pos && rec.pos <= 3); break;
+      case 'tecnica':   positivo = !!(rec.setup && rec.setup.erro != null && rec.setup.erro <= 2 && !rec.dnf); break;
+      case 'pessoa':    positivo = gente >= 52; break;
+      default:          positivo = bom || (rec.grid && rec.pos && rec.grid - rec.pos >= 3);
+    }
+    if(gente >= 72) positivo = positivo || bom;
+    if(gente <= 26) positivo = positivo && !!(rec.pos && rec.pos <= 3);
+    const lista = (LEITURAS[p.vies] || LEITURAS.resultado)[positivo ? 'bom' : 'ruim'];
+    return { txt: semRepetir(lista), positivo };
+  },
+  /* o domingo mexe com a opinião de quem escreve */
+  reagirJornalistas(rec){
+    const lista = Engine.garantirJornalistas();
+    if(!lista.length) return null;
+    const p = lista[seedOf((S.season ? S.season.year : 0) + '' + rec.r) % lista.length];
+    const col = Engine.colunaDe(p, rec);
+    if(!col) return null;
+    Engine.mexerRel(p, col.positivo ? { resp: 3, afeto: 1 } : { resp: -2, tens: 1 });
+    /* jornalista amigo amplia o que você conquista; inimigo encolhe */
+    const peso = clamp((Engine.nota(p) - 45) / 100, -.4, .5);
+    if(rec.pos && rec.pos <= 3) S.driver.fame = clamp(S.driver.fame + Math.round(peso * 6), 0, 100);
+    if(!S.midia) S.midia = [];
+    S.midia.unshift({ ano:S.year, cat:(S.season ? S.season.cat : ''), tipo:'coluna',
+                      tom: col.positivo ? 'bom' : 'ruim', ic:'✍️',
+                      rot:'Coluna', autor:p.n, handle:null, ini:null, foto:null,
+                      cor:null, info:false, txt: col.txt });
+    if(S.midia.length > 120) S.midia.length = 120;
+    return col;
+  },
+
+  /* ═══ O QUE SE SABE, E DE QUEM ═══
+     Contrato não se assina com planilha: se assina com o que te contaram.
+     A equipe promete, o empresário garante, um jornalista jura que ouviu, e
+     o paddock repete. Parte disso é verdade. A parte que não é só aparece
+     no meio da temporada seguinte, quando não dá mais para voltar atrás. */
+  FONTES: {
+    equipe:     { n:'a própria equipe',  base:.58 },
+    empresario: { n:'seu empresário',    base:.68 },
+    jornalista: { n:'um jornalista',     base:.52 },
+    paddock:    { n:'o paddock',         base:.44 },
+    engenheiro: { n:'gente da engenharia', base:.72 }
+  },
+  /* quanto essa fonte já te enganou */
+  histFonte(f){
+    const h = (S.fontes || {})[f];
+    if(!h || (h.certo + h.errado) < 3) return null;
+    const p = h.certo / (h.certo + h.errado);
+    return p >= .75 ? 'nunca te enganou até agora'
+         : p >= .55 ? 'acerta mais do que erra'
+         : p >= .35 ? 'metade do que diz se confirma'
+         :            'já te enganou vezes demais';
+  },
+  anotarFonte(f, certo){
+    S.fontes = S.fontes || {};
+    const h = S.fontes[f] = S.fontes[f] || { certo:0, errado:0 };
+    if(certo) h.certo++; else h.errado++;
+  },
+
+  /* o quanto você enxerga o mercado: quem tem empresário, amigos e cabeça
+     técnica lê o grid do ano que vem melhor do que quem não tem ninguém */
+  qualidadeInfo(){
+    const amigos = Engine.genteAtiva().filter(p => p.papel === 'amigo').length;
+    return clamp(.30 + (S.driver.attr.dev - 50) / 100 * .36
+               + (Engine.emp() ? .18 : 0) + Engine.bonusPorta() * .05
+               + amigos * .055 + (S.driver.fame - 45) / 100 * .16
+               + ((S.career && S.career.seasons) || 0) * .012
+               + (Engine.temTraco('politico') ? .10 : 0), .12, .93);
+  },
+
+  /* a leitura do carro do ano que vem — uma faixa, não um número */
+  leituraCarro(team){
+    const q = Engine.qualidadeInfo();
+    const erro = Math.max(1, Math.round((1 - q) * 15));
+    const h = seedOf('lc' + team.name + '_' + S.year);
+    const vies = Math.round((((h % 200) / 100) - 1) * erro * .55);
+    const centro = clamp(team.str + vies, 25, 100);
+    return { lo: clamp(centro - erro, 20, 100), hi: clamp(centro + erro, 20, 100),
+             centro, erro, q };
+  },
+  leituraTxt(q){
+    return q >= .78 ? 'Você sabe exatamente o que essas equipes têm em mãos.'
+         : q >= .58 ? 'Você tem uma boa noção do grid do ano que vem.'
+         : q >= .38 ? 'Você ouviu coisas soltas sobre cada projeto. Nada firme.'
+         :            'Você não faz ideia do que cada equipe está construindo. Está no escuro.';
+  },
+
+  /* ── as promessas ──
+     Cada vaga vem com uma ou duas coisas que alguém garantiu. A verdade é
+     sorteada uma vez, fica escondida, e só se revela no meio do ano seguinte. */
+  promessasDaOferta(o, i){
+    if(!o.team) return [];
+    const h = seedOf('pr' + (o.team.name || '') + o.cat + S.year + i);
+    const pool = PROMESSAS.filter(p => !p.so || (p.so === 'topo') === !!(o.cat === Engine.topCat()));
+    const qtd = (h % 100) < 30 ? 0 : (h % 100) < 78 ? 1 : 2;
+    const out = [];
+    for(let k = 0; k < qtd; k++){
+      const p = pool[(h >>> (k * 5 + 3)) % pool.length];
+      if(!p || out.some(x => x.k === p.k)) continue;
+      const fk = Object.keys(Engine.FONTES)[(h >>> (k * 7 + 11)) % Object.keys(Engine.FONTES).length];
+      const conf = Engine.FONTES[fk].base;
+      /* a chance de ser verdade sai da fonte, e da sua leitura do mercado */
+      const r = ((h >>> (k * 3 + 17)) % 1000) / 1000;
+      out.push({ k:p.k, t:p.t, ef:p.ef, fonte:fk,
+                 verdade: r < clamp(conf + (Engine.qualidadeInfo() - .5) * .18, .2, .9) });
+    }
+    return out;
+  },
+
+  /* o que era verdade e o que não era — no meio da temporada seguinte */
+  conferirPromessas(){
+    const lista = S.promessasAtivas || [];
+    if(!lista.length) return null;
+    const notas = [];
+    lista.forEach(p => {
+      if(p.conferida) return;
+      p.conferida = true;
+      Engine.anotarFonte(p.fonte, p.verdade);
+      const quem = Engine.FONTES[p.fonte] ? Engine.FONTES[p.fonte].n : 'alguém';
+      if(p.verdade){
+        const e = p.ef || {};
+        if(e.carro) S.bonusCarro = (S.bonusCarro || 0) + e.carro;
+        if(e.igualdade){ S.marcas = S.marcas || {}; S.marcas.igualdade = S.year; }
+        if(e.dinheiro && S.money) S.money.saldo += e.dinheiro;
+        if(e.eng) Engine.mexerRel(Engine.pessoa('eng'), { conf: e.eng, resp: Math.round(e.eng * .6) });
+        if(e.porta){ S.marcas = S.marcas || {}; S.marcas.porta = (S.marcas.porta || 0) + e.porta; }
+        notas.push({ ok:true, t:'Era verdade: ' + p.t + ' (' + quem + ')' });
+      } else {
+        S.driver.morale = clamp(S.driver.morale - 7, 5, 100);
+        S.teamRel = clamp((S.teamRel || 50) - (p.fonte === 'equipe' ? 8 : 3), 0, 100);
+        notas.push({ ok:false, t:'Não era verdade: ' + p.t + ' (' + quem + ')' });
+      }
+    });
+    return notas.length ? notas : null;
+  },
+  /* o carro melhora de verdade quando a promessa era de verdade */
+  bonusCarro(){ return S.bonusCarro || 0; },
+
   /* ═══ ACONTECIMENTOS ═══
      Os antigos continuam existindo do jeito que eram. Os novos não têm
      resultado escrito na porta: a chance sai de quem você é e de quem está
@@ -6185,7 +6532,7 @@ const Engine = {
   conversasDe(p){
     const sea = S.season;
     const feitas = (S.falasFeitas = S.falasFeitas || {});
-    return CONVERSAS.filter(c => {
+    return CONVERSAS.concat(CONVERSAS_JORNAL).filter(c => {
       if(c.papel !== p.papel) return false;
       const ult = feitas[p.id + '|' + c.id];
       if(ult != null && (S.year * 40 + (sea ? sea.round : 0)) - ult < (c.cd || 2)) return false;
@@ -9008,6 +9355,7 @@ const Game = {
     Engine.gente();
     const cobrancas = Game.cobrarPromessas();
     Engine.sincronizarGente();
+    Engine.garantirJornalistas();
     Engine.espelharRel();
     if(cobrancas.length) setTimeout(()=>UI.toast(cobrancas[0]), 1400);
     /* conta antiga que venceu no inverno bate à porta antes da primeira corrida */
@@ -9142,6 +9490,7 @@ const Game = {
     S.series = r.sk;
     S.ladder = r.escada;
     S.catIdx = r.idx;
+    S.catAlvo = r.escada[r.idx] || null;
     S.team = null;
     S.contract = { years:1 };
     S.gridMem = null;
@@ -9313,6 +9662,9 @@ const Game = {
 
     if(rec.injury) setTimeout(()=>UI.toast(`Acidente grave: você fica fora de ${rec.injury.races} corrida(s).`), 700);
     else if(Engine.midReview(sea)){ Game.fire(true); return; }
+    /* meio de temporada: o que te prometeram em novembro se confirma ou não */
+    else if(sea.round >= Math.round(sea.calendar.length * .45) && (S.promessasAtivas || []).some(p => !p.conferida))
+      setTimeout(()=>{ const nt = Engine.conferirPromessas(); if(nt) UI.promessasModal(nt); }, 420);
     /* dilema do meio de temporada */
     else if(sea.round === sea.dilemmaAt && sea.calendar[sea.round]) setTimeout(()=>Game.dilemma(), 400);
     /* a vida fora da pista: dois a quatro acontecimentos por temporada */
@@ -9396,6 +9748,8 @@ const Game = {
       const p = Engine.premioCorrida(rec.pos, S.season);
       if(p){ S.money.saldo += p; S.money.premios = (S.money.premios || 0) + p; }
     }
+    /* alguém que cobre a categoria escreve sobre o seu domingo, pelo critério dele */
+    if(R.chance(clamp(.30 + S.driver.fame / 220, .30, .72))) Engine.reagirJornalistas(rec);
     /* a imprensa reage ao que acabou de acontecer — quanto mais fama, mais reagem */
     const chance = clamp(.18 + S.driver.fame/160, .18, .8);
     if(rec.pos === 1) Engine.noticia("vitoria", rec);
@@ -9581,7 +9935,7 @@ const Game = {
   escolherFala(i){
     const f = UI._fala; if(!f) return UI.close();
     const p = Engine.pessoaPor(f.pid);
-    const c = CONVERSAS.find(x => x.id === f.cid);
+    const c = CONVERSAS.concat(CONVERSAS_JORNAL).find(x => x.id === f.cid);
     if(!p || !c) return UI.close();
     const op = c.ops[i]; if(!op) return UI.close();
     const ch = Engine.chanceFala(p, op);
@@ -9878,6 +10232,8 @@ const Game = {
         else { Game.recalcularRota(offers); return; }
       }
     }
+    /* cada vaga vem com o que alguém garantiu — verdade escondida */
+    offers.forEach((o, i) => { o.promessas = Engine.promessasDaOferta(o, i); });
     S.pendingOffers = offers;
 
     if(!offers.length){ Game.endCareer('semvaga'); return; }
@@ -9885,6 +10241,11 @@ const Game = {
     const canRetire = S.driver.age >= 30 || S.career.titles > 0;
     UI.modal(UI.head(`Mercado de ${S.year+1}`, 'Escolha onde você vai correr no ano que vem.', false) +
       `<div class="mbd">
+        <div class="res-nar" style="margin-top:0">
+          ${esc(Engine.leituraTxt(Engine.qualidadeInfo()))}
+          A força de cada carro é o que você conseguiu apurar, não o que ela é —
+          e o que te prometem para assinar nem sempre acontece.
+        </div>
         ${offers.map((o,i)=>{
           if(!o.team) return `<button class="offer" onclick="Game.takeOffer(${i})">
             <div class="oh"><span class="on">${o.type==='down'?'⬇️ Descer para':'Continuar na'} ${esc(o.cat)}</span>
@@ -9914,9 +10275,26 @@ const Game = {
                ${o.podeP===false ? `<span style="color:var(--red2);font-weight:600">— fora do orçamento</span>` : ''}
              </div>` : (o.custo === 0 && Engine.ehRealista() ? `<div style="margin-top:7px;font-size:11.5px;
                  font-weight:800;color:var(--green)">💰 aqui a equipe paga você</div>` : '')}
-            <div class="carbar"><span class="vl">CARRO</span>
-              <span class="bar"><i style="width:${o.team.str}%"></i></span>
-              <span class="vl">${o.team.str}</span></div>
+            ${(function(){
+              /* Ninguém te entrega a força do carro do ano que vem em número
+                 redondo. Você tem uma faixa, e a largura dela é o quanto você
+                 enxerga o mercado. */
+              const L = Engine.leituraCarro(o.team);
+              return `<div class="carbar"><span class="vl">CARRO</span>
+                <span class="bar" style="position:relative">
+                  <i style="width:${L.hi}%;opacity:.35"></i>
+                  <i style="position:absolute;left:${L.lo}%;width:${Math.max(2,L.hi-L.lo)}%;top:0;bottom:0"></i>
+                </span>
+                <span class="vl">${L.erro <= 2 ? L.centro : L.lo + '–' + L.hi}</span></div>`;
+            })()}
+            ${(o.promessas || []).length ? `<div style="margin-top:7px;padding-top:6px;
+                 border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+              ${o.promessas.map(p => `<div style="font-size:11.5px;color:var(--dim);padding:2px 0">
+                <span style="color:var(--gold)">“</span>${esc(p.t)}<span style="color:var(--gold)">”</span>
+                <span style="color:var(--dim2)"> — diz ${esc(Engine.FONTES[p.fonte].n)}${
+                  Engine.histFonte(p.fonte) ? ', que ' + esc(Engine.histFonte(p.fonte)) : ''}</span>
+              </div>`).join('')}
+             </div>` : ''}
           </button>`;
         }).join('')}
         ${canRetire ? `<button class="dil" style="margin-top:6px" onclick="Game.endCareer('escolha')">
@@ -9927,6 +10305,9 @@ const Game = {
   takeOffer(i){
     if(S.retired) return;
     const o = S.pendingOffers[i];
+    /* o que te garantiram na hora de assinar fica anotado, e cobra em julho */
+    if(o){ S.promessasAtivas = (o.promessas || []).map(p => Object.assign({}, p));
+           S.bonusCarro = 0; }
     if(!o) return;
     if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
     const trocouEquipe = !o.team || !S.team || o.team.name !== S.team.name;
@@ -9941,6 +10322,7 @@ const Game = {
       S.ladder = resolveLadder(era.ladder, S.driver.cc, S.year);
       S.catIdx = Math.max(0, S.ladder.indexOf(o.cat));
       if(S.ladder.indexOf(o.cat) < 0) S.catIdx = S.ladder.length - 1;
+      S.catAlvo = S.ladder[S.catIdx] || null;
       S.team = { id:o.team.id, name:o.team.name, color:o.team.color, str:o.team.str };
       S.contract = { years:o.years || 1 };
       S.lastCat = null; S.yearsInCat = 0; S.yearsInSeries = 0; S.lastSeries = null;
@@ -9963,14 +10345,25 @@ const Game = {
     } else {
       S.team = null; S.contract = { years:1 };
     }
+    /* guarda o degrau pelo nome, de onde você saiu e se era promoção: a
+       escada do ano que vem pode ter outra forma, e o sentido tem de valer */
+    S.catAnterior = (S.season && S.season.cat) || S.lastCat || null;
+    S.catSubiu = !!(o.up || o.pulo || o.type === 'up');
+    S.catAlvo = o.cat || S.ladder[S.catIdx] || null;
     S.year++;
     /* troca de década: o mundo muda ao redor da carreira */
     const oldEra = Engine.eraOf(S.year-1), newEra = Engine.eraOf(S.year);
     if(newEra.id !== oldEra.id){
       if(S.ladder[S.catIdx] !== Engine.topCat()){
-        const rel = S.ladder.length>1 ? S.catIdx/(S.ladder.length-1) : 0;
-        S.ladder = resolveLadder(newEra.ladder, S.driver.cc, S.year);
-        S.catIdx = clamp(Math.round(rel*(S.ladder.length-1)), 0, S.ladder.length-1);
+        /* A escada da década nova é montada em buildSeason, que sabe o degrau
+           que você assinou pelo nome e de onde você saiu. Remapear por posição
+           aqui desfazia a promoção: campeão da Fórmula 3 assinava a World
+           Series e acordava na Fórmula 3 de novo, porque 2009 virou 2010. */
+        if(!S.catAlvo){
+          const rel = S.ladder.length>1 ? S.catIdx/(S.ladder.length-1) : 0;
+          S.ladder = resolveLadder(newEra.ladder, S.driver.cc, S.year);
+          S.catIdx = clamp(Math.round(rel*(S.ladder.length-1)), 0, S.ladder.length-1);
+        }
       } else {
         /* mantém a equipe se ela existir na nova época; senão, preserva o posto na hierarquia
            — quem estava no fundo do grid não acorda numa equipe de ponta por virar a década */
@@ -10379,6 +10772,24 @@ UI.eventoModal = function(ev){
     </div>`);
 };
 
+/* julho: o que te prometeram em novembro aconteceu, ou não */
+UI.promessasModal = function(notas){
+  UI.modal(UI.head('O que prometeram', `${S.year} · ${esc(S.team ? S.team.name : '')}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        Metade da temporada. É agora que se vê o que era projeto e o que era conversa.
+      </div>
+      ${notas.map(x => `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
+         border:1px solid var(--line);border-left:3px solid ${x.ok ? 'var(--green)' : 'var(--red2)'};
+         margin-bottom:10px;font-size:13px">${esc(x.t)}</div>`).join('')}
+      <div style="font-size:12px;color:var(--dim2)">
+        Fica anotado quem te contou. Na próxima vez que essa fonte falar, você vai lembrar.
+      </div>
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();UI.render()">Seguir</button></div>`);
+};
+
 /* o desfecho de um acontecimento: o mundo respondeu, e nem sempre como você queria */
 UI.eventoResultado = function(ev, op, texto, nivel, notas){
   const cor = nivel === 'otimo' ? 'var(--green)' : nivel === 'bom' ? 'var(--gold)'
@@ -10452,8 +10863,14 @@ UI.pessoas = function(){
       <div style="font-size:12px;color:var(--dim);margin-bottom:7px;font-style:italic">${esc(per.d)}</div>
       ${linha('conf')}${linha('resp')}${linha('afeto')}
       ${p.rel.tens >= 22 ? linha('tens') : ''}
+      ${p.papel === 'jornalista' ? `<div style="margin-top:8px;padding-top:7px;
+           border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+        <span class="lbl" style="display:block;margin-bottom:3px">Como ele escreve sobre você</span>
+        <div style="font-size:12px;color:var(--dim)">${esc(Engine.opiniaoJornal(p))}${
+          p.ds ? ' · ' + esc(p.ds) : ''}</div>
+      </div>` : ''}
       <div style="margin-top:8px;padding-top:7px;border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
-        <span class="lbl" style="display:block;margin-bottom:3px">O que ele quer</span>
+        <span class="lbl" style="display:block;margin-bottom:3px">${p.papel === 'jornalista' ? 'O que ele procura' : 'O que ele quer'}</span>
         <div style="font-size:12px;color:${p.objSabido ? 'var(--gold)' : 'var(--dim2)'}">${
           p.objSabido && obj ? esc(obj.t) + ' — ' + esc(obj.d)
                              : 'Você ainda não sabe. Descobre conversando, ou tarde demais.'}</div>
@@ -10547,7 +10964,7 @@ UI.conversa = function(pid){
 /* a conversa em si: escolha de tom, sem número nenhum na tela */
 UI.falar = function(pid, cid){
   const p = Engine.pessoaPor(pid); if(!p) return;
-  const c = CONVERSAS.find(x => x.id === cid); if(!c) return;
+  const c = CONVERSAS.concat(CONVERSAS_JORNAL).find(x => x.id === cid); if(!c) return;
   UI._fala = { pid, cid };
   const abre = c.abre[p.pers] || c.abre.padrao;
   const per = PERSONAS[p.pers] || PERSONAS.frio;

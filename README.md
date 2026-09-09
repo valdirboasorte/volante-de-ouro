@@ -19,14 +19,31 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
   521 pilotos. Senna tem 34 anos em 1994; o Alonso de 2001 é um estreante de 19,
   não o bicampeão de 2005.
 - **Retrospecto completo** de cada corrida de cada temporada.
-- **Acerto do carro** antes de cada prova: asa, suspensão e motor. Asa e
-  suspensão têm um ponto certo que muda com o traçado e com a chuva; o motor é
-  troca pura entre ritmo e confiabilidade. O engenheiro sugere, mas erra — e o
-  boletim do tempo é probabilidade, não promessa.
-- **Pré-temporada**: pontos de preparação entre físico, simulador, racecraft,
-  pista molhada e trabalho com os engenheiros, mais um compromisso que decide
-  se você cuida de si ou da equipe. Investir na fábrica melhora o carro e a
-  relação interna, e custa a sua própria evolução.
+- **Sexta-feira na garagem**, antes de cada prova. Não são três barras: é o
+  engenheiro chegando com o boletim dividido por trecho de pista — o que ele
+  mediu na telemetria, o que ele só achou olhando você passar, e o que não deu
+  tempo de olhar. Você responde trecho por trecho, e não dá para atacar tudo:
+  dois trechos por fim de semana é o que a equipe consegue. Nenhum número
+  aparece na tela; o ponto certo existe e fica escondido. Uma em cada quatro
+  impressões dele aponta para o lado errado, e nem a telemetria é sagrada.
+  Junto vêm cinco maneiras de montar o carro — do sábado, do domingo, de janela
+  larga, de faca no osso — e um boletim do tempo em prosa, sem porcentagem, que
+  erra mais nos anos 50 do que hoje. Depois da bandeirada o dado real volta e
+  diz o que era verdade: o que fica guardado é o conhecimento da pista e o
+  histórico de acertos do engenheiro.
+- **O inverno** no lugar da planilha de pré-temporada. Quatro meses e duas ou
+  três decisões: morar perto da fábrica, um preparador físico de verdade,
+  simulador até enjoar, uma temporada paralela com risco real, semanas de kart
+  na chuva, sumir do mundo, ou passar o inverno aparecendo. Cada uma pode sair
+  melhor do que devia, funcionar, ficar no meio do caminho ou dar errado, e
+  março responde em prosa. Passar o inverno num lugar acaba formando você.
+- **Traços que ninguém te contou**: todo piloto nasce com uma ou duas coisas —
+  homem de chuva, piloto de uma volta só, piloto de domingo, sangue-frio, mão
+  pesada, racha sob pressão. Valem desde a primeira corrida e não aparecem em
+  lugar nenhum. Nenhum é bônus: cada um dá numa ponta e tira na outra. A
+  descoberta vem do que acontece, e o controle é o companheiro de equipe —
+  mesmo carro, mesma garagem. Primeiro vira suspeita; depois de muitos
+  domingos, deixa de ser coincidência.
 - **Modo rápido**, que se liga e desliga no meio da carreira: a equipe monta o
   carro e distribui o treino, e você cuida só de contrato, mercado e das
   decisões do piloto.
@@ -98,17 +115,75 @@ local, marca nacional ou grande anunciante, conforme o que você entregou na
 pista. Quem não vence continua sentindo o bolso: sem orçamento, o mercado
 mostra as escadas mais baratas em vez de encerrar a carreira.
 
+## Gente
+
+O paddock não é uma barra de 0 a 100. Cada pessoa tem um jeito — fechado,
+orgulhoso, leal, político, inseguro, ambicioso, veterano cansado — que muda
+como ela te recebe no primeiro dia e o que funciona com ela depois. Cada uma
+quer alguma coisa que não é o que você quer: o engenheiro que quer o crédito,
+o que quer sair para uma equipe grande, o companheiro que quer a sua vaga, o
+chefe que precisa agradar patrocinador.
+
+E cada uma guarda quatro coisas separadas a seu respeito: **confiança**,
+**respeito**, **afeto** e **tensão**. Dá para ser respeitado e detestado ao
+mesmo tempo, que é como funciona. Nenhuma aparece como número — aparece como
+frase.
+
+Doze conversas, cada uma com três respostas de tom diferente: no técnico,
+direto, na pressão, na frieza, na aliança, na frente de todos. A chance de
+funcionar sai do jeito da pessoa, do que ela já pensa de você, do que ela
+lembra e de quem você é como piloto, e não é mostrada em lugar nenhum. O
+resultado tem quatro alturas, não duas. Errar o tom com a pessoa errada custa
+caro — e é assim que você descobre que ela não reage bem a cobrança pública.
+
+Pedidos aparecem no meio da temporada. Promessas ficam anotadas: prometer
+levar o engenheiro junto e trocar de equipe sem ele custa a relação, a memória
+dele e um pedaço da sua fama. Garagem em guerra anda menos — tensão alta tira
+tempo de pista e confiabilidade.
+
+Trocar de equipe troca engenheiro e chefe, e o antigo fica guardado com tudo
+que lembra. Se você voltar, ele ainda está lá.
+
+## Jornalistas
+
+Quem cobre a categoria não é um alto-falante neutro. Cada um tem um critério
+próprio do que é um bom piloto — o cronômetro, o pódio, a pessoa, a polêmica —
+e escreve a partir dele: o mesmo quarto lugar vira "sólido" para um e "mais do
+mesmo" para outro. Eles lembram como você os tratou, e o que escrevem chega ao
+mercado antes de você. Dá para conversar em off, cobrar uma matéria, ou perder
+um deles para sempre.
+
 ## A vida fora da pista
 
 Entre uma corrida e outra acontecem duas a quatro coisas por temporada que não
-têm nada a ver com o cronômetro: um convite para a noite antes do treino de
-simulador, uma provocação pública que vira rivalidade, um ex-piloto que se
-oferece para ser seu mentor, uma cobrança em casa, uma ordem de equipe no
-rádio a oito voltas do fim. Cada uma é uma escolha com consequência real em
-dinheiro, moral, fama, atributos e relações.
+têm nada a ver com o cronômetro. As antigas continuam lá: o convite para a
+noite antes do simulador, a provocação que vira rivalidade, o mentor que
+aparece, a cobrança em casa.
 
-Você acompanha tudo isso na tela **Gente**: engenheiro-chefe, companheiro de
-equipe, rival (com o placar de duelos), mentor e amigos do paddock.
+E há sete em que **nenhuma escolha tem desfecho garantido**: o homem com
+dinheiro e sem pressa, correr com a costela trincada, a noite que três
+celulares filmaram, a ordem no rádio a oito voltas do fim, o programa de
+formação que paga tudo e cobra tudo, o teste que a sua equipe não pode saber.
+Cada opção resolve em quatro alturas, a chance nunca aparece, e catorze delas
+plantam **semente**: pegar dinheiro sem perguntar nada volta três anos depois
+com o triplo na pasta; correr machucado sem contar volta como a costela que
+nunca mais deixa de doer; o vídeo daquela noite reaparece quando você já é
+alguém.
+
+## O mercado é feito de informação, não de planilha
+
+A força do carro do ano que vem deixou de ser um número exato. O que você vê é
+uma **faixa**, e a largura dela é o quanto você enxerga o mercado: quem tem
+empresário, amigos no paddock, cabeça técnica e nome lê o grid quase exato;
+quem não tem ninguém escolhe no escuro.
+
+E toda vaga vem com uma ou duas coisas que alguém garantiu para você assinar —
+o motor novo que chega em maio, o número um da equipe, o patrocínio já
+fechado, a liberação se aparecer coisa melhor. Cada garantia tem uma fonte (a
+equipe, seu empresário, um jornalista, o paddock, gente da engenharia) e uma
+verdade escondida. Em julho a temporada mostra o que era projeto e o que era
+conversa — e fica anotado quem te enganou, para a próxima vez que essa fonte
+falar.
 
 ## Empresários
 
