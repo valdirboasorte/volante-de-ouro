@@ -3172,6 +3172,435 @@ const RELACOES = {
 };
 
 /* ═══════════════════════════════════════════════════════════════
+   GENTE
+   Um paddock não é uma barra de 0 a 100. É gente com jeito próprio,
+   com um objetivo que não é o seu, e com memória do que você fez.
+   Cada pessoa guarda quatro coisas diferentes a seu respeito:
+     confiança — se acredita no que você diz
+     respeito  — se acha que você é rápido
+     afeto     — se gosta de você
+     tensão    — o que ficou atravessado e não passou
+   Nenhuma delas aparece como número. Aparecem como frases, que é
+   como a gente lê as pessoas na vida real.
+   ═══════════════════════════════════════════════════════════════ */
+const PERSONAS = {
+  frio:      { n:'Fechado',           ic:'🧊',
+    d:'Fala pouco e só sobre trabalho. Não confunda silêncio com desprezo.',
+    gosta:['tecnico','direto'], odeia:['bajulacao','drama'] },
+  orgulhoso: { n:'Orgulhoso',         ic:'🦁',
+    d:'Não admite erro na frente dos outros. Em particular, às vezes admite.',
+    gosta:['privado','respeito'], odeia:['publico','ironia'] },
+  leal:      { n:'Leal',              ic:'🤝',
+    d:'Fica do seu lado enquanto você ficar do lado dele.',
+    gosta:['pessoal','lealdade'], odeia:['frieza','traicao'] },
+  politico:  { n:'Político',          ic:'🎭',
+    d:'Sabe de onde vem o dinheiro e para onde vai o vento antes de todo mundo.',
+    gosta:['alianca','informacao'], odeia:['ingenuidade','publico'] },
+  inseguro:  { n:'Inseguro',          ic:'🫥',
+    d:'Precisa ouvir que está fazendo certo, inclusive quando está.',
+    gosta:['elogio','pessoal'], odeia:['pressao','publico'] },
+  ambicioso: { n:'Ambicioso',         ic:'📈',
+    d:'Você é degrau ou obstáculo. Colega, nunca.',
+    gosta:['alianca','resultado'], odeia:['lealdade','drama'] },
+  cansado:   { n:'Veterano cansado',  ic:'🚬',
+    d:'Já viu isso tudo antes e não se impressiona com quase nada.',
+    gosta:['direto','tecnico'], odeia:['drama','pressao'] }
+};
+const PERSONA_KEYS = Object.keys(PERSONAS);
+
+/* o que cada um quer da vida — e que não é o que você quer */
+const OBJETIVOS = {
+  eng: {
+    provar:  { t:'provar que é o melhor da garagem', d:'Ele quer o crédito quando o carro anda. E quer que se saiba.' },
+    subir:   { t:'ser chamado por uma equipe grande', d:'Você é currículo. Ele vai embora no dia em que der certo.' },
+    ficar:   { t:'não perder o emprego',             d:'Tem família, tem conta, e a equipe demite fácil.' },
+    metodo:  { t:'trabalhar do jeito certo',          d:'Detesta improviso. Prefere um segundo a mais e uma resposta correta.' }
+  },
+  comp: {
+    vaga:    { t:'a sua vaga',                        d:'Ele acha que o carro bom é seu e o talento é dele.' },
+    lider:   { t:'ser o número um da equipe',         d:'Não é pessoal. É que só cabe um na frente.' },
+    sobreviver:{ t:'segurar o contrato mais um ano',  d:'Está a duas corridas ruins de ficar sem lugar no grid.' },
+    respeito:{ t:'ser levado a sério',                d:'Cansou de ser o segundo piloto na conversa de todo mundo.' }
+  },
+  rival: {
+    humilhar:{ t:'te bater na sua cara',              d:'Não quer só vencer. Quer vencer você, e que todos vejam.' },
+    titulo:  { t:'o título, com ou sem você',         d:'Você é obstáculo, não inimigo. O que é pior.' },
+    provar:  { t:'provar que o de 2 anos atrás valeu', d:'Carrega uma história antiga com você e não largou.' }
+  },
+  chefe: {
+    resultado:{ t:'pontos, e rápido',                 d:'Não paga para ouvir explicação. Paga para ver o carro na frente.' },
+    dinheiro: { t:'fechar o orçamento do ano que vem', d:'Patrocinador feliz vale mais que pódio azarão.' },
+    imagem:   { t:'que a equipe pareça grande',        d:'Odeia sair na imprensa por motivo errado.' }
+  },
+  mentor: {
+    legado:  { t:'ver alguém fazer o que ele não fez', d:'Parou cedo demais e sabe exatamente onde errou.' },
+    corrigir:{ t:'te poupar dos erros dele',           d:'Vai falar verdades que ninguém mais tem coragem de falar.' }
+  },
+  amigo: {
+    companhia:{ t:'alguém para conversar no paddock',  d:'O circo é solitário para todo mundo, não só para você.' },
+    troca:    { t:'trocar informação',                 d:'Ele sabe de coisa. Você também. Isso vale.' }
+  }
+};
+
+const PAPEL_NOME = { eng:'Engenheiro de pista', comp:'Companheiro de equipe', rival:'Rival',
+                     mentor:'Mentor', chefe:'Chefe de equipe', amigo:'Amigo no paddock' };
+
+const NOMES_ENG = ['Alan','Andrea','Bruno','Carlos','Daniel','Diego','Eduardo','Fábio','Gianni','Hugo',
+  'Iain','Jean','Klaus','Luca','Marc','Nigel','Otto','Paulo','Rafael','Sergio','Thomas','Vitor','Xavier'];
+
+/* ═══ CONVERSAS ═══
+   Não é um botão que sobe um número. É uma escolha de tom, feita para
+   uma pessoa específica, com uma chance escondida que depende de quem
+   ela é, do que ela já viu você fazer e do que você é como piloto.
+   tom: tecnico | direto | pessoal | elogio | pressao | ironia | privado
+        publico | alianca | lealdade | bajulacao | informacao | resultado
+        frieza | traicao | drama | ingenuidade | respeito
+   O resultado tem quatro alturas: ótimo, bom, morno e ruim. */
+const CONVERSAS = [
+/* ── engenheiro ── */
+{ id:'eng_abrir', papel:'eng', peso:3, uma:false, cd:2,
+  sub:'O briefing acabou e a garagem esvaziou.',
+  t:'Sentar com ele depois do briefing',
+  abre:{
+    frio:'Ele está de costas, olhando a tela do sexto setor pela quinta vez. Não vira quando você chega.',
+    inseguro:'Ele começa se desculpando por algo que você nem tinha notado.',
+    orgulhoso:'— Se você veio falar do acerto de ontem, já sei o que você vai dizer.',
+    padrao:'Ele tira os fones, empurra o notebook para o lado e espera você falar.'
+  },
+  ops:[
+    { t:'"Me explica o que você viu no dado."', tom:'tecnico', base:.55, dim:'conf', attr:'dev',
+      otimo:{ t:'Ele abre a tela inteira e passa quarenta minutos te mostrando coisa que não mostra para ninguém.',
+              e:{ conf:9, resp:6, dev:.6 } },
+      bom:  { t:'Ele explica, você entende metade, e ele percebe que você entendeu metade — e gosta disso.',
+              e:{ conf:5, dev:.3 } },
+      morno:{ t:'Ele explica por obrigação, olhando o relógio.', e:{ conf:1 } },
+      ruim: { t:'— Você não vai entender assim. Depois eu mando por escrito. Ele não mandou.', e:{ tens:4 } } },
+    { t:'"Foi mal, o erro de ontem foi meu."', tom:'direto', base:.6, dim:'afeto', attr:'cons',
+      otimo:{ t:'Ele para. Ninguém assume erro na frente dele há anos. Alguma coisa muda ali.',
+              e:{ conf:8, afeto:10, tens:-8 } },
+      bom:  { t:'— Eu sei. Mas obrigado por dizer. Ele volta para a tela, um pouco mais leve.',
+              e:{ afeto:5, tens:-4 } },
+      morno:{ t:'— Foi, sim. Ele não levanta os olhos.', e:{ tens:-1 } },
+      ruim: { t:'— Foi seu mesmo. E o de Spa também. Sobrou para você fora do briefing.', e:{ resp:-5, tens:3 } } },
+    { t:'"Preciso que você me dê um carro melhor."', tom:'pressao', base:.34, dim:'resp', attr:'pace',
+      otimo:{ t:'Ele encara você por três segundos e diz: — Então me dê algo com que trabalhar. E dá.',
+              e:{ resp:8, tens:4, conf:4 } },
+      bom:  { t:'Ele aceita a cobrança. Não gostou, mas aceita.', e:{ resp:3, tens:5 } },
+      morno:{ t:'— O carro é esse. Fim da conversa.', e:{ tens:8 } },
+      ruim: { t:'Ele te lembra, em voz alta e com gente por perto, quantas vezes você errou a freada da última curva.',
+              e:{ tens:14, afeto:-9, moral:-6 } } }
+  ] },
+
+{ id:'eng_noite', papel:'eng', peso:2, uma:false, cd:4, exige:{ relMin:45 },
+  sub:'Fora do circuito as pessoas falam outra coisa.',
+  t:'Chamar para jantar fora do circuito',
+  abre:{
+    cansado:'— Faz vinte anos que eu como sanduíche em pé no motorhome. Vamos.',
+    politico:'Ele aceita rápido demais. Você percebe que ele já queria falar com você a sós.',
+    padrao:'Ele hesita, olha o relógio, e vai.'
+  },
+  ops:[
+    { t:'Falar de tudo, menos de corrida', tom:'pessoal', base:.6, dim:'afeto', attr:null,
+      otimo:{ t:'Ele fala do divórcio, do filho, da vontade de sair disso tudo. Amanhã ele vai te tratar diferente.',
+              e:{ afeto:14, conf:6 } },
+      bom:  { t:'A conversa flui. Não é amizade ainda, mas deixou de ser só serviço.', e:{ afeto:8 } },
+      morno:{ t:'Silêncio confortável, e nada além disso.', e:{ afeto:3 } },
+      ruim: { t:'Ele não sabe falar de outra coisa. A noite fica estranha e curta.', e:{ afeto:-2, tens:2 } } },
+    { t:'Perguntar o que ele quer da carreira dele', tom:'informacao', base:.5, dim:'conf', attr:'dev',
+      otimo:{ t:'Ele conta o plano inteiro — e ao contar, passa a te incluir nele.', e:{ conf:12, afeto:7, saberObj:1 } },
+      bom:  { t:'Ele conta por alto. Já é mais do que ele conta para a equipe.', e:{ conf:7, saberObj:1 } },
+      morno:{ t:'— Quero terminar o ano. Ele muda de assunto.', e:{ conf:2 } },
+      ruim: { t:'Ele acha que você está sondando para levar a informação a alguém.', e:{ conf:-6, tens:6 } } },
+    { t:'Prometer que leva ele junto se você subir', tom:'alianca', base:.45, dim:'conf', attr:'fame',
+      otimo:{ t:'Ele aperta sua mão. A partir de hoje você tem alguém que trabalha para você, não para a equipe.',
+              e:{ conf:16, afeto:10, promessa:'levar_eng' } },
+      bom:  { t:'— Vou cobrar. Ele está falando sério.', e:{ conf:9, promessa:'levar_eng' } },
+      morno:{ t:'Ele sorri de lado. Já ouviu isso de outros pilotos.', e:{ conf:2 } },
+      ruim: { t:'— Você nem sabe se vai subir. Ele tem razão, e os dois sabem.', e:{ resp:-6, tens:4 } } }
+  ] },
+
+{ id:'eng_culpa', papel:'eng', peso:3, uma:false, cd:3, exige:{ aposUltimaRuim:true },
+  sub:'O acerto do fim de semana não funcionou, e os dois sabem.',
+  t:'Cobrar o acerto que não funcionou',
+  abre:{
+    orgulhoso:'Ele já está com a resposta pronta antes de você abrir a boca.',
+    inseguro:'Dá para ver que ele passou a noite refazendo a conta.',
+    padrao:'— Eu sei. Pode falar.'
+  },
+  ops:[
+    { t:'Cobrar na frente da equipe', tom:'publico', base:.28, dim:'resp', attr:'fame',
+      otimo:{ t:'A garagem inteira ouve, e a garagem inteira passa a trabalhar com medo — que funciona por um tempo.',
+              e:{ resp:9, tens:12, afeto:-8, teamRel:-4 } },
+      bom:  { t:'Ele engole. A equipe fica desconfortável.', e:{ resp:4, tens:10, afeto:-6 } },
+      morno:{ t:'Ele rebate na frente de todos com dados que você não sabe ler.', e:{ resp:-6, tens:9, moral:-5 } },
+      ruim: { t:'Vira discussão feia. Alguém filma. Sai na imprensa no dia seguinte.',
+              e:{ tens:18, afeto:-14, teamRel:-9, fama:5, moral:-9 } } },
+    { t:'Chamar num canto e falar sério', tom:'privado', base:.62, dim:'conf', attr:'race',
+      otimo:{ t:'Ele reconhece o erro sem plateia e volta com uma ideia nova na corrida seguinte.',
+              e:{ conf:11, resp:5, dev:.4 } },
+      bom:  { t:'Ele explica o raciocínio. Fazia sentido na sexta.', e:{ conf:6 } },
+      morno:{ t:'Ele se defende. Ficou por isso mesmo.', e:{ tens:3 } },
+      ruim: { t:'Ele acha que você está procurando culpado para a imprensa.', e:{ conf:-7, tens:8 } } },
+    { t:'Assumir junto: "erramos os dois"', tom:'lealdade', base:.55, dim:'afeto', attr:'cons',
+      otimo:{ t:'Ele não esperava. A partir daí ele te protege nas reuniões em que você não está.',
+              e:{ afeto:15, conf:10, tens:-10, protegido:1 } },
+      bom:  { t:'Ele agradece com a cabeça e volta ao trabalho, aliviado.', e:{ afeto:8, tens:-6 } },
+      morno:{ t:'— Erramos. Ele aceita a divisão e nada mais acontece.', e:{ afeto:3 } },
+      ruim: { t:'O chefe ouviu e entendeu que você é mole com quem erra.', e:{ teamRel:-5, afeto:5 } } }
+  ] },
+
+/* ── companheiro de equipe ── */
+{ id:'comp_dados', papel:'comp', peso:3, uma:false, cd:2,
+  sub:'Metade da garagem é dele. Metade da informação também.',
+  t:'Falar sobre dividir dados',
+  abre:{
+    ambicioso:'— Depende. O que eu ganho com isso?',
+    leal:'— Achei que a gente já fazia isso.',
+    politico:'Ele sorri antes de você terminar a frase. Ele já pensou nisso.',
+    padrao:'Ele desliga a tela quando você chega. Isso responde metade da pergunta.'
+  },
+  ops:[
+    { t:'Abrir os seus primeiro', tom:'lealdade', base:.5, dim:'conf', attr:null,
+      otimo:{ t:'Ele abre os dele na hora, e vocês dois andam melhor no domingo.',
+              e:{ conf:14, afeto:9, pace:.5, dadosAbertos:1 } },
+      bom:  { t:'Ele olha, agradece, e devolve metade. É mais do que era ontem.', e:{ conf:8, pace:.2 } },
+      morno:{ t:'Ele pega os seus e não devolve nada. Por enquanto.', e:{ conf:3, tens:3 } },
+      ruim: { t:'Ele usa a sua telemetria, anda melhor que você no sábado e não diz uma palavra.',
+              e:{ conf:-4, tens:9, moral:-6, compGanhou:1 } } },
+    { t:'Propor troca, item por item', tom:'alianca', base:.58, dim:'resp', attr:'dev',
+      otimo:{ t:'Vira um acordo de verdade, com regra. Os dois lados da garagem passam a puxar junto.',
+              e:{ conf:10, resp:8, teamRel:6, dadosAbertos:1 } },
+      bom:  { t:'Ele topa em parte: freada sim, saída de curva não.', e:{ conf:6, resp:4 } },
+      morno:{ t:'Ele enrola. Fica de responder e não responde.', e:{ tens:2 } },
+      ruim: { t:'— Você quer o meu dado porque o seu não presta. Ficou marcado.', e:{ tens:10, resp:-5 } } },
+    { t:'Não propor nada e observar o que ele faz', tom:'frieza', base:.5, dim:'resp', attr:'race',
+      otimo:{ t:'Você percebe que ele já vinha copiando o seu ajuste de asa há três corridas.',
+              e:{ resp:4, dev:.5, sabeSegredo:1 } },
+      bom:  { t:'Nada muda, e você aprende a ler a garagem um pouco melhor.', e:{ dev:.2 } },
+      morno:{ t:'Nada acontece. A garagem segue dividida.', e:{ } },
+      ruim: { t:'A frieza chega ao chefe como falta de espírito de equipe.', e:{ teamRel:-6, tens:4 } } }
+  ] },
+
+{ id:'comp_ordem', papel:'comp', peso:2, uma:false, cd:3, exige:{ relMax:60 },
+  sub:'Cedo ou tarde vocês dois vão brigar pela mesma curva.',
+  t:'Falar sobre ordem de equipe',
+  abre:{
+    ambicioso:'— Ordem de equipe é coisa de quem não consegue passar na pista.',
+    inseguro:'Ele fica pálido. Sabe que a conversa não vai ser boa para ele.',
+    padrao:'— A gente vai ter que resolver isso antes que a equipe resolva por nós.'
+  },
+  ops:[
+    { t:'Propor: quem estiver melhor no campeonato tem prioridade', tom:'direto', base:.55, dim:'conf', attr:null,
+      otimo:{ t:'Ele aceita e cumpre. Duas corridas depois ele te dá passagem sem ninguém pedir.',
+              e:{ conf:13, resp:7, acordoOrdem:1 } },
+      bom:  { t:'Ele aceita, com cara de quem vai reclamar depois.', e:{ conf:7, acordoOrdem:1 } },
+      morno:{ t:'— A gente vê na hora. Ou seja: não.', e:{ tens:3 } },
+      ruim: { t:'Ele leva a proposta ao chefe como prova de que você tem medo dele.', e:{ tens:11, teamRel:-5 } } },
+    { t:'Deixar claro que você não vai dar passagem nunca', tom:'pressao', base:.42, dim:'resp', attr:'pace',
+      otimo:{ t:'Ele recua. A garagem inteira entende quem manda dentro do carro.', e:{ resp:12, tens:7, moral:6 } },
+      bom:  { t:'Ele responde no mesmo tom. Está declarado, e é honesto.', e:{ resp:6, tens:8 } },
+      morno:{ t:'— Nem eu. Ficaram os dois no mesmo lugar, só que piores.', e:{ tens:9 } },
+      ruim: { t:'Vira guerra aberta. A equipe começa a pensar em substituir um dos dois.',
+              e:{ tens:16, teamRel:-10, afeto:-12 } } },
+    { t:'Oferecer apoio a ele este ano em troca do ano que vem', tom:'alianca', base:.4, dim:'conf', attr:'dev',
+      otimo:{ t:'Ele topa e cumpre — e você ganha um aliado dentro da equipe para a temporada seguinte.',
+              e:{ conf:15, afeto:9, promessa:'apoio_comp' } },
+      bom:  { t:'Ele topa. Se vai cumprir, ninguém sabe.', e:{ conf:8, promessa:'apoio_comp' } },
+      morno:{ t:'Ele agradece e não se compromete com nada.', e:{ } },
+      ruim: { t:'Ele aceita, usa o seu apoio o ano inteiro e some no inverno.', e:{ tens:9, conf:-8, traido:1 } } }
+  ] },
+
+{ id:'comp_toque', papel:'comp', peso:3, uma:false, cd:2, exige:{ aposToque:true },
+  sub:'O toque da última corrida ainda não foi resolvido.',
+  t:'Resolver o toque da última corrida',
+  abre:{
+    orgulhoso:'— Antes de você falar: não foi meu.',
+    leal:'Ele já vem vindo na sua direção, e não parece bravo.',
+    padrao:'Os dois pararam de andar ao mesmo tempo, no meio do paddock.'
+  },
+  ops:[
+    { t:'Pedir desculpa mesmo achando que não foi culpa sua', tom:'pessoal', base:.6, dim:'afeto', attr:null,
+      otimo:{ t:'Ele desarma na hora e assume a parte dele. A equipe respira.', e:{ afeto:12, tens:-14, teamRel:5 } },
+      bom:  { t:'Ele aceita e o assunto morre.', e:{ tens:-8, afeto:5 } },
+      morno:{ t:'Ele aceita o pedido e guarda a versão dele para a imprensa.', e:{ tens:-3, fama:-2 } },
+      ruim: { t:'Ele conta a todo mundo que você admitiu a culpa.', e:{ tens:3, teamRel:-5, moral:-5 } } },
+    { t:'Bater de frente: "foi você e você sabe"', tom:'direto', base:.45, dim:'resp', attr:'race',
+      otimo:{ t:'Ele engole e recua. Da próxima vez ele abre.', e:{ resp:11, tens:6 } },
+      bom:  { t:'Discussão firme, sem gritaria. Ficou entendido.', e:{ resp:6, tens:5 } },
+      morno:{ t:'Cada um sai achando que tem razão.', e:{ tens:8 } },
+      ruim: { t:'Empurrão, gente segurando os dois, foto na capa.', e:{ tens:18, fama:7, teamRel:-11, moral:-7 } } },
+    { t:'Não falar nada e deixar a equipe resolver', tom:'frieza', base:.5, dim:'conf', attr:'cons',
+      otimo:{ t:'A equipe analisa e te dá razão publicamente.', e:{ teamRel:7, resp:5, tens:-4 } },
+      bom:  { t:'A equipe divide a culpa. Nada muda.', e:{ tens:2 } },
+      morno:{ t:'A equipe divide a culpa e cobra os dois em reunião.', e:{ teamRel:-3, tens:5 } },
+      ruim: { t:'Sem a sua versão, a equipe acredita na dele.', e:{ teamRel:-8, tens:9, moral:-6 } } }
+  ] },
+
+/* ── rival ── */
+{ id:'rival_frente', papel:'rival', peso:3, uma:false, cd:2,
+  sub:'Tem gente olhando, e ele sabe disso.',
+  t:'Encarar o rival no paddock',
+  abre:{
+    ambicioso:'Ele finge que não te viu, e finge mal de propósito.',
+    orgulhoso:'— Veio falar comigo? Isso é novidade.',
+    padrao:'Ele para e espera. Tem gente olhando.'
+  },
+  ops:[
+    { t:'Estender a mão', tom:'pessoal', base:.42, dim:'afeto', attr:'fame',
+      otimo:{ t:'Ele aperta. A rivalidade continua, mas agora tem regra.', e:{ afeto:12, tens:-10, moral:5 } },
+      bom:  { t:'Aperto rápido e seco. Já é alguma coisa.', e:{ tens:-6 } },
+      morno:{ t:'Ele olha a mão e não pega. Alguém filmou.', e:{ tens:6, fama:3, moral:-4 } },
+      ruim: { t:'Ele te humilha em voz alta. Vira meme na semana seguinte.', e:{ tens:12, moral:-9, fama:6 } } },
+    { t:'Provocar de volta', tom:'ironia', base:.48, dim:'resp', attr:'fame',
+      otimo:{ t:'Você é mais rápido no verbo do que ele. O paddock inteiro ri, e não é dele que riem.',
+              e:{ resp:9, fama:8, tens:8, moral:7 } },
+      bom:  { t:'Fica um a um. A imprensa adora.', e:{ fama:6, tens:7 } },
+      morno:{ t:'Ele leva a melhor na frase. Você fica quieto.', e:{ moral:-5, tens:6 } },
+      ruim: { t:'Você fala demais e sobra para a sua equipe explicar.', e:{ teamRel:-7, tens:10, fama:4 } } },
+    { t:'Não dizer nada e prometer para si mesmo resolver na pista', tom:'frieza', base:.6, dim:'resp', attr:'race',
+      otimo:{ t:'Você sai de lá com um foco que não tinha. E ele percebe.', e:{ pace:.7, race:.5, moral:6, resp:6 } },
+      bom:  { t:'Silêncio digno. Vale mais que frase.', e:{ race:.3, moral:3 } },
+      morno:{ t:'Ele interpreta como medo.', e:{ resp:-4, tens:4 } },
+      ruim: { t:'Ele conta para todo mundo que você não teve coragem de responder.', e:{ resp:-7, moral:-6, tens:6 } } }
+  ] },
+
+/* ── mentor ── */
+{ id:'mentor_verdade', papel:'mentor', peso:3, uma:false, cd:2,
+  sub:'Ele não está aqui para fazer você se sentir bem.',
+  t:'Ouvir o que ele tem para dizer',
+  abre:{
+    cansado:'— Vou falar uma coisa e você não vai gostar. Senta.',
+    leal:'Ele te espera com dois cafés e a gravação da sua última corrida.',
+    padrao:'— Você quer que eu seja educado ou quer que eu seja útil?'
+  },
+  ops:[
+    { t:'"Fala. Sem filtro."', tom:'direto', base:.62, dim:'resp', attr:'cons',
+      otimo:{ t:'Ele desmonta a sua última corrida curva por curva. Dói, e você anda melhor a partir dali.',
+              e:{ race:1.1, cons:.8, moral:-4, resp:10 } },
+      bom:  { t:'Ele aponta dois vícios que ninguém tinha apontado.', e:{ race:.6, cons:.4, resp:6 } },
+      morno:{ t:'Conselho genérico de quem parou faz tempo.', e:{ resp:2 } },
+      ruim: { t:'Ele fala do tempo dele por duas horas. Você perde a tarde.', e:{ moral:-3 } } },
+    { t:'Contar o que está te travando de verdade', tom:'pessoal', base:.55, dim:'afeto', attr:null,
+      otimo:{ t:'Ele conta que passou pelo mesmo, e como saiu. Alguma coisa destrava.',
+              e:{ afeto:14, moral:14, cons:.6 } },
+      bom:  { t:'Ele escuta até o fim, o que quase ninguém faz.', e:{ afeto:8, moral:7 } },
+      morno:{ t:'Ele não sabe o que dizer, e diz isso.', e:{ afeto:3 } },
+      ruim: { t:'Ele minimiza. Você se sente pior do que antes de falar.', e:{ moral:-8, afeto:-4 } } },
+    { t:'Pedir para ele abrir portas', tom:'informacao', base:.4, dim:'conf', attr:'fame',
+      otimo:{ t:'Ele liga na sua frente para alguém que decide, e fala de você por dez minutos.',
+              e:{ conf:10, porta:1, fama:6 } },
+      bom:  { t:'Ele promete falar com um nome. E fala.', e:{ conf:6, porta:1 } },
+      morno:{ t:'— Deixa eu ver o que eu consigo. Não conseguiu.', e:{ } },
+      ruim: { t:'— Eu não sou seu empresário. A conversa esfria.', e:{ afeto:-7, tens:6 } } }
+  ] },
+
+/* ── chefe de equipe ── */
+{ id:'chefe_contrato', papel:'chefe', peso:2, uma:false, cd:4,
+  sub:'Ninguém fala de contrato na hora certa. Fala antes ou tarde demais.',
+  t:'Falar de contrato antes da hora',
+  abre:{
+    politico:'Ele te recebe sorrindo e não responde nada nos primeiros dez minutos.',
+    frio:'— Seja rápido. Tenho reunião com patrocinador em vinte minutos.',
+    padrao:'Ele fecha a porta da sala, o que pode ser bom ou muito ruim.'
+  },
+  ops:[
+    { t:'Mostrar números: seus resultados contra o companheiro', tom:'tecnico', base:.5, dim:'resp', attr:'dev',
+      otimo:{ t:'Ele não tinha visto assim. A conversa de renovação começa hoje, não em outubro.',
+              e:{ resp:12, teamRel:9, conf:6 } },
+      bom:  { t:'Ele reconhece os números e pede paciência.', e:{ resp:6, teamRel:4 } },
+      morno:{ t:'— Números eu tenho aqui também. Ele mostra outros.', e:{ } },
+      ruim: { t:'Ele te mostra quanto o seu companheiro traz de patrocínio. Você entende o seu lugar.',
+              e:{ teamRel:-5, moral:-8 } } },
+    { t:'Pedir garantia de igualdade de material', tom:'direto', base:.45, dim:'conf', attr:'fame',
+      otimo:{ t:'Ele garante por escrito. Isso quase nunca acontece.', e:{ conf:12, teamRel:8, igualdade:1 } },
+      bom:  { t:'Ele garante de boca. Vale o que vale.', e:{ conf:6, teamRel:3 } },
+      morno:{ t:'— O material é igual. Ele diz isso sem olhar para você.', e:{ tens:3 } },
+      ruim: { t:'Ele se ofende com a insinuação e a reunião acaba ali.', e:{ teamRel:-9, tens:10 } } },
+    { t:'Ameaçar procurar o mercado', tom:'pressao', base:.32, dim:'resp', attr:'fame',
+      otimo:{ t:'Ele acredita e melhora a proposta na semana seguinte.', e:{ resp:10, teamRel:5, dinheiro:400e3 } },
+      bom:  { t:'Ele leva a sério, sem se comprometer.', e:{ resp:5, tens:5 } },
+      morno:{ t:'— Procura. Ele volta a olhar o computador.', e:{ tens:7, moral:-5 } },
+      ruim: { t:'Ele liga na sua frente para o empresário de outro piloto.', e:{ teamRel:-13, tens:12, moral:-10 } } }
+  ] },
+
+/* ── amigo do paddock ── */
+{ id:'amigo_info', papel:'amigo', peso:2, uma:false, cd:2,
+  sub:'Informação no paddock circula em troca de informação.',
+  t:'Trocar informação no motorhome',
+  abre:{
+    politico:'— Eu te conto uma, você me conta uma. Assim funciona.',
+    padrao:'Ele te chama com a cabeça e você senta.'
+  },
+  ops:[
+    { t:'Perguntar o que se fala de você no paddock', tom:'informacao', base:.58, dim:'conf', attr:'fame',
+      otimo:{ t:'Ele te conta exatamente quem gosta de você, quem não gosta e por quê.', e:{ conf:9, boato:1 } },
+      bom:  { t:'Ele te dá metade do quadro. Já ajuda.', e:{ conf:5, boato:1 } },
+      morno:{ t:'— Falam pouco de você. O que também é uma informação.', e:{ moral:-3 } },
+      ruim: { t:'Ele repassa para os outros que você anda inseguro.', e:{ conf:-6, tens:6, fama:-3 } } },
+    { t:'Passar uma informação sua para ganhar crédito', tom:'traicao', base:.45, dim:'conf', attr:null,
+      otimo:{ t:'A informação circula, chega onde tinha de chegar, e ninguém sabe que saiu de você.',
+              e:{ conf:8, credito:1 } },
+      bom:  { t:'Funciona, mas alguém desconfia.', e:{ conf:4, tens:3 } },
+      morno:{ t:'Ele já sabia. Você entregou de graça.', e:{ } },
+      ruim: { t:'Rastreiam até você. A garagem inteira fica sabendo.', e:{ teamRel:-9, tens:11, conf:-9 } } }
+  ] }
+];
+
+/* ═══ PEDIDOS ═══
+   Cada pessoa quer alguma coisa que não é o que você quer. De tempos em
+   tempos ela pede — e a resposta cobra em algum lugar. */
+const PEDIDOS = [
+  { id:'eng_credito', papel:'eng', obj:'provar',
+    t:'Ele quer o crédito',
+    d:'— Se der certo domingo, fala do carro na entrevista. Fala da equipe de pista. Não fala só de você.',
+    ops:[
+      { t:'Falar dele na entrevista', tom:'lealdade', e:{ conf:12, afeto:10, fama:-4 } },
+      { t:'Falar da equipe, sem citar ninguém', tom:'direto', e:{ conf:4, tens:2 } },
+      { t:'Levar o crédito todo', tom:'frieza', e:{ fama:8, conf:-11, tens:12 } }
+    ] },
+  { id:'eng_sair', papel:'eng', obj:'subir',
+    t:'Ele recebeu uma proposta',
+    d:'— Me chamaram de uma equipe grande. Eu vou, a não ser que você me dê um motivo para ficar.',
+    ops:[
+      { t:'Pedir para ele ficar, e prometer levá-lo junto um dia', tom:'alianca', e:{ conf:10, afeto:8, promessa:'levar_eng' } },
+      { t:'Falar com o chefe para cobrir a proposta', tom:'direto', e:{ conf:8, teamRel:-6, dinheiro:-150e3 } },
+      { t:'Desejar boa sorte', tom:'frieza', e:{ engSai:1, afeto:4 } }
+    ] },
+  { id:'comp_vaga', papel:'comp', obj:'vaga',
+    t:'Ele quer o seu lugar, e não esconde mais',
+    d:'— Um de nós dois não fica aqui ano que vem. Você sabe disso tão bem quanto eu.',
+    ops:[
+      { t:'"Então que seja na pista"', tom:'direto', e:{ resp:9, tens:8, moral:5 } },
+      { t:'Propor uma trégua até o meio do ano', tom:'alianca', e:{ conf:7, tens:-6 } },
+      { t:'Ir ao chefe antes dele', tom:'traicao', e:{ teamRel:5, tens:14, afeto:-12, politicagem:1 } }
+    ] },
+  { id:'comp_ajuda', papel:'comp', obj:'sobreviver',
+    t:'Ele está afundando e pediu ajuda',
+    d:'— Se eu não pontuar em três corridas, estou fora. Me ajuda com o acerto. Eu sei o que estou pedindo.',
+    ops:[
+      { t:'Ajudar de verdade', tom:'lealdade', e:{ conf:15, afeto:14, compForte:1 } },
+      { t:'Ajudar pela metade', tom:'politico', e:{ conf:5, tens:3 } },
+      { t:'Não ajudar', tom:'frieza', e:{ tens:10, afeto:-10, resp:3 } }
+    ] },
+  { id:'chefe_patro', papel:'chefe', obj:'dinheiro',
+    t:'O patrocinador quer você um dia inteiro',
+    d:'— Segunda-feira, evento em Milão, dia inteiro. Sei que você ia treinar. Eu preciso que você vá.',
+    ops:[
+      { t:'Ir, e ser bom no evento', tom:'lealdade', e:{ teamRel:9, fama:6, dinheiro:80e3, pace:-.3 } },
+      { t:'Ir de corpo presente', tom:'frieza', e:{ teamRel:3, moral:-3 } },
+      { t:'Recusar e treinar', tom:'direto', e:{ teamRel:-9, pace:.7, cons:.4 } }
+    ] },
+  { id:'mentor_cobra', papel:'mentor', obj:'legado',
+    t:'Ele quer saber se você está levando a sério',
+    d:'— Eu abri portas para você. Agora me diz, olhando na minha cara, onde você quer estar em três anos.',
+    ops:[
+      { t:'Dizer a verdade, inclusive o medo', tom:'pessoal', e:{ afeto:13, conf:9, moral:6 } },
+      { t:'Dizer o que ele quer ouvir', tom:'bajulacao', e:{ afeto:4, conf:-4 } },
+      { t:'"Não devo satisfação a ninguém"', tom:'frieza', e:{ tens:12, afeto:-12, moral:4, resp:5 } }
+    ] }
+];
+
+/* ═══════════════════════════════════════════════════════════════
    A VIDA FORA DA PISTA
    Uma carreira não é só o domingo. Convite, briga, oportunidade,
    besteira: coisas que acontecem entre uma corrida e outra e que
@@ -4811,7 +5240,12 @@ const Engine = {
   emp(){ return S.empresario ? empresarioPorId(S.empresario.id) : null; },
   bonusMercado(){ const e = Engine.emp(); return e ? e.mercado * 2.2 : 0; },
   bonusDinheiro(){ const e = Engine.emp(); return e ? 1 + e.dinheiro * .045 : 1; },
-  bonusPorta(){ const e = Engine.emp(); return e ? e.porta : 0; },
+  bonusPorta(){
+    const e = Engine.emp();
+    /* mentor que faz uma ligação abre porta tanto quanto empresário */
+    const m = (S.marcas && S.marcas.porta) || 0;
+    return (e ? e.porta : 0) + Math.min(m, 3) * .8;
+  },
   taxaEmpresario(){ const e = Engine.emp(); return e ? e.taxa : 0; },
 
   custoTemporada(cat, idx, len, sk){
@@ -4994,8 +5428,317 @@ const Engine = {
   /* Relação vale nos dois modos: os eventos que a mexem acontecem nos dois,
      e um engenheiro do seu lado melhora o carro tanto no clássico quanto no
      realista. O que é exclusivo do realista é o dinheiro. */
-  relEng(){ return (S && S.rel) ? S.rel.eng : 50; },
-  relComp(){ return (S && S.rel) ? S.rel.comp : 50; },
+  /* ═══ GENTE ═══
+     O paddock deixou de ser duas barras. Cada pessoa tem jeito, objetivo
+     próprio e memória do que você fez — e quatro medidas diferentes a seu
+     respeito, que se movem em direções diferentes. Dá para ser respeitado
+     e detestado ao mesmo tempo, que é como funciona de verdade. */
+
+  DIMS: ['conf','resp','afeto','tens'],
+  DIM_NOME: { conf:'Confiança', resp:'Respeito', afeto:'Afeto', tens:'Tensão' },
+  /* como cada medida se lê em palavras — nunca em número */
+  DIM_TXT: {
+    conf: [[80,'conta coisa que não conta para mais ninguém'],[62,'acredita no que você fala'],
+           [42,'trata você como profissional, e só'],[22,'mede as palavras perto de você'],
+           [0,'não acredita em uma linha do que você diz']],
+    resp: [[80,'acha você um dos melhores que já viu'],[62,'sabe que você é rápido'],
+           [42,'ainda está formando opinião'],[22,'acha que você está aqui por sorte'],
+           [0,'não te leva a sério como piloto']],
+    afeto:[[80,'gosta de você de verdade'],[62,'gosta da sua companhia'],
+           [42,'é cordial'],[22,'evita você fora do trabalho'],
+           [0,'não te suporta']],
+    tens: [[70,'tem uma conta aberta com você que não vai fechar'],[45,'guarda mágoa'],
+           [22,'tem alguma coisa atravessada'],[0,'está tudo em paz']]
+  },
+  dimTxt(k, v){
+    const t = Engine.DIM_TXT[k];
+    for(const [lim, txt] of t) if(v >= lim) return txt;
+    return t[t.length-1][1];
+  },
+
+  /* a nota única que o resto do jogo continua consumindo */
+  nota(p){
+    if(!p) return 50;
+    return clamp(Math.round(p.rel.conf * .38 + p.rel.resp * .30 + p.rel.afeto * .32
+                          - p.rel.tens * .38), 0, 100);
+  },
+
+  gente(){
+    /* carreira nova começa com o paddock vazio e o povoa sozinha. Migrar as
+       duas barras antigas é coisa de save velho, e roda só ao carregar. */
+    if(!S.gente) S.gente = [];
+    return S.gente;
+  },
+  pessoa(papel){ return Engine.gente().find(p => p.papel === papel && !p.saiu) || null; },
+  pessoaPor(id){ return Engine.gente().find(p => p.id === id) || null; },
+
+  novaPessoa(papel, o){
+    o = o || {};
+    const sem = seedOf(papel + (o.n || '') + (S.year || 0) + (S.driver ? S.driver.name : ''));
+    const pers = o.pers || PERSONA_KEYS[sem % PERSONA_KEYS.length];
+    const objs = Object.keys(OBJETIVOS[papel] || { x:1 });
+    return {
+      id: papel + '_' + (sem >>> 8).toString(36),
+      papel, n: o.n || 'Sem nome', cc: o.cc || (S.driver ? S.driver.cc : 'BR'),
+      pers, obj: o.obj || objs[(sem >>> 5) % objs.length],
+      objSabido: false,
+      rel: (function(){
+        /* ninguém começa igual a ninguém: o jeito da pessoa já define como
+           ela te recebe, e o que você já fez na carreira também conta */
+        const M = { frio:{conf:-6,resp:4,afeto:-16,tens:2}, orgulhoso:{conf:-4,resp:-6,afeto:-6,tens:8},
+                    leal:{conf:12,resp:0,afeto:16,tens:-4}, politico:{conf:-10,resp:6,afeto:8,tens:4},
+                    inseguro:{conf:8,resp:-10,afeto:10,tens:6}, ambicioso:{conf:-8,resp:8,afeto:-12,tens:10},
+                    cansado:{conf:4,resp:-4,afeto:-2,tens:-6} }[pers] || {};
+        const c = S.career || {};
+        const peso = clamp(((S.driver ? S.driver.fame : 40) - 40) / 4
+                         + (c.titles || 0) * 5 + (c.wins || 0) * .5, -12, 26);
+        const v = (base, k, bits) =>
+          clamp(Math.round(base + ((sem >>> bits) % 13) - 6 + (M[k] || 0)
+                + (k === 'resp' ? peso : k === 'tens' ? 0 : peso * .3)), 0, 100);
+        return { conf: o.conf != null ? o.conf : v(46, 'conf', 0),
+                 resp: o.resp != null ? o.resp : v(40, 'resp', 4),
+                 afeto: o.afeto != null ? o.afeto : v(46, 'afeto', 8),
+                 tens: o.tens != null ? o.tens : clamp(Math.round(((sem >>> 12) % 9) + (M.tens || 0)), 0, 40) };
+      })(),
+      mem: [], desde: S.year, marcas: {}, ultima: {}, promessas: []
+    };
+  },
+
+  /* ── quem está ao seu redor neste ano ──
+     Trocar de equipe troca o engenheiro e o chefe. O antigo não some do
+     mundo: fica guardado, com tudo que lembra, e pode reaparecer. */
+  sincronizarGente(){
+    const g = Engine.gente();
+    const sea = S.season;
+    const marcaTime = S.team ? S.team.name : '—';
+
+    const guardar = (papel) => {
+      const velho = Engine.pessoa(papel);
+      if(velho){ velho.saiu = S.year; velho.time = velho.time || marcaTime; }
+    };
+
+    /* engenheiro: um por equipe, para sempre */
+    const eng = Engine.pessoa('eng');
+    if(!eng || eng.time !== marcaTime){
+      if(eng) guardar('eng');
+      const antigo = g.find(p => p.papel === 'eng' && p.time === marcaTime && p.saiu);
+      if(antigo){ delete antigo.saiu; }
+      else {
+        const sem = seedOf('eng' + marcaTime + (S.driver ? S.driver.name : ''));
+        const paises = ['GB','IT','DE','FR','ES','BR','NL','JP'];
+        const cc = paises[sem % paises.length];
+        const sob = (NOMES_PAIS[cc] || NOMES_PAIS.GB);
+        const p = Engine.novaPessoa('eng', {
+          n: NOMES_ENG[(sem >>> 4) % NOMES_ENG.length] + ' ' + sob[(sem >>> 9) % sob.length], cc });
+        p.time = marcaTime;
+        g.push(p);
+      }
+    }
+
+    /* chefe de equipe */
+    const chefe = Engine.pessoa('chefe');
+    if(!chefe || chefe.time !== marcaTime){
+      if(chefe) guardar('chefe');
+      const antigo = g.find(p => p.papel === 'chefe' && p.time === marcaTime && p.saiu);
+      if(antigo){ delete antigo.saiu; }
+      else {
+        const sem = seedOf('chefe' + marcaTime);
+        const paises = ['GB','IT','DE','FR','ES','NL'];
+        const cc = paises[sem % paises.length];
+        const sob = (NOMES_PAIS[cc] || NOMES_PAIS.GB);
+        const p = Engine.novaPessoa('chefe', {
+          n: NOMES_ENG[(sem >>> 6) % NOMES_ENG.length] + ' ' + sob[(sem >>> 2) % sob.length], cc });
+        /* chefe começa mais distante que o resto: é o que assina e o que demite */
+        p.rel.afeto = clamp(p.rel.afeto - 12, 0, 100);
+        p.rel.conf  = clamp(p.rel.conf  - 8, 0, 100);
+        p.time = marcaTime;
+        g.push(p);
+      }
+    }
+
+    /* companheiro de equipe: muda quando o grid muda */
+    const tm = sea && sea.teammateId ? sea.field.find(f => f.id === sea.teammateId) : null;
+    const comp = Engine.pessoa('comp');
+    if(tm){
+      if(!comp || comp.n !== tm.name){
+        if(comp) guardar('comp');
+        const antigo = g.find(p => p.papel === 'comp' && p.n === tm.name && p.saiu);
+        if(antigo){ delete antigo.saiu; antigo.time = marcaTime; }
+        else { const p = Engine.novaPessoa('comp', { n: tm.name, cc: tm.cc }); p.time = marcaTime; g.push(p); }
+      }
+    } else if(comp) guardar('comp');
+  },
+
+  /* ── memória ── */
+  lembrar(p, k, t, peso){
+    if(!p) return;
+    p.mem = p.mem || [];
+    p.mem.unshift({ a: S.year, k, t, p: peso || 1 });
+    if(p.mem.length > 14) p.mem.pop();
+  },
+  lembraDe(p, k){ return !!(p && p.mem && p.mem.some(m => m.k === k)); },
+
+  /* ── mexer nas quatro medidas ── */
+  mexerRel(p, e){
+    if(!p || !e) return;
+    ['conf','resp','afeto','tens'].forEach(k => {
+      if(e[k]) p.rel[k] = clamp(Math.round(p.rel[k] + e[k]), 0, 100);
+    });
+    Engine.espelharRel();
+  },
+  /* o resto do jogo ainda lê S.rel.eng e S.rel.comp: mantidos em dia */
+  espelharRel(){
+    if(!S.rel) S.rel = { eng:50, comp:50, amigos:[] };
+    const e = Engine.pessoa('eng'), c = Engine.pessoa('comp');
+    if(e) S.rel.eng = Engine.nota(e);
+    if(c) S.rel.comp = Engine.nota(c);
+  },
+
+  /* ── carreira antiga: as duas barras viram gente ── */
+  migrarGente(){
+    if(S.gente && S.gente.length) return false;
+    S.gente = [];
+    const r = S.rel || {};
+    const espalha = (v) => {
+      const b = clamp(v == null ? 50 : v, 0, 100);
+      return { conf: b, resp: clamp(b - 4, 0, 100), afeto: clamp(b + 3, 0, 100),
+               tens: clamp(Math.round((60 - b) * .35), 0, 100) };
+    };
+    const marca = S.team ? S.team.name : '—';
+    {
+      const sem = seedOf('eng' + marca + (S.driver ? S.driver.name : ''));
+      const paises = ['GB','IT','DE','FR','ES','BR','NL','JP'];
+      const cc = paises[sem % paises.length];
+      const sob = (NOMES_PAIS[cc] || NOMES_PAIS.GB);
+      const p = Engine.novaPessoa('eng', Object.assign({
+        n: NOMES_ENG[(sem >>> 4) % NOMES_ENG.length] + ' ' + sob[(sem >>> 9) % sob.length], cc },
+        espalha(r.eng)));
+      p.time = marca; S.gente.push(p);
+    }
+    if(S.season && S.season.teammateId){
+      const tm = S.season.field.find(f => f.id === S.season.teammateId);
+      if(tm){ const p = Engine.novaPessoa('comp', Object.assign({ n: tm.name, cc: tm.cc }, espalha(r.comp)));
+              p.time = marca; S.gente.push(p); }
+    }
+    if(r.rival){
+      const p = Engine.novaPessoa('rival', { n: r.rival.n, cc: r.rival.cc,
+        conf: 25, resp: 45 + (r.rival.nivel || 1) * 6, afeto: 20, tens: 30 + (r.rival.nivel || 1) * 12 });
+      p.duelos = { v: r.rival.v || 0, p: r.rival.p || 0 }; p.nivel = r.rival.nivel || 1;
+      S.gente.push(p);
+    }
+    if(r.mentor){
+      const p = Engine.novaPessoa('mentor', { n: r.mentor.n, cc:'BR', conf:60, resp:55, afeto:62, tens:0 });
+      p.desde = r.mentor.desde || S.year; S.gente.push(p);
+    }
+    (r.amigos || []).forEach(nome => {
+      const p = Engine.novaPessoa('amigo', { n: nome, conf:52, resp:45, afeto:60, tens:0 });
+      S.gente.push(p);
+    });
+    return true;
+  },
+
+  /* ═══ A CHANCE ESCONDIDA ═══
+     Sai do jeito da pessoa, do que ela já pensa de você, do que ela lembra
+     e de quem você é como piloto. Nunca aparece na tela: o jogador aprende
+     lendo a pessoa, não lendo um número. */
+  chanceFala(p, op){
+    const per = PERSONAS[p.pers] || PERSONAS.frio;
+    let c = op.base != null ? op.base : .5;
+    if(per.gosta.indexOf(op.tom) >= 0) c += .20;
+    if(per.odeia.indexOf(op.tom) >= 0) c -= .24;
+    if(op.dim) c += (p.rel[op.dim] - 50) / 100 * .34;
+    c -= p.rel.tens / 100 * .22;
+    if(op.attr){
+      const v = op.attr === 'fame' ? S.driver.fame : (S.driver.attr[op.attr] || 50);
+      c += (v - 60) / 100 * .26;
+    }
+    /* o que ela lembra pesa: promessa cumprida abre porta, promessa quebrada fecha */
+    if(p.mem && p.mem.length){
+      const bom = p.mem.filter(m => m.p > 0).length, ruim = p.mem.filter(m => m.p < 0).length;
+      c += clamp((bom - ruim) * .035, -.16, .16);
+    }
+    if(S.driver.morale) c += (S.driver.morale - 55) / 100 * .10;
+    return clamp(c, .05, .95);
+  },
+
+  /* ── quatro alturas de resultado, não duas ── */
+  resolver(chance){
+    const u = R.f();
+    if(u < chance * .42) return 'otimo';
+    if(u < chance) return 'bom';
+    if(u < chance + (1 - chance) * .58) return 'morno';
+    return 'ruim';
+  },
+
+  /* ── conversas disponíveis agora ── */
+  conversasDe(p){
+    const sea = S.season;
+    const feitas = (S.falasFeitas = S.falasFeitas || {});
+    return CONVERSAS.filter(c => {
+      if(c.papel !== p.papel) return false;
+      const ult = feitas[p.id + '|' + c.id];
+      if(ult != null && (S.year * 40 + (sea ? sea.round : 0)) - ult < (c.cd || 2)) return false;
+      const ex = c.exige || {};
+      const nota = Engine.nota(p);
+      if(ex.relMin != null && nota < ex.relMin) return false;
+      if(ex.relMax != null && nota > ex.relMax) return false;
+      if(ex.aposUltimaRuim){
+        const r = sea && sea.results.length ? sea.results[sea.results.length - 1] : null;
+        if(!r || !(r.dnf || (r.setup && r.setup.erro >= 3) || (r.pos && r.pos > 10))) return false;
+      }
+      if(ex.aposToque){
+        const r = sea && sea.results.length ? sea.results[sea.results.length - 1] : null;
+        if(!r || r.dnf !== 'ACID') return false;
+      }
+      return true;
+    });
+  },
+  marcarFala(p, c){
+    S.falasFeitas = S.falasFeitas || {};
+    S.falasFeitas[p.id + '|' + c.id] = S.year * 40 + (S.season ? S.season.round : 0);
+  },
+
+  /* ── pedidos: o que a pessoa quer de você ── */
+  pedidoDe(p){
+    const feitos = S.pedidosFeitos = S.pedidosFeitos || [];
+    return PEDIDOS.find(x => x.papel === p.papel && x.obj === p.obj && feitos.indexOf(p.id + x.id) < 0) || null;
+  },
+  /* um pedido por temporada, de quem tem mais motivo para pedir */
+  sortearPedido(){
+    const cands = [];
+    Engine.gente().forEach(p => { if(p.saiu) return; const pd = Engine.pedidoDe(p); if(pd) cands.push([p, pd]); });
+    if(!cands.length) return null;
+    return cands[R.int(0, cands.length - 1)];
+  },
+
+  /* ── quem vale a pena procurar hoje ── */
+  genteAtiva(){ return Engine.gente().filter(p => !p.saiu); },
+
+  /* rótulo curto do tom da fala, para a linha de baixo do botão */
+  tomLabel(tom){ return ({ tecnico:'no técnico', direto:'direto', pessoal:'no pessoal',
+    elogio:'elogiando', pressao:'pressionando', ironia:'com ironia', privado:'reservado',
+    publico:'na frente de todos', alianca:'propondo aliança', lealdade:'com lealdade',
+    bajulacao:'bajulando', informacao:'trocando informação', resultado:'pelo resultado',
+    frieza:'com frieza', traicao:'por baixo do pano', drama:'com drama',
+    ingenuidade:'sem malícia', respeito:'com respeito' })[tom] || ''; },
+
+  /* o clima do time custa ou rende tempo de pista */
+  bonusGente(){
+    const m = S.marcas || {};
+    let car = 0, rel = 0;
+    if(m.igualdade)    car += .45;
+    if(m.dadosAbertos) car += .35;
+    if(m.protegido)    rel += .010;
+    if(m.compForte)    car += .15;
+    const e = Engine.pessoa('eng');
+    if(e){ if(e.rel.tens >= 55) car -= .55; if(e.rel.tens >= 30) rel -= .006; }
+    const c = Engine.pessoa('comp');
+    if(c && c.rel.tens >= 60) car -= .30;
+    return { car, rel };
+  },
+
+  relEng(){ const p = Engine.pessoa('eng'); return p ? Engine.nota(p) : ((S && S.rel) ? S.rel.eng : 50); },
+  relComp(){ const p = Engine.pessoa('comp'); return p ? Engine.nota(p) : ((S && S.rel) ? S.rel.comp : 50); },
   bonusEngenheiro(){ return (Engine.relEng() - 50) / 100 * 1.6; },
   bonusCompanheiro(){ return (Engine.relComp() - 50) / 100 * 1.1; },
 
@@ -5612,6 +6355,8 @@ const Engine = {
     const wet = Engine.climaDe(sea, rd);
     Engine.garantirSetup(sea, rd);
     const ajuste = Engine.setupEfeito(sea, rd);
+    /* garagem em guerra anda menos; garagem junta anda mais */
+    const clima = Engine.bonusGente();
     const W = Engine.trackWeights(trk.type, wet);
     /* ── quanto a corrida é uma loteria ──
        Na F1 o mais rápido quase sempre vence. Na NASCAR, na IndyCar e na
@@ -5623,7 +6368,7 @@ const Engine = {
 
     /* ── classificação ── */
     const qual = sea.field.map(f=>{
-      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ : 0);
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
       const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).q : f.skill + f.qb + (wet ? R.gauss()*3 : 0), sea);
       return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
     }).sort((a,b)=>b.v-a.v);
@@ -5637,12 +6382,12 @@ const Engine = {
     const running = [];
 
     sea.field.forEach(f => {
-      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR : 0);
+      const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR + clima.car : 0);
       const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).r : f.skill + f.rb, sea);
       const g = grid[f.id];
 
       /* confiabilidade */
-      let relBase = era.rel + (car-70)/380 + f.rel + (f.isMe ? ajuste.rel : 0);
+      let relBase = era.rel + (car-70)/380 + f.rel + (f.isMe ? ajuste.rel + clima.rel : 0);
       if(!sea.isTop) relBase = Math.min(.94, relBase + .13);
       const mech = !R.chance(clamp(relBase,.35,.97));
 
@@ -6702,47 +7447,52 @@ const UI = {
       <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Confiabilidade</span><b>${Math.round(era.rel*100)}%</b></div>
       ${tm?`<div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Companheiro</span><b>${fg(tm.cc)}${esc(tm.name)}</b></div>`:''}
     </div>`;
-    /* ── widget de relações ──
-       Quem está com você e quem está contra, sempre à vista na tela da
-       carreira: o clima com a equipe, o duelo interno com o companheiro e o
-       placar contra o rival. É o que decide contrato, dado compartilhado e
-       moral no domingo. */
+    /* ── widget de gente ──
+       Quem está com você e quem está contra, sempre à vista. Não é uma barra
+       de 0 a 100: é o que cada um pensa de você, escrito como se lê gente. */
     {
-      const r = S.rel || { eng:50, comp:50, amigos:[] };
+      Engine.gente();
       const rel = clamp(Math.round(S.teamRel || 50), 0, 100);
       const cor = v => v >= 70 ? 'var(--green)' : v >= 40 ? 'var(--gold)' : 'var(--red2)';
-      const linha = (rot, v, sub) => `
-        <div style="margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800">
-            <span style="color:var(--dim)">${rot}</span>
-            <span style="color:${cor(v)}">${v}</span>
-          </div>
-          <span class="bar" style="display:block;height:5px;margin-top:3px"><i style="width:${v}%"></i></span>
-          ${sub ? `<div style="font-size:10.5px;color:var(--dim2);margin-top:2px">${sub}</div>` : ''}
-        </div>`;
-      const tmName = tm ? `${flag(tm.cc)} ${esc(tm.name)}` : '';
-      const riv = r.rival;
       const emp = Engine.emp();
+      const pessoa = (p) => {
+        if(!p) return '';
+        const per = PERSONAS[p.pers] || PERSONAS.frio;
+        const nota = Engine.nota(p);
+        const tenso = p.rel.tens >= 35;
+        return `<div style="display:flex;align-items:center;gap:7px;padding:6px 0;
+             border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+           <span class="flag" style="font-size:13px">${flag(p.cc)}</span>
+           <div style="flex:1;min-width:0">
+             <div style="font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;
+                  text-overflow:ellipsis">${per.ic} ${esc(p.n)}</div>
+             <div style="font-size:10.5px;color:${tenso ? 'var(--red2)' : 'var(--dim2)'}">
+               ${esc(tenso ? Engine.dimTxt('tens', p.rel.tens) : Engine.dimTxt('resp', p.rel.resp))}</div>
+           </div>
+           <span class="bar" style="width:34px;height:5px;flex:none"><i style="width:${nota}%"></i></span>
+         </div>`;
+      };
+      const eng = Engine.pessoa('eng'), cmp = Engine.pessoa('comp');
+      const riv = Engine.genteAtiva().find(p => p.papel === 'rival');
+      const men = Engine.genteAtiva().find(p => p.papel === 'mentor');
       h += `<div class="pad-sm" style="border-top:1px solid var(--line)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span class="lbl">Relações</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span class="lbl">Gente</span>
           <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:10.5px"
                   onclick="UI.pessoas()">abrir</button>
         </div>
-        ${linha('Equipe', rel, S.contract && S.contract.years > 1 ? 'contrato por mais ' + S.contract.years + ' anos' : 'contrato no último ano')}
-        ${linha('Companheiro', clamp(r.comp,0,100), tmName)}
-        ${linha('Engenheiro', clamp(r.eng,0,100), '')}
-        ${riv ? `<div style="display:flex;align-items:center;gap:7px;padding:7px 9px;margin-top:2px;
-             border-radius:var(--r-sm);background:var(--panel2);border-left:3px solid var(--red2)">
-             <span class="flag" style="font-size:14px">${flag(riv.cc)}</span>
-             <div style="flex:1;min-width:0">
-               <div style="font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;
-                    text-overflow:ellipsis">🥊 ${esc(riv.n)}</div>
-               <div style="font-size:10.5px;color:var(--dim2)">duelos ${riv.v||0} a ${riv.p||0}</div>
-             </div>
-             <span class="posbox ${(riv.v||0) >= (riv.p||0) ? 'p2' : 'dnf'}" style="min-width:24px">${
-               (riv.v||0) >= (riv.p||0) ? '▲' : '▼'}</span>
-           </div>` : ''}
+        <div style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800">
+            <span style="color:var(--dim)">Equipe</span>
+            <span style="color:${cor(rel)}">${rel >= 70 ? 'apostam em você' : rel >= 40 ? 'observando' : 'perdendo a paciência'}</span>
+          </div>
+          <span class="bar" style="display:block;height:5px;margin-top:3px"><i style="width:${rel}%"></i></span>
+          <div style="font-size:10.5px;color:var(--dim2);margin-top:2px">${
+            S.contract && S.contract.years > 1 ? 'contrato por mais ' + S.contract.years + ' anos' : 'contrato no último ano'}</div>
+        </div>
+        ${pessoa(eng)}${pessoa(cmp)}${pessoa(riv)}${pessoa(men)}
+        ${riv && riv.duelos ? `<div style="font-size:10.5px;color:var(--dim2);padding:3px 0 0">
+             🥊 duelos com ${esc(riv.n.split(' ').pop())}: ${riv.duelos.v||0} a ${riv.duelos.p||0}</div>` : ''}
         ${emp ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;font-size:11px;color:var(--dim)">
              <span class="flag" style="font-size:13px">${flag(emp.cc)}</span>
              <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
@@ -7319,6 +8069,8 @@ const Game = {
       S = JSON.parse(Store.get('vdo_save'));
       /* carreira salva antes da separação entre base e categoria principal */
       if(S && S.career) Engine.migrarCartel();
+      /* as duas barras de relação viram pessoas com nome e memória */
+      if(S && S.rel && !S.gente) Engine.migrarGente();
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },
@@ -7516,6 +8268,12 @@ const Game = {
       if(R.chance(.5)) Engine.noticia("contrato", {equipe:S.team.name, forca:S.team.str});
     }
     const caixa = Game.fecharAno();
+    /* quem está ao seu redor neste ano — trocar de equipe troca engenheiro e chefe */
+    Engine.gente();
+    const cobrancas = Game.cobrarPromessas();
+    Engine.sincronizarGente();
+    Engine.espelharRel();
+    if(cobrancas.length) setTimeout(()=>UI.toast(cobrancas[0]), 1400);
     S.relFeitas = [];
     /* preparação de pré-temporada: no modo rápido a equipe resolve por você */
     S.prep = Engine.prepZerado();
@@ -7636,13 +8394,22 @@ const Game = {
     if(a.custo && S.money.saldo < a.custo) return UI.toast('Sem saldo para isso agora.');
     if(a.custo) S.money.saldo -= a.custo;
     S.relFeitas.push(k);
-    if(a.eng)  S.rel.eng  = clamp(S.rel.eng  + a.eng,  0, 100);
-    if(a.comp) S.rel.comp = clamp(S.rel.comp + a.comp, 0, 100);
+    /* dinheiro compra jantar, não compra confiança: cada ação move o que faz
+       sentido mover, e não uma barra genérica */
+    if(a.eng)  Engine.mexerRel(Engine.pessoa('eng'),
+                 { conf: Math.round(a.eng * .7), afeto: Math.round(a.eng * .5), tens: -Math.round(a.eng * .3) });
+    if(a.comp) Engine.mexerRel(Engine.pessoa('comp'),
+                 { conf: Math.round(a.comp * .6), afeto: Math.round(a.comp * .6), tens: -Math.round(a.comp * .4) });
     let msg = a.ok;
     if(a.amigo && R.chance(a.amigo)){
       const livres = NOMES_FUTUROS.filter(x => S.rel.amigos.indexOf(x) < 0);
       const nome = R.pick(livres);
-      if(nome){ S.rel.amigos.push(nome); msg = 'Você fez um amigo no paddock: ' + nome + '.'; }
+      if(nome){
+        S.rel.amigos.push(nome);
+        const p = Engine.novaPessoa('amigo', { n: nome, conf:50, resp:44, afeto:58, tens:0 });
+        Engine.gente().push(p);
+        msg = 'Você fez um amigo no paddock: ' + nome + '.';
+      }
     }
     UI.toast(msg);
     Game.save(); UI.relacoes();
@@ -7748,7 +8515,8 @@ const Game = {
     else if(sea.round === sea.dilemmaAt && sea.calendar[sea.round]) setTimeout(()=>Game.dilemma(), 400);
     /* a vida fora da pista: dois a quatro acontecimentos por temporada */
     else if(sea.eventosAt && sea.eventosAt.indexOf(sea.round) >= 0 && sea.calendar[sea.round])
-      setTimeout(()=>Game.evento(), 420);
+      /* às vezes o que acontece fora da pista é alguém querendo algo de você */
+      setTimeout(()=>{ if(!(R.chance(.42) && Game.pedido())) Game.evento(); }, 420);
   },
 
   /* ── demissão ── */
@@ -7800,8 +8568,16 @@ const Game = {
     if(riv && rec.top && rec.top.length){
       const eu = rec.pos, dele = rec.top.findIndex(x => x.n === riv.n);
       if(eu && dele >= 0){
-        if(eu < dele + 1){ riv.v = (riv.v||0) + 1; S.driver.morale = clamp(S.driver.morale + 2, 5, 100); }
-        else { riv.p = (riv.p||0) + 1; S.driver.morale = clamp(S.driver.morale - 2, 5, 100); }
+        const pr = Engine.gente().find(x => x.papel === 'rival' && x.n === riv.n);
+        if(eu < dele + 1){
+          riv.v = (riv.v||0) + 1; S.driver.morale = clamp(S.driver.morale + 2, 5, 100);
+          if(pr){ pr.duelos = pr.duelos || {v:0,p:0}; pr.duelos.v++;
+                  Engine.mexerRel(pr, { resp: 2, tens: 1 }); }
+        } else {
+          riv.p = (riv.p||0) + 1; S.driver.morale = clamp(S.driver.morale - 2, 5, 100);
+          if(pr){ pr.duelos = pr.duelos || {v:0,p:0}; pr.duelos.p++;
+                  Engine.mexerRel(pr, { resp: -1, tens: 2 }); }
+        }
       }
     }
     /* vencer paga: na base é pouco, mas é o que mantém a carreira de pé */
@@ -7934,6 +8710,117 @@ const Game = {
   },
 
   /* o rival é sempre alguém do grid — de preferência quem está perto de você */
+  /* ═══ CONVERSAS ═══
+     A escolha é de tom, não de número. A chance fica escondida: quem entende
+     a pessoa acerta mais, e quem não entende descobre do jeito caro. */
+  escolherFala(i){
+    const f = UI._fala; if(!f) return UI.close();
+    const p = Engine.pessoaPor(f.pid);
+    const c = CONVERSAS.find(x => x.id === f.cid);
+    if(!p || !c) return UI.close();
+    const op = c.ops[i]; if(!op) return UI.close();
+    const ch = Engine.chanceFala(p, op);
+    const nivel = Engine.resolver(ch);
+    const res = op[nivel] || op.bom || op.morno || { t:'Ficou por isso mesmo.', e:{} };
+    Engine.marcarFala(p, c);
+    Game.aplicarFala(p, res.e || {}, op, nivel);
+    Engine.lembrar(p, c.id, res.t.slice(0, 96),
+                   nivel === 'otimo' ? 2 : nivel === 'bom' ? 1 : nivel === 'ruim' ? -2 : 0);
+    Game.save();
+    UI.resultadoFala(p, c, op, res, nivel);
+  },
+
+  aplicarFala(p, e, op, nivel){
+    const a = S.driver.attr;
+    Engine.mexerRel(p, e);
+    ['pace','race','cons','wet','dev'].forEach(k => {
+      if(e[k]) a[k] = clamp(Math.round((a[k] + e[k]) * 10) / 10, 20, 99);
+    });
+    if(e.moral)   S.driver.morale = clamp(S.driver.morale + e.moral, 5, 100);
+    if(e.fama)    S.driver.fame   = clamp(S.driver.fame + e.fama, 0, 100);
+    if(e.teamRel) S.teamRel = clamp((S.teamRel || 50) + e.teamRel, 0, 100);
+    if(e.dinheiro && S.money) S.money.saldo += e.dinheiro;
+    S.marcas = S.marcas || {};
+    /* o que fica marcado e cobra depois */
+    if(e.saberObj)     p.objSabido = true;
+    if(e.promessa){    p.promessas = p.promessas || []; p.promessas.push({ k:e.promessa, ano:S.year }); }
+    if(e.protegido)    S.marcas.protegido = S.year;
+    if(e.igualdade)    S.marcas.igualdade = S.year;
+    if(e.dadosAbertos) S.marcas.dadosAbertos = S.year;
+    if(e.acordoOrdem)  S.marcas.acordoOrdem = S.year;
+    if(e.porta)        S.marcas.porta = (S.marcas.porta || 0) + 1;
+    if(e.boato)        S.marcas.boato = S.year;
+    if(e.politicagem)  S.marcas.politicagem = (S.marcas.politicagem || 0) + 1;
+    if(e.traido){      S.marcas.traido = S.year; Engine.lembrar(p, 'traiu', 'usou seu apoio e sumiu', -3); }
+    if(e.engSai){      p.saiu = S.year; }
+    if(e.compGanhou)   S.marcas.compGanhou = (S.marcas.compGanhou || 0) + 1;
+    if(e.sabeSegredo)  S.marcas.sabeSegredo = S.year;
+    if(e.credito)      S.marcas.credito = (S.marcas.credito || 0) + 1;
+    if(e.compForte)    S.marcas.compForte = S.year;
+    /* e o que você aprende sobre a pessoa: só vendo funcionar ou não funcionar */
+    const per = PERSONAS[p.pers] || PERSONAS.frio;
+    p.marcas = p.marcas || {};
+    if(nivel === 'ruim'  && per.odeia.indexOf(op.tom) >= 0) p.marcas.odeia = op.tom;
+    if(nivel === 'otimo' && per.gosta.indexOf(op.tom) >= 0) p.marcas.gosta = op.tom;
+    Engine.espelharRel();
+  },
+
+  /* ── pedidos: alguém quer alguma coisa de você ── */
+  pedido(){
+    const par = Engine.sortearPedido();
+    if(!par) return false;
+    S.pedidosFeitos = S.pedidosFeitos || [];
+    S.pedidosFeitos.push(par[0].id + par[1].id);
+    par[0].objSabido = true;
+    UI.pedidoModal(par[0].id, par[1].id);
+    return true;
+  },
+  responderPedido(i){
+    const d = UI._pedido; if(!d) return UI.close();
+    const p = Engine.pessoaPor(d.pid);
+    const pd = PEDIDOS.find(x => x.id === d.pdid);
+    if(!p || !pd) return UI.close();
+    const op = pd.ops[i]; if(!op) return UI.close();
+    Game.aplicarFala(p, op.e || {}, op, 'bom');
+    Engine.lembrar(p, pd.id, 'você respondeu: ' + op.t.replace(/^"|"$/g, ''),
+                   (op.e && (op.e.conf || 0) + (op.e.afeto || 0)) >= 8 ? 2
+                 : (op.e && op.e.tens || 0) >= 8 ? -2 : 0);
+    Game.save();
+    UI.close();
+    UI.toast(esc(p.n) + ' registrou a sua resposta.');
+    UI.render();
+  },
+
+  /* ── promessa cobrada ──
+     Prometer levar o engenheiro junto e trocar de equipe sem ele não passa
+     em branco: ele lembra, e o paddock inteiro fica sabendo. */
+  cobrarPromessas(){
+    const notas = [];
+    Engine.gente().forEach(p => {
+      (p.promessas || []).forEach(pr => {
+        if(pr.cobrada) return;
+        if(pr.k === 'levar_eng' && p.papel === 'eng' && p.time && S.team && p.time !== S.team.name){
+          pr.cobrada = true; p.saiu = p.saiu || S.year;
+          Engine.mexerRel(p, { tens: 26, afeto: -20, conf: -18 });
+          Engine.lembrar(p, 'promessa_quebrada', 'você prometeu levá-lo junto e foi sozinho', -3);
+          S.driver.fame = clamp(S.driver.fame - 3, 0, 100);
+          notas.push('Você prometeu levar ' + p.n + ' e não levou. Ele contou para quem quis ouvir.');
+        }
+        if(pr.k === 'apoio_comp' && p.papel === 'comp' && S.year > pr.ano){
+          pr.cobrada = true;
+          const cumpriu = !!(S.marcas && S.marcas.compForte);
+          if(cumpriu){ Engine.mexerRel(p, { conf: 12, afeto: 10 });
+                       Engine.lembrar(p, 'promessa_cumprida', 'você cumpriu o que prometeu', 3);
+                       notas.push(p.n + ' não esqueceu que você cumpriu a palavra.'); }
+          else { Engine.mexerRel(p, { tens: 18, conf: -14 });
+                 Engine.lembrar(p, 'promessa_quebrada', 'prometeu apoio e não apoiou', -3);
+                 notas.push('Você prometeu apoio a ' + p.n + ' e não deu.'); }
+        }
+      });
+    });
+    return notas;
+  },
+
   definirRival(){
     if(!S.rel) S.rel = { eng:50, comp:50, amigos:[] };
     if(S.rel.rival){ S.rel.rival.nivel = Math.min(3, (S.rel.rival.nivel || 1) + 1); return; }
@@ -7942,6 +8829,17 @@ const Game = {
     const alvo = R.pick(perto.length ? perto : Engine.standings(sea).filter(d => !d.me));
     if(!alvo) return;
     S.rel.rival = { n: alvo.name, cc: alvo.cc, nivel: 1, v: 0, p: 0 };
+    /* e passa a existir como pessoa: com jeito, objetivo e memória */
+    const g = Engine.gente();
+    let riv = g.find(x => x.papel === 'rival' && x.n === alvo.name);
+    if(!riv){
+      riv = Engine.novaPessoa('rival', { n: alvo.name, cc: alvo.cc,
+        conf: 22, resp: 48, afeto: 18, tens: 34 });
+      riv.duelos = { v:0, p:0 }; riv.nivel = 1;
+      g.push(riv);
+      Engine.lembrar(riv, 'nasceu', 'a rivalidade começou em ' + S.year, 0);
+    }
+    delete riv.saiu;
   },
 
   /* ---- dilema ---- */
@@ -8614,58 +9512,70 @@ UI.eventoModal = function(ev){
     </div>`);
 };
 
-/* ═══ RIVAIS E MENTOR ═══ */
+/* ═══ GENTE ═══
+   Ninguém aqui é uma barra. Cada um tem jeito, quer uma coisa que não é a
+   sua, lembra do que você fez e reage de acordo. O que a tela mostra são
+   frases — porque é assim que se lê uma pessoa. */
 UI.pessoas = function(){
-  const r = S.rel || { eng:50, comp:50, amigos:[] };
-  const barra = (rot, v, ds) => `
-    <div style="margin-bottom:11px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800">
-        <span>${esc(rot)}</span><span style="color:${v>=70?'var(--green)':v>=40?'var(--gold)':'var(--red2)'}">${v}</span>
+  Engine.gente();
+  Engine.sincronizarGente();
+  const lista = Engine.genteAtiva();
+  const TOM_TXT = { tecnico:'conversa técnica', direto:'conversa direta', pessoal:'assunto pessoal',
+    elogio:'elogio', pressao:'pressão', ironia:'ironia', privado:'conversa reservada',
+    publico:'cobrança em público', alianca:'proposta de aliança', lealdade:'gesto de lealdade',
+    bajulacao:'bajulação', informacao:'troca de informação', resultado:'resultado',
+    frieza:'frieza', traicao:'jogo de bastidor', drama:'drama', ingenuidade:'ingenuidade',
+    respeito:'demonstração de respeito' };
+
+  const cartao = (p) => {
+    const per = PERSONAS[p.pers] || PERSONAS.frio;
+    const obj = (OBJETIVOS[p.papel] || {})[p.obj];
+    const conv = Engine.conversasDe(p);
+    const mems = (p.mem || []).slice(0, 2);
+    const linha = (k) => `<div style="font-size:12px;color:var(--dim);padding:2px 0">
+        <span style="color:var(--dim2)">${Engine.DIM_NOME[k]}</span> — ${esc(Engine.dimTxt(k, p.rel[k]))}</div>`;
+    return `<div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 13px;
+         margin-bottom:11px;background:var(--panel2)">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+        <span class="flag" style="font-size:18px">${flag(p.cc)}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:900">${esc(p.n)}</div>
+          <div style="font-size:11px;color:var(--dim2)">${esc(PAPEL_NOME[p.papel] || p.papel)}${
+            p.time ? ' · ' + esc(p.time) : ''} · desde ${p.desde}</div>
+        </div>
+        <span class="pill">${per.ic} ${esc(per.n)}</span>
       </div>
-      <span class="bar" style="display:block;margin:4px 0 3px"><i style="width:${v}%"></i></span>
-      <div style="font-size:11.5px;color:var(--dim2)">${esc(ds)}</div>
+      <div style="font-size:12px;color:var(--dim);margin-bottom:7px;font-style:italic">${esc(per.d)}</div>
+      ${linha('conf')}${linha('resp')}${linha('afeto')}
+      ${p.rel.tens >= 22 ? linha('tens') : ''}
+      <div style="margin-top:8px;padding-top:7px;border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+        <span class="lbl" style="display:block;margin-bottom:3px">O que ele quer</span>
+        <div style="font-size:12px;color:${p.objSabido ? 'var(--gold)' : 'var(--dim2)'}">${
+          p.objSabido && obj ? esc(obj.t) + ' — ' + esc(obj.d)
+                             : 'Você ainda não sabe. Descobre conversando, ou tarde demais.'}</div>
+      </div>
+      ${p.marcas && p.marcas.odeia ? `<div style="font-size:11.5px;color:var(--red2);margin-top:6px">
+         ⚠ Você já viu: ${esc(TOM_TXT[p.marcas.odeia] || p.marcas.odeia)} não funciona com ele.</div>` : ''}
+      ${p.marcas && p.marcas.gosta ? `<div style="font-size:11.5px;color:var(--green);margin-top:4px">
+         ✓ Você já viu: ${esc(TOM_TXT[p.marcas.gosta] || p.marcas.gosta)} funciona com ele.</div>` : ''}
+      ${p.duelos ? `<div style="font-size:11.5px;color:var(--dim);margin-top:6px">
+         🥊 duelos: ${p.duelos.v || 0} seus, ${p.duelos.p || 0} dele</div>` : ''}
+      ${mems.length ? `<div style="margin-top:7px">
+         <span class="lbl" style="display:block;margin-bottom:3px">Ele lembra</span>
+         ${mems.map(m => `<div style="font-size:11.5px;color:${m.p < 0 ? 'var(--red2)' : 'var(--dim)'}">
+            ${m.a} · ${esc(m.t)}</div>`).join('')}</div>` : ''}
+      <div style="margin-top:9px">
+        ${conv.length ? `<button class="btn btn-sm btn-gold" onclick="UI.conversa('${p.id}')">
+            💬 Conversar · ${conv.length}</button>`
+          : `<button class="btn btn-sm btn-ghost" disabled style="opacity:.45">Agora não há o que falar</button>`}
+      </div>
     </div>`;
-  const riv = r.rival;
-  const men = r.mentor;
-  UI.modal(UI.head('Gente', 'Quem anda com você, e quem anda contra.') +
+  };
+
+  UI.modal(UI.head('Gente', 'Quem anda com você, quem anda contra, e o que cada um quer.') +
     `<div class="mbd">
-      ${barra('Engenheiro-chefe', r.eng, r.eng>=70?'Ele acerta o carro quase antes de você pedir.'
-        : r.eng>=40?'Trabalho profissional, sem intimidade.':'Ele te escuta por obrigação.')}
-      ${barra('Companheiro de equipe', r.comp, r.comp>=70?'Dados abertos dos dois lados da garagem.'
-        : r.comp>=40?'Convivência educada e nada além.':'Guerra fria. A equipe escolhe um lado.')}
-
-      <div style="margin:14px 0">
-        <span class="lbl" style="display:block;margin-bottom:6px">Rival</span>
-        ${riv ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);
-             border-left:3px solid var(--red2);border-radius:var(--r-sm)">
-             <span class="flag" style="font-size:20px">${flag(riv.cc)}</span>
-             <div style="flex:1">
-               <div style="font-size:14px;font-weight:900">${esc(riv.n)}</div>
-               <div style="font-size:11.5px;color:var(--dim)">${riv.v||0} duelos vencidos por você · ${riv.p||0} por ele</div>
-             </div>
-             <span class="pill rd">nível ${riv.nivel||1}</span>
-           </div>
-           <div style="font-size:12px;color:var(--dim2);margin-top:6px">
-             Bater o rival num domingo levanta você; perder para ele pesa mais do que perder para qualquer outro.</div>`
-          : '<div class="empty" style="padding:10px">Ninguém ainda. Rivalidade nasce de um toque na pista ou de uma frase mal colocada.</div>'}
-      </div>
-
-      <div style="margin:14px 0">
-        <span class="lbl" style="display:block;margin-bottom:6px">Mentor</span>
-        ${men ? `<div style="padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--gold);
-             border-radius:var(--r-sm)">
-             <div style="font-size:14px;font-weight:900">🎓 ${esc(men.n)}</div>
-             <div style="font-size:12px;color:var(--dim);margin-top:3px">
-               Acompanha você desde ${men.desde}. Enquanto estiver por perto, você aprende mais rápido.</div>
-           </div>`
-          : '<div class="empty" style="padding:10px">Sem mentor. Alguém pode aparecer.</div>'}
-      </div>
-
-      <span class="lbl" style="display:block;margin-bottom:5px">Amigos no paddock — ${(r.amigos||[]).length}</span>
-      <div style="font-size:12.5px;color:var(--dim)">${
-        (r.amigos||[]).length ? r.amigos.map(esc).join(' · ')
-        : 'Ninguém ainda. Vaga aparece por indicação tanto quanto por resultado.'}</div>
-
+      ${lista.length ? lista.map(cartao).join('')
+        : '<div class="empty" style="padding:14px">Ninguém ainda. O paddock se povoa correndo.</div>'}
       ${Engine.ehRealista() ? `<span class="lbl" style="display:block;margin:16px 0 7px">O que fazer nesta temporada</span>` +
         Object.keys(RELACOES).map(k=>{
           const a = RELACOES[k], feito = (S.relFeitas||[]).indexOf(k) >= 0;
@@ -8682,6 +9592,84 @@ UI.pessoas = function(){
       <span class="sp"></span>
       <button class="btn btn-primary" onclick="UI.close()">Fechar</button>
     </div>`, true);
+};
+
+/* o que aconteceu depois que você abriu a boca */
+UI.resultadoFala = function(p, c, op, res, nivel){
+  const per = PERSONAS[p.pers] || PERSONAS.frio;
+  const cor = nivel === 'otimo' ? 'var(--green)' : nivel === 'bom' ? 'var(--gold)'
+            : nivel === 'morno' ? 'var(--dim2)' : 'var(--red2)';
+  const cap = nivel === 'otimo' ? 'Funcionou melhor do que você esperava'
+            : nivel === 'bom'   ? 'Funcionou'
+            : nivel === 'morno' ? 'Não deu em nada'
+            :                     'Saiu pela culatra';
+  UI.modal(UI.head(esc(p.n), `${per.ic} ${esc(per.n)} · ${esc(c.t)}`, false) +
+    `<div class="mbd">
+      <div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
+           border:1px solid var(--line);border-left:3px solid ${cor};margin-bottom:14px">
+        <span class="lbl" style="display:block;margin-bottom:4px;color:${cor}">${cap}</span>
+        <div style="font-size:13.5px;line-height:1.55">${esc(res.t)}</div>
+      </div>
+      <div style="font-size:12px;color:var(--dim2)">
+        Você falou ${esc(Engine.tomLabel(op.tom))}.
+        ${p.marcas && p.marcas.odeia === op.tom ? 'Anotado: com ele, isso não funciona.'
+        : p.marcas && p.marcas.gosta === op.tom ? 'Anotado: com ele, isso funciona.'
+        : 'Pessoas diferentes respondem a coisas diferentes.'}
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">Voltar para o paddock</button>
+      <span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();UI.render()">Fechar</button>
+    </div>`);
+};
+
+/* que assunto puxar com quem */
+UI.conversa = function(pid){
+  const p = Engine.pessoaPor(pid); if(!p) return;
+  const conv = Engine.conversasDe(p);
+  const per = PERSONAS[p.pers] || PERSONAS.frio;
+  UI.modal(UI.head(esc(p.n), `${per.ic} ${esc(per.n)} · ${esc(PAPEL_NOME[p.papel] || p.papel)}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(per.d)}</div>
+      ${conv.map(c => `<button class="dil" onclick="UI.falar('${p.id}','${c.id}')">
+        <b>${esc(c.t)}</b><span>${esc(c.sub || '')}${
+          Engine.lembraDe(p, c.id) ? ' · vocês já falaram disso antes' : ''}</span></button>`).join('')}
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-ghost" onclick="UI.pessoas()">Voltar</button></div>`, true);
+};
+
+/* a conversa em si: escolha de tom, sem número nenhum na tela */
+UI.falar = function(pid, cid){
+  const p = Engine.pessoaPor(pid); if(!p) return;
+  const c = CONVERSAS.find(x => x.id === cid); if(!c) return;
+  UI._fala = { pid, cid };
+  const abre = c.abre[p.pers] || c.abre.padrao;
+  const per = PERSONAS[p.pers] || PERSONAS.frio;
+  UI.modal(UI.head(esc(c.t), `${esc(p.n)} · ${per.ic} ${esc(per.n)}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(abre)}</div>
+      ${c.ops.map((o, i) => `<button class="dil" onclick="Game.escolherFala(${i})">
+        <b>${esc(o.t)}</b><span>${esc(Engine.tomLabel(o.tom))}</span></button>`).join('')}
+      <p class="mut" style="font-size:12px;margin:10px 0 0">
+        Não existe resposta certa. Existe resposta certa para esta pessoa.
+      </p>
+    </div>`);
+};
+
+/* o pedido de alguém — o que ela quer de você, e o que custa dizer não */
+UI.pedidoModal = function(pid, pdid){
+  const p = Engine.pessoaPor(pid); if(!p) return;
+  const pd = PEDIDOS.find(x => x.id === pdid); if(!pd) return;
+  UI._pedido = { pid, pdid };
+  const per = PERSONAS[p.pers] || PERSONAS.frio;
+  UI.modal(UI.head(esc(pd.t), `${esc(p.n)} · ${esc(PAPEL_NOME[p.papel] || p.papel)} · ${per.ic} ${esc(per.n)}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(pd.d)}</div>
+      ${pd.ops.map((o, i) => `<button class="dil" onclick="Game.responderPedido(${i})">
+        <b>${esc(o.t)}</b><span>${esc(Engine.tomLabel(o.tom))}</span></button>`).join('')}
+    </div>`);
 };
 
 /* ═══ PATROCÍNIOS DA TEMPORADA ═══ */
