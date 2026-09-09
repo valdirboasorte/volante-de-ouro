@@ -4774,6 +4774,35 @@ const Engine = {
   /* o que a categoria principal paga a um piloto médio de equipe média */
   SALARIO_BASE: { f1:6.5e6, indy:1.3e6, nascar:2.4e6, wec:.9e6, dtm:.55e6, fe:1e6, stock:.35e6 },
 
+  cartelVazio(){ return { gps:0, wins:0, podiums:0, poles:0, fls:0, pts:0, dnfs:0, seasons:0, best:null }; },
+
+  /* Carreira salva antes da separação: refaz a conta pelo arquivo de
+     temporadas, que guarda o resumo de cada ano e se era categoria principal. */
+  migrarCartel(){
+    const c = S.career;
+    if(c.base) return false;
+    const base = Engine.cartelVazio();
+    const topo = Engine.cartelVazio();
+    (S.archive || []).forEach(a => {
+      const alvo = a.isTop ? topo : base;
+      const q = a.summary || {};
+      alvo.gps += q.races || 0;   alvo.wins += q.wins || 0;
+      alvo.podiums += q.podiums || 0; alvo.poles += q.poles || 0;
+      alvo.fls += q.fls || 0;     alvo.dnfs += q.dnfs || 0;
+      alvo.pts += q.pts || 0;     alvo.seasons++;
+      if(q.best != null && (alvo.best === null || q.best < alvo.best)) alvo.best = q.best;
+    });
+    /* o que o arquivo não cobre fica onde estava, para nada sumir da tela */
+    ['gps','wins','podiums','poles','fls','dnfs','pts'].forEach(k => {
+      const sobra = (c[k] || 0) - topo[k] - base[k];
+      if(sobra > 0) topo[k] += sobra;
+    });
+    c.base = base;
+    ['gps','wins','podiums','poles','fls','dnfs','pts'].forEach(k => c[k] = topo[k]);
+    if(topo.best != null) c.best = topo.best;
+    return true;
+  },
+
   ehRealista(){ return !!(S && S.modo === 'realista'); },
 
   /* ── o que o empresário muda ──
@@ -4883,7 +4912,8 @@ const Engine = {
     const topo = S.season && S.season.isTop ? 1 : .34;
     const c = S.career || {};
     const nome = 55e3 + S.driver.fame * 11e3 + Math.max(0, S.driver.ovr - 58) * 6e3
-               + (c.wins || 0) * 11e3 + (c.titles || 0) * 260e3 + (c.jrTitles || 0) * 90e3;
+               + (c.wins || 0) * 11e3 + ((c.base && c.base.wins) || 0) * 4e3
+               + (c.titles || 0) * 260e3 + (c.jrTitles || 0) * 90e3;
     return Math.round(nome * vitrine * topo * Engine.bonusDinheiro() / 5e3) * 5e3;
   },
 
@@ -6289,7 +6319,7 @@ const UI = {
         </div>
       </div>
       <div class="stat4">
-        <div><b>${S.career.gps}</b><span>Provas</span></div>
+        <div><b>${S.career.gps}</b><span>${S.season && !S.season.isTop ? 'Provas · topo' : 'Provas'}</span></div>
         <div><b>${S.career.wins}</b><span>Vitórias</span></div>
         <div><b>${S.career.podiums}</b><span>Pódios</span></div>
         <div><b>${S.career.poles}</b><span>Poles</span></div>
@@ -6339,8 +6369,9 @@ const UI = {
   },
 
   sideBox(){
-    const sea = S.season, nx = sea.calendar[sea.round];
-    const era = Engine.eraOf(sea.year);
+    const sea = S.season, era = Engine.eraOf(sea.year);
+    /* carreira encerrada não tem próxima etapa: tem retrospecto */
+    const nx = S.retired ? null : sea.calendar[sea.round];
     let h = '';
     if(nx){
       const tn = {fast:'Alta velocidade', street:'Circuito de rua', tech:'Técnico', mixed:'Misto', oval:'Oval'}[nx.type];
@@ -6358,6 +6389,18 @@ const UI = {
           <span class="pill">${nx.rainP>.3?'🌧️':nx.rainP>.15?'🌤️':'☀️'} ${Math.round(nx.rainP*100)}% de chuva</span>
           ${nx.dbl?'<span class="pill g">⭐ pontos em dobro</span>':''}
         </div>
+      </div>`;
+    } else if(S.retired){
+      h += `<div class="pad" style="border-bottom:1px solid var(--line);border-left:3px solid var(--red2)">
+        <span class="lbl">Carreira encerrada</span>
+        <div style="font-weight:800;margin-top:7px;font-size:14px">${esc({
+          acidente:'Um acidente encerrou sua carreira.',
+          semdinheiro:'O dinheiro acabou antes do talento.',
+          semvaga:'Nenhuma equipe ofereceu um lugar no grid.',
+          escolha:'Você pendurou o capacete.'
+        }[S.fimRazao] || 'Você não corre mais.')}</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:5px">
+          Daqui em diante você só acompanha os números e o retrospecto.</div>
       </div>`;
     } else {
       h += `<div class="pad" style="border-bottom:1px solid var(--line)">
@@ -6544,6 +6587,18 @@ const UI = {
   actBar(){
     const sea = S.season, nx = sea.fired ? null : sea.calendar[sea.round];
     let h;
+    /* Carreira encerrada: sobra o que dá para olhar. Nada de voltar à pista —
+       era esse o buraco, um acidente fatal nos anos 50 não tirava o botão de
+       correr da tela. */
+    if(S.retired){
+      el('actBar').innerHTML =
+        `<button class="btn btn-gold" onclick="UI.careerEnd(S.fimRec, S.fimRazao)">🏁 Fim da carreira</button>
+         <button class="btn btn-ghost btn-sm" onclick="UI.records()">📊 Números</button>
+         <button class="btn btn-ghost btn-sm" onclick="UI.abrirLendas()">📜 Os maiores</button>
+         <span class="sp"></span>
+         <button class="btn btn-primary btn-sm" onclick="UI.close();UI.show('intro');Game.checkSave()">Nova carreira</button>`;
+      return;
+    }
     if(nx){
       h = `<button class="btn btn-primary" onclick="Game.nextRace()">🏁 Correr — ${esc(nx.gp)}</button>
            <button class="btn btn-ghost" onclick="Game.simSeason()">⏩ Simular o resto do ano</button>`;
@@ -6892,6 +6947,8 @@ const Game = {
   continueSave(){
     try{
       S = JSON.parse(Store.get('vdo_save'));
+      /* carreira salva antes da separação entre base e categoria principal */
+      if(S && S.career) Engine.migrarCartel();
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },
@@ -7238,6 +7295,7 @@ const Game = {
   /* No modo completo, cada corrida começa na garagem. No modo rápido o
      engenheiro monta o carro sozinho — bem, mas nunca tão bem quanto você. */
   nextRace(){
+    if(S.retired) return UI.toast('Sua carreira acabou. Daqui em diante você só acompanha os números.');
     const sea = S.season;
     if(!sea.calendar[sea.round]) return;
     if(S.driver.injured > 0 || S.opts.fast) return Game.correr();
@@ -7261,6 +7319,7 @@ const Game = {
   },
 
   correr(){
+    if(S.retired) return;
     const sea = S.season;
     if(!sea.calendar[sea.round]) return;
 
@@ -7317,6 +7376,7 @@ const Game = {
   },
 
   simSeason(){
+    if(S.retired) return UI.toast('Sua carreira acabou.');
     const sea = S.season;
     let guard = 0;
     while(sea.calendar[sea.round] && !sea.fired && guard++ < 40){
@@ -7359,14 +7419,18 @@ const Game = {
     else if(rec.pos && rec.pos <= 3 && R.chance(chance)) Engine.noticia("podio", rec);
     else if(rec.grid === 1 && R.chance(chance)) Engine.noticia("pole", rec);
     else if(rec.dnf && R.chance(chance*.7)) Engine.noticia("abandono", rec);
-    c.gps++;
-    c.pts += rec.pts;
-    if(rec.fl) c.fls++;
-    if(rec.grid === 1) c.poles++;
-    if(rec.dnf) c.dnfs++;
-    if(rec.pos === 1) c.wins++;
-    if(rec.pos && rec.pos <= 3) c.podiums++;
-    if(rec.pos && (c.best === null || rec.pos < c.best)) c.best = rec.pos;
+    /* Vitória no kart não é vitória na Fórmula 1. Os dois números existem, e
+       existem separados: o de cima é a carreira profissional, o de baixo é a
+       estrada até ela. Juntos, inflavam o cartel de qualquer piloto. */
+    const alvo = S.season.isTop ? c : (c.base = c.base || Engine.cartelVazio());
+    alvo.gps++;
+    alvo.pts += rec.pts;
+    if(rec.fl) alvo.fls++;
+    if(rec.grid === 1) alvo.poles++;
+    if(rec.dnf) alvo.dnfs++;
+    if(rec.pos === 1) alvo.wins++;
+    if(rec.pos && rec.pos <= 3) alvo.podiums++;
+    if(rec.pos && (alvo.best === null || rec.pos < alvo.best)) alvo.best = rec.pos;
   },
 
   joinAcademy(i){
@@ -7507,6 +7571,7 @@ const Game = {
 
   /* ---- fim de temporada ---- */
   endSeason(){
+    if(S.retired) return;
     const sea = S.season;
     const sum = Engine.summary(sea);
     const c = S.career;
@@ -7536,6 +7601,8 @@ const Game = {
 
     /* placar separado por categoria: é ele que diz em qual lista da história
        o seu piloto entra no fim */
+    if(!c.base) c.base = Engine.cartelVazio();
+    if(!sea.isTop) c.base.seasons++;
     if(!c.porSerie) c.porSerie = {};
     const ps = c.porSerie[S.series] || (c.porSerie[S.series] = { titles:0, wins:0, podiums:0, seasons:0 });
     ps.seasons++;
@@ -7595,6 +7662,7 @@ const Game = {
 
   /* ---- ofertas ---- */
   showOffers(sum){
+    if(S.retired) return;
     let offers = Engine.offers(sum);
     /* contrato em vigor garante a vaga atual */
     if(S.season.isTop && S.contract.years > 1 && !offers.some(o=>o.team && o.team.name===S.team.name)){
@@ -7698,6 +7766,7 @@ const Game = {
   },
 
   takeOffer(i){
+    if(S.retired) return;
     const o = S.pendingOffers[i];
     if(!o) return;
     if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
@@ -7784,6 +7853,7 @@ const Game = {
       from:S.startYear, to:S.year, age:S.driver.age, ovr:S.driver.ovr,
       titles:c.titles, jrTitles:c.jrTitles, wins:c.wins, podiums:c.podiums, poles:c.poles,
       gps:c.gps, pts:c.pts, seasons:c.seasons, reason, porSerie: c.porSerie || null,
+      base: c.base ? Object.assign({}, c.base) : null,
       serie: (function(){ try{ return serieDaCarreira(); }catch(e){ return S.series || 'f1'; } })(),
       score: c.titles*100 + c.wins*12 + c.podiums*4 + c.poles*3 + c.seasons*2
     };
@@ -7794,6 +7864,8 @@ const Game = {
       Store.set('vdo_hall', JSON.stringify(hall.slice(0,30)));
       Store.del('vdo_save');
     }catch(e){}
+    S.fimRec = rec; S.fimRazao = reason;
+    UI.render();
     UI.careerEnd(rec, reason);
   }
 };
@@ -8335,6 +8407,13 @@ UI.careerEnd = function(rec, reason){
         <div><b>${rec.poles}</b><span>Poles</span></div>
         <div><b>${rec.pts}</b><span>Pontos</span></div>
       </div>
+      ${rec.base && (rec.base.gps || rec.jrTitles) ? `<div style="padding:10px 13px;border-radius:var(--r-sm);
+         background:var(--panel2);border:1px solid var(--line);margin-bottom:14px">
+         <span class="lbl" style="display:block;margin-bottom:5px">Antes disso, nas categorias de acesso</span>
+         <div style="font-size:12.5px;color:var(--dim)">
+           ${rec.base.gps} provas · ${rec.base.wins} vitórias · ${rec.base.podiums} pódios ·
+           ${rec.base.poles} poles${rec.jrTitles ? ' · ' + rec.jrTitles + (rec.jrTitles===1?' título':' títulos') : ''}
+         </div></div>` : ''}
       ${(function(){
         try{
           const r = rankingLendas(rec.serie || 'f1', rec);
@@ -8435,6 +8514,8 @@ UI.hall = function(){
         </div>
         <div class="od">${r.titles} ${r.titles===1?'título':'títulos'} · ${r.wins} vitórias · ${r.podiums} pódios ·
           ${r.poles} poles · ${r.gps} provas · ${r.seasons} temporadas</div>
+        ${r.base && r.base.gps ? `<div style="font-size:11px;color:var(--dim2);margin-top:3px">
+          na base: ${r.base.wins} vitórias em ${r.base.gps} provas${r.jrTitles?' · '+r.jrTitles+' títulos':''}</div>` : ''}
       </div>`).join('') : '<div class="empty">Nenhuma carreira encerrada ainda.</div>' }</div>
     <div class="mft">
       ${hall.length ? `<button class="btn btn-gold" onclick="UI.abrirLendas()">📜 Os maiores da história</button>` : ''}
@@ -8464,6 +8545,28 @@ UI.records = function(){
   const bestS = seasons.length ? seasons.reduce((a,b)=>(b.pts>a.pts?b:a)) : null;
   UI.modal(UI.head('Números da carreira', `${esc(d.name)} · ${S.startYear}–${S.year}`) +
     `<div class="mbd">
+      ${(function(){
+        const b = c.base || Engine.cartelVazio();
+        const linha = (rot, a, d) => `<div style="display:flex;justify-content:space-between;gap:10px;
+             padding:5px 0;font-size:13px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+             <span style="color:var(--dim)">${rot}</span>
+             <span><b style="min-width:34px;display:inline-block;text-align:right">${a}</b>
+             <b style="min-width:44px;display:inline-block;text-align:right;color:var(--dim2)">${d}</b></span></div>`;
+        return `<div style="border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 12px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;gap:10px;padding-bottom:5px">
+            <span class="lbl">&nbsp;</span>
+            <span><span class="lbl" style="min-width:34px;display:inline-block;text-align:right">${esc(Engine.serie().short)}</span>
+            <span class="lbl" style="min-width:44px;display:inline-block;text-align:right">base</span></span>
+          </div>
+          ${linha('Temporadas', c.seasons - (b.seasons||0), b.seasons||0)}
+          ${linha('Provas', c.gps, b.gps)}
+          ${linha('Vitórias', c.wins, b.wins)}
+          ${linha('Pódios', c.podiums, b.podiums)}
+          ${linha('Poles', c.poles, b.poles)}
+          ${linha('Títulos', c.titles, c.jrTitles)}
+          ${linha('Abandonos', c.dnfs, b.dnfs)}
+        </div>`;
+      })()}
       <div class="mini">
         <div><b>${c.seasons}</b><span>Temporadas</span></div>
         <div><b>${c.gps}</b><span>Provas</span></div>
