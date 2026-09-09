@@ -7805,6 +7805,10 @@ const Engine = {
       if(P.pole && grid[x.f.id] === 1) x.pts += (typeof P.pole === 'number' ? P.pole : 1);
     });
 
+    /* a temporada regular acabou? é hora de abrir o playoff */
+    const corte = Engine.cortePlayoff(sea);
+    let notaPO = null;
+
     /* acumula campeonato + contagem de resultados (critério de desempate) */
     finish.forEach(x=>{
       sea.dstand[x.f.id] = (sea.dstand[x.f.id]||0) + x.pts;
@@ -7846,11 +7850,18 @@ const Engine = {
       tmGrid: tm ? tm.grid : null, tmPos: tm ? (tm.out?null:tm.pos) : null,
       top: finish.slice(0,10).map(x=>({ n:x.f.name, cc:x.f.cc, t:sea.teams.find(t=>t.id===x.f.teamId).name,
                                         me:!!x.f.isMe, pos:x.out?null:x.pos, dnf:x.out?x.dnf:null })),
-      champ: 0, injury,
+      champ: 0, injury, playoff: notaPO,
       /* o que decidiu o domingo: azar mecânico, erro seu, ou nada disso */
       notas: notas.slice(0, 3),
       arq: null
     };
+
+    /* playoff: primeiro anda a rodada, depois se abre a fase seguinte */
+    if(sea.playoff) notaPO = Engine.andarPlayoff(sea, finish, flId);
+    else if(corte != null && rd + 1 >= corte){
+      Engine.abrirPlayoff(sea);
+      notaPO = { abriu: true };
+    }
 
     /* o que a corrida mostrou sobre esta pista fica guardado para a próxima vez */
     Engine.gravarPista(trk.id, Engine.setores(sea, rd), sea.year);
@@ -7863,6 +7874,189 @@ const Engine = {
     /* posição no campeonato depois desta corrida */
     rec.champ = Engine.champPos(sea, 'ME');
     return rec;
+  },
+
+  /* ═══ O PLAYOFF DA NASCAR ═══
+     A NASCAR deixou de ser somatório em 2004, e mudou de regulamento quatro
+     vezes desde então. Um piloto que liderou a temporada inteira pode perder
+     o título em dez corridas; outro que estava em décimo pode crescer na hora
+     em que tudo vale. Aqui isso é reproduzido por período — o Chase de dez,
+     o Chase de doze com bônus por vitória, o Chase com convidados e o
+     playoff eliminatório com quatro na decisão. */
+  formatoPlayoff(year, sk){
+    if(sk !== 'nascar' || year < 2004) return null;
+    if(year <= 2006) return { tipo:'chase', vagas:10, base:5000, passo:5, porVit:0,
+      n:'Chase for the Cup',
+      d:'Os dez primeiros depois de 26 provas voltam ao zero: 5000 pontos, cinco de intervalo entre eles. Dez corridas decidem tudo.' };
+    if(year <= 2010) return { tipo:'chase', vagas:12, base:5000, passo:0, porVit:10,
+      n:'Chase — doze pilotos',
+      d:'Doze pilotos, 5000 pontos e dez de bônus por vitória na temporada regular. Vencer em maio ainda vale em setembro.' };
+    if(year <= 2013) return { tipo:'chase', vagas:10, wild:2, base:2000, passo:0, porVit:3,
+      n:'Chase com convidados',
+      d:'Dez por pontos e dois convidados escolhidos por número de vitórias. Ganhar corrida virou moeda.' };
+    if(year <= 2016) return { tipo:'eliminacao', vagas:16, base:2000, porVit:3,
+      rodadas:[['Round of 16',3,12],['Round of 12',3,8],['Round of 8',3,4],['Championship 4',1,1]],
+      n:'Playoff eliminatório',
+      d:'Dezesseis pilotos e três rodadas de corte. Quem vence uma prova passa direto. Na última, os quatro que sobraram decidem entre si: o melhor colocado leva o título.' };
+    return { tipo:'eliminacao', vagas:16, base:2000, porVit:5, stage:true,
+      rodadas:[['Round of 16',3,12],['Round of 12',3,8],['Round of 8',3,4],['Championship 4',1,1]],
+      n:'Playoff com etapas',
+      d:'Dezesseis pilotos, pontos de etapa dentro de cada corrida e três cortes. Os quatro finalistas decidem numa prova só.' };
+  },
+
+  /* em que rodada o corte acontece, proporcional ao calendário daquele ano */
+  cortePlayoff(sea){
+    const fmt = Engine.formatoPlayoff(sea.year, S.series);
+    if(!fmt) return null;
+    const total = sea.calendar.length;
+    const decisivas = fmt.tipo === 'eliminacao'
+      ? fmt.rodadas.reduce((a, r) => a + r[1], 0) : 10;
+    /* nunca menos de quatro provas de temporada regular */
+    return clamp(total - Math.round(decisivas * clamp(total / 36, .5, 1)), 4, total - 2);
+  },
+
+  /* monta o playoff quando a temporada regular acaba */
+  abrirPlayoff(sea){
+    const fmt = Engine.formatoPlayoff(sea.year, S.series);
+    if(!fmt || sea.playoff) return null;
+    const tab = sea.field.map(f => ({
+      id: f.id, name: f.name, cc: f.cc, me: !!f.isMe,
+      pts: sea.dstand[f.id] || 0,
+      vit: (sea.fin[f.id] && sea.fin[f.id][1]) || 0
+    })).sort((a, b) => (b.pts - a.pts) || (b.vit - a.vit));
+
+    let dentro;
+    if(fmt.wild){
+      const porPontos = tab.slice(0, fmt.vagas);
+      const resto = tab.slice(fmt.vagas).filter(x => x.vit > 0)
+                       .sort((a, b) => (b.vit - a.vit) || (b.pts - a.pts));
+      dentro = porPontos.concat(resto.slice(0, fmt.wild));
+    } else dentro = tab.slice(0, fmt.vagas);
+
+    const pts = {};
+    dentro.forEach((x, i) => {
+      pts[x.id] = fmt.base + (fmt.passo ? (dentro.length - 1 - i) * fmt.passo : 0)
+                + (fmt.porVit ? x.vit * fmt.porVit : 0);
+    });
+    sea.playoff = {
+      fmt: fmt.tipo, nome: fmt.n, desc: fmt.d,
+      abertoEm: sea.round,
+      seeds: dentro.map((x, i) => ({ id:x.id, name:x.name, cc:x.cc, me:x.me,
+                                     seed:i+1, vitReg:x.vit, ptsReg:x.pts })),
+      vivos: dentro.map(x => x.id),
+      pts,
+      rodadas: fmt.rodadas ? (function(){
+        const restantes = Math.max(4, sea.calendar.length - (sea.round + 1));
+        const antes = Math.max(3, restantes - 1);          /* a decisão é sempre uma prova */
+        const base = Math.floor(antes / 3), sobra = antes % 3;
+        const tam = [base + (sobra > 0 ? 1 : 0), base + (sobra > 1 ? 1 : 0), base, 1];
+        return fmt.rodadas.map((r, i) => ({ n:r[0], provas:Math.max(1, tam[i] || 1), sobram:r[2] }));
+      })() : null,
+      rodadaAtual: 0, feitasNaRodada: 0,
+      cortados: [], campeao: null,
+      /* vitória dentro da rodada passa direto para a seguinte */
+      passaram: []
+    };
+    return sea.playoff;
+  },
+
+  emPlayoff(sea){ return !!(sea.playoff && !sea.playoff.campeao); },
+  noPlayoff(sea, id){ return !!(sea.playoff && sea.playoff.vivos.indexOf(id) >= 0); },
+
+  /* depois de cada corrida do playoff: soma, promove quem venceu e corta */
+  andarPlayoff(sea, finish, flId){
+    const p = sea.playoff;
+    if(!p || p.campeao) return null;
+    const P = sea.pts;
+    const nota = { cortados: [], passou: null, campeao: null, rodada: null };
+
+    /* a corrida vale pontos normais para quem está no playoff */
+    finish.forEach(x => {
+      if(p.pts[x.f.id] == null) return;
+      p.pts[x.f.id] += x.pts;
+    });
+
+    const venc = finish.find(x => x.pos === 1 && !x.out);
+    if(venc && p.pts[venc.f.id] != null && p.rodadas){
+      if(p.passaram.indexOf(venc.f.id) < 0){ p.passaram.push(venc.f.id); nota.passou = venc.f.name; }
+    }
+
+    if(!p.rodadas){
+      /* Chase: dez ou doze corridas somando, e acabou */
+      if(sea.round + 1 >= sea.calendar.length){
+        const ordem = p.vivos.slice().sort((a, b) => (p.pts[b] - p.pts[a]));
+        p.campeao = ordem[0]; nota.campeao = p.campeao;
+      }
+      return nota;
+    }
+
+    /* eliminatório */
+    const r = p.rodadas[p.rodadaAtual];
+    p.feitasNaRodada++;
+    nota.rodada = r.n;
+    if(p.feitasNaRodada < r.provas) return nota;
+
+    if(p.rodadaAtual === p.rodadas.length - 1){
+      /* Championship 4: o melhor colocado entre os quatro leva o título,
+         independentemente de pontos. É a regra e é o que faz a última prova
+         valer o ano inteiro. */
+      const finais = finish.filter(x => p.vivos.indexOf(x.f.id) >= 0 && !x.out)
+                           .sort((a, b) => a.pos - b.pos);
+      const abd = finish.filter(x => p.vivos.indexOf(x.f.id) >= 0 && x.out);
+      const camp = (finais[0] || abd[0]);
+      if(camp){ p.campeao = camp.f.id; nota.campeao = p.campeao; }
+      return nota;
+    }
+
+    /* corte: quem venceu na rodada passa; o resto entra por pontos */
+    const vivos = p.vivos.slice().sort((a, b) => p.pts[b] - p.pts[a]);
+    const salvos = vivos.filter(id => p.passaram.indexOf(id) >= 0);
+    const fila = vivos.filter(id => salvos.indexOf(id) < 0);
+    const ficam = salvos.concat(fila).slice(0, r.sobram);
+    const caem = vivos.filter(id => ficam.indexOf(id) < 0);
+    caem.forEach(id => {
+      const s = p.seeds.find(x => x.id === id);
+      p.cortados.push({ id, rodada: r.n, nome: s ? s.name : id, me: !!(s && s.me) });
+      nota.cortados.push(s ? s.name : id);
+    });
+    p.vivos = ficam;
+    p.passaram = [];
+    p.rodadaAtual++;
+    p.feitasNaRodada = 0;
+    /* quem sobrou volta nivelado, como manda o regulamento */
+    const baseR = 3000 + p.rodadaAtual * 1000;
+    p.vivos.forEach((id, i) => { p.pts[id] = baseR + (p.vivos.length - 1 - i) * 0; });
+    return nota;
+  },
+
+  /* a tabela do campeonato respeitando o playoff */
+  ordemPlayoff(sea){
+    const p = sea.playoff;
+    const base = sea.field.map(f => ({
+      id:f.id, name:f.name, cc:f.cc, me:!!f.isMe,
+      team: sea.teams.find(t => t.id === f.teamId),
+      pts: sea.dstand[f.id] || 0
+    }));
+    const porId = {}; base.forEach(x => porId[x.id] = x);
+    const fora = base.filter(x => p.pts[x.id] == null)
+                     .sort((a, b) => (b.pts - a.pts) || Engine.countback(sea, a.id, b.id));
+    if(p.campeao){
+      const camp = porId[p.campeao];
+      const resto = p.vivos.filter(id => id !== p.campeao)
+                           .map(id => porId[id])
+                           .sort((a, b) => p.pts[b.id] - p.pts[a.id]);
+      const cort = p.cortados.slice().reverse().map(c => porId[c.id]).filter(Boolean);
+      return [camp].concat(resto, cort, fora).filter(Boolean);
+    }
+    const vivos = p.vivos.map(id => porId[id]).filter(Boolean)
+                         .sort((a, b) => p.pts[b.id] - p.pts[a.id]);
+    const cort = p.cortados.slice().reverse().map(c => porId[c.id]).filter(Boolean);
+    return vivos.concat(cort, fora);
+  },
+  /* pontos que a tabela deve mostrar durante o playoff */
+  ptsDe(sea, id){
+    if(sea.playoff && sea.playoff.pts[id] != null) return sea.playoff.pts[id];
+    return sea.dstand[id] || 0;
   },
 
   /* desempate por contagem de melhores resultados, como no regulamento de verdade */
@@ -7881,6 +8075,10 @@ const Engine = {
   },
 
   standings(sea){
+    /* Onde existe playoff, a tabela do campeonato não é a soma da temporada:
+       é quem ainda está vivo, em que rodada, e quem já foi cortado. */
+    if(sea.playoff) return Engine.ordemPlayoff(sea).map(x =>
+      Object.assign({}, x, { pts: Engine.ptsDe(sea, x.id), fora: !Engine.noPlayoff(sea, x.id) }));
     return sea.field.map(f=>({
         id:f.id, name:f.name, cc:f.cc, me:!!f.isMe,
         team: sea.teams.find(t=>t.id===f.teamId),
@@ -9014,6 +9212,8 @@ const UI = {
       h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">❄️ O inverno</button>`;
     if(Engine.tracosSabidos().length)
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.tracosModal()">🧭 Como você anda</button>`;
+    if(S.season && S.season.playoff)
+      h += `<button class="btn btn-gold btn-sm" onclick="UI.playoffModal()">🏆 ${esc(S.season.playoff.nome)}</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>
       <button class="btn btn-ghost btn-sm" onclick="UI.empresarios()">💼 ${Engine.emp() ? esc(Engine.emp().n.split(' ').pop()) : 'Empresário'}</button>`;
     if(Engine.ehRealista())
@@ -11173,6 +11373,51 @@ UI.sementeModal = function(sem){
       ${def.ops.map((o, i) => `<button class="dil" onclick="Game.escolherSemente(${i})">
         <b>${esc(o.t)}</b><span>${esc(Engine.tomLabel(o.tom))}</span></button>`).join('')}
     </div>`);
+};
+
+/* ═══ PLAYOFF ═══
+   Um campeonato que muda de natureza em setembro. Quem liderou o ano inteiro
+   volta ao zero, e quem entrou em décimo sexto tem dez corridas para virar
+   tudo. */
+UI.playoffModal = function(){
+  const sea = S.season, p = sea && sea.playoff;
+  if(!p) return UI.toast('O playoff ainda não começou.');
+  const seed = id => (p.seeds.find(x => x.id === id) || {});
+  const linha = (id, i, viva) => {
+    const sd = seed(id);
+    const eu = sd.me;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--r-sm);
+         margin-bottom:4px;background:${eu ? 'color-mix(in srgb,var(--gold) 14%,transparent)' : 'var(--panel2)'};
+         border:1px solid ${eu ? 'var(--gold)' : 'var(--line)'};opacity:${viva ? 1 : .45}">
+      <span style="font-size:11px;color:var(--dim2);min-width:22px">#${sd.seed || '—'}</span>
+      <span class="flag">${flag(sd.cc)}</span>
+      <span style="flex:1;min-width:0;font-size:13px;font-weight:${eu ? 900 : 700};
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(sd.name || id)}</span>
+      <b style="font-size:13px">${Engine.ptsDe(sea, id)}</b>
+    </div>`;
+  };
+  const cortadosPorRodada = {};
+  p.cortados.forEach(c => { (cortadosPorRodada[c.rodada] = cortadosPorRodada[c.rodada] || []).push(c); });
+  const rod = p.rodadas ? p.rodadas[Math.min(p.rodadaAtual, p.rodadas.length - 1)] : null;
+  UI.modal(UI.head(p.nome, `${sea.year} · ${p.vivos.length} ${p.vivos.length === 1 ? 'piloto vivo' : 'pilotos vivos'}`) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${esc(p.desc)}</div>
+      ${rod ? `<div style="display:flex;align-items:baseline;gap:8px;margin:14px 0 8px">
+        <span class="lbl">${esc(rod.n)}</span><span class="sp"></span>
+        <span style="font-size:11px;color:var(--gold);font-weight:800">
+          ${p.feitasNaRodada} de ${rod.provas} ${rod.provas === 1 ? 'prova' : 'provas'}</span>
+      </div>` : '<span class="lbl" style="display:block;margin:14px 0 8px">Quem está vivo</span>'}
+      ${p.vivos.map((id, i) => linha(id, i, true)).join('')}
+      ${Object.keys(cortadosPorRodada).map(r => `
+        <span class="lbl" style="display:block;margin:12px 0 6px;color:var(--red2)">Eliminados no ${esc(r)}</span>
+        ${cortadosPorRodada[r].map(c => linha(c.id, 0, false)).join('')}`).join('')}
+      ${p.campeao ? `<div style="margin-top:14px;padding:12px 14px;border-radius:var(--r-sm);
+         border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 10%,transparent)">
+         <span class="lbl" style="display:block;color:var(--gold)">Campeão</span>
+         <b style="font-size:15px">${esc(seed(p.campeao).name || '')}</b></div>` : ''}
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`, true);
 };
 
 /* ═══ GENTE ═══
