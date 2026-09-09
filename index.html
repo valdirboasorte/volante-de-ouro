@@ -4065,6 +4065,157 @@ const EVENTOS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
+   O RÁDIO DEPOIS DA BANDEIRADA
+   Duas ou três linhas que reagem ao que acabou de acontecer, na voz
+   de quem está do outro lado. O engenheiro fechado não fala como o
+   inseguro, e nenhum dos dois fala como o político.
+   ═══════════════════════════════════════════════════════════════ */
+const DIALOGOS = {
+  mecanica: {
+    padrao:[['eng','Você fez exatamente o que a gente pediu.'],
+            ['eu','Então por que estamos fora?'],
+            ['eng','Porque o motor decidiu que não queria terminar.']],
+    frio:  [['eng','Perda de pressão. Não era recuperável.'],
+            ['eu','Eu senti alguma coisa na volta anterior.'],
+            ['eng','Sentiu certo. Não havia nada a fazer com o que a gente tinha.']],
+    inseguro:[['eng','Desculpa. Sério. A gente checou isso na sexta.'],
+            ['eu','Eu sei que checaram.'],
+            ['eng','Eu vou olhar de novo hoje à noite. Duas vezes.']],
+    orgulhoso:[['eng','Não foi acerto. Antes que você pergunte: não foi acerto.'],
+            ['eu','Eu não perguntei.'],
+            ['eng','Ia perguntar.']],
+    politico:[['eng','A nota oficial vai falar em "problema técnico". Não entre em detalhe com ninguém.'],
+            ['eu','E entre nós?'],
+            ['eng','Entre nós, alguém economizou onde não devia.']],
+    cansado:[['eng','Vinte e dois anos nisso e eu ainda me irrito com isso.'],
+            ['eu','Achei que você já tinha visto de tudo.'],
+            ['eng','Já vi. Continua irritando.']],
+    ambicioso:[['eng','Isso custou pontos que a gente não tem para dar.'],
+            ['eu','Custou.'],
+            ['eng','Então vamos consertar antes da próxima, porque eu não quero ser lembrado por isso.']],
+    leal:  [['eng','Eu sinto muito. Você merecia terminar.'],
+            ['eu','A gente tenta de novo.'],
+            ['eng','A gente tenta de novo.']]
+  },
+  vitoria_improvavel: {
+    padrao:[['eng','Eu não esperava que isso funcionasse.'],
+            ['eu','Mas funcionou.'],
+            ['eng','Não se acostume.']],
+    frio:  [['eng','Os números diziam quinto.'],
+            ['eu','E?'],
+            ['eng','E eu vou refazer os números.']],
+    inseguro:[['eng','Eu quase pedi para você abortar aquela estratégia.'],
+            ['eu','Por que não pediu?'],
+            ['eng','Porque eu não tive coragem. Ainda bem.']],
+    orgulhoso:[['eng','Eu disse que ia dar.'],
+            ['eu','Você disse o contrário na sexta.'],
+            ['eng','Eu disse que ia dar depois que consertamos.']],
+    politico:[['eng','Guarde essa. Em novembro isso vale contrato.'],
+            ['eu','Eu só quero aproveitar hoje.'],
+            ['eng','Aproveite. Eu já estou trabalhando em novembro.']],
+    cansado:[['eng','Bom. Foi bom.'],
+            ['eu','Só isso?'],
+            ['eng','Já foi mais do que eu falo depois de uma vitória.']],
+    ambicioso:[['eng','Isso muda a conversa sobre nós dois lá dentro.'],
+            ['eu','Sobre nós dois?'],
+            ['eng','Sobre nós dois.']],
+    leal:  [['eng','Eu acreditei o fim de semana inteiro e ninguém mais acreditou.'],
+            ['eu','Eu sei.'],
+            ['eng','Eu sei que você sabe.']]
+  },
+  vitoria: {
+    padrao:[['eng','Carro bom, corrida limpa. É assim que se faz.'],
+            ['eu','Foi confortável.'],
+            ['eng','De onde eu estava não pareceu confortável.']],
+    frio:  [['eng','Ritmo controlado do começo ao fim. Correto.'],
+            ['eu','Obrigado.'],
+            ['eng','Não é elogio. É descrição.']],
+    inseguro:[['eng','Você acha que o acerto ajudou? Você acha mesmo?'],
+            ['eu','Ajudou.'],
+            ['eng','Certo. Certo. Ótimo.']],
+    cansado:[['eng','Aproveita, que domingo que vem chove.'],
+            ['eu','Você não sabe disso.'],
+            ['eng','Eu nunca sei. E sempre chove.']],
+    politico:[['eng','Três pessoas importantes viram isso hoje.'],
+            ['eu','Eu vi a corrida, você viu a plateia.'],
+            ['eng','Alguém tem de ver.']]
+  },
+  batida: {
+    padrao:[['eng','Você está inteiro?'],
+            ['eu','Estou.'],
+            ['eng','Então é só metal. Metal a gente conserta.']],
+    frio:  [['eng','Confirma que está inteiro.'],
+            ['eu','Inteiro.'],
+            ['eng','Recebido. A gente conversa amanhã.']],
+    orgulhoso:[['eng','Foi você ou foi o carro?'],
+            ['eu','Fui eu.'],
+            ['eng','Obrigado por não me fazer perguntar duas vezes.']],
+    leal:  [['eng','Não se cobre agora. Amanhã a gente olha o dado.'],
+            ['eu','Eu joguei fora.'],
+            ['eng','Amanhã.']],
+    ambicioso:[['eng','A gente não pode pagar por isso duas vezes no ano.'],
+            ['eu','Não vai acontecer de novo.'],
+            ['eng','Foi o que você disse em maio.']]
+  },
+  recuperacao: {
+    padrao:[['eng','Você passou por quatro carros que eram mais rápidos que o nosso.'],
+            ['eu','Eles não estavam com pressa.'],
+            ['eng','Eles estavam. Você que estava com mais.']],
+    frio:  [['eng','Ritmo de corrida acima do esperado em oito voltas.'],
+            ['eu','Deu para sentir.'],
+            ['eng','Deu para ver.']],
+    inseguro:[['eng','Eu montei o carro errado para o sábado e você consertou no domingo.'],
+            ['eu','A gente consertou.'],
+            ['eng','Você foi generoso agora.']],
+    cansado:[['eng','Ainda dá gosto ver isso.'],
+            ['eu','Você não disse nada no rádio.'],
+            ['eng','Eu estava vendo.']]
+  },
+  acerto_ruim: {
+    padrao:[['eng','O carro estava errado. Eu sei que estava errado.'],
+            ['eu','A gente escolheu junto.'],
+            ['eng','A gente escolheu. Eu que insisti.']],
+    orgulhoso:[['eng','O carro estava dentro da janela.'],
+            ['eu','Não estava.'],
+            ['eng','...Não estava.']],
+    politico:[['eng','Na reunião, isso foi "condições de pista atípicas".'],
+            ['eu','E fora da reunião?'],
+            ['eng','Fora da reunião a gente errou feio.']],
+    frio:  [['eng','Fora da janela em dois setores. Anotado.'],
+            ['eu','Só anotado?'],
+            ['eng','Anotado é mais do que parece.']]
+  },
+  perdeu_posicoes: {
+    padrao:[['eng','O carro caiu ou você caiu?'],
+            ['eu','O pneu acabou na metade.'],
+            ['eng','Então o carro caiu. Vamos olhar isso.']],
+    frio:  [['eng','Degradação acima do previsto a partir da volta dezoito.'],
+            ['eu','Muito acima.'],
+            ['eng','Eu vi. Já estou refazendo o modelo.']],
+    inseguro:[['eng','Foi minha culpa. Eu escolhi o composto.'],
+            ['eu','Foi a informação que a gente tinha.'],
+            ['eng','A informação era minha.']],
+    ambicioso:[['eng','A gente perdeu cinco lugares e cinco lugares é o que separa o quinto do décimo no fim do ano.'],
+            ['eu','Eu sei contar.'],
+            ['eng','Então conta comigo na segunda-feira.']]
+  },
+  jogou_fora: {
+    padrao:[['eng','Pole no sábado, isso no domingo.'],
+            ['eu','Eu sei.'],
+            ['eng','Só queria dizer em voz alta.']],
+    orgulhoso:[['eng','Aquela pole foi do carro.'],
+            ['eu','E o domingo?'],
+            ['eng','O domingo também foi do carro. Só que ao contrário.']],
+    leal:  [['eng','Foi um domingo ruim. Acontece com todo mundo.'],
+            ['eu','Não com quem larga na frente.'],
+            ['eng','Principalmente com quem larga na frente.']],
+    cansado:[['eng','Já vi essa corrida umas trezentas vezes.'],
+            ['eu','E como ela termina?'],
+            ['eng','Do jeito que terminou.']]
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
    JORNALISTAS
    Quem cobre a categoria não é um alto-falante neutro. Cada um tem
    um critério próprio do que é um bom piloto, e escreve a partir
@@ -7442,6 +7593,113 @@ const Engine = {
     return p;
   },
 
+  /* ═══ O QUE A TEMPORADA DISSE SOBRE VOCÊ ═══
+     Não é "overall 86 → 89". É o que os resultados mostram quando alguém
+     senta e olha: onde você foi forte, onde você continua fraco, se o
+     problema foi sábado ou domingo, e se foi você ou foi o carro. */
+  analiseTemporada(sea){
+    const rs = (sea.results || []).filter(r => r);
+    if(!rs.length) return null;
+    const porTipo = {};
+    rs.forEach(r => {
+      const t = r.type || 'mixed';
+      const x = porTipo[t] || (porTipo[t] = { n:0, somaPos:0, somaGrid:0, dnf:0, top5:0, tm:0, tmN:0 });
+      x.n++;
+      if(r.pos){ x.somaPos += r.pos; if(r.pos <= 5) x.top5++; }
+      if(r.grid) x.somaGrid += r.grid;
+      if(r.dnf) x.dnf++;
+      if(r.tmPos != null && r.pos != null){ x.tmN++; if(r.pos < r.tmPos) x.tm++; }
+    });
+    const fin = rs.filter(r => r.pos);
+    const mediaPos = fin.length ? fin.reduce((a,r)=>a+r.pos,0) / fin.length : null;
+    const comGrid = rs.filter(r => r.grid);
+    const mediaGrid = comGrid.length ? comGrid.reduce((a,r)=>a+r.grid,0) / comGrid.length : null;
+    const ganhos = rs.filter(r => r.pos && r.grid).map(r => r.grid - r.pos);
+    const ganhoMedio = ganhos.length ? ganhos.reduce((a,b)=>a+b,0) / ganhos.length : 0;
+    const mec = rs.filter(r => r.dnf === 'MEC').length;
+    const bat = rs.filter(r => r.dnf === 'ACID').length;
+    const escorregoes = rs.filter(r => (r.notas||[]).indexOf('escorregao') >= 0).length;
+    /* o melhor e o pior tipo de traçado, quando há amostra */
+    const tipos = Object.keys(porTipo).filter(t => porTipo[t].n >= 2);
+    const nota = t => {
+      const x = porTipo[t];
+      const p = x.somaPos / Math.max(1, x.n - x.dnf);
+      return -p - x.dnf * 1.6 + (x.tmN ? (x.tm / x.tmN) * 4 : 0);
+    };
+    tipos.sort((a,b) => nota(b) - nota(a));
+    const forte = tipos[0] || null, fraco = tipos.length > 1 ? tipos[tipos.length-1] : null;
+    return { porTipo, mediaPos, mediaGrid, ganhoMedio, mec, bat, escorregoes,
+             forte, fraco, top5: fin.filter(r=>r.pos<=5).length, corridas: rs.length };
+  },
+
+  /* as frases do retrospecto — em português de gente, não de planilha */
+  frasesTemporada(sea, sum){
+    const a = Engine.analiseTemporada(sea);
+    if(!a) return [];
+    const f = [];
+    const nome = t => TIPO_NOME[t] || 'circuitos mistos';
+
+    /* sábado contra domingo */
+    if(a.ganhoMedio >= 1.6)
+      f.push('Você ganhou posições em quase toda corrida. O seu domingo vale mais que o seu sábado.');
+    else if(a.ganhoMedio <= -1.2)
+      f.push('Você largou melhor do que terminou o ano inteiro. O que você constrói no sábado, o domingo desfaz.');
+    else if(a.mediaGrid != null && a.mediaPos != null && Math.abs(a.ganhoMedio) < .8)
+      f.push('Você termina mais ou menos onde larga. Falta um lugar para ganhar tempo.');
+
+    /* traçados */
+    if(a.forte) f.push('Os seus melhores fins de semana foram em ' + nome(a.forte) + '.');
+    if(a.fraco && a.fraco !== a.forte)
+      f.push('O seu ponto fraco continua sendo ' + nome(a.fraco) + '.');
+
+    /* confiabilidade e erro */
+    if(a.mec >= 3) f.push('Foram ' + a.mec + ' abandonos por problema mecânico. Nada disso passou pelas suas mãos.');
+    if(a.bat >= 2) f.push('Você bateu ' + a.bat + ' vezes. Uma é acidente; ' + a.bat + ' é um padrão.');
+    if(a.escorregoes >= 3) f.push('Escorregou em ' + a.escorregoes + ' corridas — curva perdida, pneu bloqueado, tempo jogado fora.');
+    if(!a.mec && !a.bat && a.corridas >= 8) f.push('Você terminou todas as corridas do ano. Isso é o que ganha campeonato.');
+
+    /* o companheiro */
+    if(sum && sum.tmRaces >= 4){
+      const p = sum.tmWins / sum.tmRaces;
+      if(p >= .72) f.push('Você bateu o seu companheiro em ' + sum.tmWins + ' dos ' + sum.tmRaces + ' domingos. A garagem já sabe de quem é o carro.');
+      else if(p <= .32) f.push('O seu companheiro levou a melhor em ' + (sum.tmRaces - sum.tmWins) + ' dos ' + sum.tmRaces + ' domingos, e isso pesa mais do que qualquer coisa.');
+    }
+
+    /* adaptação à categoria */
+    if(sea.isTop){
+      const ad = Engine.garantirAdapt(S.series);
+      if(ad < 55) f.push('Você ainda está aprendendo esta categoria — e isso apareceu em quase todo fim de semana.');
+      else if(ad >= 88 && (S.driver.anosEm || {})[S.series] >= 3)
+        f.push('Esta categoria já não tem segredo para você.');
+    }
+    return f;
+  },
+
+  /* ═══ DIÁLOGOS DEPOIS DA CORRIDA ═══
+     O rádio depois da bandeirada. Reage ao que aconteceu, na voz da pessoa
+     que está do outro lado — o engenheiro fechado não fala como o inseguro. */
+  dialogoCorrida(rec, sea){
+    const p = Engine.pessoa('eng');
+    const pers = p ? p.pers : 'frio';
+    const ganhou = rec.grid && rec.pos ? rec.grid - rec.pos : 0;
+    const improvavel = rec.pos && rec.pos <= 3 && rec.grid >= 8;
+    const erroAcerto = rec.setup && rec.setup.erro != null && rec.setup.erro >= 4;
+    let k = null;
+    if(rec.dnf === 'MEC') k = 'mecanica';
+    else if(rec.dnf === 'ACID') k = 'batida';
+    else if(rec.pos === 1 && improvavel) k = 'vitoria_improvavel';
+    else if(rec.pos === 1) k = 'vitoria';
+    else if(improvavel) k = 'recuperacao';
+    else if(erroAcerto) k = 'acerto_ruim';
+    else if(ganhou <= -4) k = 'perdeu_posicoes';
+    else if(rec.grid === 1 && rec.pos && rec.pos > 5) k = 'jogou_fora';
+    if(!k) return null;
+    const bloco = DIALOGOS[k];
+    if(!bloco) return null;
+    const linhas = bloco[pers] || bloco.padrao;
+    return { k, nome: p ? p.n : 'O engenheiro', pers, linhas };
+  },
+
   /* ═══ A CORRIDA ACONTECENDO ═══
      O simulador já sabe quem termina onde. O que faltava era ver a corrida
      acontecer: quem larga bem, quem cai, onde está a briga, quando entra o
@@ -10403,6 +10661,18 @@ UI.raceResult = function(r){
         <div class="cap">${cap}</div>
       </div>
       <div class="res-nar">${narrative(r, sea)}</div>
+      ${(function(){
+        const d = Engine.dialogoCorrida(r, sea);
+        if(!d) return '';
+        const per = PERSONAS[d.pers] || PERSONAS.frio;
+        return `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
+             border:1px solid var(--line);border-left:3px solid var(--dim2);margin-bottom:14px">
+          <span class="lbl" style="display:block;margin-bottom:6px">No rádio, depois da bandeirada</span>
+          ${d.linhas.map(l => `<div style="font-size:13px;line-height:1.55;padding:2px 0">
+            <b style="color:var(--dim2)">${l[0] === 'eu' ? esc(S.driver.name) : esc(d.nome)}</b>
+            <span style="color:var(--dim)"> — ${esc(l[1])}</span></div>`).join('')}
+        </div>`;
+      })()}
       ${r.setup ? `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
            border:1px solid var(--line);border-left:3px solid ${r.setup.erro<=1?'var(--green)':r.setup.erro<=3?'var(--gold)':'var(--red2)'};margin-bottom:14px">
            <span class="lbl" style="display:block;margin-bottom:4px">Acerto${r.setup.auto?' (automático)':''}</span>
@@ -11935,6 +12205,18 @@ UI.seasonEndModal = function(sum, growth){
         <div><b>${sum.poles}</b><span>Poles</span></div>
         <div><b>${sum.dnfs}</b><span>Abandonos</span></div>
       </div>
+      ${(function(){
+        /* O que os números dizem quando alguém senta e olha. Vale mais do
+           que "overall 86 → 89": diz onde você foi forte, onde continua
+           fraco, e se o problema foi sábado, domingo ou o carro. */
+        const fr = Engine.frasesTemporada(S.season, sum);
+        if(!fr.length) return '';
+        return `<div style="padding:12px 14px;border-radius:var(--r-sm);background:var(--panel2);
+             border:1px solid var(--line);border-left:3px solid var(--gold);margin:0 0 16px">
+          <span class="lbl" style="display:block;margin-bottom:6px">O que a temporada disse sobre você</span>
+          ${fr.map(x => `<div style="font-size:13px;line-height:1.6;padding:3px 0;color:var(--dim)">${esc(x)}</div>`).join('')}
+        </div>`;
+      })()}
       <span class="lbl" style="display:block;margin-bottom:7px">Retrospecto completo de ${sum.year}</span>
       ${retroTableHTML(S.season.results)}
       <div style="margin-top:16px">
