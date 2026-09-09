@@ -3974,6 +3974,313 @@ const EVENTOS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
+   ACONTECIMENTOS COM QUATRO ALTURAS
+   Estes não têm resultado escrito na porta. Você escolhe o que fazer
+   e o mundo responde — melhor do que devia, bem, mais ou menos, ou
+   mal. A chance fica escondida e sai de quem você é, de quem está do
+   seu lado e do que você já fez antes.
+   Alguns plantam uma semente: uma coisa que volta anos depois.
+   ═══════════════════════════════════════════════════════════════ */
+const EVENTOS_FUNDOS = [
+{ id:'emprestimo', ic:'💼', quando:'sempre', peso:3, uma:true, so:'realista',
+  t:'Um homem com dinheiro e sem pressa',
+  d:'Ele apareceu no paddock com um cartão sem nome de empresa e uma proposta simples: ele banca a sua temporada, você devolve quando puder. Não falou em juros, nem em prazo, nem em o que acontece se você não puder.',
+  ops:[
+    { t:'Aceitar e não perguntar nada', tom:'direto', base:.5, attr:null,
+      otimo:{ t:'O dinheiro caiu, a temporada está paga e por dois anos ele não deu sinal de vida.',
+              e:{ dinheiro:900e3, semente:{ k:'cobranca', anos:3 } } },
+      bom:  { t:'Dinheiro na conta e um aperto de mão. Você vai lembrar deste aperto de mão.',
+              e:{ dinheiro:750e3, semente:{ k:'cobranca', anos:2 } } },
+      morno:{ t:'Menos do que ele prometeu, e com um papel para assinar que você não leu direito.',
+              e:{ dinheiro:400e3, semente:{ k:'cobranca', anos:2 } } },
+      ruim: { t:'Você assinou. Quando leu de novo, em casa, entendeu que assinou uma parte da sua carreira.',
+              e:{ dinheiro:600e3, moral:-8, semente:{ k:'cobranca', anos:1 } } } },
+    { t:'Aceitar, mas exigir tudo por escrito', tom:'tecnico', base:.42, attr:'dev',
+      otimo:{ t:'O advogado da família olhou tudo e o contrato saiu justo. Raro.',
+              e:{ dinheiro:520e3 } },
+      bom:  { t:'Menos dinheiro, mas prazo e juros no papel.',
+              e:{ dinheiro:400e3, semente:{ k:'cobranca', anos:4 } } },
+      morno:{ t:'Ele achou o pedido ofensivo e cortou pela metade.', e:{ dinheiro:180e3 } },
+      ruim: { t:'Ele sumiu no dia seguinte. Você ficou com o problema de sempre e sem o dinheiro.',
+              e:{ moral:-5 } } },
+    { t:'Recusar', tom:'frieza', base:.55, attr:'cons',
+      otimo:{ t:'Dois anos depois você descobriu de quem era o dinheiro. Foi a melhor decisão da sua vida.',
+              e:{ moral:6, cons:.6 } },
+      bom:  { t:'Você dorme melhor. A conta continua aberta.', e:{ moral:3 } },
+      morno:{ t:'Você recusou e passou a temporada olhando para o extrato.', e:{ moral:-4 } },
+      ruim: { t:'Sem esse dinheiro, faltou orçamento no meio do ano e a equipe cobrou.',
+              e:{ moral:-7, teamRel:-8 } } }
+  ] },
+
+{ id:'correr_lesionado', ic:'🩹', quando:'sempre', peso:3,
+  t:'Correr machucado',
+  d:'A costela não quebrou, mas trincou. O médico da equipe diz que dá para correr com infiltração. O chefe não perguntou nada, só olhou para você.',
+  ops:[
+    { t:'Correr, e não contar para ninguém', tom:'direto', base:.42, attr:'cons',
+      otimo:{ t:'Você correu, pontuou, e ninguém soube. A garagem inteira notou que você não reclamou.',
+              e:{ teamRel:8, moral:6, resp:8 } },
+      bom:  { t:'Doeu o fim de semana inteiro e você terminou a corrida.', e:{ teamRel:5, moral:-3 } },
+      morno:{ t:'Você andou dois segundos fora e ninguém entendeu por quê.', e:{ moral:-6, pace:-.4 } },
+      ruim: { t:'Você forçou o que não devia. Vai carregar isso por mais tempo do que imagina.',
+              e:{ lesao:1, moral:-9, semente:{ k:'lesao_velha', anos:2 } } } },
+    { t:'Correr e avisar a equipe', tom:'tecnico', base:.6, attr:null,
+      otimo:{ t:'Eles adaptaram o banco e o volante em uma noite. Você nem sentiu.',
+              e:{ teamRel:6, eng:{conf:9, afeto:6} } },
+      bom:  { t:'A equipe ajustou o que deu. Foi suportável.', e:{ teamRel:3, eng:{conf:4} } },
+      morno:{ t:'Ficou registrado no prontuário e alguém comentou com a imprensa.', e:{ fama:-3 } },
+      ruim: { t:'O chefe entendeu que você é frágil. Isso entra na conta do contrato.',
+              e:{ teamRel:-9, semente:{ k:'fama_fragil', anos:1 } } } },
+    { t:'Não correr', tom:'direto', base:.5, attr:null,
+      otimo:{ t:'Você se cuidou, voltou inteiro e ganhou duas corridas depois.',
+              e:{ moral:8, cons:.7 } },
+      bom:  { t:'Uma corrida perdida, o corpo intacto.', e:{ moral:2 } },
+      morno:{ t:'O reserva foi bem. Bem demais.', e:{ teamRel:-6, moral:-6 } },
+      ruim: { t:'O reserva pontuou e a imprensa passou a semana perguntando se ele não merecia a vaga.',
+              e:{ teamRel:-11, moral:-10, semente:{ k:'reserva_forte', anos:1 } } } }
+  ] },
+
+{ id:'foto_noite', ic:'📸', quando:'sempre', peso:3,
+  t:'Alguém filmou a noite inteira',
+  d:'Foi uma boa noite. Cedo demais para a corrida, tarde demais para negar. E tinha três celulares apontados para você a noite toda.',
+  ops:[
+    { t:'Assumir na hora, antes de virar notícia', tom:'direto', base:.55, attr:'fame',
+      otimo:{ t:'Você postou primeiro, com humor, e a história morreu rindo.', e:{ fama:8, moral:5 } },
+      bom:  { t:'Você reconheceu, pediu desculpa à equipe e o assunto durou dois dias.', e:{ fama:3, teamRel:-3 } },
+      morno:{ t:'Metade acreditou. A outra metade guardou o vídeo.',
+              e:{ fama:4, semente:{ k:'video_velho', anos:3 } } },
+      ruim: { t:'A sua explicação foi pior que o vídeo.',
+              e:{ fama:6, teamRel:-9, moral:-7, semente:{ k:'video_velho', anos:2 } } } },
+    { t:'Ficar quieto e torcer', tom:'frieza', base:.45, attr:null,
+      otimo:{ t:'Ninguém publicou nada. A noite ficou onde devia ficar.', e:{ moral:3 } },
+      bom:  { t:'Saiu num portal pequeno e morreu ali.', e:{ fama:2 } },
+      morno:{ t:'Saiu. Não te destruiu, mas está na internet para sempre.',
+              e:{ fama:5, teamRel:-4, semente:{ k:'video_velho', anos:4 } } },
+      ruim: { t:'Saiu na semana da renovação de contrato.',
+              e:{ fama:7, teamRel:-13, semente:{ k:'video_velho', anos:2 } } } },
+    { t:'Mandar o empresário comprar o silêncio', tom:'traicao', base:.38, attr:'fame', so:'realista',
+      otimo:{ t:'Resolvido, caro e limpo. Ninguém nunca vai saber.', e:{ dinheiro:-250e3 } },
+      bom:  { t:'Dois dos três aceitaram. O terceiro não tinha nada de grave.', e:{ dinheiro:-180e3, fama:2 } },
+      morno:{ t:'Custou caro e vazou assim mesmo.', e:{ dinheiro:-220e3, fama:5, teamRel:-5 } },
+      ruim: { t:'Um deles gravou a negociação. Agora existem dois vídeos.',
+              e:{ dinheiro:-200e3, fama:9, teamRel:-14, moral:-10, semente:{ k:'video_velho', anos:1 } } } }
+  ] },
+
+{ id:'ordem_radio', ic:'📻', quando:'topo', peso:3,
+  t:'Ordem no rádio, a oito voltas do fim',
+  d:'"Segura a posição." Você está mais rápido que o carro da frente, que é o do seu companheiro, e os dois sabem disso.',
+  ops:[
+    { t:'Obedecer', tom:'lealdade', base:.62, attr:null,
+      otimo:{ t:'Você obedeceu, e a equipe não esqueceu. Na corrida seguinte a ordem veio a seu favor.',
+              e:{ teamRel:12, comp:{conf:10, afeto:8}, semente:{ k:'favor_equipe', anos:1 } } },
+      bom:  { t:'Você segurou. A equipe agradeceu no rádio.', e:{ teamRel:7, comp:{conf:5} } },
+      morno:{ t:'Você segurou e ninguém comentou nada depois.', e:{ teamRel:3, moral:-4 } },
+      ruim: { t:'Você segurou, perdeu o pódio na última volta e a equipe fingiu que não foi nada.',
+              e:{ teamRel:2, moral:-11 } } },
+    { t:'Ignorar e atacar', tom:'direto', base:.45, attr:'race',
+      otimo:{ t:'Passou por fora, limpo, e ninguém teve o que dizer. Nem a equipe.',
+              e:{ resp:12, comp:{tens:12, resp:8}, moral:9, teamRel:-5 } },
+      bom:  { t:'Passou. A equipe engoliu, o companheiro não.',
+              e:{ comp:{tens:14}, teamRel:-8, moral:6 } },
+      morno:{ t:'Tentou, não passou, e agora tem dois problemas.', e:{ comp:{tens:10}, teamRel:-10, moral:-5 } },
+      ruim: { t:'Toque. Os dois carros fora. O chefe não falou com você por três semanas.',
+              e:{ comp:{tens:24, afeto:-16}, teamRel:-18, moral:-12, semente:{ k:'briga_interna', anos:1 } } } },
+    { t:'Fingir problema no rádio', tom:'traicao', base:.35, attr:'dev',
+      otimo:{ t:'"Não ouvi." A equipe não conseguiu provar nada e você levou o pódio.',
+              e:{ moral:7, teamRel:-3, politicagem:1 } },
+      bom:  { t:'Coube dúvida. A engenharia desconfia, mas ninguém acusa.', e:{ eng:{conf:-6}, moral:4 } },
+      morno:{ t:'A telemetria mostrou que o rádio estava perfeito.', e:{ eng:{conf:-10, tens:8}, teamRel:-9 } },
+      ruim: { t:'O áudio vazou para a imprensa com a sua voz nítida.',
+              e:{ teamRel:-16, fama:6, eng:{tens:12}, semente:{ k:'fama_malandro', anos:2 } } } }
+  ] },
+
+{ id:'oferta_academia', ic:'🎓', quando:'base', peso:3, uma:true,
+  t:'Um programa de formação quer você',
+  d:'Eles pagam a temporada, abrem portas e cobram tudo. Quem entra e não entrega em dois anos sai marcado — e quem entra e entrega às vezes fica preso quando o degrau seguinte aparece.',
+  ops:[
+    { t:'Assinar', tom:'alianca', base:.55, attr:'pace',
+      otimo:{ t:'A conta da temporada deixou de ser sua, e o telefone deles abre porta que o seu não abre.',
+              e:{ dinheiro:600e3, porta:1, semente:{ k:'cobranca_academia', anos:2 } } },
+      bom:  { t:'Temporada paga, cobrança na medida.',
+              e:{ dinheiro:420e3, semente:{ k:'cobranca_academia', anos:2 } } },
+      morno:{ t:'Assinado, mas você é o quarto na fila deles.',
+              e:{ dinheiro:250e3, moral:-4, semente:{ k:'cobranca_academia', anos:2 } } },
+      ruim: { t:'Você assinou uma cláusula que te prende por três anos, mesmo se aparecer coisa melhor.',
+              e:{ dinheiro:380e3, semente:{ k:'preso_academia', anos:2 } } } },
+    { t:'Negociar antes de assinar', tom:'tecnico', base:.4, attr:'dev',
+      otimo:{ t:'Você tirou a cláusula de saída e manteve o dinheiro. Ninguém faz isso aos vinte anos.',
+              e:{ dinheiro:520e3, resp:8 } },
+      bom:  { t:'Menos dinheiro, mais liberdade.', e:{ dinheiro:300e3 } },
+      morno:{ t:'Eles não gostaram e mantiveram a proposta original.', e:{ dinheiro:250e3 } },
+      ruim: { t:'Eles retiraram a proposta e foram atrás do segundo colocado.',
+              e:{ moral:-9, semente:{ k:'porta_fechada', anos:1 } } } },
+    { t:'Recusar e seguir sozinho', tom:'frieza', base:.45, attr:'cons',
+      otimo:{ t:'Você seguiu livre, e três anos depois entrou pela porta da frente sem dever nada a ninguém.',
+              e:{ moral:8, semente:{ k:'livre', anos:3 } } },
+      bom:  { t:'Livre e mais pobre.', e:{ moral:4 } },
+      morno:{ t:'A conta continua sua, e agora sem nenhuma porta aberta.', e:{ moral:-5 } },
+      ruim: { t:'Eles assinaram com o seu maior rival da categoria, que passou a andar com material melhor.',
+              e:{ moral:-10, rival:1 } } }
+  ] },
+
+{ id:'convite_teste', ic:'🔑', quando:'sempre', peso:2,
+  t:'Um teste que não estava no plano',
+  d:'Uma equipe de outra categoria quer você num teste privado. É no meio da semana, custa a viagem e ninguém pode saber. A sua equipe atual não vai gostar se souber.',
+  ops:[
+    { t:'Ir, e manter em segredo', tom:'traicao', base:.45, attr:'pace',
+      otimo:{ t:'Você foi rápido logo de cara. O nome deles ficou anotado ao lado do seu.',
+              e:{ porta:1, race:.6, semente:{ k:'porta_aberta', anos:1 } } },
+      bom:  { t:'Teste correto, sem brilho, mas ficou o contato.', e:{ porta:1 } },
+      morno:{ t:'Carro estranho, dia frio, nada aconteceu. Você perdeu dois dias.', e:{ moral:-3 } },
+      ruim: { t:'Alguém viu você no autódromo. A sua equipe soube antes de você voltar.',
+              e:{ teamRel:-14, semente:{ k:'desconfianca', anos:1 } } } },
+    { t:'Ir, e avisar a sua equipe antes', tom:'direto', base:.5, attr:null,
+      otimo:{ t:'Eles deixaram, e passaram a te tratar como alguém que o mercado quer.',
+              e:{ teamRel:6, resp:9, porta:1 } },
+      bom:  { t:'Eles não gostaram, mas respeitaram a franqueza.', e:{ teamRel:-2, porta:1 } },
+      morno:{ t:'Proibiram. Você não foi.', e:{ moral:-5 } },
+      ruim: { t:'Proibiram, e começaram a procurar substituto no mesmo mês.',
+              e:{ teamRel:-9, semente:{ k:'desconfianca', anos:1 } } } },
+    { t:'Não ir', tom:'lealdade', base:.55, attr:null,
+      otimo:{ t:'Você ficou, trabalhou, e a equipe soube do convite por fora. Isso valeu ouro.',
+              e:{ teamRel:11, resp:6 } },
+      bom:  { t:'Você ficou. Nada mudou.', e:{ teamRel:3 } },
+      morno:{ t:'Você ficou e passou o mês pensando no que teria acontecido.', e:{ moral:-4 } },
+      ruim: { t:'Foi a única porta que se abriu naquele ano, e você não entrou.',
+              e:{ moral:-8, semente:{ k:'porta_fechada', anos:2 } } } }
+  ] },
+
+{ id:'crianca_hospital', ic:'💛', quando:'sempre', peso:2,
+  t:'Um pedido que não tem nada a ver com corrida',
+  d:'Uma família pediu que você visite um menino internado que só fala de você. É no dia do treino livre, do outro lado da cidade, e ninguém vai saber se você não for.',
+  ops:[
+    { t:'Ir, e ficar o tempo que precisar', tom:'pessoal', base:.7, attr:null,
+      otimo:{ t:'Você saiu de lá outra pessoa. E chegou no sábado com uma calma que não tinha.',
+              e:{ moral:18, cons:.6, fama:5 } },
+      bom:  { t:'Duas horas que valeram mais do que o treino livre.', e:{ moral:12, fama:3 } },
+      morno:{ t:'Foi rápido, foi bom, e você perdeu o treino.', e:{ moral:6, pace:-.3 } },
+      ruim: { t:'Você chegou atrasado no circuito e a equipe cobrou na frente de todos.',
+              e:{ moral:8, teamRel:-7, pace:-.4 } } },
+    { t:'Mandar um capacete assinado', tom:'direto', base:.6, attr:null,
+      otimo:{ t:'A foto do menino com o capacete rodou o mundo.', e:{ fama:9, moral:5 } },
+      bom:  { t:'Chegou, agradeceram, ficou bem.', e:{ fama:3, moral:3 } },
+      morno:{ t:'Chegou uma semana depois.', e:{ moral:1 } },
+      ruim: { t:'A família falou com a imprensa sobre a visita que não houve.', e:{ fama:-4, moral:-6 } } },
+    { t:'Não ir: o fim de semana é curto', tom:'frieza', base:.5, attr:null,
+      otimo:{ t:'Você fez o melhor treino do ano. Ninguém soube do resto.', e:{ pace:.5 } },
+      bom:  { t:'Trabalho é trabalho.', e:{ pace:.3, moral:-3 } },
+      morno:{ t:'Você não conseguiu tirar aquilo da cabeça o fim de semana inteiro.', e:{ moral:-8 } },
+      ruim: { t:'A história vazou do jeito errado e você virou o piloto que não foi.',
+              e:{ fama:-6, moral:-11 } } }
+  ] }
+];
+
+/* ═══ SEMENTES ═══
+   O que você fez volta. Não na semana seguinte: anos depois, quando a sua
+   vida já é outra e a conta ficou mais cara. */
+const SEMENTES = {
+  cobranca: { ic:'🧾', t:'A conta chegou',
+    d:'Ele voltou. Sorridente, educado, com uma pasta e um número que é o triplo do que você pegou. Diz que sempre foi assim, e que você assinou.',
+    ops:[
+      { t:'Pagar tudo', tom:'direto', e:{ dinheiroMult:-3, moral:-6 } },
+      { t:'Pagar parte e negociar o resto', tom:'tecnico', e:{ dinheiroMult:-1.6, semente:{ k:'cobranca', anos:2 } } },
+      { t:'Não pagar', tom:'frieza', e:{ moral:-14, fama:-8, teamRel:-12, semente:{ k:'cobranca_feia', anos:1 } } }
+    ] },
+  cobranca_feia: { ic:'🚫', t:'Ele foi à imprensa',
+    d:'A história saiu inteira, com o contrato digitalizado. Metade do paddock leu antes de você.',
+    ops:[
+      { t:'Pagar agora, com juros de escândalo', tom:'direto', e:{ dinheiroMult:-4, fama:-5 } },
+      { t:'Processar', tom:'tecnico', e:{ dinheiro:-180e3, fama:6, moral:-8 } },
+      { t:'Deixar queimar', tom:'frieza', e:{ fama:-14, teamRel:-14, moral:-12 } }
+    ] },
+  lesao_velha: { ic:'🦴', t:'Aquilo voltou',
+    d:'A costela que você não deixou curar direito voltou a doer, e agora dói sempre. O médico foi direto: ou você para dois meses, ou convive com isso para o resto da carreira.',
+    ops:[
+      { t:'Parar dois meses', tom:'direto', e:{ lesao:3, moral:-8, cons:.5 } },
+      { t:'Conviver', tom:'frieza', e:{ cons:-1.2, pace:-.8, moral:-5 } },
+      { t:'Cirurgia, e torcer', tom:'tecnico', e:{ lesao:4, dinheiro:-300e3, cons:.9, moral:-4 } }
+    ] },
+  video_velho: { ic:'🎞️', t:'O vídeo apareceu',
+    d:'Anos depois, com você numa posição bem melhor, o vídeo daquela noite voltou a circular. Agora tem gente interessada em que ele circule.',
+    ops:[
+      { t:'Rir junto', tom:'pessoal', e:{ fama:7, moral:3 } },
+      { t:'Nota oficial da equipe', tom:'tecnico', e:{ teamRel:-5, fama:2 } },
+      { t:'Ir atrás de quem soltou', tom:'pressao', e:{ fama:9, teamRel:-9, moral:-7 } }
+    ] },
+  favor_equipe: { ic:'🤝', t:'A equipe devolve',
+    d:'O chefe te chamou. "Você segurou lá atrás quando eu pedi. Agora é o contrário: o carro novo é seu primeiro, e o seu companheiro que espere."',
+    ops:[
+      { t:'Aceitar', tom:'direto', e:{ igualdade:1, teamRel:6, comp:{tens:10} } },
+      { t:'Dividir com o companheiro', tom:'lealdade', e:{ comp:{conf:14, afeto:12}, teamRel:3 } }
+    ] },
+  briga_interna: { ic:'🔥', t:'A conta da briga',
+    d:'Na reunião de renovação, o toque com o seu companheiro apareceu em terceiro lugar na lista de motivos para não renovar.',
+    ops:[
+      { t:'Assumir e prometer que não repete', tom:'direto', e:{ teamRel:6, moral:-4 } },
+      { t:'Culpar o outro', tom:'publico', e:{ teamRel:-8, comp:{tens:14} } },
+      { t:'Dizer que faria de novo', tom:'frieza', e:{ teamRel:-12, resp:9, moral:6 } }
+    ] },
+  reserva_forte: { ic:'👤', t:'O reserva não saiu de perto',
+    d:'Aquele fim de semana em que ele correu por você não foi esquecido. Ele está no simulador todo dia e a equipe gosta do número que ele entrega.',
+    ops:[
+      { t:'Bater ele no simulador', tom:'tecnico', e:{ pace:.6, moral:-3, teamRel:4 } },
+      { t:'Trazer ele para o seu lado', tom:'alianca', e:{ amigo:1, teamRel:2 } },
+      { t:'Ignorar', tom:'frieza', e:{ teamRel:-6, moral:-4 } }
+    ] },
+  cobranca_academia: { ic:'🎓', t:'A academia quer resposta',
+    d:'Eles pagaram dois anos da sua carreira e agora querem saber por que você ainda não está onde eles esperavam.',
+    ops:[
+      { t:'Mostrar os números', tom:'tecnico', e:{ teamRel:4, resp:6 } },
+      { t:'Pedir mais um ano', tom:'pessoal', e:{ moral:-4, semente:{ k:'cobranca_academia', anos:1 } } },
+      { t:'Sair do programa', tom:'direto', e:{ dinheiro:-400e3, moral:5, saiuAcademia:1 } }
+    ] },
+  preso_academia: { ic:'⛓️', t:'A cláusula',
+    d:'Apareceu uma vaga melhor. O programa lembrou, por escrito, que você tem mais um ano de contrato com eles.',
+    ops:[
+      { t:'Cumprir', tom:'lealdade', e:{ moral:-9, teamRel:5 } },
+      { t:'Pagar a multa', tom:'direto', e:{ dinheiro:-800e3, porta:1, moral:6 } },
+      { t:'Brigar na Justiça', tom:'pressao', e:{ fama:6, moral:-6, porta:1, dinheiro:-250e3 } }
+    ] },
+  porta_aberta: { ic:'🚪', t:'Aquele teste rendeu',
+    d:'A equipe do teste secreto voltou a ligar. Desta vez com uma proposta na mesa.',
+    ops:[
+      { t:'Ouvir com atenção', tom:'informacao', e:{ porta:2, fama:4 } },
+      { t:'Usar como alavanca com a sua equipe', tom:'pressao', e:{ teamRel:-6, dinheiro:350e3 } }
+    ] },
+  porta_fechada: { ic:'🔒', t:'A porta que não abriu',
+    d:'Você soube, por terceiros, que o seu nome foi cortado de uma lista curta. O motivo foi aquela recusa.',
+    ops:[
+      { t:'Ligar e tentar consertar', tom:'pessoal', e:{ porta:1, moral:-3 } },
+      { t:'Deixar para lá', tom:'frieza', e:{ moral:-6 } }
+    ] },
+  desconfianca: { ic:'👁️', t:'Eles não confiam mais em você',
+    d:'Desde aquele episódio, a equipe passou a te contar as coisas por último. Você descobriu o plano de estratégia na coletiva.',
+    ops:[
+      { t:'Chamar o chefe para uma conversa dura', tom:'direto', e:{ teamRel:6, moral:3 } },
+      { t:'Reconquistar em silêncio', tom:'lealdade', e:{ teamRel:4, pace:.4 } },
+      { t:'Começar a procurar saída', tom:'frieza', e:{ porta:1, teamRel:-8 } }
+    ] },
+  fama_fragil: { ic:'🩻', t:'A fama de frágil',
+    d:'Circula no paddock que você não aguenta temporada inteira. Não é verdade, e não importa.',
+    ops:[
+      { t:'Correr um fim de semana inteiro no limite para calar todo mundo', tom:'direto',
+        e:{ pace:.5, cons:-.4, fama:4 } },
+      { t:'Deixar os resultados falarem', tom:'frieza', e:{ moral:-4 } }
+    ] },
+  fama_malandro: { ic:'🃏', t:'A fama de malandro',
+    d:'Depois daquele rádio, virou piada: toda vez que alguém tem um problema, alguém no paddock pergunta se o rádio está funcionando.',
+    ops:[
+      { t:'Levar na esportiva', tom:'pessoal', e:{ fama:5, moral:3 } },
+      { t:'Se irritar publicamente', tom:'publico', e:{ fama:6, moral:-8, teamRel:-5 } }
+    ] },
+  livre: { ic:'🕊️', t:'A conta de ser livre',
+    d:'Você não deve nada a ninguém. E ninguém deve nada a você: quando a vaga apareceu, não havia telefone para tocar.',
+    ops:[
+      { t:'Bater na porta você mesmo', tom:'direto', e:{ porta:1, moral:4, fama:3 } },
+      { t:'Esperar o resultado falar', tom:'frieza', e:{ moral:-4 } }
+    ] }
+};
+
+/* ═══════════════════════════════════════════════════════════════
    ACADEMIAS DE PILOTOS
    Entrar numa abre portas, acelera a evolução e coloca seu nome na
    fila de uma equipe grande. Mas a cobrança é imediata: quem não
@@ -5585,6 +5892,53 @@ const Engine = {
   /* Relação vale nos dois modos: os eventos que a mexem acontecem nos dois,
      e um engenheiro do seu lado melhora o carro tanto no clássico quanto no
      realista. O que é exclusivo do realista é o dinheiro. */
+  /* ═══ ACONTECIMENTOS ═══
+     Os antigos continuam existindo do jeito que eram. Os novos não têm
+     resultado escrito na porta: a chance sai de quem você é e de quem está
+     do seu lado, e nunca aparece na tela. */
+  eventosTodos(){
+    const modo = Engine.ehRealista() ? 'realista' : 'normal';
+    return EVENTOS.concat(EVENTOS_FUNDOS.filter(e => !e.so || e.so === modo));
+  },
+  chanceEvento(ev, op){
+    const a = S.driver.attr;
+    let c = op.base != null ? op.base : .5;
+    if(op.attr){
+      const v = op.attr === 'fame' ? S.driver.fame : (a[op.attr] || 50);
+      c += (v - 62) / 100 * .42;
+    }
+    /* quem tem gente do lado se sai melhor de quase tudo */
+    const eng = Engine.pessoa('eng'), chefe = Engine.pessoa('chefe');
+    if(op.tom === 'tecnico' && eng)  c += (Engine.nota(eng) - 50) / 100 * .22;
+    if(op.tom === 'lealdade' || op.tom === 'direto') c += ((S.teamRel || 50) - 50) / 100 * .20;
+    if(op.tom === 'traicao') c -= ((S.marcas && S.marcas.politicagem) || 0) * .06;
+    if(op.tom === 'publico' && chefe) c -= chefe.rel.tens / 100 * .25;
+    c += (S.driver.morale - 55) / 100 * .16;
+    c += (S.driver.fame - 45) / 100 * .10;
+    /* e o empresário existe para isso */
+    c += Engine.bonusPorta() * .02;
+    if(Engine.temTraco('politico')) c += .07;
+    return clamp(c, .06, .94);
+  },
+
+  /* ── sementes ──
+     Uma escolha planta uma coisa que só volta anos depois, quando a sua
+     vida já é outra e a conta ficou mais cara. */
+  plantar(k, anos, extra){
+    if(!SEMENTES[k]) return;
+    S.sementes = S.sementes || [];
+    S.sementes.push(Object.assign({ k, ano: S.year + Math.max(1, anos || 2), plantada: S.year }, extra || {}));
+  },
+  colherSemente(){
+    const lista = S.sementes || [];
+    const i = lista.findIndex(x => x.ano <= S.year);
+    if(i < 0) return null;
+    const sem = lista.splice(i, 1)[0];
+    S.sementesColhidas = (S.sementesColhidas || []).concat([sem.k]);
+    return sem;
+  },
+  temSemente(){ return (S.sementes || []).some(x => x.ano <= S.year); },
+
   /* ═══ GENTE ═══
      O paddock deixou de ser duas barras. Cada pessoa tem jeito, objetivo
      próprio e memória do que você fez — e quatro medidas diferentes a seu
@@ -8656,6 +9010,12 @@ const Game = {
     Engine.sincronizarGente();
     Engine.espelharRel();
     if(cobrancas.length) setTimeout(()=>UI.toast(cobrancas[0]), 1400);
+    /* conta antiga que venceu no inverno bate à porta antes da primeira corrida */
+    if(Engine.temSemente()) setTimeout(()=>{
+      if(el('ov').classList.contains('on')) return;
+      const sm = Engine.colherSemente();
+      if(sm) UI.sementeModal(sm);
+    }, 900);
     S.relFeitas = [];
     /* preparação de pré-temporada: no modo rápido a equipe resolve por você */
     S.prep = Engine.prepZerado();
@@ -9094,8 +9454,9 @@ const Game = {
     if(!S.season) return null;
     const topo = S.season.isTop;
     const vistos = S.evVistos || [];
-    const cand = EVENTOS.filter(e =>
-      (e.quando === 'sempre' || (e.quando === 'topo') === topo) &&
+    const cand = Engine.eventosTodos().filter(e =>
+      (e.quando === 'sempre' || (e.quando === 'topo') === topo ||
+       (e.quando === 'base' && !topo)) &&
       vistos.indexOf(e.id) < 0 &&
       !(e.uma && (S.evUsados || []).indexOf(e.id) >= 0));
     if(!cand.length) return null;
@@ -9105,15 +9466,30 @@ const Game = {
     return R.pick(saco);
   },
   evento(){
+    /* antes de qualquer coisa: alguma conta antiga venceu? */
+    if(Engine.temSemente() && R.chance(.75)){
+      const sem = Engine.colherSemente();
+      if(sem) return UI.sementeModal(sem);
+    }
     const e = Game.sortearEvento();
     if(!e) return;
     S.evVistos = (S.evVistos || []).concat(e.id);
+    if(e.uma) S.evUsados = (S.evUsados || []).concat(e.id);
     UI.eventoModal(e);
   },
   escolherEvento(i){
     const ev = UI._ev; if(!ev) return UI.close();
     const o = ev.ops[i]; if(!o) return UI.close();
-    const e = o.e || {};
+    /* acontecimento novo: nada garantido. O mundo responde em quatro alturas
+       e a chance nunca apareceu na tela. */
+    let nivel = null, narra = null;
+    let e = o.e || {};
+    if(o.otimo || o.bom){
+      nivel = Engine.resolver(Engine.chanceEvento(ev, o));
+      const res = o[nivel] || o.bom || o.morno || { t:'Ficou por isso mesmo.', e:{} };
+      e = res.e || {}; narra = res.t;
+    }
+    UI._evNivel = nivel; UI._evNarra = narra;
     const a = S.driver.attr;
     let notas = [];
     ['pace','race','cons','wet','dev'].forEach(k=>{
@@ -9123,8 +9499,30 @@ const Game = {
     if(e.fama)  S.driver.fame   = clamp(S.driver.fame + e.fama, 0, 100);
     if(e.teamRel) S.teamRel = clamp((S.teamRel || 50) + e.teamRel, 0, 100);
     if(!S.rel) S.rel = { eng:50, comp:50, amigos:[] };
-    if(e.eng)  S.rel.eng  = clamp(S.rel.eng + e.eng, 0, 100);
-    if(e.comp) S.rel.comp = clamp(S.rel.comp + e.comp, 0, 100);
+    /* efeito sobre gente: número solto continua valendo, e objeto mexe nas
+       quatro medidas da pessoa certa */
+    const gente = (papel, v) => {
+      const p = Engine.pessoa(papel); if(!p) return;
+      Engine.mexerRel(p, typeof v === 'number'
+        ? { conf: Math.round(v * .7), afeto: Math.round(v * .5), tens: -Math.round(v * .3) } : v);
+    };
+    if(e.eng)  gente('eng', e.eng);
+    if(e.comp) gente('comp', e.comp);
+    if(e.resp){ const p = Engine.pessoa('eng') || Engine.pessoa('chefe'); if(p) Engine.mexerRel(p, { resp: e.resp }); }
+    S.marcas = S.marcas || {};
+    if(e.porta)       S.marcas.porta = (S.marcas.porta || 0) + e.porta;
+    if(e.igualdade)   S.marcas.igualdade = S.year;
+    if(e.politicagem) S.marcas.politicagem = (S.marcas.politicagem || 0) + e.politicagem;
+    if(e.saiuAcademia){ S.academy = null; notas.push('fora do programa'); }
+    /* o que volta anos depois */
+    if(e.semente) Engine.plantar(e.semente.k, e.semente.anos);
+    /* cobrança proporcional ao que foi emprestado, não a um número fixo */
+    if(e.dinheiroMult && S.money){
+      const base = 500e3;
+      const v = Math.round(base * Math.abs(e.dinheiroMult));
+      S.money.saldo += e.dinheiroMult > 0 ? v : -v;
+      notas.push((e.dinheiroMult > 0 ? '+' : '') + fmtD(e.dinheiroMult > 0 ? v : -v));
+    }
     if(e.dinheiro && S.money){
       S.money.saldo += e.dinheiro;
       notas.push((e.dinheiro > 0 ? '+' : '') + fmtD(e.dinheiro));
@@ -9156,8 +9554,24 @@ const Game = {
       notas.push(ganhou ? 'ganhou ' + fmtD(v) + ' na mesa' : 'perdeu ' + fmtD(v) + ' na mesa');
     }
     S.driver.ovr = Engine.ovr(a);
-    UI.close(); UI.render(); Game.save();
+    UI.render(); Game.save();
+    if(UI._evNarra){
+      const nv = UI._evNivel; UI._evNarra = null; UI._evNivel = null;
+      return UI.eventoResultado(ev, o, narra, nv, notas);
+    }
+    UI.close();
     UI.toast(o.d + (notas.length ? '  (' + notas.join(' · ') + ')' : ''));
+  },
+
+  /* ── a conta antiga que venceu ── */
+  escolherSemente(i){
+    const sm = UI._sem; if(!sm) return UI.close();
+    const def = SEMENTES[sm.k]; if(!def) return UI.close();
+    const o = def.ops[i]; if(!o) return UI.close();
+    UI._ev = { id:'semente_' + sm.k, t:def.t, d:def.d, ic:def.ic, ops:def.ops };
+    UI._evNarra = null; UI._evNivel = null;
+    Game.escolherEvento(i);
+    UI._sem = null;
   },
 
   /* o rival é sempre alguém do grid — de preferência quem está perto de você */
@@ -9958,8 +10372,47 @@ UI.eventoModal = function(ev){
   UI.modal(UI.head(ev.t, `${ev.ic} ${S.year} · ${esc(S.season ? S.season.cat : '')}`, false) +
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">${esc(ev.d)}</div>
+      ${ev.ops[0] && (ev.ops[0].otimo || ev.ops[0].bom) ? `<p class="mut" style="font-size:12px;margin:0 0 10px">
+        Nenhuma destas escolhas tem resultado garantido.</p>` : ''}
       ${ev.ops.map((o,i)=>`<button class="dil" onclick="Game.escolherEvento(${i})">
-        <b>${esc(o.t)}</b><span>${esc(o.d)}</span></button>`).join('')}
+        <b>${esc(o.t)}</b><span>${esc(o.d || Engine.tomLabel(o.tom) || '')}</span></button>`).join('')}
+    </div>`);
+};
+
+/* o desfecho de um acontecimento: o mundo respondeu, e nem sempre como você queria */
+UI.eventoResultado = function(ev, op, texto, nivel, notas){
+  const cor = nivel === 'otimo' ? 'var(--green)' : nivel === 'bom' ? 'var(--gold)'
+            : nivel === 'morno' ? 'var(--dim2)' : 'var(--red2)';
+  const cap = nivel === 'otimo' ? 'Saiu melhor do que devia' : nivel === 'bom' ? 'Deu certo'
+            : nivel === 'morno' ? 'Ficou no meio do caminho' : 'Deu errado';
+  UI.modal(UI.head(ev.t, (ev.ic || '') + ' ' + S.year, false) +
+    `<div class="mbd">
+      <div style="font-size:12px;color:var(--dim2);margin-bottom:9px">Você escolheu: ${esc(op.t)}</div>
+      <div style="padding:12px 14px;border-radius:var(--r-sm);background:var(--panel2);
+           border:1px solid var(--line);border-left:3px solid ${cor};margin-bottom:12px">
+        <span class="lbl" style="display:block;margin-bottom:5px;color:${cor}">${cap}</span>
+        <div style="font-size:13.5px;line-height:1.6">${esc(texto)}</div>
+      </div>
+      ${(notas && notas.length) ? `<div style="font-size:12px;color:var(--dim)">${esc(notas.join(' · '))}</div>` : ''}
+      <p class="mut" style="font-size:12px;margin:12px 0 0">
+        Ninguém te disse a chance disso. Nem antes, nem agora.
+      </p>
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();UI.render()">Seguir</button></div>`);
+};
+
+/* uma coisa que você fez anos atrás voltou */
+UI.sementeModal = function(sem){
+  const def = SEMENTES[sem.k]; if(!def) return;
+  UI._sem = sem;
+  UI.modal(UI.head(def.t, `${def.ic} vem de ${sem.plantada} · ${S.year}`, false) +
+    `<div class="mbd">
+      <div style="font-size:11.5px;color:var(--gold);font-weight:800;margin-bottom:7px">
+        ⏳ ISSO COMEÇOU EM ${sem.plantada}</div>
+      <div class="res-nar" style="margin-top:0">${esc(def.d)}</div>
+      ${def.ops.map((o, i) => `<button class="dil" onclick="Game.escolherSemente(${i})">
+        <b>${esc(o.t)}</b><span>${esc(Engine.tomLabel(o.tom))}</span></button>`).join('')}
     </div>`);
 };
 
