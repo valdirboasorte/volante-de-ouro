@@ -3172,6 +3172,163 @@ const RELACOES = {
 };
 
 /* ═══════════════════════════════════════════════════════════════
+   TRAÇOS
+   Todo piloto tem duas ou três coisas que ninguém contou para ele.
+   Elas valem desde a primeira corrida, mas não aparecem em lugar
+   nenhum: o jogador descobre olhando o que acontece — três domingos
+   de chuva acima do que o carro dava, e a ficha começa a cair.
+   Suspeita primeiro, certeza depois, e nunca uma barra.
+   ═══════════════════════════════════════════════════════════════ */
+const TRACOS = {
+  chuva:   { n:'Homem da chuva',        ic:'🌧️', tipo:'nato',
+    d:'Quando a pista molha, você vira outro piloto.',
+    pista:'Na chuva você tem andado acima do que o carro permite.',
+    ef:{ wetQ:2.2, wetR:2.7, r:-.45 } },
+  sabado:  { n:'Uma volta só',          ic:'⚡', tipo:'nato',
+    d:'Você monta uma volta perfeita quando precisa. Manter isso 60 voltas é outra história.',
+    pista:'Você larga sempre à frente do que o carro justifica.',
+    ef:{ q:2.1, r:-1.05 } },
+  domingo: { n:'Piloto de domingo',     ic:'🏁', tipo:'nato',
+    d:'Você não é o mais rápido no sábado. No domingo, o cronômetro esquece disso.',
+    pista:'Você tem ganhado posições em quase toda corrida.',
+    ef:{ q:-1.25, r:2.1 } },
+  gelo:    { n:'Sangue-frio',           ic:'❄️', tipo:'nato',
+    d:'Quanto mais pesa o momento, mais limpo você anda.',
+    pista:'Você não erra quando está sob pressão. Nunca.',
+    ef:{ crash:.70, r:.45, q:-.55 } },
+  ferro:   { n:'Mão pesada',            ic:'🔧', tipo:'nato',
+    d:'Você tira do carro o que ele não tem, e o carro cobra.',
+    pista:'Seu carro quebra mais que o do seu companheiro, e não é azar.',
+    ef:{ rel:-.026, q:1.0, r:.55 } },
+  pneu:    { n:'Cuida do pneu',         ic:'🛞', tipo:'nato',
+    d:'Você chega no fim do stint com borracha que ninguém mais tem.',
+    pista:'Você cresce no fim das corridas longas.',
+    ef:{ r:1.6, q:-.95 } },
+  largada: { n:'Larga como poucos',     ic:'🚦', tipo:'nato',
+    d:'Os primeiros duzentos metros são seus.',
+    pista:'Você ganha posições na primeira volta com frequência demais para ser sorte.',
+    ef:{ r:1.2, q:-.7 } },
+  quebra:  { n:'Racha sob pressão',     ic:'💥', tipo:'nato',
+    d:'Quando o campeonato aperta, alguma coisa em você cede.',
+    pista:'Nas corridas que mais valiam, você foi pior do que era.',
+    ef:{ crash:1.45, r:-.85 } },
+  /* estes não nascem com você: você os constrói escolhendo */
+  teimoso: { n:'Não escuta ninguém',    ic:'🐂', tipo:'feito',
+    d:'Você monta o carro do seu jeito. Às vezes o seu jeito é melhor.',
+    pista:'Você parou de seguir o engenheiro faz tempo.',
+    ef:{ q:.7, r:.6, engTens:.6 } },
+  politico:{ n:'Se move bem no paddock',ic:'🎭', tipo:'feito',
+    d:'Você aprendeu a falar com quem decide.',
+    pista:'Portas se abrem para você antes de você bater nelas.',
+    ef:{ porta:1 } },
+  bruto:   { n:'Não abre mão',          ic:'🥊', tipo:'feito',
+    d:'Ninguém passa por fora em você. Isso custa lataria.',
+    pista:'Você tem se metido em briga de roda demais.',
+    ef:{ r:1.05, crash:1.35 } },
+  metodico:{ n:'Metódico',              ic:'📐', tipo:'feito',
+    d:'Você virou parte do time técnico sem deixar de ser piloto.',
+    pista:'Seu acerto tem sido melhor que o da garagem ao lado.',
+    ef:{ q:.55, engConf:.5 } }
+};
+const TRACO_KEYS = Object.keys(TRACOS);
+const TRACOS_NATOS = TRACO_KEYS.filter(k => TRACOS[k].tipo === 'nato');
+
+/* ═══════════════════════════════════════════════════════════════
+   O INVERNO
+   Quatro meses entre uma temporada e outra. Você não distribui
+   pontos: você decide onde estar, e cada lugar cobra alguma coisa.
+   O resultado nunca é garantido — depende de quem você é, do que
+   você não sabe sobre si mesmo, e de sorte.
+   ═══════════════════════════════════════════════════════════════ */
+const INVERNO = [
+  { k:'fabrica', ic:'🏭', n:'Morar perto da fábrica',
+    d:'Você aparece todo dia, atrapalha, pergunta e aprende. Some da própria vida por quatro meses.',
+    area:'eng', custo:0, tom:'tecnico', traco:'metodico',
+    otimo:{ t:'Você saiu do inverno sabendo desenhar meia asa. A engenharia passou a te tratar como par.',
+            prep:{eng:3, sim:1}, e:{ eng:{conf:14, resp:8}, dev:.8 } },
+    bom:  { t:'Você entendeu o carro de um jeito que não entendia. Ninguém mais fala com você em outubro.',
+            prep:{eng:3}, e:{ eng:{conf:8}, dev:.4, moral:-3 } },
+    morno:{ t:'Quatro meses de reunião. Você aprendeu o suficiente para não ser ignorado.',
+            prep:{eng:2}, e:{ eng:{conf:3} } },
+    ruim: { t:'Você atrapalhou mais do que ajudou, e a engenharia deixou isso claro em fevereiro.',
+            prep:{eng:1}, e:{ eng:{tens:8}, moral:-6 } } },
+
+  { k:'fisico', ic:'🏋️', n:'Preparador físico de verdade',
+    d:'Um profissional caro, com um plano que não tem folga. Pescoço, coração, sono, comida.',
+    area:'fis', custo:140e3, tom:'direto',
+    otimo:{ t:'Você chegou em março com um corpo que aguenta a última volta como aguenta a primeira.',
+            prep:{fis:3, race:1}, e:{ cons:.9, moral:5 } },
+    bom:  { t:'A diferença aparece na segunda metade de cada corrida.', prep:{fis:3}, e:{ cons:.5 } },
+    morno:{ t:'Você seguiu o plano até dezembro. Depois foi seguindo mais ou menos.', prep:{fis:2}, e:{} },
+    ruim: { t:'Você exagerou e passou fevereiro parado com uma lesão idiota.',
+            prep:{fis:1}, e:{ moral:-8, lesao:1 } } },
+
+  { k:'simulador', ic:'🖥️', n:'Simulador até enjoar',
+    d:'Todo traçado do calendário, mil voltas cada, até a mão saber sozinha.',
+    area:'sim', custo:60e3, tom:'tecnico',
+    otimo:{ t:'Você chega em cada pista nova já sabendo onde o carro reclama.',
+            prep:{sim:3, eng:1}, e:{ pace:.9 } },
+    bom:  { t:'A primeira sessão de cada fim de semana deixou de ser desperdício.', prep:{sim:3}, e:{ pace:.5 } },
+    morno:{ t:'Muita volta, pouco proveito: o simulador da equipe não é dos melhores.', prep:{sim:2}, e:{} },
+    ruim: { t:'Você decorou o simulador, não a pista. Em março a diferença ficou embaraçosa.',
+            prep:{sim:1}, e:{ moral:-5, dev:-.3 } } },
+
+  { k:'paralela', ic:'🏆', n:'Temporada paralela em outra categoria',
+    d:'Correr de verdade no inverno: carro diferente, gente diferente, risco de verdade.',
+    area:'race', custo:220e3, tom:'direto',
+    otimo:{ t:'Você voltou com quilometragem de corrida que nenhum simulador dá — e com uma taça.',
+            prep:{race:3, sim:1}, e:{ race:1.1, fama:7, moral:8 } },
+    bom:  { t:'Duas corridas boas, uma ruim, e uma leitura de corrida melhor do que a de dezembro.',
+            prep:{race:3}, e:{ race:.6, fama:3 } },
+    morno:{ t:'Carro ruim, resultado ruim, e o inverno passou.', prep:{race:2}, e:{ moral:-4 } },
+    ruim: { t:'Batida feia na terceira etapa. Você começa a temporada se recuperando.',
+            prep:{race:1}, e:{ lesao:1, moral:-10, fama:4 } } },
+
+  { k:'chuva', ic:'🌧️', n:'Semanas de kart na chuva',
+    d:'Uma pista pequena, um kart velho e água. Barato, humilhante e eficiente.',
+    area:'wet', custo:18e3, tom:'direto', traco:'chuva',
+    otimo:{ t:'Você achou a aderência onde não havia. Vai fazer diferença num domingo qualquer.',
+            prep:{wet:3, race:1}, e:{ wet:1.2 } },
+    bom:  { t:'A sensibilidade de traseira melhorou muito.', prep:{wet:3}, e:{ wet:.6 } },
+    morno:{ t:'Choveu pouco. Você treinou no seco a maior parte do tempo.', prep:{wet:2}, e:{} },
+    ruim: { t:'Você pegou os piores karts da Europa e passou o inverno com raiva.',
+            prep:{wet:1}, e:{ moral:-5 } } },
+
+  { k:'vida', ic:'🏖️', n:'Sumir do mundo por dois meses',
+    d:'Nem fábrica, nem academia, nem imprensa. Gente que você quase esqueceu que existia.',
+    area:null, custo:35e3, tom:'pessoal',
+    otimo:{ t:'Você voltou inteiro de um jeito que não sabia que precisava. A cabeça faz o resto.',
+            prep:{fis:1, sim:1}, e:{ moral:22, cons:.5 } },
+    bom:  { t:'Descanso de verdade. Março começou leve.', prep:{fis:1}, e:{ moral:15 } },
+    morno:{ t:'Você descansou e se sentiu culpado o tempo todo.', prep:{}, e:{ moral:6 } },
+    ruim: { t:'Você sumiu, a equipe estranhou, e alguém comentou com a imprensa.',
+            prep:{}, e:{ moral:8, teamRel:-7, fama:-3 } } },
+
+  { k:'imprensa', ic:'🎙️', n:'Temporada de eventos e entrevistas',
+    d:'Aparecer. Falar. Ser lembrado por quem assina contrato e por quem paga a conta.',
+    area:null, custo:0, tom:'publico', traco:'politico',
+    otimo:{ t:'Seu nome circulou o inverno inteiro. Duas portas se abriram sem você bater.',
+            prep:{}, e:{ fama:14, porta:1, dinheiro:180e3 } },
+    bom:  { t:'Você virou nome conhecido fora do paddock.', prep:{}, e:{ fama:9, dinheiro:90e3 } },
+    morno:{ t:'Muito avião, pouca repercussão.', prep:{}, e:{ fama:3, moral:-4 } },
+    ruim: { t:'Uma frase mal colocada em janeiro rendeu manchete até março.',
+            prep:{}, e:{ fama:6, teamRel:-8, moral:-7 } } }
+];
+
+/* onde você põe a si mesmo — continua sendo escolha, agora com nome */
+const COMPROMISSOS = [
+  { k:'eu',     ic:'🫵', n:'Em você',
+    d:'O inverno inteiro é seu. A equipe que se vire com o carro.',
+    ds:'Você evolui mais rápido e a fábrica sente a sua falta.' },
+  { k:'meio',   ic:'⚖️', n:'Dividido',
+    d:'Metade no seu preparo, metade dentro da equipe.',
+    ds:'Nem um extremo nem outro.' },
+  { k:'equipe', ic:'🔧', n:'Na equipe',
+    d:'Você entrega o inverno para a fábrica e para o desenvolvimento do carro.',
+    ds:'O carro melhora, a relação melhora, e você evolui menos.' }
+];
+
+/* ═══════════════════════════════════════════════════════════════
    GENTE
    Um paddock não é uma barra de 0 a 100. É gente com jeito próprio,
    com um objetivo que não é o seu, e com memória do que você fez.
@@ -5943,6 +6100,172 @@ const Engine = {
      ajuda o carro da equipe e a sua relação com ela em vez de ajudar você.
      Não dá para treinar tudo: é exatamente aí que está a escolha. */
   PREP_ATTR: { fis:'cons', sim:'pace', race:'race', wet:'wet', eng:'dev' },
+  /* ═══ TRAÇOS ═══
+     Duas coisas que ninguém te contou sobre você. Valem desde a primeira
+     corrida; a descoberta vem depois, olhando o que acontece domingo após
+     domingo. Suspeita primeiro, certeza depois. */
+  sortearTracos(){
+    const a = S.driver.attr, d = S.driver;
+    /* o sorteio pende para o que o piloto já é: quem tem chuva alta tende a
+       ser homem de chuva, quem é agressivo tende a ter a mão pesada */
+    const peso = {
+      chuva:   1 + (a.wet - 70) / 22,
+      sabado:  1 + (a.pace - a.race) / 12,
+      domingo: 1 + (a.race - a.pace) / 12,
+      gelo:    1 + (a.cons - 70) / 22,
+      ferro:   1 + (STYLES[d.style] ? (STYLES[d.style].risk - 1) * 2.2 : 0),
+      pneu:    1 + (a.race - 70) / 26,
+      largada: 1,
+      quebra:  1 + (60 - a.cons) / 20
+    };
+    const saco = [];
+    TRACOS_NATOS.forEach(k => { const w = Math.max(.2, peso[k] || 1);
+      for(let i = 0; i < Math.round(w * 4); i++) saco.push(k); });
+    const t = {};
+    const opostos = { sabado:'domingo', domingo:'sabado', gelo:'quebra', quebra:'gelo' };
+    let tentativas = 0;
+    const quantos = R.chance(.34) ? 1 : 2;
+    while(Object.keys(t).length < quantos && tentativas++ < 24 && saco.length){
+      const k = R.pick(saco);
+      if(t[k] || t[opostos[k]]) continue;    /* nem repetido, nem o próprio oposto */
+      t[k] = { visto: 0, estado: 'oculto' };
+    }
+    return t;
+  },
+  tracos(){
+    if(!S.driver.tracos) S.driver.tracos = Engine.sortearTracos();
+    return S.driver.tracos;
+  },
+  temTraco(k){ const t = Engine.tracos()[k]; return !!t; },
+  tracoEstado(k){ const t = Engine.tracos()[k]; return t ? t.estado : null; },
+  tracosSabidos(){
+    const t = Engine.tracos();
+    return Object.keys(t).filter(k => t[k].estado !== 'oculto');
+  },
+
+  /* o efeito é real antes de você saber que existe */
+  tracoEfeito(wet){
+    const t = Engine.tracos();
+    const o = { q:0, r:0, rel:0, crash:1 };
+    Object.keys(t).forEach(k => {
+      const e = (TRACOS[k] || {}).ef || {};
+      o.q += (e.q || 0) + (wet ? (e.wetQ || 0) : 0);
+      o.r += (e.r || 0) + (wet ? (e.wetR || 0) : 0);
+      o.rel += e.rel || 0;
+      if(e.crash) o.crash *= e.crash;
+    });
+    /* traço muda o formato do piloto, não o tamanho dele: a escala existe
+       para que ter dois traços bons não vire uma carreira mais fácil */
+    o.q *= .72; o.r *= .72;
+    /* "racha sob pressão" só morde quando o campeonato realmente aperta */
+    if(t.quebra && S.season){
+      const s = Engine.summary(S.season);
+      const apertado = s.pos <= 3 && S.season.round > S.season.calendar.length * .6;
+      if(!apertado){ o.r += .5; o.crash /= 1.45; }
+    }
+    return o;
+  },
+
+  /* ── a descoberta ──
+     Cada corrida deixa pistas. Acumuladas, viram suspeita; mais um tanto e
+     viram certeza. Nada disso é sorteado: é o que o domingo mostrou. */
+  evidenciar(rec){
+    const t = Engine.tracos();
+    const sea = S.season;
+    if(!sea) return null;
+    const marcar = (k, n) => { if(t[k]) t[k].visto = (t[k].visto || 0) + n; };
+    /* O companheiro de equipe é o único controle honesto que existe: mesmo
+       carro, mesma garagem, mesmo fim de semana. É contra ele que se mede
+       se você é rápido no sábado ou no domingo — e não contra o grid, que
+       diz mais sobre a equipe do que sobre o piloto. */
+    const dQ = (rec.tmGrid && rec.grid) ? rec.tmGrid - rec.grid : null;
+    const dR = (rec.tmPos && rec.pos)   ? rec.tmPos - rec.pos   : null;
+    const ganhou = rec.grid && rec.pos ? rec.grid - rec.pos : 0;
+    const bateu = rec.dnf === 'ACID', quebrou = rec.dnf === 'MEC';
+
+    if(dQ != null && dQ >= 3) marcar('sabado', 2);
+    if(dQ != null && dR != null && dR - dQ >= 3) marcar('domingo', 2);
+    if(rec.wet && (ganhou >= 2 || (dR != null && dR >= 2))) marcar('chuva', 4);
+    if(ganhou >= 3){ marcar('largada', 2); marcar('pneu', 2); }
+    if(quebrou) marcar('ferro', 3);
+    if(bateu){ marcar('quebra', 2); marcar('bruto', 2); }
+    /* sangue-frio só se mede quando havia o que perder */
+    const sum = Engine.summary(sea);
+    const aperto = sum.pos <= 3 && sea.round > sea.calendar.length * .55;
+    if(aperto && !bateu && rec.pos && rec.pos <= 5) marcar('gelo', 3);
+    if(aperto && (bateu || (rec.pos && rec.grid && rec.pos - rec.grid >= 4))) marcar('quebra', 3);
+    if(rec.setup && rec.setup.erro != null && rec.setup.erro <= 1) marcar('metodico', 1);
+    if(rec.setup && rec.setup.auto === false && rec.setup.rev
+       && rec.setup.rev.some(v => v.mov > 0 && v.estado !== 'vazio' && !v.certo)) marcar('teimoso', 1);
+
+    /* passou o limiar? o piloto (e o jogador) começam a desconfiar */
+    const novos = [];
+    Object.keys(t).forEach(k => {
+      const v = t[k];
+      if(v.estado === 'oculto' && v.visto >= 10){ v.estado = 'suspeita'; novos.push([k, 'suspeita']); }
+      else if(v.estado === 'suspeita' && v.visto >= 28){ v.estado = 'certo'; novos.push([k, 'certo']); }
+    });
+    return novos.length ? novos : null;
+  },
+
+  /* traço que se constrói escolhendo, não nascendo */
+  ganharTraco(k){
+    const t = Engine.tracos();
+    if(t[k]) return false;
+    t[k] = { visto: 6, estado: 'suspeita' };
+    return true;
+  },
+
+  /* ═══ O INVERNO ═══
+     Quatro meses, duas ou três decisões, nenhuma garantida. O que sai
+     disso continua entrando no mesmo S.prep de sempre — a conta é a
+     mesma, a escolha é que deixou de ser uma planilha. */
+  invernoVagas(){ return Engine.prepTotal() >= 7 ? 3 : 2; },
+  invernoFeito(){ return S.invernoAno === S.year; },
+  invernoEscolhas(){ return (S.invernoAno === S.year && S.invernoEsc) ? S.invernoEsc : []; },
+
+  /* a chance de dar certo depende de quem você é, de quanto a equipe te
+     ajuda e do traço escondido que combina com aquela escolha */
+  chanceInverno(item){
+    const a = S.driver.attr;
+    let c = .48;
+    if(item.area === 'eng')  c += (a.dev  - 62) / 100 * .5;
+    if(item.area === 'sim')  c += (a.pace - 62) / 100 * .4;
+    if(item.area === 'fis')  c += (a.cons - 62) / 100 * .4;
+    if(item.area === 'race') c += (a.race - 62) / 100 * .5;
+    if(item.area === 'wet')  c += (a.wet  - 62) / 100 * .5;
+    if(item.k === 'imprensa') c += (S.driver.fame - 45) / 100 * .55;
+    if(item.k === 'vida')     c += (55 - S.driver.morale) / 100 * .4;
+    if(item.traco && Engine.temTraco(item.traco)) c += .22;
+    if(S.academy) c += .07;
+    c += ((S.teamRel || 50) - 50) / 100 * .12;
+    if(Engine.temTraco('teimoso') && item.area === 'eng') c -= .18;
+    return clamp(c, .08, .93);
+  },
+
+  /* resolve o inverno inteiro e devolve o que aconteceu, para narrar */
+  resolverInverno(escolhas){
+    const p = Engine.prepZerado();
+    const notas = [];
+    const totalMax = Engine.prepTotal();
+    (escolhas || []).forEach(k => {
+      const item = INVERNO.find(x => x.k === k);
+      if(!item) return;
+      const nivel = Engine.resolver(Engine.chanceInverno(item));
+      const res = item[nivel] || item.bom;
+      Object.keys(res.prep || {}).forEach(a => p[a] = (p[a] || 0) + res.prep[a]);
+      notas.push({ k, ic:item.ic, n:item.n, nivel, t:res.t, e:res.e || {} });
+    });
+    /* o teto de sempre continua valendo: inverno bom rende, não multiplica */
+    let soma = p.fis + p.sim + p.race + p.wet + p.eng;
+    while(soma > totalMax){
+      const maior = ['fis','sim','race','wet','eng'].sort((x, y) => p[y] - p[x])[0];
+      if(!p[maior]) break;
+      p[maior]--; soma--;
+    }
+    return { prep: p, notas };
+  },
+
   prepTotal(){
     return 5 + (S.academy ? 1 : 0) + (S.career && S.career.titles > 0 ? 1 : 0);
   },
@@ -6357,6 +6680,8 @@ const Engine = {
     const ajuste = Engine.setupEfeito(sea, rd);
     /* garagem em guerra anda menos; garagem junta anda mais */
     const clima = Engine.bonusGente();
+    /* e o que o piloto é sem saber que é */
+    const tr = Engine.tracoEfeito(wet);
     const W = Engine.trackWeights(trk.type, wet);
     /* ── quanto a corrida é uma loteria ──
        Na F1 o mais rápido quase sempre vence. Na NASCAR, na IndyCar e na
@@ -6369,7 +6694,7 @@ const Engine = {
     /* ── classificação ── */
     const qual = sea.field.map(f=>{
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
-      const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).q : f.skill + f.qb + (wet ? R.gauss()*3 : 0), sea);
+      const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).q + tr.q : f.skill + f.qb + (wet ? R.gauss()*3 : 0), sea);
       return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
     }).sort((a,b)=>b.v-a.v);
     const grid = {}; qual.forEach((q,i)=>grid[q.f.id]=i+1);
@@ -6383,11 +6708,11 @@ const Engine = {
 
     sea.field.forEach(f => {
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR + clima.car : 0);
-      const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).r : f.skill + f.rb, sea);
+      const sk = Engine.compSkill(f.isMe ? Engine.meSkill(wet).r + tr.r : f.skill + f.rb, sea);
       const g = grid[f.id];
 
       /* confiabilidade */
-      let relBase = era.rel + (car-70)/380 + f.rel + (f.isMe ? ajuste.rel + clima.rel : 0);
+      let relBase = era.rel + (car-70)/380 + f.rel + (f.isMe ? ajuste.rel + clima.rel + tr.rel : 0);
       if(!sea.isTop) relBase = Math.min(.94, relBase + .13);
       const mech = !R.chance(clamp(relBase,.35,.97));
 
@@ -6396,6 +6721,7 @@ const Engine = {
       if(f.isMe){
         crashP *= STYLES[S.driver.style].risk;
         crashP *= (1 - (S.driver.attr.cons-50)/135);
+        crashP *= tr.crash;
       } else {
         crashP *= (1 - (f.skill-70)/230);
       }
@@ -7635,8 +7961,10 @@ const UI = {
     } else {
       h = `<button class="btn btn-gold btn-lg" onclick="Game.endSeason()">Encerrar a temporada ${sea.year} →</button>`;
     }
-    if(nx && !S.opts.fast && Engine.prepGastos() < Engine.prepTotal())
-      h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">🎯 Pré-temporada · ${Engine.prepTotal()-Engine.prepGastos()}</button>`;
+    if(nx && !S.opts.fast && !Engine.invernoFeito())
+      h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">❄️ O inverno</button>`;
+    if(Engine.tracosSabidos().length)
+      h += `<button class="btn btn-ghost btn-sm" onclick="UI.tracosModal()">🧭 Como você anda</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>
       <button class="btn btn-ghost btn-sm" onclick="UI.empresarios()">💼 ${Engine.emp() ? esc(Engine.emp().n.split(' ').pop()) : 'Empresário'}</button>`;
     if(Engine.ehRealista())
@@ -7774,59 +8102,113 @@ function classifHTML(r){
   </div>`;
 }
 
-/* ═══ PRÉ-TEMPORADA: TREINO E COMPROMISSO ═══ */
+/* ═══ O INVERNO ═══
+   Quatro meses e duas ou três decisões. Nenhum número, nenhuma barra:
+   você escolhe onde estar, e março responde. */
 UI.prepModal = function(){
-  const p = S.prep, sobra = Engine.prepTotal() - Engine.prepGastos();
-  const areas = [
-    ['fis',  'Preparação física', 'Aguenta o carro no fim da prova e sai mais inteiro de acidente.', 'Consistência'],
-    ['sim',  'Simulador',         'Volta atrás de volta procurando o décimo que falta.',            'Ritmo'],
-    ['race', 'Racecraft',         'Largada, defesa, ultrapassagem — a corrida de verdade.',         'Ultrapassagem'],
-    ['wet',  'Pista molhada',     'Poucos treinam. Quem treina ganha corrida no domingo de chuva.', 'Chuva'],
-    ['eng',  'Trabalho com os engenheiros', 'Você some do sofá e aparece na fábrica. O carro sente.', 'Desenvolvimento']
-  ];
-  const linha = ([k, nome, ds, atr]) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13.5px;font-weight:800">${esc(nome)}</div>
-        <div style="font-size:11.5px;color:var(--dim2)">${esc(ds)}</div>
-        <div style="font-size:11px;color:var(--dim);margin-top:2px">→ ${esc(atr)}${k==='eng'?' · carro da equipe · relação':''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <button class="btn btn-sm btn-ghost" onclick="Game.setPrep('${k}',-1)" ${p[k]<=0?'disabled':''}>−</button>
-        <b style="min-width:20px;text-align:center;font-size:16px;color:${p[k]?'var(--gold)':'var(--dim2)'}">${p[k]}</b>
-        <button class="btn btn-sm btn-ghost" onclick="Game.setPrep('${k}',1)" ${sobra<=0?'disabled':''}>+</button>
-      </div>
-    </div>`;
-  const comp = [
-    ['eu',    'Focar em você',        'Evolui bem mais rápido, mas a equipe percebe que você só pensa em si.', '+ evolução · − relação'],
-    ['meio',  'Equilibrado',          'Nem herói nem funcionário do mês. O caminho seguro.', 'sem efeito'],
-    ['equipe','Dedicar-se à equipe',  'Menos tempo para você, muito mais crédito interno — e um carro melhor.', '− evolução · + relação e carro']
-  ];
-  UI.modal(UI.head('Pré-temporada', `${S.year} · ${esc(S.season ? S.season.cat : Engine.topCat())}${S.team?' · '+esc(S.team.name):''}`, false) +
+  if(Engine.invernoFeito()) return UI.invernoResumo();
+  const vagas = Engine.invernoVagas();
+  const esc0 = S.invernoSel = S.invernoSel || [];
+  const realista = Engine.ehRealista();
+  const cartao = (it) => {
+    const sel = esc0.indexOf(it.k) >= 0;
+    const caro = realista && it.custo && S.money && S.money.saldo < it.custo;
+    const cheio = !sel && esc0.length >= vagas;
+    return `<button class="dil ${sel ? 'sel' : ''}" ${caro || cheio ? 'disabled style="opacity:.4"' : (sel ? 'style="border-color:var(--gold)"' : '')}
+        onclick="Game.marcarInverno('${it.k}')">
+      <b>${it.ic} ${esc(it.n)}${realista && it.custo ? ' · ' + fmtD(it.custo) : ''}</b>
+      <span>${esc(it.d)}</span></button>`;
+  };
+  const comp = COMPROMISSOS.map(c => `<button class="dil ${S.compromisso === c.k ? 'sel' : ''}"
+      style="${S.compromisso === c.k ? 'border-color:var(--gold)' : ''}" onclick="Game.setCompromisso('${c.k}')">
+      <b>${c.ic} ${esc(c.n)}</b><span>${esc(c.d)} ${esc(c.ds)}</span></button>`).join('');
+
+  UI.modal(UI.head('O inverno', `${S.year - 1} vira ${S.year} · ${esc(S.team ? S.team.name : '')}`, false) +
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">
-        O inverno é seu. Onde você põe as horas agora decide o que vai sobrar em novembro —
-        e ninguém consegue treinar tudo ao mesmo tempo.
+        Quatro meses até a primeira corrida. Dá para estar em ${vagas === 3 ? 'três lugares' : 'dois lugares'},
+        não em sete. O que sai de cada um depende de quem você é — inclusive das coisas
+        que você ainda não sabe sobre si mesmo.
       </div>
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-        <span class="lbl">Pontos de preparação</span>
-        <span class="pill ${sobra>0?'':'rd'}">${sobra} restante${sobra===1?'':'s'}</span>
+      <div style="display:flex;align-items:baseline;gap:8px;margin:14px 0 8px">
+        <span class="lbl">Onde você vai passar o inverno</span>
+        <span class="sp"></span>
+        <span style="font-size:11px;font-weight:800;color:${esc0.length >= vagas ? 'var(--green)' : 'var(--gold)'}">
+          ${esc0.length} de ${vagas}</span>
       </div>
-      ${areas.map(linha).join('')}
-      <div style="margin-top:16px">
-        <span class="lbl" style="display:block;margin-bottom:7px">Compromisso da temporada</span>
-        ${comp.map(([k,tt,ds,ef])=>`<button class="dil ${S.compromisso===k?'sel':''}"
-            style="${S.compromisso===k?'border-color:var(--gold)':''}" onclick="Game.setCompromisso('${k}')">
-            <b>${esc(tt)}</b><span>${esc(ds)}</span>
-            <span style="display:block;font-size:11px;color:var(--gold);font-weight:800;margin-top:3px">${esc(ef)}</span>
-          </button>`).join('')}
-      </div>
+      ${INVERNO.map(cartao).join('')}
+      <span class="lbl" style="display:block;margin:16px 0 7px">E onde você põe a si mesmo</span>
+      ${comp}
     </div>
     <div class="mft">
-      <button class="btn btn-ghost btn-sm" onclick="Game.prepAuto()">Deixar com a equipe</button>
+      <button class="btn btn-ghost btn-sm" onclick="Game.invernoAuto()">Deixar com a equipe</button>
       <span class="sp"></span>
+      <button class="btn btn-primary" ${esc0.length ? '' : 'disabled style="opacity:.45"'}
+              onclick="Game.fecharInverno()">Passar o inverno →</button>
+    </div>`);
+};
+
+/* o que quatro meses fizeram — em prosa, e nem sempre o que você queria */
+UI.invernoResumo = function(){
+  const notas = S.invernoNotas || [];
+  const cor = n => n === 'otimo' ? 'var(--green)' : n === 'bom' ? 'var(--gold)'
+            : n === 'morno' ? 'var(--dim2)' : 'var(--red2)';
+  const rot = n => n === 'otimo' ? 'saiu melhor do que devia' : n === 'bom' ? 'funcionou'
+            : n === 'morno' ? 'ficou no meio do caminho' : 'não funcionou';
+  UI.modal(UI.head('Março', `${S.year} · ${esc(S.team ? S.team.name : '')}`, false) +
+    `<div class="mbd">
+      ${notas.length ? notas.map(x => `<div style="padding:11px 13px;border-radius:var(--r-sm);
+         background:var(--panel2);border:1px solid var(--line);border-left:3px solid ${cor(x.nivel)};
+         margin-bottom:10px">
+         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+           <b style="font-size:13px">${x.ic} ${esc(x.n)}</b><span class="sp"></span>
+           <span style="font-size:11px;font-weight:800;color:${cor(x.nivel)}">${rot(x.nivel)}</span>
+         </div>
+         <div style="font-size:13px;line-height:1.55">${esc(x.t)}</div>
+       </div>`).join('')
+        : '<div class="empty" style="padding:12px">O inverno passou sem nada de especial.</div>'}
+      ${(S.invernoDescobertas || []).length ? `<div style="padding:11px 13px;border-radius:var(--r-sm);
+         border:1px dashed var(--gold);margin-top:4px">
+         <span class="lbl" style="display:block;margin-bottom:4px;color:var(--gold)">Alguma coisa sobre você</span>
+         ${S.invernoDescobertas.map(k => `<div style="font-size:12.5px;color:var(--dim)">
+           ${TRACOS[k] ? TRACOS[k].ic + ' ' + esc(TRACOS[k].d) : ''}</div>`).join('')}
+       </div>` : ''}
+    </div>
+    <div class="mft"><span class="sp"></span>
       <button class="btn btn-primary" onclick="UI.close();Game.save()">Começar a temporada →</button>
     </div>`);
+};
+
+/* o que você foi descobrindo sobre si mesmo, corrida após corrida */
+UI.tracosModal = function(){
+  const t = Engine.tracos();
+  const ks = Object.keys(t).filter(k => t[k].estado !== 'oculto');
+  UI.modal(UI.head('Como você anda', 'O que as corridas mostraram sobre o seu jeito de pilotar') +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">
+        Ninguém te entrega uma ficha com as suas qualidades. Elas aparecem nos resultados,
+        e primeiro como desconfiança.
+      </div>
+      ${ks.length ? ks.map(k => {
+        const tr = TRACOS[k], st = t[k].estado;
+        return `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
+          border:1px solid var(--line);border-left:3px solid ${st === 'certo' ? 'var(--gold)' : 'var(--dim2)'};
+          margin-bottom:10px">
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+            <b style="font-size:13.5px">${tr.ic} ${esc(tr.n)}</b><span class="sp"></span>
+            <span class="pill" style="${st === 'certo' ? 'color:var(--gold);border-color:var(--gold)55' : ''}">
+              ${st === 'certo' ? 'confirmado' : 'suspeita'}</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--dim)">${esc(st === 'certo' ? tr.d : tr.pista)}</div>
+        </div>`;
+      }).join('')
+        : '<div class="empty" style="padding:14px">Ainda é cedo. Corra mais e alguma coisa vai começar a aparecer.</div>'}
+      <p class="mut" style="font-size:12px;margin:10px 0 0">
+        O que vale já valia antes de você desconfiar. Descobrir só muda o que você faz com isso.
+      </p>
+    </div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`, true);
 };
 
 /* ═══ ACERTO DO CARRO ═══
@@ -8277,12 +8659,14 @@ const Game = {
     S.relFeitas = [];
     /* preparação de pré-temporada: no modo rápido a equipe resolve por você */
     S.prep = Engine.prepZerado();
+    S.invernoAno = null; S.invernoSel = null; S.invernoNotas = null;
     if(!S.compromisso) S.compromisso = 'meio';
+    Engine.tracos();
     Game.save();
     UI.render();
     if(Engine.ehRealista() && (S.patroOfertas || []).length && (S.money.patros || []).length < 3)
       setTimeout(()=>{ if(!el('ov').classList.contains('on')) UI.patroModal(); }, 200);
-    if(S.opts.fast) S.prep = Engine.prepAuto();
+    if(S.opts.fast) Game.invernoAuto();
     else setTimeout(()=>{
       /* se já há uma tela aberta — a apresentação de um cenário, por exemplo —
          a pré-temporada espera: fica o botão no hub para abrir quando quiser */
@@ -8290,12 +8674,70 @@ const Game = {
     }, 260);
   },
 
-  setPrep(k, d){
-    if(!S.prep) S.prep = Engine.prepZerado();
-    const alvo = clamp((S.prep[k] || 0) + d, 0, Engine.prepTotal());
-    const outros = Engine.prepGastos() - (S.prep[k] || 0);
-    S.prep[k] = Math.min(alvo, Engine.prepTotal() - outros);
+  /* ── o inverno ── */
+  marcarInverno(k){
+    S.invernoSel = S.invernoSel || [];
+    const i = S.invernoSel.indexOf(k);
+    if(i >= 0) S.invernoSel.splice(i, 1);
+    else {
+      if(S.invernoSel.length >= Engine.invernoVagas())
+        return UI.toast('Você não cabe em mais lugares. Tire um antes de pôr outro.');
+      const it = INVERNO.find(x => x.k === k);
+      if(Engine.ehRealista() && it && it.custo && S.money && S.money.saldo < it.custo)
+        return UI.toast('Sem saldo para isso.');
+      S.invernoSel.push(k);
+    }
     UI.prepModal();
+  },
+  fecharInverno(){
+    const esc0 = (S.invernoSel || []).slice();
+    if(!esc0.length) return;
+    if(Engine.ehRealista() && S.money)
+      esc0.forEach(k => { const it = INVERNO.find(x => x.k === k); if(it && it.custo) S.money.saldo -= it.custo; });
+    const r = Engine.resolverInverno(esc0);
+    S.prep = r.prep;
+    S.invernoAno = S.year; S.invernoEsc = esc0; S.invernoNotas = r.notas;
+    S.invernoDescobertas = [];
+    /* o inverno cobra e paga fora da planilha também */
+    r.notas.forEach(x => {
+      const e = x.e || {}, a = S.driver.attr;
+      ['pace','race','cons','wet','dev'].forEach(kk => {
+        if(e[kk]) a[kk] = clamp(Math.round((a[kk] + e[kk]) * 10) / 10, 20, 99);
+      });
+      if(e.moral)   S.driver.morale = clamp(S.driver.morale + e.moral, 5, 100);
+      if(e.fama)    S.driver.fame   = clamp(S.driver.fame + e.fama, 0, 100);
+      if(e.teamRel) S.teamRel = clamp((S.teamRel || 50) + e.teamRel, 0, 100);
+      if(e.dinheiro && S.money) S.money.saldo += e.dinheiro;
+      if(e.lesao)   S.driver.injured = (S.driver.injured || 0) + e.lesao;
+      if(e.porta){  S.marcas = S.marcas || {}; S.marcas.porta = (S.marcas.porta || 0) + e.porta; }
+      if(e.eng)     Engine.mexerRel(Engine.pessoa('eng'), e.eng);
+      /* passar o inverno num lugar acaba te formando */
+      const it = INVERNO.find(y => y.k === x.k);
+      if(it && it.traco && (x.nivel === 'otimo' || x.nivel === 'bom') && R.chance(.42)
+         && Engine.ganharTraco(it.traco)) S.invernoDescobertas.push(it.traco);
+    });
+    S.invernoSel = null;
+    Game.save();
+    UI.invernoResumo();
+  },
+  invernoAuto(){
+    /* a equipe escolhe pelo que está mais atrasado, e sem gastar o que não há */
+    const a = S.driver.attr;
+    const ordem = [['sim','pace'],['race','race'],['fis','cons'],['wet','wet'],['fabrica','dev']]
+      .map(([k, at]) => ({ k, gap: (S.driver.pot[at] || 90) - a[at] }))
+      .sort((x, y) => y.gap - x.gap);
+    const mapa = { sim:'simulador', race:'paralela', fis:'fisico', wet:'chuva', fabrica:'fabrica' };
+    const sel = [];
+    ordem.forEach(o => {
+      if(sel.length >= Engine.invernoVagas()) return;
+      const it = INVERNO.find(x => x.k === mapa[o.k]);
+      if(!it) return;
+      if(Engine.ehRealista() && it.custo && S.money && S.money.saldo < it.custo) return;
+      sel.push(it.k);
+    });
+    if(!sel.length) sel.push('fabrica');
+    S.invernoSel = sel;
+    Game.fecharInverno();
   },
   setCompromisso(k){ S.compromisso = k; UI.prepModal(); },
 
@@ -8426,7 +8868,7 @@ const Game = {
       ? 'Modo rápido ligado: a equipe cuida do acerto e do treino.'
       : 'Modo completo: o acerto do carro e a pré-temporada voltam a ser seus.');
   },
-  prepAuto(){ S.prep = Engine.prepAuto(); UI.prepModal(); },
+  prepAuto(){ Game.invernoAuto(); },
 
   /* ---- uma corrida ---- */
   /* No modo completo, cada corrida começa na garagem. No modo rápido o
@@ -8563,6 +9005,15 @@ const Game = {
     /* o boletim de sexta bateu ou não bateu: é assim que se aprende
        quanto vale a palavra do engenheiro */
     if(rec.setup && rec.setup.rev) Engine.anotarEngenheiro(rec.setup.rev);
+    /* e o domingo deixa pista sobre o piloto que você é sem saber */
+    const desc = Engine.evidenciar(rec);
+    if(desc) desc.forEach(([k, est]) => {
+      const tr = TRACOS[k]; if(!tr) return;
+      S.descobertas = (S.descobertas || []).concat([{ a:S.year, k, est }]);
+      setTimeout(()=>UI.toast(est === 'certo'
+        ? tr.ic + ' Não é mais coincidência: ' + tr.d
+        : tr.ic + ' ' + tr.pista), est === 'certo' ? 1500 : 1200);
+    });
     /* duelo com o rival: quem chegou na frente hoje */
     const riv = S.rel && S.rel.rival;
     if(riv && rec.top && rec.top.length){
