@@ -7442,6 +7442,115 @@ const Engine = {
     return p;
   },
 
+  /* ═══ A CORRIDA ACONTECENDO ═══
+     O simulador já sabe quem termina onde. O que faltava era ver a corrida
+     acontecer: quem larga bem, quem cai, onde está a briga, quando entra o
+     safety car e em que volta o carro para. A linha do tempo é gerada a
+     partir do resultado — ela nunca contradiz o que o motor decidiu, só
+     mostra o caminho até lá. */
+  VOLTAS_MOSTRADAS: 26,
+
+  timelineCorrida(sea, rd, finish, grid, wet){
+    const trk = sea.calendar[rd];
+    const perf = Engine.perfil(S.series);
+    const N = Engine.VOLTAS_MOSTRADAS;
+    const total = trk.type === 'oval' ? 200 : trk.type === 'street' ? 78 : 58;
+    const carros = finish.map(x => ({
+      id: x.f.id, name: x.f.name, cc: x.f.cc, me: !!x.f.isMe,
+      cor: (sea.teams.find(t => t.id === x.f.teamId) || {}).color || '#888',
+      grid: x.grid || 20, fim: x.pos, out: !!x.out, dnf: x.dnf || null,
+      voltaOut: null
+    }));
+    /* em que volta cada abandono acontece */
+    const fora = carros.filter(c => c.out);
+    fora.forEach(c => {
+      c.voltaOut = c.dnf === 'ACID'
+        ? R.int(1, Math.max(2, Math.round(N * .8)))
+        : R.int(Math.round(N * .2), Math.max(3, Math.round(N * .92)));
+    });
+
+    /* safety car: mais provável onde há muro e onde a categoria é de pelotão */
+    const eventos = [];
+    const chanceSC = clamp((trk.type === 'street' ? .34 : trk.type === 'oval' ? .40 : .16)
+                         * (perf.variancia * .7 + .3) * (wet ? 1.5 : 1), 0, .8);
+    let sc = null;
+    const bateuCedo = fora.filter(c => c.dnf === 'ACID' && c.voltaOut <= N * .75);
+    if(bateuCedo.length && R.chance(chanceSC)){
+      const b = R.pick(bateuCedo);
+      sc = { de: b.voltaOut, ate: Math.min(N - 1, b.voltaOut + R.int(2, 4)) };
+      eventos.push({ v: sc.de, tipo:'sc', txt:'Safety car — ' + b.name.split(' ').pop() + ' parou na pista.' });
+      eventos.push({ v: sc.ate, tipo:'verde', txt:'Bandeira verde. A corrida recomeça.' });
+    }
+    /* chuva chegando no meio */
+    if(wet && R.chance(.45)){
+      const v = R.int(Math.round(N * .25), Math.round(N * .7));
+      eventos.push({ v, tipo:'chuva', txt:'Começou a chover de verdade. Todo mundo para nos boxes.' });
+    }
+    /* paradas nos boxes */
+    const paradas = {};
+    if(S.series !== 'kart'){
+      carros.forEach(c => {
+        const nP = trk.type === 'oval' ? R.int(2, 4) : R.int(1, 2);
+        paradas[c.id] = [];
+        for(let k = 0; k < nP; k++){
+          const v = Math.round(N * (k + 1) / (nP + 1) + R.range(-1.6, 1.6));
+          paradas[c.id].push(clamp(v, 2, N - 2));
+        }
+      });
+    }
+
+    /* ── as voltas ──
+       Sai do grid e chega exatamente na ordem final. O meio é livre: é aí
+       que a corrida acontece. */
+    const voltas = [];
+    const ordemGrid = carros.slice().sort((a, b) => a.grid - b.grid).map(c => c.id);
+    const ordemFim = carros.slice().sort((a, b) => a.fim - b.fim).map(c => c.id);
+    const pos = {};                       /* posição contínua de cada carro */
+    ordemGrid.forEach((id, i) => pos[id] = i + 1);
+
+    for(let v = 1; v <= N; v++){
+      const t = v / N;
+      /* puxa devagar para a ordem final, com solavancos pelo caminho */
+      carros.forEach(c => {
+        if(c.out && c.voltaOut && v > c.voltaOut){ pos[c.id] = 99 + c.fim * .01; return; }
+        const alvo = ordemFim.indexOf(c.id) + 1;
+        const puxa = Math.pow(t, 1.35);
+        const ruido = (sc && v >= sc.de && v <= sc.ate) ? 0
+                    : R.gauss() * (1.5 + perf.variancia) * (1 - t * .55);
+        pos[c.id] = pos[c.id] * (1 - puxa * .30) + alvo * (puxa * .30) + ruido * .55;
+      });
+      /* safety car junta o pelotão */
+      if(sc && v >= sc.de && v <= sc.ate){
+        const media = 10;
+        carros.forEach(c => { if(!(c.out && v > c.voltaOut)) pos[c.id] = pos[c.id] * .82 + media * .18 * 0 + pos[c.id] * 0; });
+      }
+      const ordem = carros.filter(c => !(c.out && c.voltaOut && v > c.voltaOut))
+                          .sort((a, b) => pos[a.id] - pos[b.id]).map(c => c.id);
+      /* quem parou nesta volta perde tempo */
+      const nosBoxes = carros.filter(c => (paradas[c.id] || []).indexOf(v) >= 0 && !(c.out && v > c.voltaOut))
+                            .map(c => c.id);
+      /* abandonos desta volta viram evento */
+      carros.forEach(c => {
+        if(c.out && c.voltaOut === v)
+          eventos.push({ v, tipo: c.dnf === 'ACID' ? 'batida' : 'quebra', quem: c.id,
+            txt: c.name.split(' ').pop() + (c.dnf === 'ACID' ? ' bateu.' : ' parou com problema mecânico.') });
+      });
+      voltas.push({ v, ordem, boxes: nosBoxes, sc: !!(sc && v >= sc.de && v <= sc.ate) });
+    }
+    /* a última volta é a verdade */
+    voltas[voltas.length - 1].ordem = ordemFim.filter(id => {
+      const c = carros.find(x => x.id === id); return !c.out;
+    }).concat(ordemFim.filter(id => { const c = carros.find(x => x.id === id); return c.out; }));
+
+    /* ultrapassagens do jogador, para a narrativa */
+    let ganhou = 0, perdeu = 0;
+    for(let i = 1; i < voltas.length; i++){
+      const a = voltas[i-1].ordem.indexOf('ME'), b = voltas[i].ordem.indexOf('ME');
+      if(a >= 0 && b >= 0){ if(b < a) ganhou += a - b; else perdeu += b - a; }
+    }
+    return { voltas, eventos, carros, total, sc, ganhou, perdeu, wet };
+  },
+
   /* ═══ O FIM DE SEMANA ═══
      Sexta é treino, sábado é classificação, domingo é corrida — e cada época
      fez isso de um jeito. Em 1955 você tinha duas tardes e voltas à vontade;
@@ -8260,6 +8369,8 @@ const Engine = {
       top: finish.slice(0,10).map(x=>({ n:x.f.name, cc:x.f.cc, t:sea.teams.find(t=>t.id===x.f.teamId).name,
                                         me:!!x.f.isMe, pos:x.out?null:x.pos, dnf:x.out?x.dnf:null })),
       champ: 0, injury, playoff: notaPO,
+      /* o caminho até o resultado, para ver a corrida acontecer */
+      tl: (S.opts && S.opts.fast) ? null : Engine.timelineCorrida(sea, rd, finish, grid, wet),
       /* o que decidiu o domingo: azar mecânico, erro seu, ou nada disso */
       notas: notas.slice(0, 3),
       arq: null
@@ -9884,6 +9995,165 @@ UI.tracosModal = function(){
       <button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`, true);
 };
 
+/* ═══ A CORRIDA AO VIVO ═══
+   Uma representação simples da pista com os carros andando. Não é simulação
+   gráfica: é o resultado do motor mostrado acontecendo, com as posições
+   mudando, as paradas, as batidas, o safety car e a bandeira quadriculada. */
+UI.PISTAS_SVG = {
+  oval:   'M 120 40 L 460 40 Q 540 40 540 120 L 540 200 Q 540 280 460 280 L 120 280 Q 40 280 40 200 L 40 120 Q 40 40 120 40 Z',
+  fast:   'M 60 60 L 500 60 Q 550 60 550 105 Q 550 150 500 150 L 300 150 Q 250 150 250 195 Q 250 240 300 240 L 520 240 Q 560 240 560 275 L 60 275 Q 30 275 30 220 L 30 110 Q 30 60 60 60 Z',
+  street: 'M 50 50 L 250 50 L 250 110 L 420 110 L 420 55 L 555 55 L 555 175 L 470 175 L 470 250 L 270 250 L 270 195 L 150 195 L 150 270 L 50 270 Z',
+  tech:   'M 70 80 Q 140 30 210 80 Q 260 118 210 160 Q 150 200 220 235 L 380 235 Q 450 235 450 190 Q 450 150 390 150 L 330 150 Q 280 150 300 105 Q 330 50 420 60 L 520 70 Q 570 80 560 150 L 545 230 Q 535 275 470 275 L 120 275 Q 45 275 45 200 L 45 130 Q 45 100 70 80 Z',
+  mixed:  'M 60 70 L 420 60 Q 500 58 520 110 Q 540 165 470 180 L 330 195 Q 260 203 280 245 L 470 260 Q 540 265 520 285 L 90 285 Q 35 285 35 220 L 35 120 Q 35 72 60 70 Z'
+};
+
+UI.corridaAoVivo = function(rec, tl, aoFim){
+  UI._tlStop = true;                                  /* encerra qualquer animação anterior */
+  if(UI._tlTimer){ clearInterval(UI._tlTimer); UI._tlTimer = null; }
+  const trk = { type: rec.type || 'mixed' };
+  const d = UI.PISTAS_SVG[trk.type] || UI.PISTAS_SVG.mixed;
+  const carros = tl.carros;
+  const porId = {}; carros.forEach(c => porId[c.id] = c);
+  const N = tl.voltas.length;
+
+  UI.modal(UI.head(`GP ${esc(rec.gp)}`,
+      `${esc(rec.circ)} · ${rec.wet ? 'pista molhada' : 'pista seca'} · ao vivo`, false) +
+    `<div class="mbd" style="padding-bottom:6px">
+      <div style="position:relative;border-radius:var(--r-sm);overflow:hidden;
+           background:var(--panel2);border:1px solid var(--line)">
+        <svg id="tlSvg" viewBox="0 0 600 330" style="display:block;width:100%;height:auto">
+          <path id="tlPath" d="${d}" fill="none" stroke="color-mix(in srgb,var(--line) 90%,transparent)"
+                stroke-width="17" stroke-linejoin="round"/>
+          <path d="${d}" fill="none" stroke="var(--panel)" stroke-width="13" stroke-linejoin="round"/>
+          <path d="${d}" fill="none" stroke="color-mix(in srgb,var(--line) 60%,transparent)"
+                stroke-width="1" stroke-dasharray="5 9"/>
+          <g id="tlCarros"></g>
+        </svg>
+        <div id="tlFlag" style="position:absolute;inset:0;pointer-events:none;opacity:0;
+             transition:opacity .25s"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+        <span class="pill" id="tlVolta">Volta 1</span>
+        <span class="pill" id="tlPos" style="border-color:var(--gold);color:var(--gold)">—</span>
+        <span class="sp"></span>
+        <button class="btn btn-ghost btn-sm" onclick="UI.tlPular()">Pular para o resultado</button>
+      </div>
+      <div id="tlNarra" style="margin-top:9px;min-height:42px;font-size:12.5px;color:var(--dim);
+           padding:8px 11px;border-radius:var(--r-sm);background:var(--panel2);
+           border-left:3px solid var(--line)">A largada está próxima.</div>
+      <div id="tlTop" style="margin-top:9px"></div>
+    </div>`);
+
+  const svg = el('tlSvg'), path = el('tlPath'), g = el('tlCarros');
+  if(!svg || !path){ if(aoFim) aoFim(); return; }
+  const L = path.getTotalLength();
+  /* um ponto por carro */
+  const nodes = {};
+  carros.forEach(c => {
+    const ns = 'http://www.w3.org/2000/svg';
+    const gr = document.createElementNS(ns, 'g');
+    const ci = document.createElementNS(ns, 'circle');
+    ci.setAttribute('r', c.me ? 7.5 : 5.5);
+    ci.setAttribute('fill', c.me ? 'var(--gold)' : c.cor);
+    ci.setAttribute('stroke', c.me ? '#000' : 'rgba(0,0,0,.45)');
+    ci.setAttribute('stroke-width', c.me ? 2.4 : 1.2);
+    gr.appendChild(ci);
+    if(c.me){
+      const tx = document.createElementNS(ns, 'text');
+      tx.setAttribute('y', -12); tx.setAttribute('text-anchor', 'middle');
+      tx.setAttribute('font-size', '11'); tx.setAttribute('font-weight', '900');
+      tx.setAttribute('fill', 'var(--gold)');
+      tx.textContent = 'VOCÊ';
+      gr.appendChild(tx);
+    }
+    g.appendChild(gr);
+    nodes[c.id] = gr;
+  });
+
+  UI._tlStop = false;
+  let t0 = null;
+  const dur = 13000;                        /* a corrida inteira em treze segundos */
+  const evVistos = {};
+
+  const desenhar = (frac) => {
+    const fv = clamp(frac, 0, .9999) * (N - 1);
+    const i = Math.floor(fv), f = fv - i;
+    const A = tl.voltas[i], B = tl.voltas[Math.min(N - 1, i + 1)];
+    const volta = Math.min(N, i + 1);
+    /* posição de cada carro, interpolada entre as duas voltas */
+    carros.forEach(c => {
+      const nd = nodes[c.id]; if(!nd) return;
+      const a = A.ordem.indexOf(c.id), b = B.ordem.indexOf(c.id);
+      if(a < 0 && b < 0){ nd.style.display = 'none'; return; }
+      nd.style.display = '';
+      const p = (a < 0 ? b : b < 0 ? a : a + (b - a) * f);
+      /* o líder na frente, o resto atrás dele ao longo da volta */
+      const gap = p * (L / (carros.length + 2)) * .92;
+      const avanca = (frac * (L * 2.4)) % L;
+      let s = (avanca - gap) % L; if(s < 0) s += L;
+      const pt = path.getPointAtLength(s);
+      /* quem está nos boxes sai da trajetória */
+      const nosBoxes = (A.boxes || []).indexOf(c.id) >= 0;
+      nd.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ',' +
+        (pt.y + (nosBoxes ? 15 : 0)).toFixed(1) + ')');
+      nd.style.opacity = nosBoxes ? .5 : 1;
+    });
+    el('tlVolta').textContent = 'Volta ' + volta + ' de ' + N;
+    const minha = A.ordem.indexOf('ME');
+    el('tlPos').textContent = minha >= 0 ? ord(minha + 1) : 'fora';
+    /* bandeira e narração */
+    if(A.sc) el('tlFlag').style.background = 'linear-gradient(0deg,rgba(255,200,0,.16),rgba(255,200,0,.05))';
+    else el('tlFlag').style.background = '';
+    el('tlFlag').style.opacity = A.sc ? 1 : 0;
+    tl.eventos.forEach((e, k) => {
+      if(e.v <= volta && !evVistos[k]){
+        evVistos[k] = 1;
+        const n = el('tlNarra'); if(!n) return;
+        n.textContent = e.txt;
+        n.style.borderLeftColor = e.tipo === 'sc' ? 'var(--gold)'
+          : e.tipo === 'batida' ? 'var(--red2)' : e.tipo === 'chuva' ? 'var(--blue,#3d8bfd)' : 'var(--line)';
+      }
+    });
+    /* os cinco primeiros */
+    const topo = el('tlTop');
+    if(topo) topo.innerHTML = A.ordem.slice(0, 5).map((id, k) => {
+      const c = porId[id]; if(!c) return '';
+      return `<div style="display:flex;align-items:center;gap:7px;padding:3px 8px;border-radius:var(--r-sm);
+           margin-bottom:2px;font-size:12px;background:${c.me?'color-mix(in srgb,var(--gold) 15%,transparent)':'transparent'}">
+        <span style="color:var(--dim2);min-width:16px">${k+1}</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:${c.cor};flex:none"></span>
+        <span style="flex:1;min-width:0;font-weight:${c.me?900:600};white-space:nowrap;
+              overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</span>
+      </div>`;
+    }).join('');
+  };
+
+  const agora = () => (window.performance && performance.now) ? performance.now() : Date.now();
+  const passo = () => {
+    if(UI._tlStop){ if(UI._tlTimer){ clearInterval(UI._tlTimer); UI._tlTimer = null; } return; }
+    if(t0 == null) t0 = agora();
+    const frac = (agora() - t0) / dur;
+    desenhar(frac);
+    if(frac >= 1){
+      if(UI._tlTimer){ clearInterval(UI._tlTimer); UI._tlTimer = null; }
+      const nn = el('tlNarra');
+      if(nn){ nn.textContent = 'Bandeira quadriculada.'; nn.style.borderLeftColor = 'var(--gold)'; }
+      setTimeout(()=>{ if(!UI._tlStop && aoFim) aoFim(); }, 700);
+    }
+  };
+  UI._tlFim = aoFim;
+  if(UI._tlTimer) clearInterval(UI._tlTimer);
+  passo();
+  UI._tlTimer = setInterval(passo, 34);
+};
+
+UI.tlPular = function(){
+  UI._tlStop = true;
+  if(UI._tlTimer){ clearInterval(UI._tlTimer); UI._tlTimer = null; }
+  const f = UI._tlFim; UI._tlFim = null;
+  if(f) f();
+};
+
 /* ═══ SEXTA-FEIRA: OS TREINOS ═══
    Um número limitado de horas e mais coisas para fazer do que cabem nelas.
    O que você não testar na sexta você descobre no domingo. */
@@ -10808,8 +11078,17 @@ const Game = {
       S.driver.injured = rec.injury.races;
       S.driver.morale = clamp(S.driver.morale - 14, 5, 100);
     }
+    /* a corrida acontece antes de virar número */
+    if(rec.tl && !S.opts.fast){
+      UI.corridaAoVivo(rec, rec.tl, () => { UI.raceResult(rec); Game.posCorrida(rec, sea); });
+      return;
+    }
     UI.raceResult(rec);
+    Game.posCorrida(rec, sea);
+  },
 
+  /* o que acontece depois da bandeirada */
+  posCorrida(rec, sea){
     if(rec.injury) setTimeout(()=>UI.toast(`Acidente grave: você fica fora de ${rec.injury.races} corrida(s).`), 700);
     else if(Engine.midReview(sea)){ Game.fire(true); return; }
     /* convite para correr em paralelo — uma vez por temporada, no meio dela */
