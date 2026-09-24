@@ -69,6 +69,9 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
 - Área de imprensa que muda com a época: rádio até 1989, TV nos anos 90, portais
   nos anos 2000 e 2010, redes sociais de 2020 em diante — com quase 300 falas
   diferentes e memória para não repetir a mesma piada.
+- **Modo chefe de equipe**: o outro lado do muro dos boxes. Assuma qualquer
+  equipe real de qualquer ano, funde uma e estreie direto na Fórmula 1, ou
+  comece numa categoria de base e suba degrau por degrau (veja abaixo).
 
 ## Ganhar campeonato é difícil
 
@@ -157,6 +160,58 @@ categoria, e cobra cansaço e risco num carro que você não conhece.
 O mercado do fim de ano também não olha só para a sua categoria: IndyCar,
 NASCAR, endurance, DTM, Fórmula E e Stock Car podem ligar, conforme a sua
 reputação e o parentesco entre as categorias.
+
+## Chefe de equipe
+
+Um segundo jogo dentro do mesmo arquivo, com save próprio. Você não pilota:
+contrata quem pilota, paga a conta e responde por ela.
+
+- **Três portas.** Assumir uma equipe real (a McLaren de 1988 vem com Senna,
+  Prost, motor Honda e uma diretoria que espera título), fundar uma equipe e
+  largar na Fórmula 1 com o pior carro do grid e dinheiro de investidor, ou
+  começar numa categoria de acesso daquela época — Fórmula Júnior, F3, F3000,
+  GP2, F2 — e subir até a F1.
+- **O mundo segue a história até você mexer nele.** As outras equipes têm a
+  força que tinham em cada ano, e os pilotos vão para onde foram de verdade. A
+  sua equipe sai do grid da história; quem você contratar deixa um buraco na
+  equipe de origem, e ela preenche com o melhor que sobrou.
+- **O carro**: aerodinâmica, chassi, motor e confiabilidade. O peso de cada
+  parte muda com o regulamento — asa não existia antes de 1968, na era turbo o
+  motor era meio carro, e com o efeito solo de volta em 2022 o assoalho decide.
+  Nos anos de regulamento novo (1961, 1966, 1983, 1989, 1995, 1998, 2009,
+  2014, 2017, 2022 e 2026) todo carro recomeça perto do zero, e quem guardou
+  dinheiro para o carro do ano seguinte sai na frente.
+- **Motor**: fornecedores reais de cada época, com rendimento, preço e
+  exigência — a Honda de 1988 não vende para qualquer um, e o fornecedor menos
+  procurado é obrigado a atender quem pedir. Ou faça o seu próprio.
+- **Engenharia e instalações**: diretor técnico, projetista, aerodinâmica e
+  motores, com engenheiros reais em cada janela de carreira (Forghieri, Murray,
+  Barnard, Byrne, Brawn, Newey…). Fábrica, túnel de vento e simulador levam um
+  ano para ficar prontos e custam manutenção para sempre.
+- **Dinheiro**: patrocinadores de cada época (cigarro até a proibição europeia,
+  energético nos anos 2000, cripto nos 2020, e alguns dão calote), prêmio de
+  construtores, pilotos pagantes, dono ou fábrica, investidores que compram
+  parte da equipe. Teto de gastos a partir de 2021, com auditoria. Falência de
+  verdade.
+- **Pilotos**: mercado com leitura dos engenheiros, interesse que depende do
+  tamanho da equipe, contraproposta, recusa que vira manchete, piloto nº 1,
+  reserva que substitui quem se machuca, pedido de saída quando uma equipe
+  maior chama.
+- **Academia**: olheiros que erram menos quanto mais você investe, garotos de
+  verdade na idade certa (Vettel e Hamilton aparecem na F3 de 2003), temporada
+  deles na base, promoção, empréstimo para outra equipe.
+- **Fim de semana**: estratégia por carro, modo de motor e ordem de equipe, a
+  mesma tabela ao vivo do modo piloto com os dois carros em destaque, e pacotes
+  de atualização que podem render mais do que o túnel prometia ou deixar o
+  carro pior.
+- **Acontecimentos**: espionagem, brecha no regulamento, patrocinador na
+  primeira página, piloto na festa às quatro da manhã, uma equipe grande
+  querendo o seu projetista, a guerra FISA-FOCA. Cada escolha tem chance
+  escondida e resultado em quatro graus.
+- **Diretoria**: meta de construtores definida depois dos testes, confiança
+  que sobe e desce, último aviso e demissão — com propostas de outras equipes,
+  se a sua reputação ainda valer alguma coisa. Quem é dono não é demitido,
+  até vender parte demais da equipe.
 
 ## Rodar localmente
 
