@@ -16461,7 +16461,7 @@ const UIC = {
       <div class="drv-top"><div class="drv-head">
         <div class="ovr"><b>${Math.round(C.rep)}</b><span>REP</span></div>
         <div class="drv-id"><div class="nm">${esc(C.eq.nome)}</div>
-          <div class="meta">${fg(C.eq.cc)} <span>${esc(C.chefe.nome)} · chefe de equipe</span></div></div>
+          <div class="meta">${fg(C.chefe.cc || 'BR')} <span>${esc(C.chefe.nome)} · chefe de equipe</span></div></div>
       </div></div>
       <div class="drv-team"><span class="tdot" style="--tc:${C.eq.cor}"></span><div>
         <div class="tn">${esc(C.cat)}</div>
