@@ -6031,41 +6031,25 @@ const Engine = {
       /* Passado o último ano documentado, quem já devia ter parado para de
          aparecer: ninguém corre aos 79 anos. */
       const futuro = S.year > Engine.HORIZONTE;
-      let pool = era.pilots
-        .filter(p => dist(p) === 0 && p[0] !== euSou
-                  && !(futuro && Engine.aposentouEm(S.series, p[0], S.year)))
-        .map(p=>({name:p[0], cc:p[1], skill:skillEm(S.series,p[0],S.year,p[2]),
-                  titular: !!(escala && escala[p[0]])}));
-      /* quem venceu a Fórmula 2 aparece aqui no ano seguinte */
+      let pool;
+      var Wtopo = null;
       if(futuro){
-        const jaTem0 = new Set(pool.map(p=>p.name).concat(euSou ? [euSou] : []));
-        Engine.subiramParaCima(S.year).forEach(g => {
-          if(jaTem0.has(g.name)) return;
-          jaTem0.add(g.name);
-          pool.push({ name:g.name, cc:g.cc, skill:g.skill, titular:false, geracao:true });
-        });
-      }
-      /* e as gerações seguintes entram no lugar deles.
-         A escolha é estratificada de propósito: pegar só os melhores de uma
-         geração inteira produziria um grid sem fundo, em que o pior piloto
-         de 2060 seria melhor que metade do grid de 1994. Um campeonato de
-         verdade tem estrela, meio de pelotão e quem só completa. */
-      if(futuro){
-        const jaTem = new Set(pool.map(p=>p.name).concat(euSou ? [euSou] : []));
-        const g = Engine.geracaoDe(S.series, S.year).filter(x => !jaTem.has(x.name));
-        const precisa = Math.max(0, slots.length - pool.length);
-        const passo = precisa > 0 ? Math.max(1, g.length / precisa) : 1;
-        for(let k = 0; k < precisa; k++){
-          const x = g[Math.min(g.length - 1, Math.round(k * passo))];
-          if(!x || jaTem.has(x.name)) continue;
-          jaTem.add(x.name);
-          pool.push({ name:x.name, cc:x.cc, skill:x.skill, titular:false, geracao:true });
-        }
+        /* Depois do último ano documentado, quem corre é quem o mundo pôs
+           lá: contratos que seguem, renovações, quem trocou de equipe e os
+           estreantes que vieram de baixo. */
+        Wtopo = Engine.garantirMundo();
+        pool = Mundo.topoDe(Wtopo, S.year).filter(r => r.n !== euSou && r.n !== S.driver.name)
+          .map(r => ({ name:r.n, cc:r.cc, skill:Math.round(r.h), titular:true, eqMundo:r.eq, mid:r.id }));
+      } else {
+        pool = era.pilots
+          .filter(p => dist(p) === 0 && p[0] !== euSou)
+          .map(p=>({name:p[0], cc:p[1], skill:skillEm(S.series,p[0],S.year,p[2]),
+                    titular: !!(escala && escala[p[0]])}));
       }
       /* Faltando gente, completa com quem correu no ano mais próximo — nunca com
          uma estrela de outra década — e, por último, com pilotos anônimos,
          que era exatamente o que preenchia o fundo daqueles grids. */
-      if(pool.length < slots.length){
+      if(!futuro && pool.length < slots.length){
         /* no máximo dois anos de distância: quem parou de correr há muito
            tempo não volta nem para completar o grid — um nome anônimo é
            mais honesto do que um campeão aposentado */
@@ -6087,7 +6071,7 @@ const Engine = {
         }
       }
       /* promove até 2 rivais que você enfrentou nas categorias de base */
-      if(S.prospects && S.prospects.length){
+      if(!futuro && S.prospects && S.prospects.length){
         const pr = S.prospects.slice(0,2).map(p=>({name:p.name, cc:p.cc, skill:clamp(p.skill+R.int(4,10),74,93), rookie:true}));
         pool.sort((a,b)=>b.skill-a.skill);
         pool = pool.slice(0, slots.length - pr.length).concat(pr);
@@ -6115,6 +6099,13 @@ const Engine = {
       const nomePorId = {}; teams.forEach(t => nomePorId[t.name] = t.id);
       const destino = {};
 
+      /* depois do último ano documentado, a equipe é a do contrato no mundo */
+      if(futuro){
+        pool.forEach(p => {
+          const id = nomePorId[p.eqMundo];
+          if(id && capLivre[id] > 0){ destino[p.name] = id; capLivre[id]--; }
+        });
+      }
       /* 0. a escalação real do ano é lei: cada piloto vai para a equipe em
             que ele de fato correu, na ordem em que a tabela os declara. */
       if(escala){
@@ -6139,7 +6130,7 @@ const Engine = {
           destino[nome] = id; capLivre[id]--;
         }
       });
-      if(memOk){
+      if(memOk && !futuro){
         /* 2. quem já estava numa equipe fica nela, se ainda houver vaga */
         pool.forEach(p => {
           if(destino[p.name]) return;
@@ -6215,48 +6206,43 @@ const Engine = {
         const hab = larg > 0
           ? clamp(Math.round(topo - (bMax - p.skill) * escFaixa), faixa[0], faixa[1])
           : Math.round((faixa[0] + faixa[1]) / 2);
-        field.push({ id:'d'+i, name:p.name, cc:p.cc, skill:hab,
-                     teamId: destino[p.name], rookie:!!p.rookie });
+        field.push({ id:'d'+i, name:p.name, cc:p.cc, skill:hab, mid:p.mid || null,
+                     teamId: destino[p.name], rookie:!!p.rookie, doc: !futuro && !!p.titular });
       });
+      /* o grid que você vê é o grid do mundo */
+      try { Mundo.registrarGrid(Wtopo || Engine.garantirMundo(), S.year, 0, field, teams, true); } catch(e){}
       /* guarda o grid para o ano que vem */
       S.gridMem = {}; S.gridMemSerie = S.series; S.gridMemEra = era.id;
       field.forEach(f => { const t = teams.find(x => x.id === f.teamId); if(t) S.gridMem[f.name] = t.name; });
     } else {
       /* o nível de quem está correndo aqui, para ancorar o grid */
       const meuNivel = Engine.meSkill(false).r;
-      const used = new Set([S.driver.name]);
       const n = info.field - 1;
-      /* Da Fórmula Regional para cima o grid é o de verdade daquele ano, na
-         ordem em que o campeonato terminou: em 2024 a Fórmula 2 tem Bortoleto,
-         Hadjar e Antonelli na sua frente. Onde a lista não cobre o grid
-         inteiro, o resto continua sendo preenchido com nomes anônimos. */
-      const reais = Engine.elencoDoAno(cat, S.year, S.ordemBase) || [];
-      let ri = 0;
+      /* O grid sai do mundo de pilotos: o grid real daquele ano, quando ele
+         existe; quem já corria aqui no ano passado; e só então gente nova,
+         que passa a existir dali em diante. Cada um guarda o próprio nível
+         de um ano para o outro. */
+      var W = Engine.garantirMundo();
+      const gJr = Mundo.degrauDe(S.series, S.year, cat, S.catIdx, S.ladder.length);
+      const recs = Mundo.gridDe(W, gJr, S.year, { n, cat, excluir: new Set([S.driver.name]) });
+      const reaisAno = new Set((elencoReal(cat, S.year) || []).map(x => x.name));
       const equipeDe = {};
-      for(let i=0;i<n;i++){
-        let nm = null, cc = null;
-        while(ri < reais.length && !nm){
-          const r = reais[ri++];
-          if(!used.has(r.name)){ nm = r.name; cc = r.cc; equipeDe[r.name] = r.eq || equipeReal(cat, S.year, r.name); }
-        }
-        if(!nm){ cc = ccJunior(cat); nm = nomeJunior(cc, used); }
-        used.add(nm);
-        const tier = i/n;
-        /* Com nomes reais a ordem é a do campeonato daquele ano, então o
-           sorteio precisa ser discreto: o campeão da F2 de 2024 não pode
-           aparecer como terceiro melhor do grid. Com nomes inventados o
-           acaso continua solto, que é o que dava vida àqueles grids. */
-        const real = i < reais.length;
-        const amp = real ? 26 : 20, ruido = real ? 1.7 : 4;
-        /* topo do grid: o nível natural do degrau, puxado para perto de quem
-           está correndo ali. Nunca abaixo do natural — subir de categoria
-           continua sendo subir de nível. */
-        const natural = info.base + amp;
-        const topoGrid = Math.max(natural, natural * .34 + meuNivel * .66 + R.range(-1.5, 3.5));
-        field.push({ id:'d'+i, name:nm, cc,
-          skill: clamp(Math.round(topoGrid - amp + amp*(1-tier) + R.gauss()*ruido), 25, 96),
+      const hsJr = recs.map(r => r.h);
+      const hMax = Math.max(...hsJr), hMin = Math.min(...hsJr);
+      /* a força de cada um em relação aos outros é a dele; o patamar do grid
+         continua ancorado no degrau e em quem está correndo ali — subir de
+         categoria segue sendo subir de nível */
+      const amp = 24;
+      const natural = info.base + amp;
+      const topoGrid = Math.max(natural, natural * .34 + meuNivel * .66 + R.range(-1.5, 3.5));
+      recs.forEach((r, i) => {
+        const tt = hMax > hMin ? (r.h - hMin) / (hMax - hMin) : .5;
+        const eqReal = equipeReal(cat, S.year, r.n);
+        if(eqReal || r.eq) equipeDe[r.n] = eqReal || r.eq;
+        field.push({ id:'d'+i, mid:r.id, name:r.n, cc:r.cc, doc: reaisAno.has(r.n),
+          skill: clamp(Math.round(topoGrid - amp + amp * tt + R.gauss() * 1.5), 25, 96),
           teamId: teams[Math.floor(i/2) % teams.length].id });
-      }
+      });
       /* distribui os pilotos pelas equipes de forma equilibrada — nas categorias
          de acesso é normal uma estrutura ter três carros, mas não seis. */
       field.sort((a,b)=>b.skill-a.skill);
@@ -6285,6 +6271,8 @@ const Engine = {
         teams.forEach(t => { for(let k=0; k<vagas[t.id]; k++) livres.push(t.id); });
         sobra.forEach((f, i) => { f.teamId = livres[Math.min(i, livres.length - 1)] || f.teamId; });
       }
+      /* a equipe de cada um fica registrada: no ano que vem ele tende a continuar nela */
+      Mundo.registrarGrid(W, S.year, gJr, field, teams, false);
     }
     /* vieses individuais: quem classifica melhor do que corre, e vice-versa */
     field.forEach(f=>{ f.qb = R.gauss()*2.2; f.rb = R.gauss()*2.2; f.rel = R.range(-.03,.03); });
@@ -6311,7 +6299,9 @@ const Engine = {
       mediaCarro: teams.reduce((a,t)=>a+t.str,0) / Math.max(1, teams.length),
       /* o melhor do grid: acima dele o talento rende cada vez menos */
       altoSkill: field.filter(f=>!f.isMe).reduce((a,f)=>Math.max(a,f.skill), 0) || null,
-      results:[], dstand:{}, cstand:{}, fin:{}
+      results:[], dstand:{}, cstand:{}, fin:{},
+      /* quantos nomes deste grid são do registro real daquele ano */
+      docN: field.filter(f => f.doc).length, gridN: field.filter(f => !f.isMe).length
     };
   },
 
@@ -7499,6 +7489,52 @@ const Engine = {
   relComp(){ const p = Engine.pessoa('comp'); return p ? Engine.nota(p) : ((S && S.rel) ? S.rel.comp : 50); },
   bonusEngenheiro(){ return (Engine.relEng() - 50) / 100 * 1.6; },
   bonusCompanheiro(){ return (Engine.relComp() - 50) / 100 * 1.1; },
+
+  /* ═══ O MUNDO DE PILOTOS DA SUA CARREIRA ═══
+     Um por categoria principal: quem troca da Fórmula 1 para a IndyCar
+     encontra o mundo da IndyCar, e o da Fórmula 1 fica onde estava. */
+  mundo(sk){
+    sk = sk || S.series;
+    if(!S.mundos) S.mundos = {};
+    let W = S.mundos[sk];
+    if(!W || W.v !== Mundo.V){
+      /* carreira que já tem temporada (save antigo): o mundo nasce dela */
+      const foto = S.season && S.season.field && S.series === sk && S.ladder && S.ladder.indexOf(S.season.cat) >= 0
+                && S.season.year <= S.year;
+      const ini = foto ? S.season.year : Math.min(S.year, Engine.HORIZONTE) - 1;
+      W = S.mundos[sk] = Mundo.novo(sk, ini);
+    }
+    return W;
+  },
+  ctxMundo(sk){
+    sk = sk || S.series;
+    const eu = new Set([S.driver.name]);
+    const naPrincipal = S.series === sk && S.ladder && S.ladder[S.catIdx] === Engine.topCat() && S.team;
+    return {
+      excluir: eu, reservados: eu,
+      equipes: ano => {
+        const era = eraOfSeries(ano, sk);
+        const esc = resolveLadder(era.ladder, S.driver.cc, ano);
+        return Engine.teamsFor(esc[esc.length - 1], ano, sk, esc.length - 1, esc.length);
+      },
+      /* o seu carro é uma vaga a menos no mercado */
+      ocupados: naPrincipal ? { [S.team.name]: 1 } : {}
+    };
+  },
+  garantirMundo(sk){
+    sk = sk || S.series;
+    const W = Engine.mundo(sk);
+    const ctx = Engine.ctxMundo(sk);
+    /* save de antes do mundo: ele nasce do último grid que você viu */
+    if(!W.semeado && S.season && S.season.year === W.ano && S.series === sk && S.season.field
+       && S.ladder && S.ladder.indexOf(S.season.cat) >= 0){
+      const g = Mundo.degrauDe(sk, S.season.year, S.season.cat, S.ladder.indexOf(S.season.cat), S.ladder.length);
+      ctx.foto = { g, field:S.season.field, teams:S.season.teams };
+    }
+    Mundo.garantir(W, S.year, ctx);
+    delete S.jrPool;
+    return W;
+  },
 
   /* ═══ O MERCADO DAS CATEGORIAS DE ACESSO ═══
      Enquanto existe registro real, o grid é o de verdade. Passado o último
@@ -10043,6 +10079,703 @@ const Engine = {
           {t:'Culpar o acerto', d:'A relação esfria.', e:{teamRel:-9, morale:4}} ] }
   ]
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   O MUNDO DOS PILOTOS
+   Um registro persistente de quem corre, da categoria principal ao kart.
+   Cada piloto tem identidade própria — id estável, nome único, país, ano de
+   nascimento —, nível, teto e uma trajetória ano a ano. Enquanto existe
+   registro real, o mundo segue a história: o grid real da base, a escalação
+   real da categoria principal e a estreia de quem chegou lá. Passado o
+   último dado, ele continua sozinho, e devagar: quem estava continua, quem
+   vai bem sobe, quem empaca sai, e gente nova entra por baixo conforme as
+   vagas abrem. Nada é sorteado do zero de um ano para o outro.
+
+   Os degraus são contados de cima para baixo: 0 é a categoria principal,
+   1 é a de acesso logo abaixo dela, e assim por diante. Assim a
+   continuidade sobrevive à troca de nome das categorias — a Fórmula 3000
+   vira GP2, a GP2 vira Fórmula 2, e quem estava no degrau 1 continua nele.
+   ═══════════════════════════════════════════════════════════════ */
+const NOMES_PROPRIOS = {
+  BR:['Lucas','Gabriel','Rafael','Pedro','Matheus','Felipe','Gustavo','Thiago','Bruno','Caio','Enzo','Vinícius','Diego','Henrique','Otávio','Rodrigo','Leonardo','Murilo'],
+  IT:['Matteo','Lorenzo','Andrea','Luca','Marco','Alessandro','Giovanni','Riccardo','Federico','Tommaso','Davide','Simone','Nicolò','Pietro','Gabriele','Edoardo'],
+  FR:['Hugo','Théo','Louis','Antoine','Mathis','Julien','Victor','Arthur','Raphaël','Maxime','Nathan','Clément','Baptiste','Esteban','Romain','Paul'],
+  GB:['Oliver','Harry','George','Jack','Charlie','Thomas','James','William','Alfie','Joshua','Callum','Ethan','Lewis','Max','Archie','Jake'],
+  DE:['Lukas','Jonas','Leon','Finn','Paul','Felix','Maximilian','Niklas','Tim','Moritz','Jan','Tobias','Kilian','David','Fabian','Marvin'],
+  ES:['Pablo','Álvaro','Hugo','Daniel','Javier','Sergio','Marc','Adrián','Iker','Carlos','Mario','Rubén','Íñigo','Pol','Alex','Nil'],
+  AR:['Santiago','Mateo','Nicolás','Facundo','Tomás','Agustín','Franco','Joaquín','Lautaro','Ignacio','Bautista','Valentín'],
+  MX:['Sebastián','Emiliano','Diego','Rodrigo','Alejandro','Iván','Leonardo','Patricio','Andrés','Eduardo','Mauricio','Esteban'],
+  NL:['Daan','Sem','Lars','Thijs','Bram','Ruben','Jesse','Milan','Niels','Joris','Stijn','Koen'],
+  BE:['Arthur','Noah','Louis','Jules','Lars','Maxime','Wout','Thibaut','Robin','Senne','Gilles','Alexis'],
+  SE:['Oscar','William','Lucas','Elias','Hugo','Viktor','Gustav','Emil','Axel','Linus','Isak','Felix'],
+  DK:['Mikkel','Frederik','Magnus','Rasmus','Mathias','Oliver','Christian','Anders','Kasper','Emil'],
+  FI:['Eetu','Juho','Aleksi','Niko','Veeti','Joonas','Lauri','Eemil','Onni','Valtteri','Tuukka'],
+  CH:['Luca','Noah','Fabio','Nico','Simon','Jonas','Yannick','Rafael','Sandro','Marco','Ralph'],
+  AT:['Lukas','Florian','Tobias','Elias','Sebastian','Jakob','Matthias','Philipp','Stefan','Thomas'],
+  PT:['João','Tiago','Duarte','Rodrigo','Afonso','Miguel','Gonçalo','Francisco','Diogo','Martim'],
+  PL:['Jakub','Kacper','Szymon','Mateusz','Filip','Michał','Bartosz','Wiktor','Piotr','Kamil'],
+  CZ:['Jakub','Tomáš','Adam','Matěj','Ondřej','Filip','Vojtěch','David','Lukáš','Petr'],
+  JP:['Haruto','Yuto','Sota','Ren','Kaito','Riku','Hayato','Takumi','Daiki','Kenta','Shota','Yuki'],
+  US:['Tyler','Connor','Logan','Hunter','Austin','Mason','Ryan','Brandon','Cole','Jake','Kyle','Dylan','Cody','Chase'],
+  CA:['Liam','Owen','Nathan','Ethan','Mathieu','Félix','Gabriel','Noah','Jacob','Cameron'],
+  AU:['Jack','Cooper','Lachlan','Riley','Harrison','Mitchell','Jordan','Zac','Bailey','Kai'],
+  NZ:['Hunter','Liam','Blake','Taylor','Ryan','Cameron','Jordan','Ben','Hayden'],
+  ZA:['Ruan','Liam','Jordan','Kyle','Wian','Jayden','Kian','Dean','Tristan'],
+  CO:['Juan','Sebastián','Andrés','Camilo','Santiago','Felipe','Mateo','Esteban','Nicolás'],
+  UY:['Santiago','Matías','Joaquín','Facundo','Bruno','Federico','Agustín'],
+  CL:['Benjamín','Vicente','Martín','Matías','Tomás','Cristóbal','Diego'],
+  IE:['Conor','Seán','Cian','Darragh','Oisín','Liam','Patrick','Ronan'],
+  MC:['Louis','Charles','Arthur','Hugo','Nicolas'],
+  TH:['Anan','Krit','Nattapong','Somchai','Thanawat','Pongsakorn'],
+  MY:['Ahmad','Hafiz','Daniel','Amir','Faiz','Irfan'],
+  CN:['Wei','Hao','Jun','Yi','Zhen','Lei','Tao','Ming'],
+  IN:['Arjun','Rohan','Kush','Aditya','Vikram','Kabir','Ishaan'],
+  RU:['Artem','Nikita','Daniil','Kirill','Ilya','Maksim','Dmitri'],
+  NO:['Ola','Magnus','Henrik','Sindre','Eirik','Jonas','Dennis'],
+  HU:['Bence','Máté','Levente','Ádám','Dániel','Gergő']
+};
+const SOBRENOMES_EXTRA = {
+  CZ:['Novák','Svoboda','Dvořák','Černý','Procházka','Kučera','Veselý','Horák','Němec','Pokorný'],
+  CO:['Restrepo','Gómez','Cárdenas','Mejía','Montoya','Salazar','Ospina','Rendón','Zuluaga'],
+  CA:['Tremblay','Gagnon','Roy','Côté','Bouchard','MacLeod','Fraser','Campbell','Leblanc'],
+  NZ:['Hartley','McDonald','Sinclair','Roberts','Walker','Thompson','Tait','Murray'],
+  ZA:['van der Merwe','Botha','Pretorius','Naidoo','Steyn','Joubert','Coetzee','Nel'],
+  UY:['Fernández','Rodríguez','Silva','Pereyra','Suárez','Olivera','Acosta'],
+  CL:['González','Muñoz','Rojas','Díaz','Contreras','Soto','Valenzuela'],
+  IE:['Murphy','Kelly','O\'Sullivan','Byrne','Ryan','Walsh','Doyle','Quinn'],
+  MC:['Grimaldi','Rossi','Médecin','Pastor','Bertrand'],
+  TH:['Srisuk','Chaiyaporn','Wongsawat','Thongchai','Rattana'],
+  MY:['Rahman','Ismail','Abdullah','Hamid','Yusof'],
+  CN:['Zhou','Wang','Li','Zhang','Chen','Liu','Yang','Huang'],
+  IN:['Sharma','Patel','Singh','Reddy','Mehta','Kapoor','Rao'],
+  RU:['Ivanov','Petrov','Smirnov','Sokolov','Volkov','Kuznetsov','Orlov'],
+  NO:['Hansen','Johansen','Olsen','Berg','Haugen','Solberg','Bakke'],
+  HU:['Nagy','Kovács','Tóth','Szabó','Horváth','Varga','Kiss']
+};
+
+const Mundo = {
+  V: 1,
+  /* quantos anos a mais um piloto da base aguenta no mesmo degrau sem subir */
+  MAX_ANOS_DEGRAU: 3,
+
+  novo(sk, ano){ return { v:Mundo.V, sk, seq:0, ano, p:{}, nome:{} }; },
+
+  /* ── os degraus daquele ano, de cima para baixo ── */
+  _degCache: {},
+  degraus(sk, ano){
+    const ch = sk + ano;
+    if(Mundo._degCache[ch]) return Mundo._degCache[ch];
+    const era = eraOfSeries(ano, sk);
+    const esc = resolveLadder(era.ladder, 'GB', ano);
+    const len = esc.length;
+    const out = esc.slice().reverse().map((cat, g) => {
+      const info = catInfo(cat, len - 1 - g, len);
+      const kart = Engine.ehKart(cat);
+      /* quantos pilotos o degrau tem no mundo inteiro: a Fórmula 2 é um
+         campeonato só; F4 e kart são vários campeonatos nacionais */
+      const alvo = g === 0 ? 0 : g === 1 ? info.field + 2 : g === 2 ? Math.round(info.field * 1.4) : Math.round(info.field * 2);
+      const idade = kart ? [12, 16] : g === 1 ? [18, 26] : g === 2 ? [17, 23] : g === 3 ? [16, 21] : [15, 19];
+      return { g, cat, info, kart, alvo, idade, base: info.base };
+    });
+    return (Mundo._degCache[ch] = out);
+  },
+  nDegraus(sk, ano){ return Mundo.degraus(sk, ano).length - 1; },
+  degrauDe(sk, ano, cat, idx, len){
+    /* pela posição na escada do jogador; o nome pode ser nacional */
+    if(idx != null && len) return clamp(len - 1 - idx, 0, Mundo.nDegraus(sk, ano));
+    const d = Mundo.degraus(sk, ano).find(x => x.cat === cat);
+    return d ? d.g : 1;
+  },
+
+  /* ── dados documentados de uma categoria ──
+     Quem a lista de época ou a escalação diz que correu na principal, com
+     o ano de estreia, o último ano, a nota de auge e o país. */
+  _docCache: {},
+  doc(sk){
+    if(Mundo._docCache[sk]) return Mundo._docCache[sk];
+    const m = {};
+    const ativo = ativoDe(sk);
+    (SERIES[sk].eras || []).forEach(e => {
+      const fimEra = e.y + 9;
+      e.pilots.forEach(p => {
+        const nome = p[0];
+        const de = p[3] || e.y, ate = p[4] || fimEra;
+        const r = m[nome] || (m[nome] = { nome, cc:p[1], base:p[2], de, ate, bases:[], exato:false });
+        r.de = Math.min(r.de, de); r.ate = Math.max(r.ate, ate);
+        if(p[3]) r.exato = true;
+        r.bases.push([e.y, fimEra, p[2]]);
+      });
+    });
+    Object.keys(ativo).forEach(nome => {
+      if(nome[0] === '_') return;
+      const r = m[nome]; if(!r) return;
+      r.de = ativo[nome][0];
+      r.ateLu = ativo[nome][1];
+      r.exato = true;
+    });
+    return (Mundo._docCache[sk] = m);
+  },
+  baseDoc(sk, nome, ano){
+    const d = Mundo.doc(sk)[nome]; if(!d) return null;
+    const b = d.bases.find(x => ano >= x[0] && ano <= x[1]) || d.bases.reduce((a, x) =>
+      Math.abs(x[0] - ano) < Math.abs(a[0] - ano) ? x : a, d.bases[0]);
+    return b ? b[2] : d.base;
+  },
+
+  /* ── identidade ── */
+  sobrenomes(cc){
+    if(NOMES_PAIS[cc]) return NOMES_PAIS[cc];
+    if(cc === 'BR') return FILLER_BR;
+    if(cc === 'US') return FILLER_US;
+    if(cc === 'AT') return NOMES_PAIS.DE;
+    return SOBRENOMES_EXTRA[cc] || JR_NAMES;
+  },
+  nomeUnico(W, cc){
+    const prim = NOMES_PROPRIOS[cc] || NOMES_PROPRIOS.GB, sob = Mundo.sobrenomes(cc);
+    for(let k = 0; k < 80; k++){
+      const n = R.pick(prim) + ' ' + R.pick(sob);
+      if(!W.nome[n]) return n;
+    }
+    /* nome muito disputado: um segundo sobrenome resolve, como na vida */
+    for(let k = 0; k < 200; k++){
+      const n = R.pick(prim) + ' ' + R.pick(sob) + ' ' + R.pick(sob);
+      if(!W.nome[n]) return n;
+    }
+    return 'Piloto ' + (W.seq + 1);
+  },
+  criar(W, o){
+    const id = 'p' + (++W.seq);
+    const rec = { id, n:o.n, cc:o.cc || 'GB', nasc:o.nasc, r:o.r ? 1 : 0, b:o.b || null,
+                  h:Math.round((o.h || 50) * 10) / 10, pt:o.pt || o.h || 60, g:o.g, eq:o.eq || null, ate:o.ate || null,
+                  ad:o.ad || 0, st:'a', hs:[], pk:o.pk || 28, dc:o.dc || 33, fa:o.fa || 38,
+                  doc:o.doc ? 1 : 0, ps:null, camp:null, campAno:null, entrou:o.entrou || W.ano };
+    W.p[id] = rec;
+    W.nome[o.n] = id;
+    return rec;
+  },
+  porNome(W, n){ const id = W.nome[n]; return id ? W.p[id] : null; },
+  idade(rec, ano){ return ano - rec.nasc; },
+  ativos(W){ return Object.values(W.p).filter(r => r.st !== 'f'); },
+  noDegrau(W, g){ return Object.values(W.p).filter(r => r.st === 'a' && r.g === g); },
+
+  /* piloto real: com a curva da carreira dele quando existe a ficha */
+  real(W, sk, nome, ano, g, cc){
+    let rec = Mundo.porNome(W, nome);
+    if(rec) return rec;
+    const d = Mundo.doc(sk)[nome];
+    const f = fichaDe(sk, nome);
+    const base = d ? Mundo.baseDoc(sk, nome, ano) : null;
+    const nasc = f ? f[0] : (d ? d.de - 22 : ano - 20);
+    const h = base ? skillEm(sk, nome, ano, base) : 60;
+    const pk = 26 + (seedOf('pk' + nome) % 6);
+    return Mundo.criar(W, { n:nome, cc: cc || (d && d.cc) || 'GB', nasc, r:1, b:base, h, pt: base || h + 6, g,
+      pk, dc: pk + 2 + (seedOf('dc' + nome) % 6), fa: 33 + (seedOf('fim' + sk + nome) % 11), doc:1 });
+  },
+  temCurva(W, rec){ return !!(rec.b && fichaDe(W.sk, rec.n)); },
+
+  /* um piloto que ninguém conhece ainda */
+  inventar(W, g, ano, cc, idade, deg){
+    deg = deg || Mundo.degraus(W.sk, ano)[g] || { base:50, idade:[15, 19] };
+    idade = idade != null ? idade : R.int(deg.idade[0], deg.idade[0] + 2);
+    const u = R.f();
+    const pt = u > .986 ? R.int(89, 94) : u > .93 ? R.int(84, 88) : u > .70 ? R.int(77, 83) : u > .35 ? R.int(70, 76) : R.int(60, 69);
+    /* o nível de partida é o de alguém daquela idade e daquele degrau */
+    const porIdade = 42 + (idade - 13) * 3.1;
+    const h = clamp(Math.round(Math.max(porIdade, deg.base + R.range(-3, 10)) + R.gauss() * 3), 28, pt - 1);
+    const pk = R.int(24, 32), dc = pk + R.int(2, 8), fa = dc + R.int(2, 8);
+    return Mundo.criar(W, { n: Mundo.nomeUnico(W, cc), cc, nasc: ano - idade, r:0, h, pt, g, pk, dc, fa,
+                            ad: 0, entrou: ano });
+  },
+
+  /* ── evolução de um ano ── */
+  evoluir(W, rec, ano){
+    const id = ano - rec.nasc;
+    if(Mundo.temCurva(W, rec)){
+      /* a carreira documentada manda: estreia, auge e declínio de verdade */
+      rec.h = skillEm(W.sk, rec.n, ano, rec.b);
+      return;
+    }
+    let rate = id < 20 ? .30 : id < 23 ? .24 : id < 26 ? .16 : id <= rec.pk ? .09 : id <= rec.dc ? .03 : -1;
+    if(rate > 0){
+      /* nem todo ano rende: há temporada em que nada evolui */
+      const ano_ruim = R.chance(.15) ? .2 : 1;
+      rec.h += Math.max(0, rec.pt - rec.h) * rate * R.range(.6, 1.4) * ano_ruim + R.range(-.6, .6);
+    } else {
+      rec.h -= R.range(.9, 2.4) * (1 + (id - rec.dc) * .26);
+    }
+    rec.h = clamp(Math.round(rec.h * 10) / 10, 25, 99);
+  },
+
+  /* ── resultados ──
+     O que o jogador viu acontecer vale; o resto do mundo é simulado com o
+     nível de cada um e uma dose de acaso. */
+  registrarTemporada(W, ano, g, nomes, camp){
+    nomes.forEach((n, i) => {
+      const rec = Mundo.porNome(W, n); if(!rec) return;
+      rec.ps = i + 1; rec.psN = nomes.length; rec.psAno = ano;
+      if(camp){ rec.camp = camp; rec.campAno = ano; }
+    });
+  },
+  simularResultados(W, ano){
+    const porG = {};
+    Mundo.ativos(W).forEach(r => { if(r.st === 'a' && r.g != null) (porG[r.g] = porG[r.g] || []).push(r); });
+    Object.keys(porG).forEach(g => {
+      const lista = porG[g];
+      const semRes = lista.filter(r => r.psAno !== ano);
+      if(!semRes.length) return;
+      /* quem já tem resultado real guarda o lugar; o resto se ordena pela nota */
+      const ordem = semRes.map(r => ({ r, v: r.h + R.gauss() * (+g === 0 ? 3 : 4) }))
+                          .sort((a, b) => b.v - a.v).map(x => x.r);
+      ordem.forEach((r, i) => { r.ps = i + 1; r.psN = ordem.length; r.psAno = ano; });
+    });
+  },
+  percentil(rec){ return rec.psN ? (rec.ps - 1) / Math.max(1, rec.psN - 1) : .5; },
+
+  /* ── o mundo existe e está no ano certo ── */
+  garantir(W, ano, ctx){
+    if(W.ano == null) W.ano = ano - 1;
+    if(!W.semeado){ Mundo.semear(W, W.ano, ctx); W.semeado = true; }
+    let guarda = 0;
+    while(W.ano < ano && guarda++ < 80) Mundo.avancar(W, W.ano + 1, ctx);
+    return W;
+  },
+
+  /* ── o primeiro ano: o mundo nasce do que se sabe naquele momento ── */
+  semear(W, ano, ctx){
+    ctx = ctx || {};
+    const D = Mundo.degraus(W.sk, ano);
+    /* save antigo: o mundo nasce do último grid que o jogador viu */
+    if(ctx.foto) Mundo.registrarGrid(W, ano, ctx.foto.g, ctx.foto.field, ctx.foto.teams, true);
+    /* categoria principal: a escalação real, se existe; senão a lista da época */
+    if(!Mundo.espelharTopo(W, ano, ctx) && !Mundo.noDegrau(W, 0).length) Mundo.espelharEra(W, ano, ctx);
+    for(let g = 1; g < D.length; g++){
+      Mundo.aplicarReal(W, g, ano, D[g]);
+    }
+    Mundo.posicionarFuturos(W, ano);
+    for(let g = 1; g < D.length; g++){
+      const deg = D[g];
+      let n = Mundo.noDegrau(W, g).length;
+      while(n < deg.alvo){
+        const rec = Mundo.inventar(W, g, ano, Mundo.ccDoDegrau(deg), R.int(deg.idade[0], deg.idade[1] - 1), deg);
+        rec.ad = R.int(0, 2);
+        n++;
+      }
+    }
+    Mundo.simularResultados(W, ano);
+  },
+  ccDoDegrau(deg){
+    if(deg.kart && R.chance(.35)) return R.pick(['IT','GB','FR','DE','ES','NL','BE','BR','US','JP']);
+    return R.pick(JR_CC);
+  },
+
+  /* o grid real da base naquele ano, onde ele existe */
+  aplicarReal(W, g, ano, deg){
+    deg = deg || Mundo.degraus(W.sk, ano)[g];
+    if(!deg) return [];
+    const lista = elencoReal(deg.cat, ano);
+    if(!lista) return [];
+    const n = lista.length, out = [];
+    lista.forEach((x, i) => {
+      let rec = Mundo.porNome(W, x.name);
+      if(!rec){
+        const d = Mundo.doc(W.sk)[x.name];
+        if(d) rec = Mundo.real(W, W.sk, x.name, ano, g, x.cc);
+        else {
+          /* piloto real da base que não está na nossa lista da categoria
+             principal: idade e teto saem do que ele fez naquele grid */
+          const idade = (g === 1 ? 21 : g === 2 ? 19 : 17) + (seedOf('id' + x.name) % 3) - 1;
+          const h = clamp(Math.round(deg.base + 24 - (i / Math.max(1, n - 1)) * 20 + R.gauss() * 1.5), 30, 92);
+          rec = Mundo.criar(W, { n:x.name, cc:x.cc, nasc: ano - idade, r:1, h, pt: h + Math.max(1, 23 - idade) * 1.3,
+            g, pk: R.int(25, 30), dc: R.int(30, 35), fa: R.int(31, 38), doc:1, entrou: ano });
+        }
+      }
+      rec.g = g; rec.st = 'a'; rec.doc = 1;
+      rec.eq = equipeReal(deg.cat, ano, x.name) || rec.eq;
+      rec.ps = i + 1; rec.psN = n; rec.psAno = ano;
+      rec.realAno = ano;
+      out.push(rec);
+    });
+    return out;
+  },
+
+  /* quem a história leva à principal fica na base nos anos que antecedem a estreia */
+  posicionarFuturos(W, ano){
+    const D = Mundo.degraus(W.sk, ano), N = D.length - 1;
+    const doc = Mundo.doc(W.sk);
+    Object.keys(doc).forEach(nome => {
+      const d = doc[nome];
+      const falta = d.de - ano;
+      if(!d.exato || falta < 1 || falta > 3 || d.de > Engine.HORIZONTE) return;
+      const f = fichaDe(W.sk, nome);
+      if(!f) return;
+      const idade = ano - f[0];
+      if(idade < 15 || idade > 27) return;
+      let rec = Mundo.porNome(W, nome);
+      if(rec && (rec.realAno === ano || rec.g === 0)) return;     /* o dado real já o pôs em algum lugar */
+      if(!rec) rec = Mundo.real(W, W.sk, nome, ano, null, d.cc);
+      rec.g = Math.min(N, falta); rec.st = 'a'; rec.projetado = 1;
+    });
+  },
+
+  /* a principal enquanto há escalação real: o mundo só acompanha */
+  espelharTopo(W, ano, ctx){
+    const L = LINEUPS[W.sk] && LINEUPS[W.sk][ano];
+    if(!L) return false;
+    ctx = ctx || {};
+    const res = ctx.reservados || new Set();
+    const vistos = new Set();
+    L.split('|').forEach(bl => {
+      const c = bl.indexOf(':'); if(c < 0) return;
+      const eq = bl.slice(0, c);
+      bl.slice(c + 1).split(',').forEach(nome => {
+        if(!nome || (ctx && ctx.excluir && ctx.excluir.has(nome))) return;
+        /* quem o jogador contratou é dele: a história não toma de volta */
+        const ja = Mundo.porNome(W, nome);
+        if((ja && ja.jog) || res.has(nome)) return;
+        const rec = Mundo.real(W, W.sk, nome, ano, 0);
+        if(rec.eq !== eq || !rec.ate || rec.ate < ano) rec.ate = ano + (seedOf('ct' + nome + ano) % 3);
+        rec.g = 0; rec.eq = eq; rec.st = 'a'; rec.realAno = ano; rec.doc = 1;
+        vistos.add(rec.id);
+      });
+    });
+    /* quem estava na principal e não está na escalação deste ano ficou sem vaga */
+    Mundo.noDegrau(W, 0).forEach(r => {
+      if(vistos.has(r.id) || r.jog) return;
+      r.g = null; r.st = 'l'; r.eq = null; r.semVaga = ano;
+    });
+    return true;
+  },
+
+  /* categoria sem escalação ano a ano: a lista da época diz quem estava em
+     atividade, e quem já tinha equipe continua nela */
+  espelharEra(W, ano, ctx){
+    ctx = ctx || {};
+    const ref = Math.min(ano, Engine.HORIZONTE);
+    const era = eraOfSeries(ref, W.sk);
+    const res = ctx.reservados || new Set(), exc = ctx.excluir || new Set();
+    const ativos = era.pilots.filter(p => (!p[3] || ref >= p[3]) && (!p[4] || ref <= p[4])
+      && !res.has(p[0]) && !exc.has(p[0]) && !(ref > Engine.HORIZONTE - 1 && Engine.aposentouEm(W.sk, p[0], ref)));
+    const equipes = (ctx.equipes ? ctx.equipes(ano) : []).slice().sort((a, b) => b.str - a.str);
+    if(!equipes.length) return false;
+    const nomesEq = new Set(equipes.map(t => t.name));
+    const livre = {}; equipes.forEach(t => livre[t.name] = 2);
+    const recs = ativos.map(p => Mundo.real(W, W.sk, p[0], ref, 0, p[1]));
+    recs.sort((a, b) => b.h - a.h);
+    const sem = [];
+    recs.forEach(r => {
+      if(r.eq && nomesEq.has(r.eq) && r.g === 0 && livre[r.eq] > 0){ livre[r.eq]--; r.st = 'a'; }
+      else sem.push(r);
+    });
+    let k = 0;
+    equipes.forEach(t => { while(livre[t.name] > 0 && k < sem.length){ const r = sem[k++]; r.g = 0; r.eq = t.name; r.st = 'a';
+      r.ate = ano + R.int(0, 2); livre[t.name]--; } });
+    for(; k < sem.length; k++){ const r = sem[k]; if(r.g === 0){ r.g = null; r.st = 'l'; r.eq = null; r.semVaga = ano; } }
+    return true;
+  },
+
+  /* o grid que o jogo realmente montou vira verdade do mundo: quem você
+     viu correr numa equipe estava nela — inclusive quem perdeu a vaga
+     por sua causa */
+  registrarGrid(W, ano, g, field, teams, criar){
+    const vistos = new Set();
+    field.forEach(f => {
+      if(f.isMe) return;
+      const t = teams.find(x => x.id === f.teamId);
+      let rec = f.mid ? W.p[f.mid] : Mundo.porNome(W, f.name);
+      if(!rec && criar){
+        const d = Mundo.doc(W.sk)[f.name];
+        rec = d ? Mundo.real(W, W.sk, f.name, ano, g, f.cc)
+                : Mundo.criar(W, { n:f.name, cc:f.cc, nasc: ano - (g === 0 ? 26 : 20) - (seedOf(f.name) % 6), r:0,
+                                   h:f.skill, pt:f.skill + 3, g, pk:29, dc:33, fa:38, entrou:ano });
+      }
+      if(!rec || rec.jog) return;
+      rec.g = g; rec.st = 'a'; rec.eq = t ? t.name : rec.eq;
+      if(g === 0 && (!rec.ate || rec.ate < ano)) rec.ate = ano + (seedOf('ct' + rec.n + ano) % 2);
+      vistos.add(rec.id);
+    });
+    return vistos;
+  },
+
+  /* ═══ A PASSAGEM DE ANO ═══ */
+  avancar(W, ano, ctx){
+    ctx = ctx || {};
+    const prev = ano - 1;
+    Mundo.simularResultados(W, prev);
+    /* 0. o que cada um fez no ano que passou vai para a trajetória */
+    Mundo.ativos(W).forEach(r => {
+      if(r.st === 'a' && r.g != null){
+        r.hs.push([prev, r.g, r.eq || '', r.psAno === prev ? r.ps : null]);
+        if(r.hs.length > 18) r.hs.shift();
+      }
+    });
+    /* 1. idade e forma */
+    Mundo.ativos(W).forEach(r => Mundo.evoluir(W, r, ano));
+    const D = Mundo.degraus(W.sk, ano), N = D.length - 1;
+    /* a escada pode mudar de tamanho numa virada de época */
+    Mundo.ativos(W).forEach(r => { if(r.g != null && r.g > N) r.g = N; });
+    /* 2. quem para */
+    Mundo.ativos(W).forEach(r => {
+      if(r.jog) return;
+      const id = ano - r.nasc;
+      let para = false;
+      if(r.r && Mundo.doc(W.sk)[r.n] && fichaDe(W.sk, r.n)){
+        if(r.g === 0 || r.st === 'l') para = Engine.aposentouEm(W.sk, r.n, ano) || id > 44;
+      } else if(id > r.fa) para = true;
+      /* sem vaga por muito tempo, a carreira acaba */
+      if(r.st === 'l' && r.semVaga != null && ano - r.semVaga >= 2) para = true;
+      if(para){ r.st = 'f'; r.fim = ano; r.g = null; r.eq = null; }
+    });
+    /* 3. a categoria principal */
+    let documentado = Mundo.espelharTopo(W, ano, ctx);
+    if(!documentado && ano <= Engine.HORIZONTE) documentado = Mundo.espelharEra(W, ano, ctx);
+    /* 4. o dado real da base, onde existe */
+    const fixados = new Set();
+    const comReal = new Set();
+    for(let g = 1; g <= N; g++){
+      const reais = Mundo.aplicarReal(W, g, ano, D[g]);
+      if(reais.length) comReal.add(g);
+      reais.forEach(r => fixados.add(r.id));
+    }
+    Mundo.ativos(W).forEach(r => { r.projetado = 0; });
+    Mundo.posicionarFuturos(W, ano);
+    Mundo.ativos(W).forEach(r => { if(r.projetado && r.g != null) fixados.add(r.id); });
+    /* 5. a base: quem sai, quem sobe, quem entra */
+    Mundo.movimentarBase(W, ano, D, fixados, ctx, documentado, comReal);
+    /* 6. depois do último ano documentado, a principal tem mercado próprio */
+    if(!documentado && ano > Engine.HORIZONTE) Mundo.mercadoTopo(W, ano, ctx);
+    Mundo.podar(W, ano);
+    W.ano = ano;
+  },
+
+  movimentarBase(W, ano, D, fixados, ctx, documentado, comReal){
+    const N = D.length - 1;
+    /* quem passou da idade ou empacou sai — a não ser que o dado real o mantenha */
+    for(let g = 1; g <= N; g++){
+      const deg = D[g];
+      Mundo.noDegrau(W, g).forEach(r => {
+        if(fixados.has(r.id) || r.jog) return;
+        const id = ano - r.nasc;
+        const pc = Mundo.percentil(r);
+        const velho = id > deg.idade[1] + 1;
+        const empacou = r.ad >= Mundo.MAX_ANOS_DEGRAU;
+        /* o fundo do grid também desiste por dinheiro */
+        const semDinheiro = pc > .75 && R.chance(.18);
+        if(velho || empacou || semDinheiro){
+          /* quem saiu da Fórmula 2 com nível ainda pode ser chamado como reserva */
+          if(g === 1 && r.h >= 74 && id <= 28){ r.st = 'l'; r.g = null; r.eq = null; r.semVaga = ano; }
+          else { r.st = 'f'; r.fim = ano; r.g = null; r.eq = null; }
+        }
+      });
+    }
+    /* onde o grid real existe, ele manda: quem estava no degrau e não está
+       nele foi correr em outro lugar — ou parou */
+    for(let g = 1; g <= N; g++){
+      if(!comReal || !comReal.has(g)) continue;
+      const doDegrau = Mundo.noDegrau(W, g);
+      if(doDegrau.length <= D[g].alvo) continue;
+      const soltos = doDegrau.filter(r => !fixados.has(r.id) && !r.jog).sort((a, b) => a.h - b.h);
+      let sobra = doDegrau.length - D[g].alvo;
+      for(const r of soltos){
+        if(sobra <= 0) break;
+        const id = ano - r.nasc;
+        if(g === 1 && r.h >= 74 && id <= 28){ r.st = 'l'; r.semVaga = ano; }
+        else { r.st = 'f'; r.fim = ano; }
+        r.g = null; r.eq = null; sobra--;
+      }
+    }
+    /* sobe quem foi bem: de cima para baixo, enchendo cada degrau com os
+       melhores do degrau de baixo. O campeão e o vice sobem sempre. */
+    for(let g = 1; g <= N; g++){
+      const deg = D[g];
+      const abaixo = g + 1 <= N ? Mundo.noDegrau(W, g + 1).filter(r => !fixados.has(r.id) && !r.jog) : [];
+      abaixo.sort((a, b) => (a.ps || 99) - (b.ps || 99));
+      const subir = [];
+      abaixo.forEach(r => {
+        const id = ano - r.nasc;
+        if(id < deg.idade[0] - 1) return;
+        if((r.ps || 99) <= 2 && r.psAno === ano - 1) subir.push(r);
+      });
+      let falta = deg.alvo - Mundo.noDegrau(W, g).length - subir.length;
+      const degAb = D[g + 1];
+      for(const r of abaixo){
+        if(falta <= 0) break;
+        if(subir.indexOf(r) >= 0) continue;
+        const id = ano - r.nasc;
+        if(id < deg.idade[0] - 1) continue;
+        /* sobe quem terminou no terço de cima; quem já passou da idade do
+           próprio degrau sobe se não ficou no fundo */
+        const pc = Mundo.percentil(r);
+        const passou = degAb && id >= degAb.idade[1];
+        if(!(pc <= .4 || (passou && pc <= .75))) continue;
+        subir.push(r); falta--;
+      }
+      subir.forEach(r => { r.g = g; r.ad = 0; r.eq = null; r.camp = null; });
+    }
+    /* quem ficou no mesmo degrau conta mais um ano nele */
+    for(let g = 1; g <= N; g++) Mundo.noDegrau(W, g).forEach(r => {
+      const ult = r.hs[r.hs.length - 1];
+      if(ult && ult[0] === ano - 1 && ult[1] === g) r.ad = (r.ad || 0) + 1;
+    });
+    /* e o degrau de baixo recebe gente nova; os do meio, quase nunca */
+    for(let g = N; g >= 1; g--){
+      const deg = D[g];
+      let n = Mundo.noDegrau(W, g).length;
+      /* no meio da escada, quem chega vem de outros campeonatos do mesmo nível */
+      const entra = deg.alvo - n;
+      for(let k = 0; k < entra; k++){
+        const idade = g === N ? R.int(deg.idade[0], deg.idade[0] + 1) : R.int(deg.idade[0], deg.idade[0] + 3);
+        Mundo.inventar(W, g, ano, Mundo.ccDoDegrau(deg), idade, deg);
+      }
+    }
+  },
+
+  /* ═══ O MERCADO DA CATEGORIA PRINCIPAL ═══
+     Contratos valem até o fim. Quem termina contrato pode renovar ou sair;
+     as equipes escolhem da mais forte para a mais fraca, e cada uma leva o
+     melhor nome disponível para ela — o campeão não acaba numa equipe pior
+     porque as melhores passam antes, e o piloto fraco não chega à de ponta
+     porque ela tem opção melhor. O jovem promissor pode ganhar a aposta;
+     o teto dele pesa, mas não garante nada. */
+  valorParaEquipe(rec, ano, eq){
+    const id = ano - rec.nasc;
+    let v = rec.h;
+    if(id <= 24) v += Math.max(0, (rec.pt || rec.h) - rec.h) * .3;    /* a aposta no futuro */
+    if(id >= 35) v -= (id - 34) * 1.2;                                 /* o relógio */
+    if(rec.psAno === ano - 1 && rec.psN) v += (.5 - Mundo.percentil(rec)) * (rec.g === 0 ? 6 : 3);
+    if(eq && rec.eq === eq && rec.g === 0) v += 3.5;                   /* continuidade */
+    const anosTopo = rec.hs.filter(h => h[1] === 0).length;
+    v += Math.min(4, anosTopo * .8);                                   /* quem já conhece a categoria */
+    if(rec.g !== 0 && !anosTopo) v -= 3;                               /* estreante é risco */
+    return v + R.gauss() * 1.2;
+  },
+  mercadoTopo(W, ano, ctx){
+    const equipes = (ctx.equipes ? ctx.equipes(ano) : []).slice().sort((a, b) => b.str - a.str);
+    if(!equipes.length) return;
+    const era = eraOfSeries(ano, W.sk);
+    const cap = {};
+    equipes.forEach((t, i) => cap[t.name] = (era.bigTeams && i < era.bigTeams) ? (era.cars || 3) : 2);
+    Object.keys(ctx.ocupados || {}).forEach(n => { if(cap[n] != null) cap[n] = Math.max(0, cap[n] - ctx.ocupados[n]); });
+    const nomesEq = new Set(equipes.map(t => t.name));
+    const livre = Object.assign({}, cap);
+    const reservados = ctx.reservados || new Set();
+    /* 1. contratos em vigor */
+    const topo = Mundo.noDegrau(W, 0).filter(r => !reservados.has(r.n));
+    topo.sort((a, b) => b.h - a.h);
+    const disponiveis = [];
+    topo.forEach(r => {
+      if(r.eq && nomesEq.has(r.eq) && r.ate >= ano && livre[r.eq] > 0){ livre[r.eq]--; return; }
+      disponiveis.push(r);
+    });
+    /* 2. quem terminou contrato, quem ficou sem equipe e quem vem de baixo */
+    Mundo.noDegrau(W, 1).forEach(r => {
+      const id = ano - r.nasc;
+      if(reservados.has(r.n) || id < 18) return;
+      if(Mundo.percentil(r) <= .35 || r.h >= 78) disponiveis.push(r);
+    });
+    Object.values(W.p).forEach(r => {
+      if(r.st === 'l' && !reservados.has(r.n) && ano - r.nasc <= 36) disponiveis.push(r);
+    });
+    const usados = new Set();
+    /* 3. as equipes escolhem, da mais forte para a mais fraca */
+    equipes.forEach(t => {
+      while(livre[t.name] > 0){
+        let melhor = null, mv = -1e9;
+        disponiveis.forEach(r => {
+          if(usados.has(r.id)) return;
+          const v = Mundo.valorParaEquipe(r, ano, t.name);
+          if(v > mv){ mv = v; melhor = r; }
+        });
+        if(!melhor) break;
+        usados.add(melhor.id);
+        const id = ano - melhor.nasc;
+        const anos = id <= 24 ? R.int(2, 3) : id >= 34 ? 1 : R.int(1, 3);
+        if(melhor.g !== 0) melhor.estreouTopo = ano;
+        melhor.mudou = melhor.eq !== t.name ? ano : melhor.mudou;
+        melhor.g = 0; melhor.st = 'a'; melhor.eq = t.name; melhor.ate = ano + anos - 1; melhor.ad = 0;
+        melhor.semVaga = null;
+        livre[t.name]--;
+      }
+    });
+    /* 4. quem estava na principal e não achou lugar fica sem vaga */
+    disponiveis.forEach(r => {
+      if(usados.has(r.id)) return;
+      if(r.g === 0){ r.g = null; r.st = 'l'; r.eq = null; r.semVaga = ano; }
+    });
+    /* 5. vaga que sobrou é de um piloto rodado vindo de outro campeonato */
+    equipes.forEach(t => {
+      while(livre[t.name] > 0){
+        const deg = Mundo.degraus(W.sk, ano)[1] || { base:60, idade:[22, 28] };
+        const rec = Mundo.inventar(W, 0, ano, R.pick(JR_CC), R.int(23, 29), { base: deg.base + 10, idade:[23, 29] });
+        rec.eq = t.name; rec.ate = ano + R.int(0, 1); rec.estreouTopo = ano;
+        livre[t.name]--;
+      }
+    });
+  },
+
+  /* quem está na principal naquele ano, com a equipe */
+  topoDe(W, ano){
+    return Mundo.noDegrau(W, 0).map(r => r);
+  },
+
+  /* ═══ O GRID DE UM CAMPEONATO DA BASE ═══
+     Primeiro o grid real daquele ano, se existe; depois quem já corria ali
+     no ano passado; depois quem é do degrau e combina com o campeonato; e,
+     faltando gente, entra gente nova — que passa a existir dali em diante. */
+  gridDe(W, g, ano, o){
+    o = o || {};
+    const n = o.n || 19;
+    const excluir = o.excluir || new Set();
+    const deg = Mundo.degraus(W.sk, ano)[g] || Mundo.degraus(W.sk, ano)[1];
+    const escolhidos = [], ids = new Set();
+    const pega = r => { if(!r || ids.has(r.id) || excluir.has(r.n) || r.st !== 'a' || r.jog) return false;
+                        ids.add(r.id); escolhidos.push(r); return true; };
+    /* 1. o grid real daquele campeonato */
+    const real = o.cat ? elencoReal(o.cat, ano) : null;
+    if(real) real.forEach(x => { const r = Mundo.porNome(W, x.name); if(r && r.g === g && escolhidos.length < n) pega(r); });
+    /* 2. quem já corria aqui */
+    const doDegrau = Mundo.noDegrau(W, g);
+    if(o.cat) doDegrau.filter(r => r.camp === o.cat && r.campAno === ano - 1)
+                      .sort((a, b) => b.h - a.h).forEach(r => { if(escolhidos.length < n) pega(r); });
+    /* 3. do degrau, conforme o país do campeonato */
+    const mix = o.cat ? mixNacional(o.cat) : null;
+    const resto = doDegrau.filter(r => !ids.has(r.id))
+      .map(r => ({ r, k: (mix && r.cc === mix.cc ? 0 : mix ? 1 : 0) + ((seedOf(r.id + ano) % 100) / 1000) }))
+      .sort((a, b) => a.k - b.k);
+    for(const x of resto){
+      if(escolhidos.length >= n) break;
+      /* campeonato nacional: estrangeiro só até a cota do país */
+      if(mix && x.r.cc !== mix.cc){
+        const estr = escolhidos.filter(r => r.cc !== mix.cc).length;
+        if(estr >= Math.round(n * (1 - mix.share)) + 1) continue;
+      }
+      pega(x.r);
+    }
+    /* 4. faltando gente, entra gente nova */
+    while(escolhidos.length < n){
+      const cc = o.cat ? ccJunior(o.cat) : Mundo.ccDoDegrau(deg);
+      const rec = Mundo.inventar(W, g, ano, cc, R.int(deg.idade[0], deg.idade[1] - 1), deg);
+      pega(rec);
+    }
+    if(o.cat) escolhidos.forEach(r => { r.camp = o.cat; r.campAno = ano; });
+    return escolhidos;
+  },
+
+  /* ── cuidado com o tamanho do save ── */
+  podar(W, ano){
+    Object.values(W.p).forEach(r => {
+      if(r.st !== 'f' || r.jog || r.marcou) return;
+      const chegou = r.hs.some(h => h[1] === 0);
+      if(!chegou && ano - (r.fim || ano) > 6){ delete W.nome[r.n]; delete W.p[r.id]; }
+      else if(chegou && r.hs.length > 6) r.hs = r.hs.slice(-6);
+    });
+  },
+
+  /* ── consultas ── */
+  trajetoria(W, rec, sk){
+    const D = y => Mundo.degraus(sk || W.sk, y);
+    return rec.hs.map(h => ({ ano:h[0], cat: (D(h[0])[h[1]] || {}).cat || '?', eq:h[2], pos:h[3] }));
+  }
+};
 </script>
 
 <script>
@@ -12479,10 +13212,12 @@ const Game = {
 
     /* Quem foi bem na SUA categoria sobe de verdade no ano seguinte: a
        classificação que você disputou é a que manda no mercado da base. */
-    if(!sea.isTop){
-      const id = jrCatId(sea.cat);
-      if(id) S.ordemBase = { id, nomes: Engine.standings(sea).filter(d => !d.me).map(d => d.name) };
-    } else S.ordemBase = null;
+    try {
+      const Wm = Engine.mundo();
+      const gM = Mundo.degrauDe(S.series, sea.year, sea.cat, S.catIdx, S.ladder.length);
+      Mundo.registrarTemporada(Wm, sea.year, gM, Engine.standings(sea).filter(d => !d.me).map(d => d.name), sea.cat);
+    } catch(e){}
+    S.ordemBase = null;
 
     const saiuDaAcademia = Engine.academyReview(sum);
     const growth = Engine.progress(sum);
@@ -14472,6 +15207,8 @@ const Chefe = {
       }
       return clamp(Math.round(v + (p.extra || 0)), 35, 99);
     }
+    const rec = Chefe.recDe(p);
+    if(rec) return clamp(Math.round(rec.h + (p.extra || 0)), 30, 99);
     return clamp(Math.round(p.hab), 30, 99);
   },
   idade(p, ano){ return (ano || C.ano) - p.nasc; },
@@ -14514,6 +15251,14 @@ const Chefe = {
 
   /* evolução de quem não tem a carreira escrita pela história */
   evoluir(p){
+    const rec = Chefe.recDe(p);
+    if(rec && !(p.real && p.base)){
+      /* o mundo já envelheceu e fez evoluir; o trabalho da equipe ainda lapida */
+      const id = Chefe.idade(p);
+      const k = p.papel === 'academia' && id <= 21 ? (C.acad || 0) * .05 : p.papel === 'titular' && id <= 25 ? .04 : 0;
+      if(k) rec.h = Math.min(rec.pt + 1, rec.h + Math.max(0, rec.pt - rec.h) * k);
+      return;
+    }
     if(p.real && p.base){
       /* a curva real anda sozinha; a academia ainda lapida um pouco */
       if(p.papel === 'academia' && Chefe.idade(p) <= 21) p.extra = Math.min(3, (p.extra || 0) + (C.acad || 0) * .4);
@@ -14581,6 +15326,62 @@ const Chefe = {
     return null;
   },
 
+  /* ═══ O MUNDO DE PILOTOS ═══
+     O mesmo do modo piloto: identidades estáveis, a base que continua de um
+     ano para o outro e, depois do último ano documentado, um mercado de
+     verdade na Fórmula 1. Quem você contrata é seu — nem a história nem as
+     outras equipes tomam de volta. */
+  mundoW(){
+    if(!C.W || C.W.v !== Mundo.V){
+      const sea = C.temporada;
+      const ini = sea && sea.field && sea.ano <= C.ano ? sea.ano : Math.min(C.ano, Engine.HORIZONTE) - 1;
+      C.W = Mundo.novo('f1', ini);
+    }
+    return C.W;
+  },
+  ctxMundo(){
+    const res = Chefe.reservados();
+    return { excluir: res, reservados: res, equipes: ano => Chefe.equipesIA(ano), ocupados: {} };
+  },
+  garantirMundo(ano){
+    const W = Chefe.mundoW();
+    const ctx = Chefe.ctxMundo();
+    const sea = C.temporada;
+    if(!W.semeado && sea && sea.ano === W.ano && sea.field){
+      ctx.foto = { g: sea.isTop ? 0 : Chefe.degrauNosso(sea.ano), teams: sea.teams,
+                   field: sea.field.filter(f => f.teamId !== 'EU') };
+    }
+    Mundo.garantir(W, ano || C.ano, ctx);
+    return W;
+  },
+  degrauNosso(ano){
+    ano = ano || C.ano;
+    if(Chefe.ehF1()) return 0;
+    const full = resolveLadder(eraOfSeries(ano, 'f1').ladder, C.eq.cc || 'GB', ano);
+    const idx = full.indexOf(C.cat);
+    return Mundo.degrauDe('f1', ano, C.cat, idx < 0 ? null : idx, full.length);
+  },
+  recDe(p){ return (p && p.mid && C.W && C.W.p[p.mid]) || null; },
+  /* um piloto seu passa a ser seu também no mundo */
+  ligar(p){
+    const W = Chefe.mundoW();
+    let rec = Chefe.recDe(p) || Mundo.porNome(W, p.nome);
+    if(!rec){
+      rec = p.real && p.base ? Mundo.real(W, 'f1', p.nome, C.ano, null, p.cc)
+          : Mundo.criar(W, { n:p.nome, cc:p.cc, nasc:p.nasc, r:0, h:Chefe.hab(p), pt:p.pot || Chefe.hab(p) + 3,
+                             g:null, pk:28, dc:33, fa:38, entrou:C.ano });
+    }
+    p.mid = rec.id;
+    rec.jog = 1; rec.st = 'a'; rec.exNosso = 1;
+    return rec;
+  },
+  /* e quem sai volta para o mundo, com a carreira que tiver */
+  liberar(p){
+    const rec = Chefe.recDe(p); if(!rec) return;
+    rec.jog = 0; rec.eq = null;
+    if(rec.g === 0 || rec.g == null){ rec.g = null; rec.st = 'l'; rec.semVaga = C.ano; }
+  },
+
   /* os nomes que são seus e não podem correr por outra equipe */
   reservados(){
     return new Set(C.pilotos.filter(p => p.papel !== 'emprestado').map(p => p.nome));
@@ -14588,6 +15389,7 @@ const Chefe = {
 
   /* quem está em atividade na Fórmula 1 naquele ano */
   pilotosDoAno(ano){
+    if(ano > Engine.HORIZONTE) return Chefe.pilotosDoMundo(ano);
     const era = eraOfSeries(ano, 'f1');
     const ativo = ativoDe('f1');
     const cobre = ano >= ativo._de && ano <= ativo._ate;
@@ -14612,11 +15414,26 @@ const Chefe = {
         out.push({ nome:g.name, cc:g.cc, skill:g.skill, real:false, nasc:g.nasc });
       });
     }
-    /* quem o mundo ganhou por sua causa: ex-pilotos da sua academia */
-    (C.mundo.extras || []).forEach(x => {
-      if(vistos.has(x.nome) || Chefe.idade(x, ano) > 40) return;
-      vistos.add(x.nome);
-      out.push({ nome:x.nome, cc:x.cc, skill: Chefe.hab(x, ano), real:false, nasc:x.nasc, extra:true });
+    /* quem o mundo ganhou por sua causa: ex-pilotos seus que seguem correndo */
+    if(C.W) Object.values(C.W.p).forEach(r => {
+      if(!r.exNosso || r.jog || r.st === 'f' || vistos.has(r.n) || ano - r.nasc > 40) return;
+      vistos.add(r.n);
+      out.push({ nome:r.n, cc:r.cc, skill:Math.round(r.h), real:!!r.b, base:r.b, nasc:r.nasc, mid:r.id, extra:true });
+    });
+    return out;
+  },
+  /* depois do último ano documentado: quem o mundo tem na principal, quem
+     ficou sem vaga e quem está batendo na porta vindo da Fórmula 2 */
+  pilotosDoMundo(ano){
+    const W = Chefe.garantirMundo(ano);
+    const res = Chefe.reservados();
+    const out = [];
+    Object.values(W.p).forEach(r => {
+      if(res.has(r.n) || r.st === 'f' || r.jog) return;
+      const ok = r.g === 0 || (r.st === 'l' && ano - r.nasc <= 36)
+              || (r.g === 1 && (Mundo.percentil(r) <= .45 || r.h >= 76));
+      if(ok) out.push({ nome:r.n, cc:r.cc, skill:Math.round(r.h), real:!!r.b, base:r.b, nasc:r.nasc, mid:r.id,
+                        eqAtual: r.g === 0 ? r.eq : null });
     });
     return out;
   },
@@ -14624,11 +15441,13 @@ const Chefe = {
   /* o grid das outras equipes: primeiro a escalação real, depois quem
      ficou onde estava, depois o mercado pela força de cada equipe */
   montarGrid(ano, teams){
+    if(ano > Engine.HORIZONTE) return Chefe.gridDoMundo(ano, teams);
     const era = eraOfSeries(ano, 'f1');
     const nossos = Chefe.reservados();
-    let pool = Chefe.pilotosDoAno(ano).filter(p => !nossos.has(p.nome));
-    /* emprestados da sua academia entram no mercado como qualquer um */
+    /* emprestados da sua academia entram no mercado como qualquer um — uma vez só */
     const emp = C.pilotos.filter(p => p.papel === 'emprestado');
+    const nomesEmp = new Set(emp.map(p => p.nome));
+    let pool = Chefe.pilotosDoAno(ano).filter(p => !nossos.has(p.nome) && !nomesEmp.has(p.nome));
     const byStr = teams.slice().sort((a, b) => b.str - a.str);
     const cap = {};
     byStr.forEach((t, i) => cap[t.id] = (era.bigTeams && i < era.bigTeams) ? (era.cars || 3) : 2);
@@ -14689,6 +15508,42 @@ const Chefe = {
     return todos.map(p => Object.assign({}, p, { teamId: destino[p.nome] }));
   },
 
+  gridDoMundo(ano, teams){
+    const W = Chefe.garantirMundo(ano);
+    const era = eraOfSeries(ano, 'f1');
+    const nossos = Chefe.reservados();
+    const byStr = teams.slice().sort((a, b) => b.str - a.str);
+    const livre = {};
+    byStr.forEach((t, i) => livre[t.id] = (era.bigTeams && i < era.bigTeams) ? (era.cars || 3) : 2);
+    const porNome = {}; teams.forEach(t => porNome[t.name] = t);
+    const out = [];
+    /* os seus emprestados entram nas equipes pequenas, no lugar de alguém */
+    const fundo = byStr.slice().reverse();
+    C.pilotos.filter(p => p.papel === 'emprestado').forEach(p => {
+      const t = fundo.find(x => livre[x.id] > 0); if(!t) return;
+      livre[t.id]--;
+      out.push({ nome:p.nome, cc:p.cc, skill:Chefe.hab(p, ano), teamId:t.id, nosso:true, mid:p.mid || null });
+    });
+    Mundo.topoDe(W, ano).filter(r => !nossos.has(r.n) && !r.jog).sort((a, b) => b.h - a.h).forEach(r => {
+      const t = porNome[r.eq];
+      if(t && livre[t.id] > 0){ livre[t.id]--; out.push({ nome:r.n, cc:r.cc, skill:Math.round(r.h), teamId:t.id, mid:r.id }); }
+      else { r.g = null; r.st = 'l'; r.eq = null; r.semVaga = ano; }
+    });
+    /* sobrando assento: o melhor que estiver livre no mundo */
+    const livres = Object.values(W.p).filter(r => !nossos.has(r.n) && !r.jog && r.st !== 'f' && r.g !== 0
+      && (r.st === 'l' || r.g === 1)).sort((a, b) => b.h - a.h);
+    byStr.forEach(t => {
+      while(livre[t.id] > 0){
+        let r = livres.shift();
+        if(!r) r = Mundo.inventar(W, 0, ano, R.pick(JR_CC), R.int(23, 29), { base:70, idade:[23, 29] });
+        r.g = 0; r.st = 'a'; r.eq = t.name; r.ate = ano + 1; r.semVaga = null;
+        livre[t.id]--;
+        out.push({ nome:r.n, cc:r.cc, skill:Math.round(r.h), teamId:t.id, mid:r.id });
+      }
+    });
+    return out;
+  },
+
   /* ═══ AS CATEGORIAS DE BASE ═══ */
   equipesJunior(ano){
     const info = Chefe.catInfoAtual();
@@ -14719,35 +15574,30 @@ const Chefe = {
     return out;
   },
   gridJunior(ano, teams){
-    const info = Chefe.catInfoAtual();
-    const L = C.escada, d = L.length - L.indexOf(C.cat);
-    const nossos = Chefe.reservados();
-    const usados = new Set(nossos);
-    let pool = [];
-    const real = elencoReal(C.cat, ano);
-    if(real) real.forEach(x => { if(!usados.has(x.name)){ usados.add(x.name);
-      const base = Chefe.baseReal(x.name, ano + 2);
-      pool.push({ nome:x.name, cc:x.cc, skill: base ? skillEm('f1', x.name, ano, base) : info.base + R.int(-6, 10) }); } });
-    Chefe.futurosNaBase(ano, d).forEach(x => { if(!usados.has(x.nome)){ usados.add(x.nome); pool.push(x); } });
-    const vagas = teams.length * 2;
-    while(pool.length < vagas){
-      const cc = R.pick(JR_CC);
-      const nm = nomeJunior(cc, usados); usados.add(nm);
-      pool.push({ nome:nm, cc, skill: clamp(Math.round(info.base + R.gauss() * 5 + 2), 30, 90) });
-    }
-    pool = pool.slice(0, vagas).sort((a, b) => b.skill - a.skill);
-    /* os melhores pilotos tendem às melhores equipes, mas não sempre */
+    /* o grid da sua categoria sai do mundo: o real daquele ano, quando
+       existe; quem já corria ali; e só então gente nova */
+    const W = Chefe.garantirMundo(ano);
+    const g = Chefe.degrauNosso(ano);
+    const recs = Mundo.gridDe(W, g, ano, { n: teams.length * 2, cat: C.cat, excluir: Chefe.reservados() });
     const byStr = teams.slice().sort((a, b) => b.str - a.str);
-    const out = [];
+    const porNome = {}; teams.forEach(t => porNome[t.name] = t);
     const livre = {}; byStr.forEach(t => livre[t.id] = 2);
-    pool.forEach(p => {
+    const out = [], sem = [];
+    /* quem tem equipe conhecida fica nela; os outros, os melhores tendem às melhores */
+    recs.forEach(r => {
+      const t = porNome[equipeReal(C.cat, ano, r.n) || r.eq];
+      if(t && livre[t.id] > 0){ livre[t.id]--; out.push({ r, teamId:t.id }); } else sem.push(r);
+    });
+    sem.sort((a, b) => b.h - a.h).forEach(r => {
       const cand = byStr.filter(t => livre[t.id] > 0);
       if(!cand.length) return;
       const t = cand[Math.min(cand.length - 1, R.chance(.6) ? 0 : R.int(0, Math.min(3, cand.length - 1)))];
-      livre[t.id]--;
-      out.push(Object.assign({}, p, { teamId:t.id }));
+      livre[t.id]--; out.push({ r, teamId:t.id });
     });
-    return out.map((p, k) => ({ id:'d' + k, name:p.nome, cc:p.cc, teamId:p.teamId, skill:p.skill }));
+    out.forEach(x => { const t = teams.find(y => y.id === x.teamId); x.r.eq = t ? t.name : null; });
+    const reaisAno = new Set((elencoReal(C.cat, ano) || []).map(x => x.name));
+    return out.map((x, k) => ({ id:'d' + k, mid:x.r.id, name:x.r.n, cc:x.r.cc, teamId:x.teamId,
+                                skill:Math.round(x.r.h), doc: reaisAno.has(x.r.n) }));
   },
   corridasJunior(){ return Chefe.catInfoAtual().races; },
   pontosJunior(ano){
@@ -14772,6 +15622,16 @@ const Chefe = {
       field = Chefe.gridJunior(ano, ia);
     }
     field.forEach(f => Chefe.perfilar(f, ano));
+    /* o mundo sabe quem correu onde — e os seus estão com você */
+    try {
+      const W = Chefe.garantirMundo(ano);
+      if(f1 && ano <= Engine.HORIZONTE) Mundo.registrarGrid(W, ano, 0, field, teams, true);
+      const gN = Chefe.degrauNosso(ano);
+      C.pilotos.forEach(p => {
+        if(p.papel !== 'titular' && p.papel !== 'teste') return;
+        const r = Chefe.ligar(p); r.g = gN; r.eq = C.eq.nome;
+      });
+    } catch(e){}
     const pts = f1 ? pointsFor(ano, 'f1') : Chefe.pontosJunior(ano);
     const ids = f1 ? calendarFor(ano, 'f1') : juniorCalendar(C.cat, ano, 'f1', Chefe.corridasJunior());
     const calendar = ids.map((id, i) => {
@@ -15164,17 +16024,17 @@ const Chefe = {
       out[out.length - 1].base = base;
     });
     let lista = R.shuffle(out).slice(0, 3);
-    /* e os que ninguém conhece ainda */
-    const usados = new Set([...nossos].concat(lista.map(p => p.nome)));
-    const nGer = 6 - lista.length;
-    for(let i = 0; i < nGer; i++){
-      const cc = R.pick(JR_CC);
-      const nm = nomeJunior(cc, usados); usados.add(nm);
-      const r = R.f();
-      const pot = r > .96 ? R.int(90, 95) : r > .82 ? R.int(84, 89) : r > .5 ? R.int(76, 83) : R.int(66, 75);
-      const idade = R.int(14, 18);
-      lista.push(Chefe.novoPiloto({ nome:nm, cc, nasc: ano - idade, real:false, hab: clamp(pot - 22 + (idade - 14) * 3 + R.gauss() * 3, 35, 80), pot }));
-    }
+    const W = Chefe.garantirMundo(ano);
+    lista.forEach(p => { const r = Mundo.real(W, 'f1', p.nome, ano, null, p.cc); p.mid = r.id; });
+    /* e os garotos do kart e da F4 que ninguém conhece ainda: os olheiros
+       tendem aos mais talentosos, mas não enxergam o talento de verdade */
+    const nossosM = Chefe.reservados();
+    const kids = Object.values(W.p).filter(r => r.st === 'a' && !r.jog && !nossosM.has(r.n) && r.g != null && r.g >= 3
+      && ano - r.nasc >= 13 && ano - r.nasc <= 18 && !lista.some(p => p.nome === r.n))
+      .map(r => ({ r, v: r.pt + R.gauss() * 7 })).sort((a, b) => b.v - a.v).map(x => x.r);
+    kids.slice(0, 6 - lista.length).forEach(r => {
+      lista.push(Chefe.novoPiloto({ nome:r.n, cc:r.cc, nasc:r.nasc, real:false, hab:r.h, pot:r.pt, mid:r.id }));
+    });
     /* a leitura do olheiro: quanto melhor a academia, menor o erro */
     const erro = 7 - (C.acad || 0) * 1.8;
     lista.forEach(p => {
@@ -15292,6 +16152,7 @@ Object.assign(Chefe, {
       if(p.aporte) p.sal = Math.round(p.sal * .25 / 1000) * 1000;
       p.ate = ano + (seedOf(n + ano) % 2);
       C.pilotos.push(p);
+      Chefe.ligar(p);
     });
     const tit = Chefe.titulares();
     if(tit.length === 2 && Chefe.hab(tit[0], ano) - Chefe.hab(tit[1], ano) >= 5) C.n1 = tit[0].id;
@@ -15342,6 +16203,7 @@ Object.assign(Chefe, {
   /* ═══ O INVERNO ═══ */
   abrirInverno(primeiro){
     const ano = C.ano;
+    Chefe.garantirMundo(ano);
     const inv = C.inv = { ano, tent:{ pil:0, staff:0 }, msgs:[], decisoes:[] };
     /* a escada muda de nome com as épocas: a Fórmula 3000 vira GP2, a GP2 vira Fórmula 2 */
     if(!Chefe.ehF1()){
@@ -15386,7 +16248,7 @@ Object.assign(Chefe, {
           } else if(!(p.real && a) && ((p.tb || 0) >= 3 || Chefe.idade(p) >= 25)){
             p.papel = 'fora';
             inv.msgs.push({ t: p.nome + ' deixou a equipe para tentar a sorte em outro lugar.' });
-            C.mundo.extras.push(Chefe.copiaMundo(p));
+            Chefe.liberar(p);
           }
         });
       }
@@ -15396,7 +16258,7 @@ Object.assign(Chefe, {
         if(p.papel === 'academia' && Chefe.idade(p) > 23){
           p.papel = 'fora';
           inv.msgs.push({ t: p.nome + ' deixou a academia sem chegar ao carro titular.' });
-          if(!p.real) C.mundo.extras.push(Chefe.copiaMundo(p));
+          Chefe.liberar(p);
         }
         if(p.papel === 'emprestado' && p.ate < ano){ p.papel = 'academia'; }
       });
@@ -15466,35 +16328,25 @@ Object.assign(Chefe, {
     Chefe.equipesIA(ano).forEach(t => strDe[t.name] = t.str);
     const nossos = new Set(C.pilotos.map(p => p.nome));
     const cands = pool.filter(p => !nossos.has(p.nome)).map(p => {
-      const eq = L[p.nome], s = eq != null && strDe[eq] != null ? strDe[eq] : null;
+      const eq = L[p.nome] || p.eqAtual, s = eq != null && strDe[eq] != null ? strDe[eq] : null;
       return Object.assign({}, p, { eqHist: s != null ? eq : null, strHist: s });
     }).sort((a, b) => b.skill - a.skill);
     const lista = cands.slice(0, 12).concat(R.shuffle(cands.slice(12)).slice(0, 8));
     return lista.map(c => Chefe.fichaMercado(c));
   },
   mercadoJunior(){
+    /* quem corre no seu degrau e quem vem logo abaixo — gente que existe,
+       com trajetória, e que vai continuar existindo se você não contratar */
     const ano = C.ano;
-    const L = C.escada, d = L.length - L.indexOf(C.cat);
+    const W = Chefe.garantirMundo(ano);
+    const g = Chefe.degrauNosso(ano);
     const nossos = Chefe.reservados();
-    const usados = new Set(nossos);
-    const out = [];
-    /* só os futuros pilotos de F1 que estariam neste degrau, neste ano */
-    R.shuffle(Chefe.futurosNaBase(ano, null).filter(x => {
-      const falta = (ativoDe('f1')[x.nome] || [ano + 9])[0] - ano;
-      return Math.abs(falta - d) <= 1;
-    })).forEach(x => {
-      if(usados.has(x.nome) || out.length >= 3) return;
-      usados.add(x.nome);
-      out.push(Object.assign({}, x));
-    });
-    const base = Chefe.catBase();
-    for(let i = out.length; i < 12; i++){
-      const cc = R.chance(.35) ? C.eq.cc : R.pick(JR_CC);
-      const nm = nomeJunior(cc, usados); usados.add(nm);
-      const idade = R.int(15, 22);
-      out.push({ nome:nm, cc, real:false, skill: clamp(Math.round(base + R.gauss() * 6 + 2), 30, 88), nasc: ano - idade });
-    }
-    return out.map(c => Chefe.fichaMercado(c));
+    const cands = Object.values(W.p).filter(r => r.st === 'a' && !r.jog && !nossos.has(r.n)
+      && (r.g === g || r.g === g + 1) && ano - r.nasc >= 15);
+    const daqui = R.shuffle(cands.filter(r => r.camp === C.cat)).slice(0, 7);
+    const outros = R.shuffle(cands.filter(r => r.camp !== C.cat)).slice(0, 12 - daqui.length);
+    return daqui.concat(outros).map(r => Chefe.fichaMercado({ nome:r.n, cc:r.cc, real: !!r.b, base:r.b,
+      nasc:r.nasc, skill:Math.round(r.h), mid:r.id }));
   },
   fichaMercado(c){
     const ano = C.ano;
@@ -15506,6 +16358,7 @@ Object.assign(Chefe, {
                              pot: Math.max(c.skill, c.skill + Math.max(0, 25 - (ano - nasc)) * 1.2) });
     }
     p.eqHist = c.eqHist || null; p.strHist = c.strHist != null ? c.strHist : null;
+    if(c.mid && C.W && C.W.p[c.mid]){ p.mid = c.mid; if(!p.real) p.pot = C.W.p[c.mid].pt; p.nasc = C.W.p[c.mid].nasc; }
     const h = Chefe.hab(p, ano);
     p.pede = Chefe.salarioPedido(p, ano);
     p.aporte = Chefe.aportePagante(h, ano, p.nome);
@@ -15560,7 +16413,7 @@ Object.assign(Chefe, {
     if(!renova){
       C.pilotos.push(p);
       if(C.inv) C.inv.mercado = C.inv.mercado.filter(x => x !== p);
-      C.mundo.extras = C.mundo.extras.filter(x => x.nome !== p.nome);
+      Chefe.ligar(p);
     }
     Chefe.noticia(p.nome + (renova ? ' renova com a ' : ' assina com a ') + C.eq.nome
       + (of.anos > 1 ? ' por ' + of.anos + ' anos' : ' por um ano') + '.', 'g');
@@ -15575,7 +16428,7 @@ Object.assign(Chefe, {
     if(m) Chefe.lancar('salarios', -m);
     p.papel = 'fora';
     if(C.n1 === p.id) C.n1 = null;
-    if(!p.real) C.mundo.extras.push(Chefe.copiaMundo(p));
+    Chefe.liberar(p);
     C.pilotos = C.pilotos.filter(x => x !== p);
     Chefe.noticia(p.nome + ' deixa a ' + C.eq.nome + '.', '');
   },
@@ -15816,7 +16669,7 @@ Object.assign(Chefe, {
     C.pilotos.filter(p => p.venceu).forEach(p => {
       Chefe.noticia(p.nome + ' deixa a equipe no fim do contrato.', '');
       if(C.n1 === p.id) C.n1 = null;
-      if(!p.real) C.mundo.extras.push(Chefe.copiaMundo(p));
+      Chefe.liberar(p);
     });
     C.pilotos = C.pilotos.filter(p => !p.venceu);
     Chefe.titulares().forEach((p, i) => p.carro = i);
@@ -15960,6 +16813,10 @@ Object.assign(Chefe, {
     C.ultimaPos = pos;
     if(pos === 1) Chefe.noticia('A ' + C.eq.nome + ' é campeã ' + (Chefe.ehF1() ? 'mundial de construtores' : 'da ' + sea.cat) + ' de ' + sea.ano + '.', 'g');
     if(nossoCampeao) Chefe.noticia(campeao.f.name + ' é campeão ' + (Chefe.ehF1() ? 'mundial' : 'da ' + sea.cat) + ' com a ' + C.eq.nome + '.', 'g');
+    try {
+      const W = Chefe.garantirMundo(sea.ano);
+      Mundo.registrarTemporada(W, sea.ano, sea.isTop ? 0 : Chefe.degrauNosso(sea.ano), tab.map(x => x.f.name), sea.cat);
+    } catch(e){}
     const acad = Chefe.temporadaAcademia();
     /* dinheiro acabou */
     let falencia = null;
@@ -16244,6 +17101,7 @@ const CH_EVENTOS = [
           const p = Chefe.novoPiloto({ nome:c.nome, cc:c.cc, nasc:C.ano - R.int(19, 23), real:false, hab:R.range(58, 66), pot:R.range(64, 74),
             papel:'teste', sal:0, aporte:c.valor, ate:C.ano + 1 });
           C.pilotos.push(p);
+          Chefe.ligar(p);
           return c.nome + ' é o novo piloto reserva. O dinheiro entra corrida a corrida.' + (ant ? ' ' + ant.nome + ' teve de sair para abrir a vaga.' : '');
         } },
       { t:'Recusar', d:'O carro reserva é para quem sabe correr.', res(){ return 'O industrial foi bater em outra porta. Achou em uma semana.'; } }
@@ -17378,6 +18236,7 @@ const UIC = {
     p.papel = 'academia'; p.ate = C.ano + 3; p.sal = 0;
     delete p.olho;
     C.pilotos.push(p);
+    Chefe.ligar(p);
     C.inv.olheiros.splice(i, 1);
     Chefe.noticia(p.nome + ', ' + Chefe.idade(p) + ' anos, entra para a academia da ' + C.eq.nome + '.', 'g');
     UIC.salvar(); UIC.render(); UIC.academia();
