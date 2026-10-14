@@ -336,6 +336,31 @@ o `index.html` na raiz é detectado sozinho.
 index.html      o jogo inteiro — HTML, CSS, dados e motor de simulação
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
+testes/         verificações que rodam no Node, sem navegador (não vão para o site)
+```
+
+## Testes
+
+O jogo continua sem dependência nenhuma; os testes só precisam do Node. Eles
+carregam o `index.html` inteiro numa página falsa e jogam de verdade:
+
+```bash
+node testes/rodar.js
+```
+
+Conferem as regras do campeonato (pontos, construtores, desempate, a tabela ao
+vivo terminando no resultado calculado, o histórico salvo), a continuidade e a
+ausência de duplicados no mundo de pilotos ano a ano, carreiras jogadas além de
+2026 nos dois modos, o mercado e a negociação, as decisões do modo chefe, o
+clique duplo nos botões que avançam o jogo, um save feito pela versão anterior
+abrindo na atual e o tamanho do save em carreiras de 25 anos.
+
+Para medir o equilíbrio da simulação em temporadas repetidas, e a dificuldade
+de carreira por idade de estreia:
+
+```bash
+node testes/equilibrio.js 15
+node testes/dificuldade.js 25 classico
 ```
 
 ## Créditos e uso de imagens
