@@ -3586,19 +3586,19 @@ const PERFIS = {
         idadeIdeal:28, tolIdade:7, compressao:1.00, erro:.030, confia:1.00,
         n:'A Fórmula 1 premia a volta rápida e o melhor carro.' },
   indy:{ variancia:1.50, estrategia:1.30, pesoExp:1.05, pesoCons:1.05, adaptaAno:19,
-        idadeIdeal:31, tolIdade:9, compressao:.52, erro:.054, confia:1.06,
+        idadeIdeal:31, tolIdade:9, compressao:.72, erro:.054, confia:1.06,
         n:'Na IndyCar o carro é quase igual para todo mundo, e o oval é outro esporte.' },
   nascar:{variancia:1.55, estrategia:1.35, pesoExp:1.15, pesoCons:1.20, adaptaAno:16,
-        idadeIdeal:33, tolIdade:11, compressao:.55, erro:.055, confia:1.12,
+        idadeIdeal:33, tolIdade:11, compressao:.70, erro:.055, confia:1.12,
         n:'Quinhentas milhas em pelotão: sobreviver vale mais do que ser rápido.' },
   fe:  { variancia:1.62, estrategia:1.45, pesoExp:1.15, pesoCons:.95, adaptaAno:16,
-        idadeIdeal:30, tolIdade:8, compressao:.46, erro:.060, confia:.95,
+        idadeIdeal:30, tolIdade:8, compressao:.68, erro:.060, confia:.95,
         n:'A Fórmula E se decide na energia, e o mais rápido raramente ganha.' },
   dtm: { variancia:1.38, estrategia:1.10, pesoExp:.95, pesoCons:1.00, adaptaAno:20,
-        idadeIdeal:30, tolIdade:9, compressao:.56, erro:.052, confia:1.02,
+        idadeIdeal:30, tolIdade:9, compressao:.74, erro:.052, confia:1.02,
         n:'No DTM os carros são irmãos e o para-lama resolve o que o motor não resolve.' },
   stock:{variancia:1.58, estrategia:1.25, pesoExp:1.05, pesoCons:1.10, adaptaAno:18,
-        idadeIdeal:32, tolIdade:11, compressao:.48, erro:.058, confia:1.05,
+        idadeIdeal:32, tolIdade:11, compressao:.68, erro:.058, confia:1.05,
         n:'Stock Car: grid invertido, carro igual e ninguém dá passagem.' },
   wec: { variancia:1.10, estrategia:1.40, pesoExp:.95, pesoCons:1.25, adaptaAno:22,
         idadeIdeal:32, tolIdade:12, compressao:.80, erro:.035, confia:1.15,
@@ -6394,6 +6394,22 @@ const Engine = {
      Formato: [nome, cor, força, deAno, atéAno, [[nome, de, até, força?], …]]
      O id vem do índice na lista da época, então continua o mesmo de ano
      para ano mesmo quando algumas equipes não estão no grid. */
+  /* Depois do último ano documentado as equipes não ficam congeladas: cada
+     uma sobe ou desce com memória — quem está bem tende a continuar bem —,
+     e a cada cinco anos um regulamento novo mexe mais no grid. A conta é a
+     mesma em qualquer modo e em qualquer save: depende só da equipe e do ano. */
+  derivaEquipe(sk, nome, year){
+    const H = Engine.HORIZONTE;
+    if(year <= H) return 0;
+    let d = 0;
+    for(let y = H + 1; y <= year; y++){
+      const u = seedOf('dv' + sk + nome + y);
+      const g = ((u % 1000) + ((u >>> 10) % 1000) + ((u >>> 20) % 1000)) / 1000 - 1.5;
+      const regra = (y - H) % 5 === 0;
+      d = d * (regra ? .7 : .88) + g * 2 * (regra ? 4.5 : 2.2);
+    }
+    return d;
+  },
   resolveTeam(t, i, year, sk){
     const de = t[3] || 0, ate = t[4] || 9999;
     if(year < de || year > ate) return null;
@@ -6403,6 +6419,13 @@ const Engine = {
       if(!r) return null;
       nome = r[0];
       if(r[3]) forca = r[3];
+    }
+    /* com o tempo, a hierarquia herdada do último ano documentado se dilui:
+       ninguém é dono do topo para sempre */
+    if(year > Engine.HORIZONTE){
+      const eraM = eraOfSeries(year, sk);
+      const mediaE = eraM.teams.reduce((a, x) => a + x[2], 0) / eraM.teams.length;
+      forca = mediaE + (forca - mediaE) * Math.pow(.96, year - Engine.HORIZONTE) + Engine.derivaEquipe(sk, t[0], year);
     }
     /* ── categorias de carro igual ──
        IndyCar, NASCAR, Stock Car e Fórmula E correm com chassi único: a
@@ -8214,7 +8237,22 @@ const Engine = {
      mostra o caminho até lá. */
   VOLTAS_MOSTRADAS: 26,
 
-  timelineCorrida(sea, rd, finish, grid, wet){
+  /* safety car: mais provável onde há muro e onde a categoria é de pelotão */
+  chanceSC(trk, perf, wet){
+    return clamp((trk.type === 'street' ? .34 : trk.type === 'oval' ? .40 : .16)
+                 * (perf.variancia * .7 + .3) * (wet ? 1.5 : 1), 0, .8);
+  },
+  /* A neutralização acontece na corrida, não só na tela: junta o pelotão,
+     come a vantagem de quem estava na frente e reabre a briga na relargada. */
+  aplicarSC(running, out, trk, perf, wet){
+    const batidas = out.filter(x => x.dnf === 'ACID').length;
+    if(!batidas || running.length < 3 || !R.chance(Engine.chanceSC(trk, perf, wet))) return false;
+    const media = running.reduce((a, x) => a + x.v, 0) / running.length;
+    running.forEach(x => { x.v = media + (x.v - media) * .82 + R.gauss() * 1.1; });
+    return true;
+  },
+
+  timelineCorrida(sea, rd, finish, grid, wet, scForcado){
     const trk = sea.calendar[rd];
     /* serve ao modo piloto e ao modo chefe: a categoria vem da temporada */
     const skTl = sea.sk || (S && S.series) || 'f1';
@@ -8237,11 +8275,15 @@ const Engine = {
 
     /* safety car: mais provável onde há muro e onde a categoria é de pelotão */
     const eventos = [];
-    const chanceSC = clamp((trk.type === 'street' ? .34 : trk.type === 'oval' ? .40 : .16)
-                         * (perf.variancia * .7 + .3) * (wet ? 1.5 : 1), 0, .8);
     let sc = null;
     const bateuCedo = fora.filter(c => c.dnf === 'ACID' && c.voltaOut <= N * .75);
-    if(bateuCedo.length && R.chance(chanceSC)){
+    const houveSC = scForcado != null ? scForcado : R.chance(Engine.chanceSC(trk, perf, wet));
+    if(houveSC && !bateuCedo.length && scForcado){
+      /* o carro batido saiu tarde demais na conta: a neutralização foi no meio */
+      const b = fora.find(c => c.dnf === 'ACID');
+      if(b) b.voltaOut = R.int(Math.round(N * .3), Math.round(N * .7)), bateuCedo.push(b);
+    }
+    if(bateuCedo.length && houveSC){
       const b = R.pick(bateuCedo);
       sc = { de: b.voltaOut, ate: Math.min(N - 1, b.voltaOut + R.int(2, 4)) };
       eventos.push({ v: sc.de, tipo:'sc', txt:'Safety car — ' + Engine.sobrenome(b.name) + ' parou na pista.' });
@@ -8971,8 +9013,10 @@ const Engine = {
                  : trk.type === 'fast' ? .94 : 1;
     const degrauBase = S.ladder && S.ladder.length > 1
                      ? 1 - clamp(S.catIdx / (S.ladder.length - 1), 0, 1) : 0;
+    /* o caos da categoria aumenta a loteria, mas não a ponto de apagar quem
+       é melhor: a diferença de piloto continua aparecendo ao longo do ano */
     const noise = (wet ? 5.4 : 3.4) * varTrk
-                * (sea.isTop ? Math.max(caos, perf.variancia)
+                * (sea.isTop ? 1 + (Math.max(caos, perf.variancia) - 1) * .7
                              : 1.06 + degrauBase * .42);
     /* o campeonato aperta: quem está brigando por título sente */
     const faltam = sea.calendar.length - rd;
@@ -9015,7 +9059,7 @@ const Engine = {
     /* ── corrida ── */
     let passW = trk.type==='street' ? .62 : trk.type==='fast' ? .20 : .36;
     /* onde se corre em pelotão, a posição de largada segura muito menos */
-    passW /= Math.max(caos, sea.isTop ? perf.variancia : 1);
+    passW /= 1 + (Math.max(caos, sea.isTop ? perf.variancia : 1) - 1) * .5;
     const out = [];
     const running = [];
     const notas = [];
@@ -9075,6 +9119,7 @@ const Engine = {
       }
     });
 
+    const houveSC = Engine.aplicarSC(running, out, trk, perf, wet);
     running.sort((a,b)=>b.v-a.v);
     /* ordem final: quem terminou, depois os abandonos na ordem inversa do grid */
     out.sort((a,b)=>b.grid-a.grid);
@@ -9148,7 +9193,8 @@ const Engine = {
                                         me:!!x.f.isMe, pos:x.out?null:x.pos, dnf:x.out?x.dnf:null })),
       champ: 0, injury, playoff: notaPO,
       /* o caminho até o resultado, para ver a corrida acontecer */
-      tl: (S.opts && S.opts.fast) ? null : Engine.timelineCorrida(sea, rd, finish, grid, wet),
+      tl: (S.opts && S.opts.fast) ? null : Engine.timelineCorrida(sea, rd, finish, grid, wet, houveSC),
+      sc: houveSC,
       /* o que decidiu o domingo: azar mecânico, erro seu, ou nada disso */
       notas: notas.slice(0, 3),
       arq: null
@@ -10006,6 +10052,9 @@ const Engine = {
     const delta = expected - sum.pos;
     const h2h = sum.tmRaces ? sum.tmWins/sum.tmRaces : .5;
     let score = delta + (h2h - .5)*16 + (sum.champion ? 22 : 0) + sum.wins*1.6;
+    /* a equipe sabe o que foi quebra do carro: azar mecânico não é culpa do piloto */
+    const quebras = sea.results.filter(r => r.dnf === 'MEC').length;
+    score += Math.min(7, quebras * 1.4);
     if(S.contract.years > 1) score += 4;
     if(S.driver.age >= 38) score -= 3;
     if((S.teamRel||50) > 65) score += 3;
@@ -15773,6 +15822,7 @@ const Chefe = {
         running.push({ f, grid:g, v, errou });
       }
     });
+    const houveSC = Engine.aplicarSC(running, out, trk, PERFIS.f1, wet);
     running.sort((a, b) => b.v - a.v);
 
     /* ordem de equipe: o segundo piloto abre caminho quando está logo à frente */
@@ -15862,7 +15912,7 @@ const Chefe = {
     /* para a tabela ao vivo, os seus dois carros aparecem em destaque */
     const fl = finish.map(x => x.f.teamId === 'EU'
       ? Object.assign({}, x, { f:Object.assign({}, x.f, { isMe:true }) }) : x);
-    const tl = Engine.timelineCorrida(sea, rd, fl, grid, wet);
+    const tl = Engine.timelineCorrida(sea, rd, fl, grid, wet, houveSC);
 
     const rec = {
       r: rd + 1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet,
