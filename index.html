@@ -5865,6 +5865,32 @@ const Engine = {
              peak, decl, lastAge, durab: R.range(.55, 1.5) };
   },
 
+  /* ═══ ESTREIA TARDIA ═══
+     Quem aparece aos 24 ou aos 28 não saiu do nada: correu de turismo, de
+     moto, no simulador, num regional que ninguém via. Chega mais perto do
+     próprio teto, aprende depressa nos primeiros anos e tem o auge depois da
+     estreia, não antes. O relógio continua correndo contra — só deixa de ser
+     sentença. Vale só para piloto criado; quem assume um piloto real recebe
+     a carreira dele como ela foi. */
+  estreiaTardia(d){
+    const age = d.age;
+    if(age < 20) return d;
+    const f = clamp((age - 19) / 12, 0, .68);
+    for(const k in d.attr){
+      const folga = Math.max(0, d.pot[k] - d.attr[k] - 3);
+      d.attr[k] = clamp(Math.round(d.attr[k] + folga * f), 22, 88);
+    }
+    if(age >= 22){
+      d.peak = Math.max(d.peak, age + R.int(1, 4));
+      d.decl = Math.max(d.decl, d.peak + R.int(1, 5));
+      d.lastAge = clamp(Math.min(Math.max(d.lastAge, d.decl + R.int(2, 6)), d.decl + 7), age + 3, 52);
+    }
+    d.fame = Math.max(d.fame, Math.round(5 + (age - 19) * 1.4));
+    d.ovr = Engine.ovr(d.attr);
+    d.tardio = true;
+    return d;
+  },
+
   /* em que degrau da escada alguém entra, pela idade */
   /* uma vez fora do kart, nunca mais o kart */
   jaSaiuDoKart(){ return !!(S.anosKart && !Engine.ehKart(S.ladder[S.catIdx])); },
@@ -5958,7 +5984,9 @@ const Engine = {
     if(!S.team || !teams.some(t=>t.id===S.team.id)){
       /* sem contrato assinado (início de carreira): entra na equipe compatível com a reputação */
       const rep = clamp((S.driver.fame*.6 + (S.driver.ovr-44)*1.4) / 55, 0, 1);
-      const tier = clamp(Math.round((1-rep)*(teams.length-1)) + R.int(-1,1), 0, teams.length-1);
+      let tier = clamp(Math.round((1-rep)*(teams.length-1)) + R.int(-1,1), 0, teams.length-1);
+      /* ninguém estreia na categoria principal direto numa equipe de ponta */
+      if(isTop && !(S.career && S.career.gps)) tier = Math.max(tier, Math.round((teams.length - 1) * .35));
       const mt = teams[tier];
       S.team = { id:mt.id, name:mt.name, color:mt.color, str:mt.str };
     } else {
@@ -9463,6 +9491,12 @@ const Engine = {
     else if(age <= d.peak) rate = .09;
     else if(age <= d.decl) rate = .03;
     else rate = 0;
+    /* quem começou tarde aprende depressa nos primeiros anos: o corpo já
+       está pronto, falta a estrada */
+    if(d.tardio && age <= d.decl){
+      const anos = (S.career && S.career.seasons) || 1;
+      rate = Math.max(rate, [.34, .28, .22, .17, .12][Math.min(4, anos - 1)]);
+    }
 
     const perf = (sum.champion ? 1.35 : sum.pos<=3 ? 1.15 : sum.pos<=8 ? 1 : .8)
               * (S.academy ? S.academy.peso : 1);
@@ -9826,10 +9860,12 @@ const Engine = {
   portaFechadaPelaIdade(){
     if(!Engine.ehRealista()) return false;
     const id = S.driver.age;
-    if(id <= 24) return false;
-    if(id <= 26) return S.driver.ovr < 84;
-    if(id <= 28) return S.driver.ovr < 89;
-    return true;
+    /* quem começou tarde ganha uns anos: a régua é a estrada, não só a certidão */
+    const folga = S.driver.tardio ? 3 : 0;
+    if(id <= 25 + folga) return false;
+    if(id <= 28 + folga) return S.driver.ovr < 80;
+    if(id <= 31 + folga) return S.driver.ovr < 85;
+    return S.driver.ovr < 89;
   },
 
   /* Quais portas estão realmente abertas na estreia na categoria principal.
@@ -11492,7 +11528,7 @@ const Game = {
     const escada = resolveLadder(era.ladder, UI.country, startY);
     S = {
       v: 2, series: sk,
-      driver: Engine.newDriver(name, num, UI.country, UI.style, idade),
+      driver: Engine.estreiaTardia(Engine.newDriver(name, num, UI.country, UI.style, idade)),
       opts: { risk: el('chkRisk').checked, fast: el('chkFast').checked },
       modo: UI.modo || 'classico', origem: UI.origem || 'media',
       money: { saldo: (ORIGENS[UI.origem || 'media'] || ORIGENS.media).saldo,

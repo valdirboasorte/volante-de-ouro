@@ -87,6 +87,13 @@ equipamento, com vice e pódio muito prováveis. O grid de base acompanha o
 nível de quem está correndo nele: um campeonato de kart é cheio de gente
 talentosa, e sempre tem alguém tão rápido quanto você.
 
+Começar tarde é mais difícil, não impossível. Quem cria um piloto de 24 anos
+estreia na Fórmula 2; com 27 ou mais, direto na categoria principal — sempre
+numa equipe do meio para trás. Ele chega mais perto do próprio teto, aprende
+depressa nos primeiros anos e tem o auge depois da estreia. Nos testes, cerca
+de um em cada cinco desses pilotos termina algum ano no top 5 da Fórmula 1,
+contra quase metade de quem começou no kart.
+
 ## Talento não é a mesma coisa que saber correr ali
 
 Cada categoria tem identidade própria — variância, peso da experiência, peso
