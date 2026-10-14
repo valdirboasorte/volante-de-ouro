@@ -230,6 +230,14 @@ tabela mostra os dois números), e o ponto da volta mais rápida vale de 2019 a
 DTM a escala foi 10-8-6 de 2000 a 2014. As categorias de base também seguem a
 época: 9-6-4 até 1990, 10-6-4 nos anos 90, 10-8-6 nos 2000 e 25-18-15 depois.
 
+O playoff é só da Copa NASCAR. Quem faz carreira na NASCAR passa pelo kart,
+pelos Late Models e pela ARCA com pontuação normal, e a Busch Series (hoje
+Xfinity) usa a tabela da Copa daquele ano. O **kart** pontua como kart: a
+escala da CIK-FIA para a final, em que pontuam os quinze primeiros
+(25-20-16-13-11-10-9-8-7-6-5-4-3-2-1), com o pior resultado do ano descartado,
+como no Europeu da FIA e no Brasileiro de Kart. O campeão de uma temporada de
+oito etapas termina com algo entre 120 e 175 pontos.
+
 A **IndyCar** nunca foi uma coisa só: AAA até 1955, USAC até 1978, a CART até
 1995, a cisão com a IRL de 1996 a 2007 e a reunificação em 2008. Nos anos da
 cisão existem dois campeonatos, com equipes, calendários e força de carro

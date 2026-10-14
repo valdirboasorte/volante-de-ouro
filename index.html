@@ -1386,6 +1386,14 @@ function pontosBase(year){
   if(year<=2009) return {p:[10,8,6,5,4,3,2,1], fl:0, label:'10-8-6-5-4-3-2-1'};
   return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1'};
 }
+/* O kart pontua como kart: a escala da CIK-FIA para a final (quinze
+   pontuam, 25 para quem vence) e o pior resultado do ano descartado, como
+   no Europeu da FIA e no Brasileiro. Nada de playoff nem de 25-18-15. */
+function pontosKart(corridas){
+  const mel = corridas >= 4 ? corridas - 1 : 0;
+  return {p:[25,20,16,13,11,10,9,8,7,6,5,4,3,2,1], fl:0, melhores:mel,
+          label:'25-20-16-13-11-10-9-8-7-6-5-4-3-2-1' + (mel ? ' · descarta o pior resultado' : '')};
+}
 
 /* embaralhamento determinístico: o calendário de 1987 é sempre o mesmo calendário de 1987 */
 function seededShuffle(arr, seed){
@@ -6013,7 +6021,11 @@ const Engine = {
     S.lastCat = cat;
     S.yearsInSeries = (S.lastSeries === S.series) ? (S.yearsInSeries||0) + 1 : 1;
     S.lastSeries = S.series;
-    const pts = isTop ? pointsFor(S.year, S.series) : pontosBase(S.year);
+    /* a divisão de acesso da NASCAR (Busch, hoje Xfinity) sempre usou a
+       tabela da Copa; o kart tem a dele */
+    let pts = isTop ? pointsFor(S.year, S.series)
+            : /^(Busch|Xfinity) Series$/.test(cat) ? pointsFor(S.year, 'nascar')
+            : pontosBase(S.year);
 
     /* calendário do ano — na categoria principal ele é o calendário daquele ano exato */
     let ids;
@@ -6025,6 +6037,7 @@ const Engine = {
     } else {
       let n = info.races; if(S.opts.fast) n = Math.max(5, Math.round(n*.6));
       ids = juniorCalendar(cat, S.year, S.series, n);
+      if(Engine.ehKart(cat)) pts = pontosKart(ids.length);
     }
     const calendar = ids.map((id,i)=>{
       const t = TRACKS[id] || TRACKS['it'];
@@ -9237,6 +9250,8 @@ const Engine = {
 
   /* em que rodada o corte acontece, proporcional ao calendário daquele ano */
   cortePlayoff(sea){
+    /* playoff é coisa da Copa: kart, Late Models e Xfinity não zeram nada */
+    if(!sea.isTop) return null;
     const fmt = Engine.formatoPlayoff(sea.year, S.series);
     if(!fmt) return null;
     const total = sea.calendar.length;
@@ -11379,7 +11394,9 @@ const UI = {
         <td class="dn">${fg(d.cc)}${esc(d.name)}${d.me?' <span style="color:var(--gold);font-size:9.5px;font-weight:900;letter-spacing:.08em">VOCÊ</span>':''}</td>
         <td class="tm"><span class="stripe" style="background:${d.team.color}"></span>${esc(d.team.name)}</td>
         <td class="pt">${d.pts}${d.brutos != null && d.brutos !== d.pts ? `<small style="display:block;font-size:10.5px;color:var(--dim2);font-weight:600">${d.brutos} no total</small>` : ''}</td></tr>`).join('')}</tbody></table></div>${
-      sea.pts.melhores ? `<p class="mut" style="font-size:12px;padding:8px 12px;margin:0">Em ${sea.year} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato. O total aparece embaixo, quando é diferente.</p>` : ''}`;
+      sea.pts.melhores ? `<p class="mut" style="font-size:12px;padding:8px 12px;margin:0">${Engine.ehKart(sea.cat)
+        ? 'No kart o pior resultado de cada piloto é descartado'
+        : `Em ${sea.year} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato`}. O total aparece embaixo, quando é diferente.</p>` : ''}`;
 
     const ct = Engine.constructors(sea);
     el('pane-con').innerHTML = `<div class="tbl-scroll"><table class="st">
@@ -12127,6 +12144,9 @@ const Game = {
       if(S && S.career) Engine.migrarCartel();
       /* as duas barras de relação viram pessoas com nome e memória */
       if(S && S.rel && !S.gente) Engine.migrarGente();
+      /* save de quando o playoff da Copa NASCAR vazava para o kart e para
+         as divisões de acesso: os pontos de verdade continuam guardados */
+      if(S && S.season && !S.season.isTop && S.season.playoff) delete S.season.playoff;
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },

@@ -79,6 +79,37 @@ for(const [sk, ano] of casos){
   if(hist.pts !== validos && !sea.playoff) falha(rot, 'histórico ' + hist.pts + ' pts, campeonato ' + validos);
   console.log(`  ${rot.padEnd(12)} ${sea.cat.padEnd(26)} ${res.n} corridas · campeão ${res.campeao} (${res.ptsCampeao})${res.playoff ? ' · playoff' : ''}${res.empates ? ' · ' + res.empates + ' empate(s) resolvidos' : ''}`);
 }
+/* As categorias de base de quem faz carreira na NASCAR: o playoff da Copa
+   não pode vazar para elas, o kart pontua como kart e a Busch/Xfinity
+   usa a tabela da Copa da época. */
+for(const ano of [2008, 2012, 2020]){
+  const J = H.carregar();
+  const eraIdx = J.run(`ERAS.reduce((k, e, i) => e.y <= ${ano} ? i : k, 0)`);
+  H.novaCarreira(J, { era: eraIdx, ano, idade: 13, serie: 'nascar', rapido: false });
+  const escada = J.run('S.ladder');
+  escada.slice(0, -1).forEach((cat, idx) => {
+    const r = JSON.parse(J.run(`JSON.stringify((function(){
+      S.year = ${ano}; S.catIdx = ${idx}; S.catAlvo = ${JSON.stringify(cat)}; S.team = null;
+      S.season = Engine.buildSeason();
+      Game.simSeason(); UI.limparFila(); UI.close();
+      const sea = S.season, st = Engine.standings(sea);
+      return { cat: sea.cat, n: sea.results.length, cal: sea.calendar.length, playoff: !!sea.playoff,
+               p: sea.pts.p, mel: sea.pts.melhores || 0, campeao: st[0].pts };
+    })())`));
+    const rot = `nascar ${ano} ${r.cat}`;
+    corridas += r.n;
+    if(r.playoff) falha(rot, 'abriu o playoff da Copa');
+    if(/Kart/.test(r.cat)){
+      if(r.p.join('-') !== '25-20-16-13-11-10-9-8-7-6-5-4-3-2-1') falha(rot, 'tabela do kart ' + r.p.join('-'));
+      if(r.mel !== r.cal - 1) falha(rot, 'descarte: valem ' + r.mel + ' de ' + r.cal);
+      if(r.campeao > 25 * r.mel) falha(rot, 'campeão com ' + r.campeao + ' pontos em ' + r.mel + ' resultados válidos');
+    } else if(/^(Busch|Xfinity) Series$/.test(r.cat)){
+      const copa = J.run(`pointsFor(${ano}, 'nascar').p.join('-')`);
+      if(r.p.join('-') !== copa) falha(rot, 'não usa a tabela da Copa');
+    } else if(r.campeao > r.p[0] * r.cal + 30) falha(rot, 'campeão com ' + r.campeao + ' pontos em ' + r.cal + ' corridas');
+    console.log(`  ${rot.padEnd(34)} ${r.n} corridas · campeão com ${r.campeao}`);
+  });
+}
 console.log(`\n${corridas} corridas verificadas, ${falhas} problema(s)`);
 
 if(typeof falhas !== 'undefined' && falhas) process.exitCode = 1;
