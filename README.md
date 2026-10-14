@@ -152,6 +152,14 @@ e a ficha de cada piloto diz se a carreira dele é registro ou construída pelo
 jogo. Nenhum grid de 2026 em diante para a base, nem da categoria principal
 depois de 2026, é dado histórico.
 
+**Quem só tem o dado da base** (Hauger, Maini, Fornaroli) recebe uma nota na
+mesma escala de quem a história levou à F1: o campeão da F2 fica perto de 72,
+como um estreante, e o teto sai da colocação. O resultado de cada ano real
+puxa a nota e o teto para cima: quem venceu a F3 não continua com a nota de
+quando estreou no fundo da Regional. Na base corre muito filho de piloto
+famoso, então o Mansell da F3 de 2024 é o Christian, não o Nigel; o mesmo vale
+para Giuliano Alesi, Marino Sato, Brando Badoer e Charlie Wurz, entre outros.
+
 **A passagem de ano**, quando o dado acaba, é progressiva. Todo mundo envelhece
 e evolui (ou estagna, ou cai, conforme a idade e o teto). Na base, sobem os que
 terminaram no terço de cima — o resultado que você viu na pista é o que conta
@@ -290,9 +298,25 @@ contrata quem pilota, paga a conta e responde por ela.
   tamanho da equipe, contraproposta, recusa que vira manchete, piloto nº 1,
   reserva que substitui quem se machuca, pedido de saída quando uma equipe
   maior chama.
-- **Academia**: olheiros que erram menos quanto mais você investe, garotos de
-  verdade na idade certa (Vettel e Hamilton aparecem na F3 de 2003), temporada
-  deles na base, promoção, empréstimo para outra equipe.
+- **De onde vêm os pilotos**: o mercado da Fórmula 1 tem cinco abas — o grid,
+  quem ficou sem vaga, a F2 e a F3 (Schumacher e Häkkinen na F3000 de 1990,
+  Antonelli e Bortoleto na F2 de 2024) e pilotos de **outras categorias**
+  (IndyCar, Endurance, Fórmula E, DTM e Stock Car: Palou, O'Ward, Rast). A
+  nota de quem vem de fora é convertida para a escala da F1 pela diferença
+  de quem correu nas duas na mesma época (Zanardi, Montoya, Bourdais;
+  Buemi, Vergne, Vandoorne), pelo quartil de baixo, porque quem nunca chegou
+  à F1 tende a valer menos do que quem foi e voltou. A NASCAR fica de fora:
+  ninguém da lista correu nas duas, então não há como comparar. Quem já
+  passou pela F1 leva a nota que tinha lá.
+- **Reais até 2026, regens depois**: até 2026 o mercado e os olheiros só
+  mostram gente que existe. De 2027 em diante entram também os pilotos que o
+  mundo cria, marcados como **Regen**.
+- **Academia**: de 3 a 8 vagas conforme o investimento, olheiros que erram
+  menos quanto mais você investe, garotos de verdade na idade certa (Vettel e
+  Hamilton aparecem na F3 de 2003; em 2024, Lindblad, Fornaroli e Taponen),
+  e os melhores da F2 e da F3 com até 21 anos podem ir direto do mercado para
+  a academia. A temporada de cada garoto entra na trajetória dele, com
+  promoção a titular ou reserva e empréstimo para outra equipe.
 - **Fim de semana**: estratégia por carro, modo de motor e ordem de equipe, a
   mesma tabela ao vivo do modo piloto com os dois carros em destaque, e pacotes
   de atualização que podem render mais do que o túnel prometia ou deixar o
@@ -337,6 +361,12 @@ contrata quem pilota, paga a conta e responde por ela.
 - O mundo é um por categoria principal: a Fórmula 2 que alimenta a F1 e a que
   alimenta a Fórmula E são registros separados.
 - Não há grid documentado da base para 2026 no projeto; ele é projeção.
+- As equipes da IA não contratam pilotos de outras categorias, e quem vem da
+  IndyCar ou do DTM para a sua equipe não tem a carreira anterior simulada
+  no mundo da F1 — a ficha mostra o registro real da categoria dele.
+- Antes de 2017 não há grid real da F2 e da F3 no projeto: o mercado mostra só
+  quem a história leva à F1 nos anos seguintes, e o resto do grid de base é
+  criado pelo jogo (no modo de base, esses aparecem depois dos reais).
 - A negociação de propostas do modo piloto vale para a categoria principal.
 - Pilotos da IA não trocam de equipe no meio do ano.
 
@@ -378,7 +408,9 @@ Conferem as regras do campeonato (pontos, construtores, desempate, a tabela ao
 vivo terminando no resultado calculado, o histórico salvo), a continuidade e a
 ausência de duplicados no mundo de pilotos ano a ano, carreiras jogadas além de
 2026 nos dois modos, o mercado e a negociação, as decisões do modo chefe, o
-clique duplo nos botões que avançam o jogo, um save feito pela versão anterior
+mercado do chefe (de onde vem cada candidato, nada de regen antes de 2027,
+academia cheia recusando garoto, uma temporada jogada com um piloto da
+IndyCar e um da F2), o clique duplo nos botões que avançam o jogo, um save feito pela versão anterior
 abrindo na atual e o tamanho do save em carreiras de 25 anos.
 
 Para medir o equilíbrio da simulação em temporadas repetidas, e a dificuldade

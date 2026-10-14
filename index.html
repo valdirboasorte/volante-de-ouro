@@ -2774,7 +2774,7 @@ function skillEm(sk, nome, ano, base){
   let v = base;
   const exp = ano - f[1];
   if(f[1] - f[0] < 27){
-    if(exp < 0) v -= 15;
+    if(exp < 0) v -= exp === -1 ? 12 : exp === -2 ? 14 : 15;
     else if(exp < RAMPA.length) v -= RAMPA[exp];
   }
   const lim = ano < 1970 ? 42 : ano < 1995 ? 38 : 36;
@@ -5315,6 +5315,11 @@ function jrCatId(cat){
   return null;
 }
 
+/* Na base corre muito filho e sobrinho de piloto famoso. Com o sobrenome
+   sozinho, o Mansell da F3 de 2024 virava o Nigel, aos 71 anos. */
+const JR_HOMONIMOS = { 'Cecotto':'Cecotto Jr.', 'Alesi':'G. Alesi', 'Fernández':'S. Fernández', 'Nannini':'M. Nannini',
+  'Sato':'M. Sato', 'Mansell':'C. Mansell', 'Badoer':'B. Badoer', 'Wurz':'C. Wurz' };
+const JR_HOMONIMOS_DE = Object.fromEntries(Object.entries(JR_HOMONIMOS).map(([a, b]) => [b, a]));
 /* o elenco real daquela categoria naquele ano, se existir */
 function elencoReal(cat, ano){
   const id = jrCatId(cat);
@@ -5323,7 +5328,8 @@ function elencoReal(cat, ano){
   if(!linha) return null;
   return linha.split('|').filter(Boolean).map(p => {
     const i = p.lastIndexOf(':');
-    return { name: p.slice(0, i).replace(/_/g, ' '), cc: p.slice(i + 1) };
+    const nome = p.slice(0, i).replace(/_/g, ' ');
+    return { name: JR_HOMONIMOS[nome] || nome, cc: p.slice(i + 1) };
   });
 }
 
@@ -5407,7 +5413,7 @@ const JR_EQUIPES = {
 function equipeReal(cat, ano, nome){
   const id = jrCatId(cat);
   const t = id && JR_EQUIPES[id] && JR_EQUIPES[id][ano];
-  return (t && t[nome]) || null;
+  return (t && (t[nome] || t[JR_HOMONIMOS_DE[nome]])) || null;
 }
 /* todas as equipes que aparecem no elenco real daquele ano */
 function equipesDoAno(cat, ano){
@@ -10374,10 +10380,22 @@ const Mundo = {
           /* piloto real da base que não está na nossa lista da categoria
              principal: idade e teto saem do que ele fez naquele grid */
           const idade = (g === 1 ? 21 : g === 2 ? 19 : 17) + (seedOf('id' + x.name) % 3) - 1;
-          const h = clamp(Math.round(deg.base + 24 - (i / Math.max(1, n - 1)) * 20 + R.gauss() * 1.5), 30, 92);
-          rec = Mundo.criar(W, { n:x.name, cc:x.cc, nasc: ano - idade, r:1, h, pt: h + Math.max(1, 23 - idade) * 1.3,
+          /* hoje, na mesma escala de quem a história levou à F1 (o campeão da
+             F2 perto de 72, como um estreante); o teto, pela colocação */
+          const frac = i / Math.max(1, n - 1), ruido = R.gauss() * 1.5;
+          const h = clamp(Math.round(deg.base + 12 - frac * 16 + ruido), 30, 90);
+          const teto = deg.base + 24 - frac * 20 + ruido + Math.max(1, 23 - idade) * 1.3;
+          rec = Mundo.criar(W, { n:x.name, cc:x.cc, nasc: ano - idade, r:1, h, pt: Math.max(h + 2, teto),
             g, pk: R.int(25, 30), dc: R.int(30, 35), fa: R.int(31, 38), doc:1, entrou: ano });
         }
+      }
+      /* o resultado de verdade do ano diz quanto ele vale: quem venceu a F3
+         não pode continuar com a nota do garoto que estreou no fundo da FRECA */
+      if(!Mundo.temCurva(W, rec)){
+        const frac = i / Math.max(1, n - 1), idade = ano - rec.nasc;
+        const alvo = deg.base + 12 - frac * 16;
+        if(rec.h < alvo - 2) rec.h = Math.round((rec.h + alvo) / 2 * 10) / 10;
+        rec.pt = Math.max(rec.pt, deg.base + 24 - frac * 20 + Math.max(1, 23 - idade) * 1.3);
       }
       rec.g = g; rec.st = 'a'; rec.doc = 1;
       rec.eq = equipeReal(deg.cat, ano, x.name) || rec.eq;
@@ -16036,6 +16054,26 @@ const Chefe = {
     const n = Chefe.academia().length + C.pilotos.filter(p => p.papel === 'emprestado').length;
     return n * Chefe.M1(.6e6) * (1 + (C.acad || 0) * .5) + (C.acad || 0) * Chefe.M1(1.5e6);
   },
+  /* quanto mais a equipe investe, mais garotos cabem no programa */
+  vagasAcademia(){ return [3, 4, 6, 8][C.acad || 0]; },
+  ocupacaoAcademia(){ return Chefe.academia().length + C.pilotos.filter(p => p.papel === 'emprestado').length; },
+  /* um garoto entra no programa: do mercado ou da lista dos olheiros */
+  levarParaAcademia(p){
+    if(Chefe.ocupacaoAcademia() >= Chefe.vagasAcademia()) return false;
+    p.papel = 'academia'; p.ate = C.ano + 3; p.sal = 0; p.aporte = 0;
+    delete p.olho;
+    C.pilotos.push(p);
+    Chefe.ligar(p);
+    if(C.inv){
+      C.inv.mercado = (C.inv.mercado || []).filter(x => x !== p && x.nome !== p.nome);
+      C.inv.olheiros = (C.inv.olheiros || []).filter(x => x !== p && x.nome !== p.nome);
+    }
+    Chefe.noticia(p.nome + ', ' + Chefe.idade(p) + ' anos, entra para a academia da ' + C.eq.nome
+      + (p.origTxt ? ' (vem d' + Chefe.artigo(p.origTxt) + ' ' + p.origTxt.split(' · ')[0] + ')' : '') + '.', 'g');
+    return true;
+  },
+  /* "da Fórmula 3", "do Kart Regional" */
+  artigo(cat){ return /^(F|GP|Euro|Super F|Indy|USF|Stock|Endurance)/.test(cat || '') ? 'a' : 'o'; },
   olheiros(){
     const ano = C.ano;
     const nossos = new Set(C.pilotos.map(p => p.nome));
@@ -16055,14 +16093,20 @@ const Chefe = {
     let lista = R.shuffle(out).slice(0, 3);
     const W = Chefe.garantirMundo(ano);
     lista.forEach(p => { const r = Mundo.real(W, 'f1', p.nome, ano, null, p.cc); p.mid = r.id; });
-    /* e os garotos do kart e da F4 que ninguém conhece ainda: os olheiros
-       tendem aos mais talentosos, mas não enxergam o talento de verdade */
+    /* e os garotos da F3, da F4 e do kart: os olheiros tendem aos mais
+       talentosos, mas não enxergam o talento de verdade. Até 2026 só gente
+       que existe; depois, os regens que o mundo cria também. */
     const nossosM = Chefe.reservados();
-    const kids = Object.values(W.p).filter(r => r.st === 'a' && !r.jog && !nossosM.has(r.n) && r.g != null && r.g >= 3
-      && ano - r.nasc >= 13 && ano - r.nasc <= 18 && !lista.some(p => p.nome === r.n))
+    const kids = Object.values(W.p).filter(r => r.st === 'a' && !r.jog && !nossosM.has(r.n) && r.g != null && r.g >= 2
+      && ano - r.nasc >= 13 && ano - r.nasc <= 19 && Chefe.podeAparecer(r, ano) && !lista.some(p => p.nome === r.n))
       .map(r => ({ r, v: r.pt + R.gauss() * 7 })).sort((a, b) => b.v - a.v).map(x => x.r);
-    kids.slice(0, 6 - lista.length).forEach(r => {
+    kids.slice(0, 8 - lista.length).forEach(r => {
       lista.push(Chefe.novoPiloto({ nome:r.n, cc:r.cc, nasc:r.nasc, real:false, hab:r.h, pot:r.pt, mid:r.id }));
+    });
+    lista.forEach(p => {
+      const r = W.p[p.mid];
+      p.origTxt = r && r.g != null ? Chefe.origemMundo(r, ano) : Chefe.idade(p, ano) < 15 ? 'Kart' : 'Kart e categorias de base';
+      if(r && !r.r) p.regen = 1;
     });
     /* a leitura do olheiro: quanto melhor a academia, menor o erro */
     const erro = 7 - (C.acad || 0) * 1.8;
@@ -16090,6 +16134,12 @@ const Chefe = {
       p.jr = p.jr || [];
       p.jr.push({ ano, cat, pos });
       if(pos === 1) p.fama = clamp((p.fama || 0) + 12, 0, 99);
+      /* o ano dele entra na trajetória do mundo, como o de qualquer um */
+      const rec = Chefe.recDe(p);
+      if(rec && C.W){
+        rec.g = Mundo.degrauDe('f1', ano, cat); rec.eq = 'Academia ' + C.eq.nome;
+        rec.ps = pos; rec.psN = 20; rec.psAno = ano;
+      }
       res.push({ p, cat, pos });
     });
     return res;
@@ -16362,6 +16412,10 @@ Object.assign(Chefe, {
   },
 
   /* ═══ MERCADO DE PILOTOS ═══ */
+  /* O mercado da Fórmula 1 não é só a Fórmula 1: quem está no grid, quem
+     perdeu a vaga, quem vem da F2 e da F3 e quem brilha em outra
+     categoria. Até 2026 são todos pilotos de verdade; dali em diante o
+     mundo também cria os seus (os regens), e a ficha diz quem é quem. */
   mercadoPilotos(){
     const ano = C.ano;
     const pool = Chefe.pilotosDoAno(ano);
@@ -16369,12 +16423,137 @@ Object.assign(Chefe, {
     const strDe = {};
     Chefe.equipesIA(ano).forEach(t => strDe[t.name] = t.str);
     const nossos = new Set(C.pilotos.map(p => p.nome));
+    const W = Chefe.garantirMundo(ano);
+    /* quem está na Fórmula 1 não aparece de novo como piloto de outro lugar */
+    const vistos = new Set(nossos);
+    pool.forEach(p => vistos.add(p.nome));
+    Object.values(W.p).forEach(r => { if(r.g === 0 && r.st === 'a') vistos.add(r.n); });
     const cands = pool.filter(p => !nossos.has(p.nome)).map(p => {
       const eq = L[p.nome] || p.eqAtual, s = eq != null && strDe[eq] != null ? strDe[eq] : null;
-      return Object.assign({}, p, { eqHist: s != null ? eq : null, strHist: s });
+      /* depois de 2026 o mundo mistura o grid, quem ficou sem vaga e a F2 */
+      const rec = p.mid ? W.p[p.mid] : null;
+      const orig = !rec || rec.g === 0 ? 'f1' : rec.st === 'l' ? 'livre' : 'base';
+      return Object.assign({}, p, { eqHist: s != null ? eq : null, strHist: s, orig,
+        origTxt: orig === 'f1' ? 'Fórmula 1' + (s != null ? ' · ' + eq : '') : Chefe.origemMundo(rec, ano) });
     }).sort((a, b) => b.skill - a.skill);
-    const lista = cands.slice(0, 12).concat(R.shuffle(cands.slice(12)).slice(0, 8));
-    return lista.map(c => Chefe.fichaMercado(c));
+    const f1 = cands.filter(c => c.orig === 'f1');
+    const grid = f1.slice(0, 12).concat(R.shuffle(f1.slice(12)).slice(0, 4));
+    const livres = cands.filter(c => c.orig === 'livre').concat(Chefe.semVaga(ano, vistos))
+      .sort((a, b) => b.skill - a.skill).slice(0, 5);
+    livres.forEach(c => vistos.add(c.nome));
+    const base = Chefe.daBase(ano, vistos);
+    base.forEach(c => vistos.add(c.nome));
+    const outras = Chefe.deOutrasCategorias(ano, vistos);
+    return grid.concat(livres, base, outras).map(c => Chefe.fichaMercado(c));
+  },
+  /* gerado pelo jogo só depois do último ano com dados */
+  regensDe(){ return Engine.HORIZONTE + 1; },
+  podeAparecer(rec, ano){ return !!rec.r || ano >= Chefe.regensDe(); },
+  origemMundo(rec, ano){
+    if(!rec) return '';
+    if(rec.st === 'l') return 'Sem vaga' + (rec.semVaga ? ' desde ' + rec.semVaga : '');
+    const D = Mundo.degraus('f1', ano);
+    return ((D[rec.g] || {}).cat || 'Categorias de base') + (rec.eq ? ' · ' + rec.eq : '');
+  },
+  /* quem saiu da Fórmula 1 e ainda quer voltar */
+  semVaga(ano, vistos){
+    if(ano > Engine.HORIZONTE) return [];       /* depois disso, pilotosDoMundo já traz */
+    const W = Chefe.garantirMundo(ano);
+    return Object.values(W.p).filter(r => r.st === 'l' && !r.jog && !vistos.has(r.n)
+        && ano - r.nasc <= 36 && Chefe.podeAparecer(r, ano))
+      .map(r => ({ nome:r.n, cc:r.cc, skill:Math.round(r.h), real:!!r.b, base:r.b, nasc:r.nasc, mid:r.id,
+                   orig:'livre', origTxt: Chefe.origemMundo(r, ano) }));
+  },
+  /* a Fórmula 2 e a Fórmula 3 do ano: a fila de quem quer subir */
+  daBase(ano, vistos){
+    const W = Chefe.garantirMundo(ano);
+    const cands = Object.values(W.p).filter(r => r.st === 'a' && !r.jog && (r.g === 1 || r.g === 2)
+      && !vistos.has(r.n) && ano - r.nasc >= 16 && ano - r.nasc <= 27 && Chefe.podeAparecer(r, ano));
+    const nota = r => r.h + (1 - Mundo.percentil(r)) * 4 - (r.g - 1) * 3;
+    cands.sort((a, b) => nota(b) - nota(a));
+    return cands.slice(0, 7).concat(R.shuffle(cands.slice(7)).slice(0, 3))
+      .map(r => ({ nome:r.n, cc:r.cc, skill:Math.round(r.h), real:!!r.b, base:r.b, nasc:r.nasc, mid:r.id,
+                   orig:'base', origTxt: Chefe.origemMundo(r, ano) }));
+  },
+  /* Quanto um piloto de outra categoria vale na escala da Fórmula 1: a
+     diferença entre as duas notas de quem correu nas duas, na mesma época
+     (Zanardi, Montoya e Bourdais na IndyCar; Buemi, Vergne e Vandoorne na
+     Fórmula E). Vale o quartil de baixo, não a média: quem nunca chegou à
+     F1 tende a valer menos do que quem foi e voltou. Sem gente em comum —
+     a NASCAR —, não há como comparar. */
+  OUTRAS: ['indy', 'wec', 'fe', 'dtm', 'stock'],
+  _ajuste: {}, _f1Chave: null,
+  chaveF1(){
+    if(Chefe._f1Chave) return Chefe._f1Chave;
+    const m = {}, ult = n => n.split(' ').slice(-1)[0];
+    Object.keys(Mundo.doc('f1')).forEach(n => { const f = fichaDe('f1', n); if(f) m[ult(n) + f[0]] = n; });
+    return (Chefe._f1Chave = m);
+  },
+  /* o mesmo piloto na lista da Fórmula 1, se ele passou por lá */
+  nomeNaF1(sk, nome){
+    const f1 = Mundo.doc('f1');
+    if(f1[nome] && !NASC[sk + ':' + nome]) return nome;
+    const f = fichaDe(sk, nome); if(!f) return null;
+    return Chefe.chaveF1()[nome.split(' ').slice(-1)[0] + f[0]] || null;
+  },
+  ajusteSerie(sk, ano){
+    ano = ano || C.ano;
+    const ch = sk + Math.floor(ano / 10);
+    if(ch in Chefe._ajuste) return Chefe._ajuste[ch];
+    const f1 = Mundo.doc('f1'), d = Mundo.doc(sk);
+    const pares = (perto) => {
+      const vistos = new Set(), difs = [];
+      Object.keys(d).forEach(n => {
+        const m = Chefe.nomeNaF1(sk, n);
+        if(!m || !f1[m] || vistos.has(m)) return;
+        if(perto && (d[n].ate < ano - 20 || d[n].de > ano + 10)) return;
+        vistos.add(m); difs.push(f1[m].base - d[n].base);
+      });
+      return difs.sort((a, b) => a - b);
+    };
+    let difs = pares(true);
+    if(difs.length < 3) difs = pares(false);
+    return (Chefe._ajuste[ch] = difs.length >= 3 ? difs[Math.floor(difs.length / 4)] : null);
+  },
+  deOutrasCategorias(ano, vistos){
+    const ref = Math.min(ano, Engine.HORIZONTE);
+    const f1 = Mundo.doc('f1');
+    const todos = [];
+    Chefe.OUTRAS.forEach(sk => {
+      if(!SERIES[sk] || ref < SERIES[sk].from) return;
+      const aj = Chefe.ajusteSerie(sk, ano); if(aj == null) return;
+      const ativo = ativoDe(sk), cobre = ref >= ativo._de && ref <= ativo._ate;
+      const L = lineupOf(sk, ref) || {};
+      const daqui = [], ja = new Set();
+      eraOfSeries(ref, sk).pilots.forEach(p => {
+        const nome = p[0];
+        if(ja.has(nome)) return; ja.add(nome);
+        /* onde há escalação ano a ano, só quem está nela */
+        if(cobre && !L[nome]) return;
+        if(!cobre && ((p[3] && ref < p[3]) || (p[4] && ref > p[4]))) return;
+        if(ano > Engine.HORIZONTE && Engine.aposentouEm(sk, nome, ano)) return;
+        const naF1 = Chefe.nomeNaF1(sk, nome);
+        if(!naF1 && f1[nome]) return;              /* homônimo de alguém da F1 */
+        const chave = naF1 || nome;
+        if(vistos.has(chave)) return;
+        const idade = idadeEm(sk, nome, ano, p);
+        if(idade < 18 || idade > 38) return;
+        const nivel = skillEm(sk, nome, ano, p[2]);
+        const c = { cc:p[1], orig:'outra', serie:sk, nivelSerie:nivel,
+                    origTxt: SERIES[sk].name + (L[nome] ? ' · ' + L[nome] : '') };
+        /* quem já passou pela F1 leva a nota que tinha lá */
+        const bF1 = naF1 ? Chefe.baseReal(naF1, ano) : null;
+        if(naF1 && bF1) Object.assign(c, { nome:naF1, skill: skillEm('f1', naF1, ano, bF1), real:true, base:bF1 });
+        else Object.assign(c, { nome, skill: clamp(Math.round(nivel + aj), 40, 95), real:false, nasc: ano - idade });
+        daqui.push(c);
+      });
+      daqui.sort((a, b) => b.skill - a.skill);
+      todos.push(...daqui.slice(0, 3));
+    });
+    todos.sort((a, b) => b.skill - a.skill);
+    const out = [];
+    todos.forEach(c => { if(out.length < 8 && !vistos.has(c.nome)){ vistos.add(c.nome); out.push(c); } });
+    return out;
   },
   mercadoJunior(){
     /* quem corre no seu degrau e quem vem logo abaixo — gente que existe,
@@ -16385,10 +16564,12 @@ Object.assign(Chefe, {
     const nossos = Chefe.reservados();
     const cands = Object.values(W.p).filter(r => r.st === 'a' && !r.jog && !nossos.has(r.n)
       && (r.g === g || r.g === g + 1) && ano - r.nasc >= 15);
-    const daqui = R.shuffle(cands.filter(r => r.camp === C.cat)).slice(0, 7);
-    const outros = R.shuffle(cands.filter(r => r.camp !== C.cat)).slice(0, 12 - daqui.length);
+    /* gente de verdade primeiro; o resto do grid de base o jogo cria */
+    const reaisAntes = arr => R.shuffle(arr).sort((a, b) => (b.r ? 1 : 0) - (a.r ? 1 : 0));
+    const daqui = reaisAntes(cands.filter(r => r.camp === C.cat)).slice(0, 7);
+    const outros = reaisAntes(cands.filter(r => r.camp !== C.cat)).slice(0, 12 - daqui.length);
     return daqui.concat(outros).map(r => Chefe.fichaMercado({ nome:r.n, cc:r.cc, real: !!r.b, base:r.b,
-      nasc:r.nasc, skill:Math.round(r.h), mid:r.id }));
+      nasc:r.nasc, skill:Math.round(r.h), mid:r.id, orig:'base', origTxt: Chefe.origemMundo(r, ano) }));
   },
   fichaMercado(c){
     const ano = C.ano;
@@ -16400,7 +16581,9 @@ Object.assign(Chefe, {
                              pot: Math.max(c.skill, c.skill + Math.max(0, 25 - (ano - nasc)) * 1.2) });
     }
     p.eqHist = c.eqHist || null; p.strHist = c.strHist != null ? c.strHist : null;
-    if(c.mid && C.W && C.W.p[c.mid]){ p.mid = c.mid; if(!p.real) p.pot = C.W.p[c.mid].pt; p.nasc = C.W.p[c.mid].nasc; }
+    if(c.mid && C.W && C.W.p[c.mid]){ p.mid = c.mid; if(!p.real) p.pot = C.W.p[c.mid].pt; p.nasc = C.W.p[c.mid].nasc;
+      if(!C.W.p[c.mid].r) p.regen = 1; }
+    ['orig', 'origTxt', 'serie', 'nivelSerie'].forEach(k => { if(c[k] != null) p[k] = c[k]; });
     const h = Chefe.hab(p, ano);
     p.pede = Chefe.salarioPedido(p, ano);
     p.aporte = Chefe.aportePagante(h, ano, p.nome);
@@ -16414,7 +16597,10 @@ Object.assign(Chefe, {
     /* o que ele poderia conseguir em outro lugar: na F1, a equipe em que a
        história o põe; na base, o tamanho do próprio talento */
     const alt = !Chefe.ehF1() ? clamp((Chefe.hab(p) - Chefe.catBase()) * 4 + 25, 5, 95)
-              : p.strHist != null ? clamp((p.strHist - 50) * 1.7, 0, 100) : 12;
+              : p.strHist != null ? clamp((p.strHist - 50) * 1.7, 0, 100)
+              /* quem é estrela na IndyCar tem para onde ir; quem ficou sem vaga, não */
+              : p.orig === 'outra' ? clamp(((p.nivelSerie || Chefe.hab(p)) - 82) * 3.5, 5, 60)
+              : p.orig === 'livre' ? 4 : 12;
     const h = Chefe.hab(p);
     let c = .55 + (C.rep - alt) / 85 + (of.sal - 1) * .9 + (of.n1 ? .08 : 0) - (h >= 90 ? .1 : 0) + (p.aporte ? .22 : 0);
     if(of.anos >= 3 && h >= 85 && C.rep < 60) c -= .07;
@@ -16454,11 +16640,18 @@ Object.assign(Chefe, {
     delete p.venceu; delete p.recusou;
     if(!renova){
       C.pilotos.push(p);
-      if(C.inv) C.inv.mercado = C.inv.mercado.filter(x => x !== p);
+      if(C.inv){
+        C.inv.mercado = C.inv.mercado.filter(x => x !== p && x.nome !== p.nome);
+        if(C.inv.olheiros) C.inv.olheiros = C.inv.olheiros.filter(x => x.nome !== p.nome);
+      }
       Chefe.ligar(p);
     }
+    const vem = renova || !Chefe.ehF1() ? ''
+      : p.orig === 'outra' && SERIES[p.serie] ? ' Troca ' + Chefe.artigo(SERIES[p.serie].name) + ' ' + SERIES[p.serie].name + ' pela Fórmula 1.'
+      : p.orig === 'base' && p.origTxt ? ' Sobe direto d' + Chefe.artigo(p.origTxt) + ' ' + p.origTxt.split(' · ')[0] + '.'
+      : p.orig === 'livre' ? ' Volta ao grid depois de um tempo sem vaga.' : '';
     Chefe.noticia(p.nome + (renova ? ' renova com a ' : ' assina com a ') + C.eq.nome
-      + (of.anos > 1 ? ' por ' + of.anos + ' anos' : ' por um ano') + '.', 'g');
+      + (of.anos > 1 ? ' por ' + of.anos + ' anos' : ' por um ano') + '.' + vem, 'g');
   },
   /* mandar embora custa o que falta do contrato, pela metade */
   multaDispensa(p){
@@ -18066,23 +18259,42 @@ const UIC = {
           <button class="ch-opt rd" onclick="UIC.dispensar('${p.id}')">${p.venceu ? 'Deixar ir' : 'Dispensar' + (multa ? ' (' + fmtD(multa) + ')' : '')}</button>
         </div></div>`;
     };
+    const vagasAc = Chefe.vagasAcademia() - Chefe.ocupacaoAcademia();
     const cand = (p, i) => {
       const [itx, icl] = Chefe.interesseTxt(Chefe.chanceAssinar(p));
+      const selo = p.regen ? ' <span class="pill" title="Piloto criado pelo jogo">Regen</span>' : '';
+      const acad = f1 && p.orig === 'base' && Chefe.idade(p) <= 21;
       return `<button class="offer" onclick="UIC.negociar(${i})" ${resta ? '' : 'disabled'}>
-        <div class="oh"><span class="on">${fg(p.cc)} ${esc(p.nome)}</span><span class="pill ${icl}">${itx}</span></div>
-        <div class="od">${Chefe.idade(p)} anos · leitura ${p.olho.min}–${p.olho.max}
+        <div class="oh"><span class="on">${fg(p.cc)} ${esc(p.nome)}${selo}</span><span class="pill ${icl}">${itx}</span></div>
+        <div class="od">${p.origTxt ? '<b>' + esc(p.origTxt) + '</b> · ' : ''}${Chefe.idade(p)} anos · leitura ${p.olho.min}–${p.olho.max}
           · ${p.aporte ? 'traz ' + fmtD(p.aporte) + (p.pede ? ' e pede ' + fmtD(p.pede) : '') : 'pede ' + fmtD(p.pede) + ' por ano'}
-          ${p.eqHist ? '<br>Na história, corre pela ' + esc(p.eqHist) + ' em ' + C.ano + '.' : ''}
+          ${p.eqHist && p.orig !== 'f1' ? '<br>Na história, corre pela ' + esc(p.eqHist) + ' em ' + C.ano + '.' : ''}
+          ${p.orig === 'outra' && p.nivelSerie ? '<br>Nível ' + p.nivelSerie + ' na ' + esc(SERIES[p.serie].short) + '; a leitura já está na escala da Fórmula 1.' : ''}
           ${Chefe.ultimoAno(p) ? '<br>' + esc(Chefe.ultimoAno(p)) : ''}</div></button>
-        <div style="margin:-4px 0 10px;text-align:right"><button class="btn btn-ghost btn-sm" onclick="UIC.fichaMercado(${i})">Ver trajetória</button></div>`;
+        <div style="margin:-4px 0 10px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
+          ${acad ? `<button class="btn btn-ghost btn-sm" ${vagasAc > 0 ? '' : 'disabled title="A academia está cheia"'} onclick="UIC.mercadoAcad(${i})">Levar para a academia</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="UIC.fichaMercado(${i})">Ver trajetória</button></div>`;
     };
+    /* abas: de onde cada um vem */
+    const ABAS = f1 ? [['todos', 'Todos'], ['f1', 'Fórmula 1'], ['livre', 'Sem vaga'], ['base', 'F2 e F3'], ['outra', 'Outras categorias']]
+                    : [['todos', 'Todos']];
+    const conta = k => k === 'todos' ? inv.mercado.length : inv.mercado.filter(p => (p.orig || 'f1') === k).length;
+    const aba = ABAS.some(a => a[0] === UIC.abaMerc && conta(a[0])) ? UIC.abaMerc : 'todos';
+    const nota = { todos: 'A leitura é o que os seus engenheiros acham que ele vale. O interesse depende do tamanho da sua equipe perto do lugar em que ele correria.',
+      f1: 'Quem está no grid. Tirar alguém de uma equipe maior é caro e quase nunca dá certo.',
+      livre: 'Ficaram sem carro. Querem voltar e aceitam quase qualquer proposta.',
+      base: 'A fila da Fórmula 1: os melhores da F2 e da F3. Quem tem até 21 anos pode ir direto para a academia.',
+      outra: 'Pilotos reais de outras categorias. A nota foi convertida para a escala da Fórmula 1 pela diferença de quem correu nas duas.' };
+    const visiveis = inv.mercado.map((p, i) => [p, i]).filter(([p]) => aba === 'todos' || (p.orig || 'f1') === aba);
     UI.modal(UI.head('Mercado de pilotos', `${resta} conversa(s) sobrando nesta pré-temporada`) +
       `<div class="mbd">
         <span class="lbl">Seus pilotos</span>
         <div style="margin:8px 0 16px">${atuais.map(minha).join('') || '<div class="empty" style="padding:10px 0">Ninguém sob contrato.</div>'}</div>
         <span class="lbl">No mercado</span>
-        <p class="mut" style="font-size:12.5px;margin:6px 0 10px">${f1 ? 'A leitura é o que os seus engenheiros acham que ele vale. O interesse depende do tamanho da sua equipe perto do lugar em que ele correria.' : 'Na base quase todo mundo paga para correr. O garoto rápido nem sempre é o que traz dinheiro.'}</p>
-        ${inv.mercado.map(cand).join('')}
+        ${ABAS.length > 1 ? `<div class="ch-opts" style="margin:8px 0 4px">${ABAS.filter(a => conta(a[0])).map(a =>
+          `<button class="ch-opt ${aba === a[0] ? 'sel' : ''}" onclick="UIC.abaMerc='${a[0]}';UIC.mercado()">${a[1]} · ${conta(a[0])}</button>`).join('')}</div>` : ''}
+        <p class="mut" style="font-size:12.5px;margin:6px 0 10px">${f1 ? nota[aba] : 'Na base quase todo mundo paga para correr. O garoto rápido nem sempre é o que traz dinheiro.'}</p>
+        ${visiveis.map(([p, i]) => cand(p, i)).join('')}
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
   },
@@ -18100,8 +18312,35 @@ const UIC = {
     Chefe.pegarEmprestimo(o);
     UIC.salvar(); UIC.render(); UIC.banco();
   },
+  abaMerc: 'todos',
+  mercadoAcad(i){
+    const p = C.inv.mercado[i]; if(!p) return;
+    if(!Chefe.levarParaAcademia(p)) return UI.toast('A academia está cheia. Mais investimento abre mais vagas.');
+    UIC.salvar(); UIC.render(); UIC.mercado();
+  },
+  /* piloto de outra categoria que o mundo da F1 ainda não conhece */
+  fichaOutra(p){
+    const sk = p.serie, d = Mundo.doc(sk)[p.nome] || {};
+    const de = d.de, ate = Math.min(C.ano, d.ateLu || d.ate || C.ano);
+    const L = lineupOf(sk, Math.min(C.ano, Engine.HORIZONTE)) || {};
+    const daSerie = sk === 'wec' ? 'do Endurance' : 'd' + Chefe.artigo(SERIES[sk].name) + ' ' + SERIES[sk].name;
+    return UI.head(esc(p.nome), fg(p.cc) + ' ' + Chefe.idade(p) + ' anos · ' + esc(SERIES[sk].name)) +
+      `<div class="mbd">
+        <div class="res-nar" style="margin-top:0;font-size:13px">Piloto real ${esc(daSerie)}${de ? ', na categoria desde ' + de : ''}${L[p.nome] ? ', hoje na ' + esc(L[p.nome]) : ''}.
+          ${C.ano > Engine.HORIZONTE ? 'Depois de ' + Engine.HORIZONTE + ' a carreira dele é projeção do jogo.' : ''}</div>
+        <div class="mini">
+          <div><b>${p.nivelSerie}</b><span>Nível na ${esc(SERIES[sk].short)}</span></div>
+          <div><b>${p.olho.min}–${p.olho.max}</b><span>Leitura na F1</span></div>
+          <div><b>${de && ate >= de ? ate - de + 1 : '—'}</b><span>Temporadas</span></div>
+        </div>
+        <p class="mut" style="font-size:12.5px;margin:0">A conversão usa quem correu nas duas categorias na mesma época, pelo lado
+          conservador: um piloto ${esc(daSerie)} vale uns ${-Chefe.ajusteSerie(sk, C.ano)} pontos a menos na Fórmula 1.</p>
+      </div>
+      <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.mercado()">Voltar ao mercado</button></div>`;
+  },
   fichaMercado(i){
     const p = C.inv.mercado[i]; if(!p) return;
+    if(p.orig === 'outra' && !p.real && !(C.W && Mundo.porNome(C.W, p.nome))) return UI.modal(UIC.fichaOutra(p));
     UI.modal(UI.fichaMundo(C.W, p.nome, 'f1', C.ano).replace('<button class="btn btn-primary" onclick="UI.close()">Fechar</button>',
       '<button class="btn btn-primary" onclick="UIC.mercado()">Voltar ao mercado</button>'));
   },
@@ -18353,14 +18592,15 @@ const UIC = {
           ${pode && f1 && p.papel === 'academia' && Chefe.hab(p) >= 64 ? `<button class="ch-opt" onclick="UIC.acad('${p.id}','emprestado')">Emprestar a outra equipe</button>` : ''}
           <button class="ch-opt rd" onclick="UIC.acad('${p.id}','fora')">Dispensar</button></div></div>`;
     };
-    const olh = (p, i) => `<div class="ch-card"><div class="oh"><span class="on">${fg(p.cc)} ${esc(p.nome)}</span><span class="oc">${Chefe.idade(p)} anos</span></div>
-      <div class="od">Os olheiros acham que ele pode chegar a <b>${p.olho.min}–${p.olho.max}</b>. Custa ${fmtD(p.taxa)} por ano.</div>
-      <div class="ch-opts" style="margin-top:8px"><button class="ch-opt" ${ac.length + emp.length >= 4 ? 'disabled' : ''} onclick="UIC.contratarJr(${i})">Trazer para a academia</button></div></div>`;
-    UI.modal(UI.head('Academia de pilotos', 'Até quatro garotos') +
+    const vagas = Chefe.vagasAcademia(), cheia = ac.length + emp.length >= vagas;
+    const olh = (p, i) => `<div class="ch-card"><div class="oh"><span class="on">${fg(p.cc)} ${esc(p.nome)}${p.regen ? ' <span class="pill" title="Piloto criado pelo jogo">Regen</span>' : ''}</span><span class="oc">${Chefe.idade(p)} anos</span></div>
+      <div class="od">${p.origTxt ? '<b>' + esc(p.origTxt) + '</b> · ' : ''}Os olheiros acham que ele pode chegar a <b>${p.olho.min}–${p.olho.max}</b>. Custa ${fmtD(p.taxa)} por ano.</div>
+      <div class="ch-opts" style="margin-top:8px"><button class="ch-opt" ${cheia ? 'disabled' : ''} onclick="UIC.contratarJr(${i})">Trazer para a academia</button></div></div>`;
+    UI.modal(UI.head('Academia de pilotos', `${ac.length + emp.length} de ${vagas} vagas`) +
       `<div class="mbd">
         <span class="lbl">Investimento</span>
         <div class="ch-opts" style="margin:8px 0 6px">${['Nenhum','Básico','Forte','Referência'].map((n, i) => `<button class="ch-opt ${(C.acad || 0) === i ? 'sel' : ''}" onclick="UIC.acadNivel(${i})">${n}${i ? ' · ' + fmtD(Chefe.M1(1.5e6) * i) : ''}</button>`).join('')}</div>
-        <p class="mut" style="font-size:12.5px;margin:0 0 14px">Mais investimento faz os garotos evoluírem mais rápido e deixa os olheiros mais certeiros.</p>
+        <p class="mut" style="font-size:12.5px;margin:0 0 14px">Mais investimento abre vagas (3, 4, 6 ou 8 garotos), faz os garotos evoluírem mais rápido e deixa os olheiros mais certeiros.${f1 ? ' Os melhores da F2 e da F3 com até 21 anos também podem vir direto do mercado de pilotos.' : ''}</p>
         <span class="lbl">Na academia</span><div style="margin:8px 0 16px">${ac.concat(emp).map(card).join('') || '<div class="empty">Ninguém ainda.</div>'}</div>
         <span class="lbl">Observados pelos olheiros</span><div style="margin-top:8px">${C.inv.olheiros.map(olh).join('')}</div>
       </div>
@@ -18369,12 +18609,7 @@ const UIC = {
   acadNivel(i){ C.acad = i; UIC.salvar(); UIC.academia(); },
   contratarJr(i){
     const p = C.inv.olheiros[i]; if(!p) return;
-    p.papel = 'academia'; p.ate = C.ano + 3; p.sal = 0;
-    delete p.olho;
-    C.pilotos.push(p);
-    Chefe.ligar(p);
-    C.inv.olheiros.splice(i, 1);
-    Chefe.noticia(p.nome + ', ' + Chefe.idade(p) + ' anos, entra para a academia da ' + C.eq.nome + '.', 'g');
+    if(!Chefe.levarParaAcademia(p)) return UI.toast('A academia está cheia. Mais investimento abre mais vagas.');
     UIC.salvar(); UIC.render(); UIC.academia();
   },
   acad(id, para){
