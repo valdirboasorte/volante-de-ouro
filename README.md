@@ -56,9 +56,11 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
   e sem dinheiro realmente acontece. Inclui relações com o engenheiro-chefe e
   o companheiro de equipe, amizades no paddock, investimentos, dias extras de
   teste e o que se faz com o dinheiro fora da pista.
-- **Gerações que se renovam**: passado o último ano documentado, os pilotos de
-  hoje envelhecem, param e dão lugar a nomes novos — com um fenômeno aparecendo
-  de tempos em tempos para brigar com você pelo título.
+- **Um mundo de pilotos que continua** depois dos dados: cada piloto tem
+  identidade, idade, nível, teto e trajetória; quem está na base sobe, fica ou
+  para conforme os resultados, gente nova entra por baixo aos poucos, e depois
+  de 2026 a categoria principal tem um mercado com contratos e renovações (veja
+  "Um mundo que continua").
 - **Ranking dos maiores da história** por categoria, com o seu piloto encaixado
   na posição real — títulos valem 100 pontos, vitórias valem 8, para todo mundo.
 - **Modo cenário**: assuma Massa em 2008, Hamilton em 2021, Senna a partir de
@@ -81,6 +83,16 @@ temporadas — o resto se divide entre vice, azar mecânico e a temporada em que
 nada funciona. Nas categorias de carro igual é mais difícil ainda: NASCAR e
 Fórmula E chegam à última prova com três ou quatro pilotos vivos, contra um ou
 dois na Fórmula 1.
+
+O equilíbrio foi conferido em temporadas simuladas repetidas, não escolhido em
+percentual. Na Fórmula 1, o campeão sai de um dos três melhores carros quase
+sempre; companheiros de equipe separados por até dois pontos de habilidade
+dividem os duelos (50% a 60%), e o melhor por mais de seis vence 77% a 89%
+deles. Na IndyCar, com carro igual, saem nove a dez vencedores por ano, a pole
+vence 15% a 17% das corridas e o companheiro mais de seis pontos melhor vence
+78% dos duelos. Na NASCAR são catorze vencedores por ano e a diferença de
+piloto pesa menos, porque oval de pelotão e especialidade de traçado contam
+muito.
 
 No kart, o título no primeiro ano fica entre 20% e 45% conforme talento e
 equipamento, com vice e pódio muito prováveis. O grid de base acompanha o
@@ -123,6 +135,51 @@ segundos é o que separa rápido de campeão.
 Três a seis candidatos ao título por temporada concentram os pontos, para que
 o campeonato vá até o fim.
 
+## Um mundo que continua
+
+Os pilotos vivem num registro persistente, um por categoria principal. Cada um
+tem identidade estável (nome único, país, ano de nascimento), nível, teto,
+curva de carreira e a trajetória ano a ano: categoria, equipe e posição final.
+Clicar em qualquer nome da classificação abre a ficha dele.
+
+**O que é real e o que é projeção.** Enquanto há dado, o mundo segue a
+história: o grid real da F2 (2017-2025), da F3 (2019-2025) e da Regional
+(2020-2025), a escalação da Fórmula 1 (1950-2026) e da IndyCar (1996-2025), e a
+estreia de quem chegou à categoria principal — Senna corre a F3 de 1983 porque
+estreou na F1 em 1984. O que falta é simulado, e o jogo diz isso: o cabeçalho
+da temporada mostra se o grid é o real daquele ano, real em parte ou projetado,
+e a ficha de cada piloto diz se a carreira dele é registro ou construída pelo
+jogo. Nenhum grid de 2026 em diante para a base, nem da categoria principal
+depois de 2026, é dado histórico.
+
+**A passagem de ano**, quando o dado acaba, é progressiva. Todo mundo envelhece
+e evolui (ou estagna, ou cai, conforme a idade e o teto). Na base, sobem os que
+terminaram no terço de cima — o resultado que você viu na pista é o que conta
+—; quem passou da idade ou fica três anos no mesmo degrau sai; quem é bom e
+fica sem lugar na Fórmula 2 vira opção de reserva; e gente nova entra pelo kart
+conforme as vagas abrem. De 2025 para 2026 a Fórmula 2 continua com os mesmos
+pilotos de 2025, menos os que subiram ou pararam. Os degraus são contados a
+partir do topo, para que a continuidade sobreviva à troca de nome das
+categorias (F3000, GP2, F2).
+
+**O mercado da categoria principal** depois de 2026 vale para todas as
+equipes: contratos são cumpridos até o fim, quem termina contrato pode renovar
+ou sair, e as equipes escolhem da mais forte para a mais fraca, cada uma
+levando o melhor nome disponível para ela — com peso para resultado, idade,
+experiência na categoria, continuidade e o teto dos jovens. Um piloto fraco não
+chega a uma equipe de ponta, porque ela tem opção melhor; um campeão não acaba
+numa equipe pior, porque as melhores escolhem antes. Real ou não, quem fica
+sem vaga por dois anos para.
+
+**As equipes também mudam**: depois de 2026 a força de cada uma deriva com
+memória, a cada cinco anos um regulamento novo mexe mais no grid, e a
+hierarquia herdada se dilui com o tempo — em quarenta anos simulados, seis
+equipes diferentes têm o melhor carro. Nas categorias de base, a forma de cada
+estrutura muda de um ano para o outro.
+
+Saves feitos antes do mundo existir abrem normalmente: o mundo nasce do último
+grid salvo, e quem estava nele continua.
+
 ## O fim de semana
 
 Sexta tem duas ou três sessões de treino, e cada uma serve para uma coisa só:
@@ -142,7 +199,10 @@ não completar a volta, vácuo na reta, ou espaço para andar sozinho.
 E o domingo acontece na tela como num telão de autódromo: a tabela da corrida
 volta a volta, com o grid inteiro, quem subiu e quem caiu, quem está nos
 boxes, quem abandonou e por quê, a bandeira amarela e a narração do que está
-acontecendo.
+acontecendo. O safety car não é enfeite: quando entra, junta o pelotão e come
+a vantagem de quem estava na frente, e é o mesmo que aparece na tabela. Quebra,
+acidente e erro de pilotagem são coisas diferentes, e a equipe desconta as
+quebras ao avaliar o seu ano.
 
 ## Campeonatos com regulamento de verdade
 
@@ -215,10 +275,44 @@ contrata quem pilota, paga a conta e responde por ela.
   primeira página, piloto na festa às quatro da manhã, uma equipe grande
   querendo o seu projetista, a guerra FISA-FOCA. Cada escolha tem chance
   escondida e resultado em quatro graus.
-- **Diretoria**: meta de construtores definida depois dos testes, confiança
-  que sobe e desce, último aviso e demissão — com propostas de outras equipes,
-  se a sua reputação ainda valer alguma coisa. Quem é dono não é demitido,
-  até vender parte demais da equipe.
+- **Diretoria**: meta de construtores definida depois dos testes e negociada
+  na pré-temporada (aceitar, prometer mais em troca de verba, ou pedir
+  paciência e perder um pouco de confiança), confiança que sobe e desce,
+  último aviso e demissão — com propostas de outras equipes, se a sua
+  reputação ainda valer alguma coisa. Quem é dono não é demitido, até vender
+  parte demais da equipe.
+- **De onde vem o dinheiro** de quem funda a equipe: próprio (menos caixa, a
+  equipe é toda sua), um investidor forte (70%) ou um fundo bilionário (muito
+  dinheiro e um conselho que pode te demitir desde o primeiro ano).
+- **Banco**: empréstimo em três parcelas anuais com juros; a diretoria não
+  gosta de dívida.
+- **Patrocínio negociado**: pedir mais pode render 12% ou 25%, não mudar nada
+  ou fazer a marca desistir.
+- **Reservas e academia com função**: o reserva substitui quem se machuca,
+  ajuda no desenvolvimento e, de 2003 em diante, pode rodar o primeiro treino
+  livre no lugar de um titular — ganha experiência, e o titular chega ao
+  sábado com menos acerto.
+- **Candidatos com história**: no mercado, cada piloto mostra o que fez no ano
+  anterior e abre a trajetória inteira, além da leitura incerta de nível dos
+  seus engenheiros.
+- **O mesmo mundo do modo piloto**: a base do modo chefe continua de um ano
+  para o outro, os olheiros encontram garotos que existem no mundo (e seguem
+  existindo se você não contratar), quem você contrata é seu — nem a história
+  nem as outras equipes tomam de volta — e quem você dispensa volta ao mundo
+  com a carreira que tiver. Depois de 2026 as equipes da IA contratam no
+  mercado do mundo e mudam de força ano a ano.
+
+### Limitações conhecidas
+
+- Antes de 2027, as equipes da IA seguem a história: força e pilotos de cada
+  ano são os reais (menos quem você tirou delas). Elas não têm orçamento
+  próprio; depois de 2026 a força delas deriva ano a ano, sem economia
+  individual.
+- O mundo é um por categoria principal: a Fórmula 2 que alimenta a F1 e a que
+  alimenta a Fórmula E são registros separados.
+- Não há grid documentado da base para 2026 no projeto; ele é projeção.
+- A negociação de propostas do modo piloto vale para a categoria principal.
+- Pilotos da IA não trocam de equipe no meio do ano.
 
 ## Rodar localmente
 
@@ -334,6 +428,16 @@ equipe, seu empresário, um jornalista, o paddock, gente da engenharia) e uma
 verdade escondida. Em julho a temporada mostra o que era projeto e o que era
 conversa — e fica anotado quem te enganou, para a próxima vez que essa fonte
 falar.
+
+Na categoria principal, cada proposta mostra o **interesse** da equipe, e a
+tela lista **quem não ligou e por quê**: você está abaixo do que eles
+procuram, eles querem mais resultado antes, acham que você passou do auge,
+preferiram manter a dupla ou fecharam com outro, ou não perdoaram uma quebra
+de contrato. Dá para **negociar** uma vez por proposta — mais um ano, status
+de primeiro piloto ou contrato livre —, e a equipe cede, mantém ou retira a
+oferta conforme o quanto ela te quer. Assinar com outra equipe no meio do
+contrato tem preço: multa no modo realista, fama, e a equipe antiga não volta
+a chamar por dois anos.
 
 ## Empresários
 

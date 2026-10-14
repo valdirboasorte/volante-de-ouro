@@ -7572,156 +7572,10 @@ const Engine = {
     return W;
   },
 
-  /* ═══ O MERCADO DAS CATEGORIAS DE ACESSO ═══
-     Enquanto existe registro real, o grid é o de verdade. Passado o último
-     ano documentado, ele não vira um sorteio novo a cada temporada: os mesmos
-     pilotos continuam, quem vai bem sobe de categoria no ano seguinte, quem
-     empaca três anos sai, e estreantes entram por baixo. Os primeiros da
-     Fórmula 2 passam a aparecer no grid da categoria principal — que é como
-     um grid de verdade se renova. */
-  BASE_IDS: ['f4','freg','f3','f2'],
-  SOBEM: { f4:6, freg:6, f3:6, f2:3 },
-
-  jrTamanho(id){
-    return { f4:22, freg:20, f3:20, f2:20 }[id] || 20;
-  },
-  /* nome da categoria naquele degrau da escada do jogador, se houver */
-  jrCatDe(id){
-    const l = (S && S.ladder) || [];
-    for(const c of l) if(jrCatId(c) === id) return c;
-    return { f4:'Fórmula 4', freg:'Fórmula Regional', f3:'Fórmula 3', f2:'Fórmula 2' }[id];
-  },
-
-  /* habilidade de um piloto do elenco conforme o tempo de casa */
-  jrHab(p){
-    const verde = Math.max(0, 3 - (p.anos || 0));
-    return clamp(Math.round((p.pot || 78) - verde * 3), 40, 95);
-  },
-
-  /* elenco real convertido para o formato do elenco vivo */
-  jrDoReal(cat, ano){
-    const e = elencoReal(cat, ano);
-    if(!e) return null;
-    const n = e.length;
-    return e.map((x, i) => ({
-      n: x.name, cc: x.cc, eq: equipeReal(cat, ano, x.name),
-      pot: clamp(Math.round(90 - (i / Math.max(1, n - 1)) * 20), 62, 92),
-      anos: 1
-    }));
-  },
-
-  /* estreante inventado, para quando a lista real acaba */
-  jrNovato(usados){
-    let nm, g = 0;
-    do { nm = R.pick(NOMES_FUTUROS); } while(usados.has(nm) && g++ < 80);
-    usados.add(nm);
-    /* a maioria é mediana, um punhado é muito bom, e vez ou outra nasce um fora de série */
-    const r = R.f();
-    const pot = r > .975 ? R.int(90, 94) : r > .86 ? R.int(84, 89) : r > .55 ? R.int(76, 83) : R.int(66, 75);
-    return { n: nm, cc: R.pick(JR_CC), eq: null, pot, anos: 0 };
-  },
-
-  /* garante que o elenco vivo existe e está no ano certo */
-  jrGarantir(ano, ordemDoJogador){
-    if(!S.jrPool) S.jrPool = { ano: ano - 1, cats: {}, prontos: [] };
-    const P = S.jrPool;
-    let guarda = 0;
-    while(P.ano < ano && guarda++ < 60) Engine.jrAvancar(P.ano + 1, ordemDoJogador);
-    return P;
-  },
-
-  jrAvancar(ano, ordemDoJogador){
-    const P = S.jrPool;
-    const usados = new Set();
-    const sobe = {};                       /* quem sobe para cada categoria */
-    /* 1. resolve a temporada que acabou, de cima para baixo */
-    for(let i = Engine.BASE_IDS.length - 1; i >= 0; i--){
-      const id = Engine.BASE_IDS[i];
-      let lista = P.cats[id] || [];
-      if(!lista.length) continue;
-      /* a ordem do campeonato: a real, se foi a categoria do jogador */
-      const ordem = (ordemDoJogador && ordemDoJogador.id === id && ordemDoJogador.nomes) || null;
-      if(ordem){
-        const pos = {}; ordem.forEach((n, k) => pos[n] = k);
-        lista.sort((a, b) => (pos[a.n] != null ? pos[a.n] : 99) - (pos[b.n] != null ? pos[b.n] : 99));
-      } else {
-        lista.forEach(p => p._v = Engine.jrHab(p) + ((seedOf(ano + p.n) % 100) / 100 - .5) * 9);
-        lista.sort((a, b) => b._v - a._v);
-      }
-      const k = Engine.SOBEM[id] || 4;
-      const promovidos = lista.slice(0, k);
-      const resto = lista.slice(k).filter(p => (p.anos || 0) < 3);
-      if(id === 'f2'){
-        /* da Fórmula 2 se sobe para a categoria principal */
-        P.prontos = (P.prontos || []).concat(promovidos.map(p => ({
-          n: p.n, cc: p.cc, pot: Math.min(96, p.pot + 2), estreia: ano + 1
-        }))).slice(-40);
-      } else {
-        const acima = Engine.BASE_IDS[i + 1];
-        sobe[acima] = (sobe[acima] || []).concat(promovidos.map(p => ({ ...p, anos: 0, eq: null })));
-      }
-      P.cats[id] = resto.map(p => ({ ...p, anos: (p.anos || 0) + 1, eq: null }));
-    }
-    /* 2. remonta cada categoria: real, se houver; senão os que ficaram, os
-          que subiram de baixo e estreantes até completar o grid */
-    Engine.BASE_IDS.forEach(id => {
-      const cat = Engine.jrCatDe(id);
-      const real = Engine.jrDoReal(cat, ano);
-      if(real){ P.cats[id] = real; real.forEach(p => usados.add(p.n)); return; }
-      let lista = (P.cats[id] || []).concat(sobe[id] || []);
-      lista.forEach(p => usados.add(p.n));
-      const alvo = Engine.jrTamanho(id);
-      while(lista.length < alvo) lista.push(Engine.jrNovato(usados));
-      P.cats[id] = lista.slice(0, alvo);
-    });
-    P.ano = ano;
-  },
-
-  /* o elenco de uma categoria num ano: o real, se existir; senão o vivo */
-  elencoDoAno(cat, ano, ordemDoJogador){
-    const real = elencoReal(cat, ano);
-    if(real) return real.map(x => ({ name:x.name, cc:x.cc, eq: equipeReal(cat, ano, x.name) }));
-    const id = jrCatId(cat);
-    if(!id || !S) return null;
-    const P = Engine.jrGarantir(ano, ordemDoJogador);
-    const lista = P.cats[id];
-    if(!lista || !lista.length) return null;
-    return lista.slice().sort((a, b) => Engine.jrHab(b) - Engine.jrHab(a))
-                .map(p => ({ name:p.n, cc:p.cc, eq:p.eq }));
-  },
-
-  /* quem subiu da Fórmula 2 e já deve estar no grid principal */
-  subiramParaCima(ano){
-    if(!S.jrPool || !S.jrPool.prontos) return [];
-    return S.jrPool.prontos.filter(p => p.estreia <= ano && ano - p.estreia <= 16).map(p => {
-      const exp = ano - p.estreia;
-      let hab = p.pot;
-      if(exp < 5) hab -= [11, 7, 4, 2, 1][exp];
-      if(exp > 12) hab -= (exp - 12) * 1.6;
-      return { name:p.n, cc:p.cc, skill: clamp(Math.round(hab), 55, 96) };
-    });
-  },
-
-  /* ═══ AS GERAÇÕES QUE VÊM DEPOIS ═══
-     Os dados reais terminam em 2026. A partir dali o grid não pode continuar
-     sendo o mesmo para sempre: os pilotos de hoje envelhecem e param, e novos
-     nomes chegam todo ano. Cada geração é sorteada de forma estável a partir
-     do ano de estreia — a mesma carreira, jogada de novo, encontra os mesmos
-     rivais. A maioria é de bons pilotos; de tempos em tempos nasce um
-     fenômeno, e é ele que vai brigar com você pelo título. */
+  /* ═══ O ÚLTIMO ANO DOCUMENTADO ═══
+     Até aqui os grids da categoria principal seguem as escalações reais; daí
+     em diante quem decide é o mundo de pilotos (Mundo). */
   HORIZONTE: 2026,
-  ESTREANTES_POR_ANO: 5,
-
-  /* nome estável e sem repetição para cada vaga de cada ano */
-  nomeGeracao(sk, h, usados){
-    const pool = NOMES_FUTUROS;
-    for(let k = 0; k < pool.length; k++){
-      const nm = pool[(h + k * 7) % pool.length];
-      if(!usados.has(nm)) return nm;
-    }
-    return pool[h % pool.length] + ' Jr.';
-  },
-
   /* quem já parou de correr: piloto real fora da sua janela de idade */
   aposentouEm(sk, nome, ano){
     const f = fichaDe(sk, nome);
@@ -7731,40 +7585,6 @@ const Engine = {
     /* cada um para numa idade própria, entre 33 e 43, sempre a mesma */
     const fim = 33 + (seedOf('fim' + sk + nome) % 11);
     return idade > fim;
-  },
-
-  /* a geração ativa num ano qualquer depois do horizonte */
-  geracaoDe(sk, ano, quantos){
-    const out = [], usados = new Set();
-    for(let est = Engine.HORIZONTE + 1; est <= ano; est++){
-      for(let i = 0; i < Engine.ESTREANTES_POR_ANO; i++){
-        const h = seedOf(sk + 'ger' + est + '_' + i);
-        const idadeEstreia = 18 + (h % 6);
-        const nasc = est - idadeEstreia;
-        const idade = ano - nasc;
-        const fim = 31 + ((h >>> 3) % 12);        /* para entre 31 e 42 */
-        if(idade > fim) continue;
-        /* talento: a maioria é boa, poucos são excepcionais e raríssimos
-           são geracionais — os que ganham título em cima de você */
-        const r = ((h >>> 7) % 1000) / 1000;
-        const teto = r > .984 ? 95 + ((h >>> 17) % 3)
-                   : r > .920 ? 90 + ((h >>> 17) % 5)
-                   : r > .700 ? 84 + ((h >>> 17) % 6)
-                   : 72 + ((h >>> 17) % 12);
-        /* curva de carreira: rampa de estreia e declínio depois do auge */
-        const exp = ano - est;
-        let hab = teto;
-        if(exp < 5) hab -= [12, 8, 5, 3, 1][exp];
-        const auge = 26 + ((h >>> 12) % 6);
-        if(idade > auge) hab -= Math.min(11, (idade - auge) * 1.05);
-        const nome = Engine.nomeGeracao(sk, h % 9973, usados);
-        usados.add(nome);
-        out.push({ name: nome, cc: JR_CC[(h >>> 21) % JR_CC.length],
-                   skill: clamp(Math.round(hab), 52, 97), nasc, estreia: est, novo: exp === 0 });
-      }
-    }
-    out.sort((a, b) => b.skill - a.skill);
-    return quantos ? out.slice(0, quantos) : out;
   },
 
   /* ═══ PREPARAÇÃO DE PRÉ-TEMPORADA ═══
@@ -13493,8 +13313,10 @@ const Game = {
   },
 
   takeOffer(i){
-    if(S.retired) return;
+    if(S.retired || !S.pendingOffers) return;
     const o = S.pendingOffers[i];
+    /* clique duplo não assina duas vezes (nem pula um ano) */
+    if(o && o.podeP !== false && !o.retirada) S.pendingOffers = null;
     /* o que te garantiram na hora de assinar fica anotado, e cobra em julho */
     if(o){ S.promessasAtivas = (o.promessas || []).map(p => Object.assign({}, p));
            S.bonusCarro = 0;
@@ -13512,6 +13334,7 @@ const Game = {
     if(!o) return;
     if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
     if(o.retirada) return UI.toast('Essa proposta foi retirada.');
+    S.pendingOffers = null;
     /* sair no meio do contrato tem preço */
     const restanteC = S.season && S.season.isTop && S.contract && S.contract.years > 1 ? S.contract.years - 1 : 0;
     if(restanteC && S.team && (!o.team || o.team.name !== S.team.name || (o.sk && o.sk !== S.series))){
@@ -15512,13 +15335,6 @@ const Chefe = {
       vistos.add(p[0]);
       out.push({ nome:p[0], cc:p[1], skill: skillEm('f1', p[0], ano, p[2]), real:true, base:p[2] });
     });
-    if(futuro){
-      Engine.geracaoDe('f1', ano).forEach(g => {
-        if(vistos.has(g.name)) return;
-        vistos.add(g.name);
-        out.push({ nome:g.name, cc:g.cc, skill:g.skill, real:false, nasc:g.nasc });
-      });
-    }
     /* quem o mundo ganhou por sua causa: ex-pilotos seus que seguem correndo */
     if(C.W) Object.values(C.W.p).forEach(r => {
       if(!r.exNosso || r.jog || r.st === 'f' || vistos.has(r.n) || ano - r.nasc > 40) return;
@@ -15659,24 +15475,6 @@ const Chefe = {
       id:'j' + i, name:nm, color: Engine.jrColor(i),
       str: Math.round(info.base + (1 - i / Math.max(1, n - 1)) * 9 - 4 + Engine.formaBase('f1' + C.cat, nm, ano) * 2.7)
     }));
-  },
-  /* quem corre na base: os nomes reais daquele ano, os futuros pilotos de
-     F1 na idade certa e, completando, garotos inventados */
-  futurosNaBase(ano, degrausAteF1){
-    const ativo = ativoDe('f1'), out = [];
-    Object.keys(ativo).forEach(nome => {
-      if(nome[0] === '_') return;
-      const est = ativo[nome][0];
-      const falta = est - ano;
-      if(falta < 1 || falta > 4) return;
-      const f = fichaDe('f1', nome);
-      if(!f || ano - f[0] < 15 || ano - f[0] > 26) return;
-      const deg = clamp(falta, 1, 4);
-      if(degrausAteF1 != null && deg !== degrausAteF1) return;
-      const base = Chefe.baseReal(nome, est) || 76;
-      out.push({ nome, cc: Chefe.ccReal(nome), skill: skillEm('f1', nome, ano, base), real:true, base, nasc:f[0] });
-    });
-    return out;
   },
   gridJunior(ano, teams){
     /* o grid da sua categoria sai do mundo: o real daquele ano, quando
@@ -16456,7 +16254,6 @@ Object.assign(Chefe, {
     Chefe.atualizarMotorCliente();
     C.fase = 'inverno';
   },
-  copiaMundo(p){ return { nome:p.nome, cc:p.cc, nasc:p.nasc, real:false, hab:Chefe.hab(p), pot:p.pot || Chefe.hab(p) }; },
 
   atualizarMotorCliente(){
     if(!Chefe.ehF1() || C.motor.proprio || !C.motor.nome) return;
@@ -17046,6 +16843,7 @@ Object.assign(Chefe, {
 
   /* ═══ PASSAR O ANO ═══ */
   proximoAno(){
+    if(C.fase !== 'balanco') return;
     C.balanco = null;
     C.temporada = null;
     C.ano++;
@@ -17850,6 +17648,8 @@ const UIC = {
     UIC.preCorrida();
   },
   largar(){
+    /* clique duplo não corre duas corridas */
+    if(!UI.aberta() || !C || C.fase !== 'temporada' || C.temporada.round >= C.temporada.calendar.length) return;
     const rec = Chefe.correr();
     const tl = rec.tl; delete rec.tl;
     Chefe.sortearEvento(rec);
@@ -18009,6 +17809,8 @@ const UIC = {
   },
   aposBalanco(){
     UI.close();
+    /* clique duplo em "Seguir" não passa o ano duas vezes */
+    if(!C || C.fase !== 'balanco') return;
     const b = C.balanco;
     if(b && b.estouro) return UI.depois(() => UIC.teto(), 150);
     if(b && b.falencia) return UI.depois(() => UIC.falencia(), 150);
@@ -18019,7 +17821,8 @@ const UIC = {
     UI.depois(() => UIC.inverno(), 150);
   },
   teto(){
-    const e = C.balanco.estouro;
+    const e = C && C.balanco && C.balanco.estouro;
+    if(!e) return;
     UI.modal(UI.head('Teto de gastos', 'A auditoria da federação vai olhar as suas contas', false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0">A equipe gastou ${fmtD(e.valor)} acima do teto de ${fmtD(e.teto)} — ${(e.pct * 100).toFixed(1).replace('.', ',')}% a mais. Dá para declarar e aceitar a punição, ou apresentar as contas de um jeito que a auditoria talvez não perceba.</div>
         <button class="dil" onclick="UIC.tetoOp('declarar')"><b>Declarar o estouro</b><span>Multa e menos túnel de vento no ano que vem. Acaba aí.</span></button>
@@ -18033,7 +17836,8 @@ const UIC = {
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.aposBalanco()">Seguir</button></div>`);
   },
   falencia(){
-    const f = C.balanco.falencia;
+    const f = C && C.balanco && C.balanco.falencia;
+    if(!f) return;
     if(C.modo === 'assumir' && C.dir && C.dir.dono !== 'conselho'){
       Chefe.lancar('dono', f.divida);
       C.dir.conf = clamp(C.dir.conf - 20, 0, 100);
@@ -18121,6 +17925,7 @@ const UIC = {
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.inverno()">Seguir</button></div>`);
   },
   comecar(){
+    if(!C || C.fase !== 'inverno') return;
     const falta = Chefe.pendencias();
     if(falta.length){ UI.toast('Falta ' + falta.join(' e ') + '.'); return; }
     if(C.inv && C.inv.decisoes.length) return UIC.inverno();
