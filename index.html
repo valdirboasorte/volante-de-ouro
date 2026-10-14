@@ -15457,6 +15457,16 @@ const Chefe = {
     if(rec.g === 0 || rec.g == null){ rec.g = null; rec.st = 'l'; rec.semVaga = C.ano; }
   },
 
+  /* o que um piloto fez no último ano, pelo registro do mundo */
+  ultimoAno(p){
+    const W = C.W; if(!W) return '';
+    const r = Chefe.recDe(p) || Mundo.porNome(W, p.nome);
+    if(!r || !r.hs || !r.hs.length) return '';
+    const h = r.hs[r.hs.length - 1];
+    const cat = (Mundo.degraus('f1', h[0])[h[1]] || {}).cat || '';
+    return 'Em ' + h[0] + ': ' + (h[3] ? ord(h[3]) + ' na ' : 'correu na ') + cat + (h[2] ? ' (' + h[2] + ')' : '') + '.';
+  },
+
   /* os nomes que são seus e não podem correr por outra equipe */
   reservados(){
     return new Set(C.pilotos.filter(p => p.papel !== 'emprestado').map(p => p.nome));
@@ -15812,7 +15822,8 @@ const Chefe = {
     const qual = corre.map(f => {
       const car = carDe(f);
       const sk = f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0) + moralDe(f)
-               + (wet ? R.gauss() * 3 : 0) + (estr(f) === 'ataque' ? .5 : 0);
+               + (wet ? R.gauss() * 3 : 0) + (estr(f) === 'ataque' ? .5 : 0)
+               - (dec.tl1 && f.teamId === 'EU' && f.carro === dec.tl1.carro ? .7 : 0);
       return { f, v: W.car * car + W.skill * sk + R.gauss() * noise };
     }).sort((a, b) => b.v - a.v);
     const grid = {}; qual.forEach((q, i) => grid[q.f.id] = i + 1);
@@ -15921,6 +15932,19 @@ const Chefe = {
       }
     });
     C.pilotos.forEach(p => { if(p.lesao > 0 && p.lesao < 999 && !lesoes.some(l => l.p === p)) p.lesao--; });
+    /* quem rodou o primeiro treino aprendeu alguma coisa */
+    if(dec.tl1){
+      const pr = C.pilotos.find(x => x.id === dec.tl1.pid);
+      if(pr && (pr.papel === 'teste' || pr.papel === 'academia')){
+        pr.est.tl1 = (pr.est.tl1 || 0) + 1;
+        const r = Chefe.recDe(pr);
+        if(Chefe.idade(pr) <= 26){
+          if(r && !Mundo.temCurva(C.W, r)) r.h = Math.min(r.pt + 1, r.h + .1 + Math.max(0, r.pt - r.h) * .008);
+          else pr.extra = Math.min(3, (pr.extra || 0) + .08);
+        }
+        pr.moral = clamp((pr.moral || 60) + 1, 5, 99);
+      } else C.decisao.tl1 = null;
+    }
 
     if(ordemUsada){
       const pc = C.pilotos.find(q => q.id === ordemUsada.cedeu.pid);
@@ -16025,6 +16049,7 @@ const Chefe = {
     c.operacao = Chefe.M(1.05e6) * nR;
     c.desenvolvimento = Chefe.custoPlano();
     c.instalacoes = Chefe.manutencao();
+    if(C.divida && C.divida.restam) c.banco = C.divida.parcela;
     const tr = Object.values(r).reduce((a, b) => a + b, 0), tc = Object.values(c).reduce((a, b) => a + b, 0);
     return { r, c, tr, tc, saldo: tr - tc, nR };
   },
@@ -16075,6 +16100,30 @@ const Chefe = {
                anos: R.int(1, 3), meta, risco: set.risco * (m[1] === 'cripto' && ano >= 2022 ? 1.6 : 1),
                bonus: meta ? Math.round(valor * .25 / 1000) * 1000 : 0 };
     });
+  },
+  /* pedir mais: quanto maior a equipe, mais fácil — mas a marca pode desistir */
+  pedirMaisPatro(sp){
+    sp.negociado = true;
+    const t = Engine.resolver(clamp(.25 + C.rep / 150, .15, .75));
+    if(t === 'otimo'){ sp.valor = Math.round(sp.valor * 1.25 / 1000) * 1000; return { titulo:'Aceitou', t:'Toparam 25% a mais sem discutir. Talvez desse para pedir mais.', cor:'var(--green)' }; }
+    if(t === 'bom'){ sp.valor = Math.round(sp.valor * 1.12 / 1000) * 1000; return { titulo:'Meio caminho', t:'Subiram 12%. Disseram que é o teto.', cor:'var(--green)' }; }
+    if(t === 'morno') return { titulo:'Não mexeram', t:'Ouviram e mantiveram a proposta como estava.', cor:'var(--line2)' };
+    C.inv.patro = C.inv.patro.filter(x => x !== sp);
+    return { titulo:'Desistiram', t:'Acharam caro e foram conversar com outra equipe.', cor:'var(--red)' };
+  },
+  emprestimos(){
+    if(C.divida && C.divida.restam) return [];
+    return [[20e6, 'Um fôlego para fechar o ano.'], [50e6, 'O suficiente para um pacote de desenvolvimento a mais.'],
+            [100e6, 'Uma aposta grande: ou vira carro, ou vira problema.']].map(([v, d]) => {
+      const valor = Math.round(Chefe.M(v) / 1000) * 1000;
+      return { valor, d, parcela: Math.round(valor * Math.pow(1.09, 3) / 3 / 1000) * 1000 };
+    });
+  },
+  pegarEmprestimo(o){
+    Chefe.lancar('banco', o.valor);
+    C.divida = { valor:o.valor, parcela:o.parcela, restam:3 };
+    if(C.dir) C.dir.conf = clamp(C.dir.conf - 3, 0, 100);
+    Chefe.noticia('A ' + C.eq.nome + ' pega ' + fmtD(o.valor) + ' emprestados no banco.', '');
   },
   vagasPatro(){ return { principal: C.ano >= 1968 ? 1 : 0, sec: 3 }; },
 
@@ -16241,6 +16290,18 @@ Object.assign(Chefe, {
     C.plano = { aero:lv, chassi:lv, motor: C.motor.proprio ? lv : 0, confiab:2, futuro:0 };
   },
 
+  /* de onde vem o dinheiro de quem funda: mais dinheiro, menos equipe */
+  FIN: {
+    proprio:    { n:'Dinheiro seu e de sócios pequenos', d:'Menos caixa, mas a equipe é toda sua: ninguém te tira do cargo.', cap:.6, part:100 },
+    investidor: { n:'Um investidor forte', d:'O caixa de uma equipe nova. Você fica com 70% e manda sozinho.', cap:1, part:70 },
+    fundo:      { n:'Um fundo bilionário', d:'Dinheiro de sobra desde o primeiro dia — e um conselho acima de você, que cobra resultado e pode te demitir.', cap:1.8, part:40 }
+  },
+  aplicarFin(o){
+    const f = Chefe.FIN[o.fin] || Chefe.FIN.investidor;
+    C.caixa = Math.round(C.caixa * f.cap);
+    C.part = f.part;
+    if(C.part < 50) C.dir = { conf:60, meta:null, aporte:0, dono:'conselho' };
+  },
   iniciarCriar(o){
     const ano = o.ano;
     C.eq.nome = o.eq.nome; C.eq.cor = o.eq.cor; C.eq.cc = o.eq.cc;
@@ -16253,8 +16314,9 @@ Object.assign(Chefe, {
     C.carro = Chefe.carroPara(piso - 3, ano, C.eq.nome, m ? m.perf - 2 : 55);
     C.instal = { fabrica:2, tunel: ano >= 1970 ? 1 : 0, sim: ano >= 1972 ? 1 : 0 };
     ['td','proj','aero'].forEach(f => C.staff[f] = Chefe.staffGerado(f, R.range(60, 68), ano));
-    C.rep = 16; C.part = 100; C.dir = null;
+    C.rep = 16; C.dir = null;
     C.caixa = Chefe.M1(170e6, ano);
+    Chefe.aplicarFin(o);
     C.ultimaPos = ia.length + 1;
     C.plano = { aero:2, chassi:2, motor:0, confiab:2, futuro:0 };
     Chefe.noticia('Nasce a ' + C.eq.nome + '. A equipe estreia na Fórmula 1 em ' + ano + '.', 'g');
@@ -16270,8 +16332,9 @@ Object.assign(Chefe, {
     C.instal = { fabrica:1, tunel:0, sim:0 };
     C.staff.td = Chefe.staffGerado('td', R.range(55, 64), ano);
     C.staff.proj = Chefe.staffGerado('proj', R.range(55, 64), ano);
-    C.rep = 8; C.part = 100; C.dir = null;
+    C.rep = 8; C.dir = null;
     C.caixa = Chefe.M(40e6);
+    Chefe.aplicarFin(o);
     C.plano = { aero:0, chassi:2, motor:0, confiab:2, futuro:0 };
     Chefe.noticia('Nasce a ' + C.eq.nome + ', na ' + C.cat + '. A Fórmula 1 fica lá em cima.', 'g');
   },
@@ -16767,6 +16830,8 @@ Object.assign(Chefe, {
     }
     const ac = Chefe.custoAcademia();
     if(ac) Chefe.lancar('academia', -ac);
+    /* a parcela do banco vence no começo do ano */
+    if(C.divida && C.divida.restam > 0){ Chefe.lancar('banco', -C.divida.parcela); C.divida.restam--; }
     Chefe.atualizarMotorCliente();
     const evol = Chefe.aplicarPlano();
     Chefe.montarTemporada();
@@ -16787,6 +16852,16 @@ Object.assign(Chefe, {
     C.fase = 'temporada';
     C.inv = null;
     C.decisao = { estr:{ 0:'normal', 1:'normal' }, motor:'normal', ordem: C.decisao && C.decisao.ordem || 'livre' };
+  },
+
+  /* a meta se negocia uma vez, no começo do ano */
+  ajustarMeta(k){
+    const sea = C.temporada; if(!sea || !C.dir || sea.metaNeg) return;
+    sea.metaNeg = k;
+    C.dir.promessa = k;
+    if(k === 'mais' && sea.meta > 1){ sea.meta--; C.dir.aporte = Math.round(C.dir.aporte * 1.1); }
+    if(k === 'menos'){ sea.meta++; C.dir.aporte = Math.round(C.dir.aporte * .9); C.dir.conf = clamp(C.dir.conf - 4, 0, 100); }
+    C.dir.meta = sea.meta;
   },
 
   /* ═══ ATUALIZAÇÕES DURANTE O ANO ═══ */
@@ -16863,7 +16938,12 @@ Object.assign(Chefe, {
     if(C.dir){
       const meta = sea.meta || pos;
       const d = meta - pos;
-      const delta = d * 7 + (pos === 1 ? 18 : 0) + (wins ? 4 : 0) - (C.caixa < 0 ? 10 : 0) - (sea.excluida ? 25 : 0);
+      let delta = d * 7 + (pos === 1 ? 18 : 0) + (wins ? 4 : 0) - (C.caixa < 0 ? 10 : 0) - (sea.excluida ? 25 : 0);
+      /* quem prometeu mais é cobrado mais; quem pediu paciência, menos */
+      if(C.dir.promessa === 'mais') delta *= 1.3;
+      if(C.dir.promessa === 'menos') delta *= .85;
+      delta = Math.round(delta);
+      C.dir.promessa = null;
       C.dir.conf = clamp(Math.round(C.dir.conf + delta), 0, 100);
       aval = { meta, pos, delta, conf:C.dir.conf, demitido: C.dir.conf < 22, aviso: C.dir.conf >= 22 && C.dir.conf < 36 };
     }
@@ -17271,7 +17351,7 @@ const CH_EVENTOS = [
    MODO CHEFE — A TELA
    ═══════════════════════════════════════════════════════════════ */
 const UIC = {
-  n: { modo:'assumir', era: ERAS.length - 2, ano:null, idx:null, nome:'', cor:'#0a3d91', cc:'BR', cat:null, realismo:true },
+  n: { modo:'assumir', era: ERAS.length - 2, ano:null, idx:null, nome:'', cor:'#0a3d91', cc:'BR', cat:null, realismo:true, fin:'investidor' },
   CORES: ['#e8112d','#d40000','#ff8000','#f5c518','#00a651','#0b6136','#00d2be','#3d8ef7','#0a3d91','#6a1b9a','#ff6ec7','#c0c0c0','#8a5a2b','#1a1a1a'],
   TENT_PIL: 6, TENT_STAFF: 4,
   aba: 'drv',
@@ -17368,9 +17448,13 @@ const UIC = {
         <div class="ch-opts" style="margin-top:8px">${esc0.map(c => `<button class="ch-opt ${n.cat === c ? 'sel' : ''}" onclick="UIC.set('cat','${esc(c).replace(/'/g, "\\'")}')">${esc(c)}</button>`).join('')}</div>
         <p class="mut" style="font-size:12.5px;margin:8px 0 0">Quanto mais baixo, mais barato — e mais longe da Fórmula 1.</p></div>`;
     }
+    const fin = Chefe.FIN[n.fin] || Chefe.FIN.investidor;
     const capital = n.modo === 'criar'
-      ? 'Investidores põem ' + fmtD(170e6 * Chefe.escala(ano)) + ' na mesa. É isso para sobreviver até o dinheiro de patrocínio e de prêmio aparecer.'
+      ? 'Começa com ' + fmtD(170e6 * Chefe.escala(ano) * fin.cap) + '. É isso para sobreviver até o dinheiro de patrocínio e de prêmio aparecer.'
       : 'Você começa com pouco: o dinheiro de uma temporada modesta, e pilotos que pagam pela vaga.';
+    const finTxt = '<span class="lbl" style="display:block;margin:16px 0 8px">De onde vem o dinheiro</span>' +
+      Object.keys(Chefe.FIN).map(k => '<button class="dil ' + (n.fin === k ? 'sel' : '') + '" onclick="UIC.set(\'fin\',\'' + k + '\')"><b>' +
+        esc(Chefe.FIN[k].n) + '</b><span>' + esc(Chefe.FIN[k].d) + '</span></button>').join('');
     box.innerHTML = `
       <div class="row c3" style="margin-bottom:14px">
         <div class="field" style="margin:0"><span class="lbl">Nome da equipe</span>
@@ -17380,7 +17464,8 @@ const UIC = {
       </div>
       <span class="lbl">Cor</span><div class="ch-cores">${cores}</div>
       ${cat}
-      <p class="mut" style="font-size:13px;margin:14px 0 0">${esc(capital)}</p>`;
+      ${finTxt}
+      <p class="mut" style="font-size:13px;margin:10px 0 0">${esc(capital)}</p>`;
   },
   iniciar(){
     const n = UIC.n;
@@ -17389,7 +17474,7 @@ const UIC = {
     if(n.modo === 'assumir' && n.idx == null){ UI.toast('Escolha a equipe que vai comandar.'); return; }
     if(n.modo !== 'assumir' && (n.nome || '').trim().length < 2){ UI.toast('A equipe precisa de um nome.'); return; }
     n.realismo = el('chnRisco').checked;
-    Chefe.novo({ modo:n.modo, ano:n.ano, idx:n.idx, cat:n.cat, realismo:n.realismo,
+    Chefe.novo({ modo:n.modo, ano:n.ano, idx:n.idx, cat:n.cat, realismo:n.realismo, fin:n.fin,
       chefe:{ nome:chefe, cc: el('chnChefePais').value || 'BR' },
       eq:{ nome:(n.nome || '').trim(), cor:n.cor, cc:n.cc } });
     UIC.salvar();
@@ -17560,6 +17645,8 @@ const UIC = {
     rows.push(linha('opt', 'Instalações', Object.keys(Chefe.INSTAL).filter(k => C.ano >= Chefe.INSTAL[k].de && (f1 || k === 'fabrica'))
       .map(k => Chefe.nomeInstal(k) + ' ' + (C.instal[k] || 0) + (C.obras[k] ? ' → ' + C.obras[k].nivel : '')).join(' · '), 'UIC.instalacoes()'));
     rows.push(linha('opt', 'Patrocínio', C.patro.length + ' contrato(s) · ' + fmtD(pr.r.patrocinio || 0) + ' por ano · ' + inv.patro.length + ' proposta(s)', 'UIC.patrocinio()'));
+    rows.push(linha('opt', 'Banco', C.divida && C.divida.restam ? 'Empréstimo: ' + C.divida.restam + ' parcela(s) de ' + fmtD(C.divida.parcela)
+      : 'Sem dívida · dá para pedir dinheiro emprestado', 'UIC.banco()'));
     rows.push(linha('opt', 'Academia de pilotos', Chefe.academia().length + ' garoto(s) · ' + inv.olheiros.length + ' observado(s) pelos olheiros', 'UIC.academia()'));
     if(inv.subir) rows.push(linha(inv.subir.ok ? 'pend' : 'opt', inv.subir.topo ? 'Entrar na Fórmula 1' : 'Subir para a ' + esc(inv.subir.alvo),
       (inv.subir.ok ? 'Disponível' : 'Ainda não') + ' · ' + fmtD(inv.subir.custo), 'UIC.subirModal()'));
@@ -17650,7 +17737,7 @@ const UIC = {
     </div>`;
   },
   NOMES_LIVRO: { patrocinio:'Patrocínio', dono:'Dono / fábrica', pagantes:'Pilotos pagantes', merch:'Direitos e produtos', premio:'Prêmio de construtores',
-    investidor:'Investidores', salarios:'Salários dos pilotos', staff:'Engenharia', motor:'Motor', operacao:'Viagens e operação',
+    investidor:'Investidores', banco:'Banco (empréstimo)', salarios:'Salários dos pilotos', staff:'Engenharia', motor:'Motor', operacao:'Viagens e operação',
     desenvolvimento:'Desenvolvimento', instalacoes:'Instalações', reparos:'Reparos', multas:'Multas', academia:'Academia', outros:'Outros' },
   tabelaLivro(liv){
     const ks = Object.keys(liv).filter(k => Math.abs(liv[k]) >= 1);
@@ -17710,6 +17797,7 @@ const UIC = {
         <span class="lbl">Estratégia de cada carro</span>
         ${carros.map(f => `<div class="ch-dec"><b>${fg(f.cc)} ${esc(f.name)}${f.aluguel ? ' <span class="ch-tag rd">substituto</span>' : ''}</b>
           <div class="ch-opts">${op('estr', f.carro, [['ataque','Atacar'],['normal','Normal'],['poupar','Poupar o carro']], d.estr[f.carro] || 'normal')}</div></div>`).join('')}
+        ${UIC.tl1Html(carros)}
         <span class="lbl" style="display:block;margin-top:14px">Motor</span>
         <div class="ch-opts">${op('motor', '', [['max','Potência máxima'],['normal','Normal'],['poupar','Poupar']], d.motor)}</div>
         <span class="lbl" style="display:block;margin-top:14px">Ordem de equipe</span>
@@ -17721,7 +17809,21 @@ const UIC = {
       <div class="mft"><button class="btn btn-ghost" onclick="UI.close()">Voltar</button><span class="sp"></span>
         <button class="btn btn-primary" onclick="UIC.largar()">Largar</button></div>`);
   },
+  /* o primeiro treino livre: quilometragem para quem vem aí, treino a menos para o titular */
+  tl1Html(carros){
+    if(!Chefe.ehF1() || C.ano < 2003) return '';
+    const cands = C.pilotos.filter(p => (p.papel === 'teste' || (p.papel === 'academia' && Chefe.idade(p) >= 18)) && !(p.lesao > 0));
+    if(!cands.length) return '';
+    const atual = C.decisao.tl1;
+    const op = (v, nm, sel) => `<button class="ch-opt ${sel ? 'sel' : ''}" onclick="UIC.dec('tl1','','${v}')">${nm}</button>`;
+    return `<span class="lbl" style="display:block;margin-top:14px">Primeiro treino livre</span>
+      <div class="ch-opts">${op('nao', 'Os titulares', !atual)}${carros.map(f => cands.map(p =>
+        op(f.carro + ':' + p.id, esc(Engine.sobrenome(p.nome)) + ' no carro de ' + esc(Engine.sobrenome(f.name)),
+           atual && atual.carro === f.carro && atual.pid === p.id)).join('')).join('')}</div>
+      <p class="mut" style="font-size:12px;margin:6px 0 0">Quem roda o treino ganha quilometragem e experiência. O titular que cede o carro chega ao sábado com menos acerto.</p>`;
+  },
   dec(g, k, v){
+    if(g === 'tl1'){ C.decisao.tl1 = v === 'nao' ? null : { carro: +v.split(':')[0], pid: v.split(':')[1] }; return UIC.preCorrida(); }
     if(g === 'estr') C.decisao.estr[k] = v;
     else if(g === 'n1') C.n1 = v;
     else C.decisao[g] = v;
@@ -18010,15 +18112,28 @@ const UIC = {
     const ev = sea.evol || [];
     const sobe = { otimo:'muito acima do esperado', bom:'como o previsto', morno:'abaixo do esperado', ruim:'nasceu com problema' };
     const cai = { otimo:'segurou melhor do que se temia', bom:'caiu o previsto', morno:'caiu mais do que o previsto', ruim:'desabou' };
+    UIC.preTemporada();
+  },
+  preTemporada(){
+    const sea = C.temporada; if(!sea) return;
+    const ev = sea.evol || [];
+    const sobe = { otimo:'muito acima do esperado', bom:'como o previsto', morno:'abaixo do esperado', ruim:'nasceu com problema' };
+    const cai = { otimo:'segurou melhor do que se temia', bom:'caiu o previsto', morno:'caiu mais do que o previsto', ruim:'desabou' };
     const nome = x => (x.depois >= x.antes ? sobe : cai)[x.tier];
+    const meta = C.dir && sea.meta && !sea.metaNeg ? `<span class="lbl" style="display:block;margin:14px 0 8px">A meta com a diretoria</span>
+        <button class="dil" onclick="UIC.meta('aceitar')"><b>Aceitar o ${ord(sea.meta)} lugar</b><span>O combinado de sempre.</span></button>
+        ${sea.meta > 1 ? `<button class="dil" onclick="UIC.meta('mais')"><b>Prometer o ${ord(sea.meta - 1)} lugar</b><span>Mais 10% de verba agora. No fim do ano, a cobrança pesa mais — para o bem e para o mal.</span></button>` : ''}
+        <button class="dil" onclick="UIC.meta('menos')"><b>Pedir paciência: ${ord(sea.meta + 1)} lugar</b><span>Menos 10% de verba e um pouco de confiança a menos agora. Menos risco de demissão.</span></button>` : '';
     UI.modal(UI.head('Testes de pré-temporada', sea.cat + ' ' + sea.ano, false) +
       `<div class="mbd">
         <div class="res-nar" style="margin-top:0">Pelos tempos dos testes, o carro está entre o <em>${ord(sea.leitura.a)}</em> e o <em>${ord(sea.leitura.b)}</em> do grid de ${sea.leitura.n}.
           ${sea.meta ? ` A diretoria espera o ${ord(sea.meta)} lugar nos construtores.` : ''}${CH_REGRAS[sea.ano] && sea.isTop ? ' Com o regulamento novo, todo mundo ainda está aprendendo.' : ''}</div>
         ${ev.map(x => `<div class="ch-evol">${UIC.barra(Chefe.AREAS[x.area].n, x.depois)}<span class="d ${x.depois >= x.antes ? 'pos' : 'neg'}">${x.depois >= x.antes ? '+' : ''}${(x.depois - x.antes).toFixed(1).replace('.', ',')} · ${nome(x)}</span></div>`).join('')}
+        ${meta}
       </div>
-      <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Para a primeira corrida</button></div>`);
+      <div class="mft"><span class="sp"></span>${meta ? '' : '<button class="btn btn-primary" onclick="UI.close()">Para a primeira corrida</button>'}</div>`);
   },
+  meta(k){ Chefe.ajustarMeta(k); UIC.salvar(); UIC.render(); UIC.preTemporada(); },
 
   /* ═══ MERCADO DE PILOTOS ═══ */
   mercado(){
@@ -18046,7 +18161,9 @@ const UIC = {
         <div class="oh"><span class="on">${fg(p.cc)} ${esc(p.nome)}</span><span class="pill ${icl}">${itx}</span></div>
         <div class="od">${Chefe.idade(p)} anos · leitura ${p.olho.min}–${p.olho.max}
           · ${p.aporte ? 'traz ' + fmtD(p.aporte) + (p.pede ? ' e pede ' + fmtD(p.pede) : '') : 'pede ' + fmtD(p.pede) + ' por ano'}
-          ${p.eqHist ? '<br>Na história, corre pela ' + esc(p.eqHist) + ' em ' + C.ano + '.' : ''}</div></button>`;
+          ${p.eqHist ? '<br>Na história, corre pela ' + esc(p.eqHist) + ' em ' + C.ano + '.' : ''}
+          ${Chefe.ultimoAno(p) ? '<br>' + esc(Chefe.ultimoAno(p)) : ''}</div></button>
+        <div style="margin:-4px 0 10px;text-align:right"><button class="btn btn-ghost btn-sm" onclick="UIC.fichaMercado(${i})">Ver trajetória</button></div>`;
     };
     UI.modal(UI.head('Mercado de pilotos', `${resta} conversa(s) sobrando nesta pré-temporada`) +
       `<div class="mbd">
@@ -18057,6 +18174,25 @@ const UIC = {
         ${inv.mercado.map(cand).join('')}
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
+  },
+  banco(){
+    const ops = Chefe.emprestimos();
+    UI.modal(UI.head('Banco', 'Dinheiro agora, conta depois') +
+      `<div class="mbd">${C.divida && C.divida.restam ? `<div class="res-nar" style="margin-top:0">Você já deve: faltam ${C.divida.restam} parcela(s) de ${fmtD(C.divida.parcela)}. O banco não empresta de novo antes de quitar.</div>`
+        : `<p class="mut" style="font-size:12.5px;margin:0 0 10px">Três parcelas anuais, juros de 9% ao ano. A primeira vence no começo da próxima temporada.${C.dir ? ' A diretoria não gosta de dívida.' : ''}</p>` +
+        ops.map((o, i) => `<button class="offer" onclick="UIC.pegarEmprestimo(${i})"><div class="oh"><span class="on">${fmtD(o.valor)}</span><span class="oc">3 × ${fmtD(o.parcela)}</span></div>
+          <div class="od">${esc(o.d)}</div></button>`).join('')}</div>
+      <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);
+  },
+  pegarEmprestimo(i){
+    const o = Chefe.emprestimos()[i]; if(!o) return;
+    Chefe.pegarEmprestimo(o);
+    UIC.salvar(); UIC.render(); UIC.banco();
+  },
+  fichaMercado(i){
+    const p = C.inv.mercado[i]; if(!p) return;
+    UI.modal(UI.fichaMundo(C.W, p.nome, 'f1', C.ano).replace('<button class="btn btn-primary" onclick="UI.close()">Fechar</button>',
+      '<button class="btn btn-primary" onclick="UIC.mercado()">Voltar ao mercado</button>'));
   },
   _alvo: null,
   negociar(ref){
@@ -18270,7 +18406,8 @@ const UIC = {
       <div class="oh"><span class="on">${s.principal ? '★ ' : ''}${esc(s.nome)}</span><span class="oc">${fmtD(s.valor)} / ano</span></div>
       <div class="od">${esc((CH_SETOR[s.setor] || {}).n || '')} · ${s.principal ? 'patrocinador principal' : 'secundário'} · ${oferta ? s.anos + ' ano(s)' : 'até ' + s.ate}
         ${s.meta ? '<br>Meta: ' + esc(s.meta.t) + ' (bônus de ' + fmtD(s.bonus) + ')' : ''}</div>
-      ${oferta ? `<div class="ch-opts" style="margin-top:8px"><button class="ch-opt" ${(s.principal ? nP >= v.principal : nS >= v.sec) ? 'disabled' : ''} onclick="UIC.aceitarPatro(${i})">Assinar</button></div>` : ''}</div>`;
+      ${oferta ? `<div class="ch-opts" style="margin-top:8px"><button class="ch-opt" ${(s.principal ? nP >= v.principal : nS >= v.sec) ? 'disabled' : ''} onclick="UIC.aceitarPatro(${i})">Assinar</button>
+        ${s.negociado ? '' : `<button class="ch-opt" onclick="UIC.pedirPatro(${i})">Pedir mais</button>`}</div>` : ''}</div>`;
     UI.modal(UI.head('Patrocínio', `Principal ${nP}/${v.principal} · secundários ${nS}/${v.sec}`) +
       `<div class="mbd">
         ${C.ano < 1968 ? '<p class="mut" style="font-size:12.5px;margin:0 0 10px">Até 1968 o regulamento não deixa pintar o carro com marca. Só fornecedores de combustível, pneu e peças pagam alguma coisa.</p>' : ''}
@@ -18278,6 +18415,13 @@ const UIC = {
         <span class="lbl">Propostas</span><div style="margin-top:8px">${C.inv.patro.map((s, i) => card(s, i, true)).join('') || '<div class="empty">Ninguém bateu na porta.</div>'}</div>
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
+  },
+  pedirPatro(i){
+    const sp = C.inv.patro[i]; if(!sp) return;
+    const r = Chefe.pedirMaisPatro(sp);
+    UIC.salvar();
+    UI.modal(UI.head(esc(sp.nome), r.titulo, false) + `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${r.cor}">${esc(r.t)}</div></div>
+      <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.patrocinio()">Voltar</button></div>`);
   },
   aceitarPatro(i){ const s = C.inv.patro[i]; if(s) Chefe.aceitarPatro(s); UIC.salvar(); UIC.render(); UIC.patrocinio(); },
 
