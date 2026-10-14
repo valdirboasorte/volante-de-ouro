@@ -431,6 +431,7 @@ table.st th{font-family:var(--fd); font-size:11.5px; font-weight:600; letter-spa
 table.st td{padding:8px 9px; border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 table.st tr.me{background:color-mix(in srgb,var(--gold) 10%,transparent); box-shadow:inset 3px 0 0 var(--gold)}
 table.st tr.me td{font-weight:700}
+table.st tr.clica{cursor:pointer} table.st tr.clica:hover{background:var(--panel2)}
 table.st .p{width:30px; font-family:var(--fd); color:var(--dim2); font-weight:700; text-align:center; font-size:15px; font-variant-numeric:tabular-nums}
 table.st .dn{font-family:var(--fd); font-weight:700; font-size:16px; letter-spacing:.02em; text-transform:uppercase}
 table.st .dn .fg{font-size:14px; margin-right:7px}
@@ -9730,14 +9731,18 @@ const Engine = {
     const rep = S.driver.fame*.42 + S.driver.ovr*.58 + h2h - agePen
               + (sum.champion?22:0) + (sum.wins*2.4) - (sum.pos>14?6:0);
     const acadTime = S.academy && S.academy.t;
+    const gaps = {};
     teams.forEach(t=>{
       /* quanto melhor a equipe, mais reputação ela exige — e a equipe-mãe
          da sua academia cobra bem menos de quem ela mesma formou */
       const need = (24 + (t.str-58)*1.55) - (acadTime && t.name===acadTime ? 16 : 0);
       const gap = rep - need;
+      gaps[t.name] = gap;
+      /* quem teve o contrato quebrado por você não liga tão cedo */
+      if(S.rompeu && S.rompeu.nome === t.name && nextYear <= S.rompeu.ate) return;
       if(gap > -9){
         const p = clamp(.30 + gap/44, .06, .96);
-        if(R.chance(p)) list.push({ type:'f1', cat:Engine.topCat(), team:t,
+        if(R.chance(p)) list.push({ type:'f1', cat:Engine.topCat(), team:t, gap,
           years: t.str>85 ? R.int(2,4) : R.int(1,3),
           note: Engine.offerNote(t.str, gap) });
       }
@@ -9748,6 +9753,11 @@ const Engine = {
     const keep = fired ? [] : list.filter(o=>o.team.name===S.team.name);
     const rest = list.filter(o=>o.team.name!==S.team.name && !(fired && o.team.name===S.firedBy)).slice(0,3);
     const out = keep.concat(rest).slice(0,4);
+    /* quem não ligou, e por quê — o que o seu empresário consegue apurar */
+    const ofertaram = new Set(out.map(o => o.team && o.team.name));
+    S.mercadoMotivos = teams.filter(t => !ofertaram.has(t.name) && t.name !== S.team.name)
+      .sort((a, b) => b.str - a.str).slice(0, 6)
+      .map(t => ({ n:t.name, c:t.color, m: Engine.motivoSemOferta(t, gaps[t.name], agePen) }));
 
     /* ── convites de outras carreiras ──
        Quando o topo fecha as portas, outra categoria abre a sua. E quando você
@@ -9784,6 +9794,22 @@ const Engine = {
           note:'Nenhuma equipe da Fórmula 1 te quer. Descer uma categoria, ganhar e voltar pela porta da frente.' });
     }
     return out;
+  },
+
+  /* por que uma equipe não fez proposta */
+  motivoSemOferta(t, gap, agePen){
+    if(S.rompeu && S.rompeu.nome === t.name) return 'Ainda não engoliu a quebra de contrato.';
+    if(S.firedBy === t.name) return 'Te dispensou e não volta atrás tão cedo.';
+    if(agePen > 6 && gap <= -9) return 'Acha que você já passou do auge.';
+    if(gap <= -25) return 'Nem considerou: você está bem abaixo do que eles procuram.';
+    if(gap <= -9) return 'Gosta do seu trabalho, mas quer mais resultado — ou mais nome — antes.';
+    return 'Conversou, mas preferiu manter a dupla que tem ou fechou com outro piloto.';
+  },
+  /* o interesse da equipe, do jeito que o paddock percebe */
+  interesseOferta(o){
+    if(o.gap == null) return null;
+    return o.gap >= 15 ? ['Interesse alto', 'var(--green)'] : o.gap >= 0 ? ['Interesse médio', 'var(--gold)']
+         : ['Interesse baixo — você é a segunda opção', 'var(--orange)'];
   },
 
   /* ═══ IMPRENSA ═══
@@ -10397,7 +10423,8 @@ const Mundo = {
     if(ctx.foto) Mundo.registrarGrid(W, ano, ctx.foto.g, ctx.foto.field, ctx.foto.teams, true);
     /* categoria principal: a escalação real, se existe; senão a lista da época */
     if(!Mundo.espelharTopo(W, ano, ctx) && !Mundo.noDegrau(W, 0).length) Mundo.espelharEra(W, ano, ctx);
-    for(let g = 1; g < D.length; g++){
+    /* quem correu em dois campeonatos no mesmo ano fica no mais alto */
+    for(let g = D.length - 1; g >= 1; g--){
       Mundo.aplicarReal(W, g, ano, D[g]);
     }
     Mundo.posicionarFuturos(W, ano);
@@ -10580,7 +10607,8 @@ const Mundo = {
     /* 4. o dado real da base, onde existe */
     const fixados = new Set();
     const comReal = new Set();
-    for(let g = 1; g <= N; g++){
+    /* de baixo para cima: quem correu em dois campeonatos fica no mais alto */
+    for(let g = N; g >= 1; g--){
       const reais = Mundo.aplicarReal(W, g, ano, D[g]);
       if(reais.length) comReal.add(g);
       reais.forEach(r => fixados.add(r.id));
@@ -11283,11 +11311,20 @@ const UI = {
         </div>
         <div class="yr">${sea.year}</div>
         <div class="era">${esc(S.team.name)} · ${esc(sea.eraName)}${
-          sea.org ? ' · ' + esc(sea.lado ? Engine.LADOS[sea.lado].n : sea.org.s) : ''}</div>
+          sea.org ? ' · ' + esc(sea.lado ? Engine.LADOS[sea.lado].n : sea.org.s) : ''}${UI.fonteGrid(sea)}</div>
       </div>
       <span class="sp"></span>
       <div class="pos-big"><b>${sum.races ? ord(sum.pos) : '—'}</b><span>no campeonato</span></div>
       <div class="pos-big" style="margin-left:16px"><b style="color:var(--gold)">${sum.pts}</b><span>pontos</span></div>`;
+  },
+
+  /* o grid é o de verdade daquele ano, em parte, ou projeção do jogo */
+  fonteGrid(sea){
+    if(sea.docN == null || !sea.gridN) return '';
+    const r = sea.docN / sea.gridN;
+    return r >= .9 ? ' · grid real de ' + sea.year
+         : r > 0 ? ' · grid real em parte (' + sea.docN + ' de ' + sea.gridN + '), o resto é projeção'
+         : ' · grid projetado pelo jogo';
   },
 
   /* ══ RETROSPECTO ══ */
@@ -11427,9 +11464,10 @@ const UI = {
   panes(){
     const sea = S.season;
     const st = Engine.standings(sea);
+    UI._st = st;
     el('pane-drv').innerHTML = `<div class="tbl-scroll"><table class="st">
       <thead><tr><th class="p">#</th><th>Piloto</th><th>Equipe</th><th class="pt">Pts</th></tr></thead>
-      <tbody>${st.map((d,i)=>`<tr class="${d.me?'me':''}">
+      <tbody>${st.map((d,i)=>`<tr class="${d.me?'me':'clica'}" ${d.me ? '' : 'onclick="UI.fichaPiloto(' + i + ')"'}>
         <td class="p">${i+1}</td>
         <td class="dn">${fg(d.cc)}${esc(d.name)}${d.me?' <span style="color:var(--gold);font-size:9.5px;font-weight:900;letter-spacing:.08em">VOCÊ</span>':''}</td>
         <td class="tm"><span class="stripe" style="background:${d.team.color}"></span>${esc(d.team.name)}</td>
@@ -13179,7 +13217,9 @@ const Game = {
 
   /* ---- dilema ---- */
   dilemma(){
-    const d = R.pick(Engine.DILEMMAS);
+    let lista = Engine.DILEMMAS;
+    if(S.contract && S.contract.n1) lista = lista.filter(d => !/proteja o companheiro/.test(d.q));
+    const d = R.pick(lista);
     UI.modal(UI.head('Decisão', 'Meio de temporada', false) +
       `<div class="mbd">
         <div class="res-nar" style="margin-top:0">${esc(d.q)}</div>
@@ -13384,76 +13424,52 @@ const Game = {
 
     if(!offers.length){ Game.endCareer('semvaga'); return; }
 
-    const canRetire = S.driver.age >= 30 || S.career.titles > 0;
-    UI.modal(UI.head(`Mercado de ${S.year+1}`, 'Escolha onde você vai correr no ano que vem.', false) +
+    UI.ofertasModal();
+  },
+
+  /* uma conversa por proposta: pedir demais pode custar a vaga */
+  negociarOferta(i){
+    const o = (S.pendingOffers || [])[i];
+    if(!o || o.negociou || o.gap == null) return UI.ofertasModal();
+    const it = Engine.interesseOferta(o);
+    const pedidos = [
+      ['anos', 'Mais um ano de contrato', 'Hoje: ' + o.years + ' ano' + (o.years > 1 ? 's' : '') + '. Segurança para você, risco para eles.'],
+      ['n1', 'Status de primeiro piloto', 'Nas ordens de equipe, você vem primeiro. É o pedido mais difícil.'],
+      ['livre', 'Contrato livre', 'Poder correr em outras categorias durante o ano.']
+    ].filter(p => !(p[0] === 'n1' && o.n1) && !(p[0] === 'livre' && o.clausula === 'livre'));
+    UI.modal(UI.head('Negociar com a ' + esc(o.team.name), 'Uma conversa por proposta', false) +
       `<div class="mbd">
-        <div class="res-nar" style="margin-top:0">
-          ${esc(Engine.leituraTxt(Engine.qualidadeInfo()))}
-          A força de cada carro é o que você conseguiu apurar, não o que ela é —
-          e o que te prometem para assinar nem sempre acontece.
-        </div>
-        ${offers.map((o,i)=>{
-          if(!o.team) return `<button class="offer" onclick="Game.takeOffer(${i})">
-            <div class="oh"><span class="on">${o.type==='down'?'⬇️ Descer para':'Continuar na'} ${esc(o.cat)}</span>
-              <span class="oc">${o.type==='down'?'Recomeço':'Mais um ano'}</span></div>
-            <div class="od">${esc(o.note)}</div></button>`;
-          const sr = o.sk ? SERIES[o.sk] : null;
-          let tag, tagCor = '';
-          if(sr){ tag = sr.ic + ' ' + sr.short; tagCor = `color:${sr.color};border-color:${sr.color}55`; }
-          else if(o.pulo) tag = '⏭️ Salto duplo';
-          else if(o.up)   tag = '⬆️ Promoção';
-          else if(o.down) tag = '⬇️ Recomeço';
-          else tag = `${o.years} ${o.years>1?'anos':'ano'}`;
-          const mudouCat = o.cat !== S.season.cat || !!sr;
-          return `<button class="offer" ${o.podeP===false?'style="opacity:.5"':''} onclick="Game.takeOffer(${i})">
-            <div class="oh">
-              <span class="stripe" style="background:${o.team.color};height:20px;width:5px"></span>
-              <span class="on">${esc(o.team.name)}</span>
-              <span class="oc" style="${tagCor}">${tag}</span>
-            </div>
-            ${mudouCat ? `<div style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
-                 color:${sr?sr.color:'var(--gold)'};margin-top:6px">${esc(o.cat)}</div>` : ''}
-            <div class="od">${esc(o.note)}</div>
-            ${o.custo != null && o.custo > 0 ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;
-                 font-size:11.5px;font-weight:800">
-               <span style="color:${o.podeP===false?'var(--red2)':'var(--gold)'}">💰 ${fmtD(o.paga)} do seu bolso</span>
-               ${o.apoio ? `<span style="color:var(--dim2);font-weight:600">a academia banca ${fmtD(o.apoio)}</span>` : ''}
-               ${o.podeP===false ? `<span style="color:var(--red2);font-weight:600">— fora do orçamento</span>` : ''}
-             </div>` : (o.custo === 0 && Engine.ehRealista() ? `<div style="margin-top:7px;font-size:11.5px;
-                 font-weight:800;color:var(--green)">💰 aqui a equipe paga você</div>` : '')}
-            ${(function(){
-              /* Ninguém te entrega a força do carro do ano que vem em número
-                 redondo. Você tem uma faixa, e a largura dela é o quanto você
-                 enxerga o mercado. */
-              const L = Engine.leituraCarro(o.team);
-              return `<div class="carbar"><span class="vl">CARRO</span>
-                <span class="bar" style="position:relative">
-                  <i style="width:${L.hi}%;opacity:.35"></i>
-                  <i style="position:absolute;left:${L.lo}%;width:${Math.max(2,L.hi-L.lo)}%;top:0;bottom:0"></i>
-                </span>
-                <span class="vl">${L.erro <= 2 ? L.centro : L.lo + '–' + L.hi}</span></div>`;
-            })()}
-            ${(function(){
-              const CL = { exclusivo:['🔒 Contrato exclusivo','var(--red2)','Nenhuma outra categoria durante o ano.'],
-                           padrao:['📄 Contrato padrão','var(--dim2)','Provas avulsas de endurance liberadas.'],
-                           livre:['🔓 Contrato livre','var(--green)','Você pode correr em paralelo onde quiser.'] };
-              const c = CL[o.clausula || 'padrao'];
-              return `<div style="margin-top:6px;font-size:11px;font-weight:800;color:${c[1]}">
-                ${c[0]} <span style="font-weight:600;color:var(--dim2)">— ${esc(c[2])}</span></div>`;
-            })()}
-            ${(o.promessas || []).length ? `<div style="margin-top:7px;padding-top:6px;
-                 border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
-              ${o.promessas.map(p => `<div style="font-size:11.5px;color:var(--dim);padding:2px 0">
-                <span style="color:var(--gold)">“</span>${esc(p.t)}<span style="color:var(--gold)">”</span>
-                <span style="color:var(--dim2)"> — diz ${esc(Engine.FONTES[p.fonte].n)}${
-                  Engine.histFonte(p.fonte) ? ', que ' + esc(Engine.histFonte(p.fonte)) : ''}</span>
-              </div>`).join('')}
-             </div>` : ''}
-          </button>`;
-        }).join('')}
-        ${canRetire ? `<button class="dil" style="margin-top:6px" onclick="Game.endCareer('escolha')">
-          <b>🏁 Pendurar o capacete</b><span>Encerrar a carreira agora e entrar para a galeria de lendas.</span></button>` : ''}
-      </div>`);
+        <div class="res-nar" style="margin-top:0">${it ? '<b style="color:' + it[1] + '">' + it[0] + '.</b> ' : ''}Quanto mais eles querem você,
+          mais fácil é arrancar alguma coisa. Se a equipe achar que você está esticando a corda, pode retirar a proposta.</div>
+        ${pedidos.map(p => `<button class="dil" onclick="Game.pedirOferta(${i},'${p[0]}')"><b>${p[1]}</b><span>${p[2]}</span></button>`).join('')}
+      </div>
+      <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.ofertasModal()">Voltar às propostas</button></div>`);
+  },
+  pedirOferta(i, k){
+    const o = (S.pendingOffers || [])[i];
+    if(!o || o.negociou) return UI.ofertasModal();
+    o.negociou = true;
+    const dif = { anos:1, n1:.62, livre:.85 }[k] || 1;
+    const chance = clamp((.32 + o.gap / 38) * dif, .06, .9);
+    const nivel = Engine.resolver(chance);
+    let txt, cor;
+    if(nivel === 'otimo' || nivel === 'bom'){
+      if(k === 'anos') o.years++;
+      if(k === 'n1') o.n1 = true;
+      if(k === 'livre') o.clausula = 'livre';
+      txt = nivel === 'otimo' ? 'Aceitaram sem pestanejar. Era o que eles queriam ouvir.' : 'Depois de uma tarde de conversa, aceitaram.';
+      cor = 'var(--green)';
+    } else if(nivel === 'morno' || o.gap >= 8){
+      txt = 'Ouviram, pensaram e não cederam. A proposta continua como estava.';
+      cor = 'var(--line2)';
+    } else {
+      o.retirada = true;
+      txt = 'Acharam que você estava esticando a corda e retiraram a proposta.';
+      cor = 'var(--red)';
+    }
+    UI.modal(UI.head('A ' + esc(o.team.name) + ' respondeu', '', false) +
+      `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${cor}">${txt}</div></div>
+      <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.ofertasModal()">Voltar às propostas</button></div>`);
   },
 
   takeOffer(i){
@@ -13475,6 +13491,16 @@ const Game = {
            } }
     if(!o) return;
     if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
+    if(o.retirada) return UI.toast('Essa proposta foi retirada.');
+    /* sair no meio do contrato tem preço */
+    const restanteC = S.season && S.season.isTop && S.contract && S.contract.years > 1 ? S.contract.years - 1 : 0;
+    if(restanteC && S.team && (!o.team || o.team.name !== S.team.name || (o.sk && o.sk !== S.series))){
+      const multa = Engine.ehRealista() ? Math.round(Engine.salarioDe(S.team, S.series) * restanteC * .5) : 0;
+      if(multa) S.money.saldo -= multa;
+      S.driver.fame = clamp(S.driver.fame - 3, 0, 100);
+      S.rompeu = { nome:S.team.name, ate:S.year + 2 };
+      setTimeout(() => UI.toast('Contrato com a ' + S.team.name + ' rompido' + (multa ? ': multa de ' + fmtD(multa) + '.' : '.')), 700);
+    }
     const trocouEquipe = !o.team || !S.team || o.team.name !== S.team.name;
     /* trocar de equipe não apaga o currículo: só uma boa temporada limpa a ficha */
     if(trocouEquipe) S.teamRel = 50;
@@ -13500,7 +13526,7 @@ const Game = {
       const idx = S.ladder.indexOf(o.cat);
       if(idx >= 0) S.catIdx = idx;
       S.team = { id:o.team.id, name:o.team.name, color:o.team.color, str:o.team.str };
-      S.contract = { years:o.years || 1, clausula: o.clausula || 'padrao' };
+      S.contract = { years:o.years || 1, clausula: o.clausula || 'padrao', n1: !!o.n1 };
     } else if(o.type === 'up'){
       S.catIdx++; S.team = null; S.contract = { years:1 };
     } else if(o.type === 'down'){
@@ -17579,9 +17605,14 @@ const UIC = {
     const tab = Chefe.pilotosTabela(sea);
     return `<div class="tbl-scroll"><table class="st"><thead><tr><th class="p">#</th><th>Piloto</th><th>Equipe</th><th class="pt">Pts</th></tr></thead><tbody>
       ${tab.map((x, i) => { const t = sea.teams.find(tt => tt.id === x.f.teamId) || {};
-        return `<tr class="${x.f.teamId === 'EU' ? 'me' : ''}"><td class="p">${i + 1}</td><td class="dn">${fg(x.f.cc)}${esc(x.f.name)}</td>
+        return `<tr class="${x.f.teamId === 'EU' ? 'me' : 'clica'}" onclick="UIC.ficha(${i})"><td class="p">${i + 1}</td><td class="dn">${fg(x.f.cc)}${esc(x.f.name)}</td>
           <td class="tm"><span class="stripe" style="background:${t.color}"></span>${esc(t.name || '')}</td><td class="pt">${x.pts}</td></tr>`; }).join('')}
     </tbody></table></div>`;
+  },
+  ficha(i){
+    const sea = C.temporada; if(!sea) return;
+    const x = Chefe.pilotosTabela(sea)[i]; if(!x) return;
+    UI.modal(UI.fichaMundo(C.W, x.f.name, 'f1', C.ano));
   },
   abaConstrutores(){
     const sea = C.temporada;
@@ -18348,6 +18379,126 @@ const UIC = {
       <div class="mft"><button class="btn btn-ghost" onclick="UI.close()">Não</button><span class="sp"></span>
         <button class="btn btn-gold" onclick="C.vendida={valor:${Math.round(v)},quem:'um comprador'};UIC.fimCarreira('venda')">Vender</button></div>`);
   }
+};
+
+/* ═══ O MERCADO, NA SUA FRENTE ═══
+   As propostas, o interesse de cada equipe, quem não ligou e por quê — e a
+   chance de negociar antes de assinar. Redesenhável: negociar não sorteia
+   o mercado de novo. */
+/* ═══ A FICHA DE UM PILOTO ═══
+   Quem ele é, de onde veio e o que já fez — e o que disso é registro real
+   e o que é carreira construída pelo jogo. */
+UI.fichaMundo = function(W, nome, sk, ano){
+  const r = W && Mundo.porNome(W, nome);
+  const doc = Mundo.doc(sk)[nome];
+  const idade = r ? ano - r.nasc : null;
+  const traj = r ? Mundo.trajetoria(W, r, sk).slice().reverse() : [];
+  const fonte = r && r.doc ? 'Carreira com registro real até onde os dados vão; daí em diante, simulada.'
+              : doc ? 'Piloto real. A carreira na categoria principal segue os registros.'
+              : 'Piloto criado pelo jogo: trajetória, nível e futuro são projeção.';
+  const st = !r ? '' : r.st === 'f' ? 'Parou de correr' + (r.fim ? ' em ' + r.fim : '') : r.st === 'l' ? 'Sem vaga no momento' : '';
+  return UI.head(esc(nome), (r ? fg(r.cc) + ' ' : '') + (idade ? idade + ' anos' : '') + (st ? ' · ' + st : '')) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0;font-size:13px">${esc(fonte)}</div>
+      ${traj.length ? `<table class="st"><thead><tr><th>Ano</th><th>Categoria</th><th>Equipe</th><th class="pt">Pos.</th></tr></thead><tbody>
+        ${traj.map(x => `<tr><td class="p">${x.ano}</td><td class="dn" style="font-size:14px">${esc(x.cat)}</td>
+          <td class="tm">${esc(x.eq || '—')}</td><td class="pt">${x.pos ? ord(x.pos) : '—'}</td></tr>`).join('')}
+      </tbody></table>` : '<div class="empty" style="padding:14px">Sem trajetória registrada nesta carreira.</div>'}
+    </div>
+    <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`;
+};
+UI.fichaPiloto = function(i){
+  const d = (UI._st || [])[i]; if(!d || d.me) return;
+  let W = null; try { W = Engine.mundo(); } catch(e){}
+  UI.modal(UI.fichaMundo(W, d.name, S.series, S.year));
+};
+
+UI.ofertasModal = function(){
+  const offers = S.pendingOffers || [];
+  const restante = S.season && S.season.isTop && S.contract && S.contract.years > 1 ? S.contract.years - 1 : 0;
+  const multa = restante && Engine.ehRealista() && S.team ? Math.round(Engine.salarioDe(S.team, S.series) * restante * .5) : 0;
+  const contratoTxt = restante && S.team ? `<div class="res-nar" style="margin-top:0;border-left-color:var(--orange)">
+      Você tem contrato com a <b>${esc(S.team.name)}</b> por mais ${restante} ano${restante > 1 ? 's' : ''}. Assinar com outra equipe é
+      quebrar o contrato: ${multa ? 'a multa é de <b>' + fmtD(multa) + '</b>, ' : ''}a sua fama sofre e a ${esc(S.team.name)} não volta a te chamar tão cedo.</div>` : '';
+  const mot = (S.mercadoMotivos || []);
+  const motivosTxt = mot.length ? `<span class="lbl" style="display:block;margin:16px 0 8px">Quem não ligou</span>
+    ${mot.map(m => `<div style="display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent)">
+      <span class="stripe" style="background:${m.c};height:16px;width:4px;margin-top:2px"></span>
+      <div style="font-size:12.5px"><b>${esc(m.n)}</b> <span style="color:var(--dim)">— ${esc(m.m)}</span></div></div>`).join('')}` : '';
+  const canRetire = S.driver.age >= 30 || S.career.titles > 0;
+  UI.modal(UI.head(`Mercado de ${S.year+1}`, 'Escolha onde você vai correr no ano que vem.', false) +
+    `<div class="mbd">
+      ${contratoTxt}
+      <div class="res-nar" style="margin-top:0">
+        ${esc(Engine.leituraTxt(Engine.qualidadeInfo()))}
+        A força de cada carro é o que você conseguiu apurar, não o que ela é —
+        e o que te prometem para assinar nem sempre acontece.
+      </div>
+      ${offers.map((o,i)=>{
+        if(o.retirada) return '';
+        if(!o.team) return `<button class="offer" onclick="Game.takeOffer(${i})">
+          <div class="oh"><span class="on">${o.type==='down'?'⬇️ Descer para':'Continuar na'} ${esc(o.cat)}</span>
+            <span class="oc">${o.type==='down'?'Recomeço':'Mais um ano'}</span></div>
+          <div class="od">${esc(o.note)}</div></button>`;
+        const sr = o.sk ? SERIES[o.sk] : null;
+        let tag, tagCor = '';
+        if(sr){ tag = sr.ic + ' ' + sr.short; tagCor = `color:${sr.color};border-color:${sr.color}55`; }
+        else if(o.pulo) tag = '⏭️ Salto duplo';
+        else if(o.up)   tag = '⬆️ Promoção';
+        else if(o.down) tag = '⬇️ Recomeço';
+        else tag = `${o.years} ${o.years>1?'anos':'ano'}`;
+        const mudouCat = o.cat !== S.season.cat || !!sr;
+        return `<button class="offer" ${o.podeP===false?'style="opacity:.5"':''} onclick="Game.takeOffer(${i})">
+          <div class="oh">
+            <span class="stripe" style="background:${o.team.color};height:20px;width:5px"></span>
+            <span class="on">${esc(o.team.name)}</span>
+            <span class="oc" style="${tagCor}">${tag}</span>
+          </div>
+          ${mudouCat ? `<div style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+               color:${sr?sr.color:'var(--gold)'};margin-top:6px">${esc(o.cat)}</div>` : ''}
+          <div class="od">${esc(o.note)}${o.n1 ? ' <b style="color:var(--gold)">Primeiro piloto.</b>' : ''}</div>
+          ${(function(){ const it = Engine.interesseOferta(o); return it ? `<div style="margin-top:6px;font-size:11.5px;font-weight:800;color:${it[1]}">${it[0]}</div>` : ''; })()}
+          ${o.custo != null && o.custo > 0 ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;
+               font-size:11.5px;font-weight:800">
+             <span style="color:${o.podeP===false?'var(--red2)':'var(--gold)'}">💰 ${fmtD(o.paga)} do seu bolso</span>
+             ${o.apoio ? `<span style="color:var(--dim2);font-weight:600">a academia banca ${fmtD(o.apoio)}</span>` : ''}
+             ${o.podeP===false ? `<span style="color:var(--red2);font-weight:600">— fora do orçamento</span>` : ''}
+           </div>` : (o.custo === 0 && Engine.ehRealista() ? `<div style="margin-top:7px;font-size:11.5px;
+               font-weight:800;color:var(--green)">💰 aqui a equipe paga você</div>` : '')}
+          ${(function(){
+            /* Ninguém te entrega a força do carro do ano que vem em número
+               redondo. Você tem uma faixa, e a largura dela é o quanto você
+               enxerga o mercado. */
+            const L = Engine.leituraCarro(o.team);
+            return `<div class="carbar"><span class="vl">CARRO</span>
+              <span class="bar" style="position:relative">
+                <i style="width:${L.hi}%;opacity:.35"></i>
+                <i style="position:absolute;left:${L.lo}%;width:${Math.max(2,L.hi-L.lo)}%;top:0;bottom:0"></i>
+              </span>
+              <span class="vl">${L.erro <= 2 ? L.centro : L.lo + '–' + L.hi}</span></div>`;
+          })()}
+          ${(function(){
+            const CL = { exclusivo:['🔒 Contrato exclusivo','var(--red2)','Nenhuma outra categoria durante o ano.'],
+                         padrao:['📄 Contrato padrão','var(--dim2)','Provas avulsas de endurance liberadas.'],
+                         livre:['🔓 Contrato livre','var(--green)','Você pode correr em paralelo onde quiser.'] };
+            const c = CL[o.clausula || 'padrao'];
+            return `<div style="margin-top:6px;font-size:11px;font-weight:800;color:${c[1]}">
+              ${c[0]} <span style="font-weight:600;color:var(--dim2)">— ${esc(c[2])}</span></div>`;
+          })()}
+          ${(o.promessas || []).length ? `<div style="margin-top:7px;padding-top:6px;
+               border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)">
+            ${o.promessas.map(p => `<div style="font-size:11.5px;color:var(--dim);padding:2px 0">
+              <span style="color:var(--gold)">“</span>${esc(p.t)}<span style="color:var(--gold)">”</span>
+              <span style="color:var(--dim2)"> — diz ${esc(Engine.FONTES[p.fonte].n)}${
+                Engine.histFonte(p.fonte) ? ', que ' + esc(Engine.histFonte(p.fonte)) : ''}</span>
+            </div>`).join('')}
+           </div>` : ''}
+        </button>${o.gap != null && !o.negociou ? `<div style="margin:-2px 0 10px;text-align:right"><button class="btn btn-ghost btn-sm" onclick="Game.negociarOferta(${i})">Negociar com a ${esc(o.team.name)}</button></div>` : o.negociou ? '<div style="margin:-2px 0 10px;text-align:right;font-size:11.5px;color:var(--dim2)">Já negociado</div>' : ''}`;
+      }).join('')}
+      ${motivosTxt}
+      ${canRetire ? `<button class="dil" style="margin-top:6px" onclick="Game.endCareer('escolha')">
+        <b>🏁 Pendurar o capacete</b><span>Encerrar a carreira agora e entrar para a galeria de lendas.</span></button>` : ''}
+    </div>`);
 };
 
 UI.boot();
