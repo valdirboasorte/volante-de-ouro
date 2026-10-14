@@ -1,8 +1,8 @@
 /* Regras do campeonato: pontos, construtores, desempate, tabela ao vivo e histórico */
 const H = require('./base');
 const casos = [
-  ['f1', 1955], ['f1', 1975], ['f1', 1988], ['f1', 2008], ['f1', 2024], ['f1', 2030],
-  ['indy', 1985], ['indy', 1999], ['indy', 2015], ['nascar', 1990], ['nascar', 2020],
+  ['f1', 1955], ['f1', 1975], ['f1', 1988], ['f1', 2008], ['f1', 2024], ['f1', 2025], ['f1', 2030],
+  ['indy', 1985], ['indy', 1999], ['indy', 2015], ['nascar', 1990], ['nascar', 2005], ['nascar', 2012], ['nascar', 2015], ['nascar', 2020],
   ['wec', 2012], ['stock', 2015], ['dtm', 2005], ['fe', 2022]
 ];
 let falhas = 0, corridas = 0;
@@ -27,7 +27,8 @@ for(const [sk, ano] of casos){
       const dD = somaD() - antesD, dC = somaC() - antesC;
       if(Math.abs(dD - dC) > .001) out.erros.push('GP ' + rec.gp + ': pilotos ' + dD + ' x construtores ' + dC);
       const mult = trk.dbl ? 2 : 1;
-      const maxPts = P.p.reduce((a, b) => a + b, 0) * mult + (P.fl ? 1 : 0) + (P.pole ? (typeof P.pole === 'number' ? P.pole : 1) : 0);
+      const maxPts = P.p.reduce((a, b) => a + b, 0) * mult + (P.fl ? (typeof P.fl === 'number' ? P.fl : 1) : 0) + (P.pole ? (typeof P.pole === 'number' ? P.pole : 1) : 0)
+        + (P.etapas ? [1,2,3,4,5,6,7,8,9,10].reduce((a, k) => a + Math.round((11 - k) * 1.6), 0) : 0);
       if(dD > maxPts + .001 && !sea.playoff) out.erros.push('GP ' + rec.gp + ': ' + dD + ' pontos distribuídos, máximo ' + maxPts);
       /* o jogador: posição, pontos e a tabela ao vivo terminando no mesmo lugar */
       if(rec.pos != null){
@@ -48,7 +49,17 @@ for(const [sk, ano] of casos){
     const empatados = st.filter((d, i) => i && d.pts === st[i - 1].pts && d.pts > 0).length;
     out.empates = empatados;
     const meuSt = st.find(d => d.me);
-    if(!sea.playoff && meuSt && Math.abs(meuSt.pts - (sea.dstand.ME || 0)) > .001) out.erros.push('pontos do jogador na tabela ≠ acumulado');
+    if(!sea.playoff && meuSt && Math.abs(meuSt.pts - ptsValidos(sea, 'ME')) > .001) out.erros.push('pontos do jogador na tabela ≠ pontos válidos');
+    /* só os melhores resultados contam, onde o regulamento manda */
+    if(P.melhores) st.forEach(d => { if(d.pts > (sea.dstand[d.id] || 0) + .001) out.erros.push(d.name + ': pontos válidos acima do total'); });
+    /* na F1 de 2025 em diante a volta mais rápida não vale ponto */
+    if(sea.year >= 2025 && S.series === 'f1' && P.fl) out.erros.push('volta mais rápida ainda pontua em ' + sea.year);
+    /* NASCAR: todo o grid pontua; desde 2014 o campeão termina entre 5000 e 5100 */
+    if(S.series === 'nascar' && P.p.length < sea.field.length) out.erros.push('só ' + P.p.length + ' de ' + sea.field.length + ' pontuam');
+    if(S.series === 'nascar' && sea.year >= 2014 && sea.playoff && sea.playoff.campeao){
+      const pc = Engine.ptsDe(sea, sea.playoff.campeao);
+      if(pc < 5000 || pc > 5100) out.erros.push('campeão da NASCAR com ' + pc + ' pontos');
+    }
     const somaRes = sea.results.reduce((a, r) => a + (r.pts || 0), 0);
     if(!sea.playoff && Math.abs(somaRes - (sea.dstand.ME || 0)) > .001) out.erros.push('soma do retrospecto ' + somaRes + ' ≠ campeonato ' + (sea.dstand.ME || 0));
     const cons = Engine.constructors(sea);
@@ -64,7 +75,8 @@ for(const [sk, ano] of casos){
   const sea = J.run('S.season');
   if(arq.results.length !== sea.results.length) falha(rot, 'arquivo com ' + arq.results.length + ' corridas, temporada com ' + sea.results.length);
   const hist = J.run('S.history[S.history.length - 1]');
-  if(hist.pts !== (sea.dstand.ME || 0) && !sea.playoff) falha(rot, 'histórico ' + hist.pts + ' pts, campeonato ' + (sea.dstand.ME || 0));
+  const validos = J.run('ptsValidos(S.season, "ME")');
+  if(hist.pts !== validos && !sea.playoff) falha(rot, 'histórico ' + hist.pts + ' pts, campeonato ' + validos);
   console.log(`  ${rot.padEnd(12)} ${sea.cat.padEnd(26)} ${res.n} corridas · campeão ${res.campeao} (${res.ptsCampeao})${res.playoff ? ' · playoff' : ''}${res.empates ? ' · ' + res.empates + ' empate(s) resolvidos' : ''}`);
 }
 console.log(`\n${corridas} corridas verificadas, ${falhas} problema(s)`);

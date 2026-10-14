@@ -212,6 +212,24 @@ eliminatório de dezesseis desde 2014 — três cortes e quatro finalistas
 decidindo numa corrida só. O líder da temporada regular perde o título em 85%
 dos anos no formato eliminatório.
 
+Na fase de doze a pontuação volta a 3000, na de oito a 4000 — sempre mais os
+pontos de playoff guardados (cinco por vitória e, desde 2017, 15, 10, 8… pela
+colocação na temporada regular) — e os quatro finalistas voltam a 5000 cada:
+o campeão moderno termina perto de 5040, como na vida real. No Chase de 2004 a
+2010 os dez ou doze classificados voltavam a 5000 e somavam o sistema Latford,
+de até 185 por corrida: campeão perto de 6000 era o normal (Jimmie Johnson
+fechou 2006 com 6475). Todo o grid pontua — até o 43º no Latford e de 2011 a
+2016, até o 36º desde 2017, quando também entram os pontos de etapa.
+
+Cada categoria pontua como pontuava na época: na Fórmula 1, até 1990, só os
+melhores resultados contam para o campeonato de pilotos (os onze melhores de
+1981 a 1990 — Senna é campeão de 1988 com menos pontos brutos que Prost, e a
+tabela mostra os dois números), e o ponto da volta mais rápida vale de 2019 a
+2024. Na IndyCar todo mundo que larga pontua, e as 500 Milhas valem dobrado de
+2014 a 2023. Na Fórmula E a volta mais rápida valia dois pontos até 2017; no
+DTM a escala foi 10-8-6 de 2000 a 2014. As categorias de base também seguem a
+época: 9-6-4 até 1990, 10-6-4 nos anos 90, 10-8-6 nos 2000 e 25-18-15 depois.
+
 A **IndyCar** nunca foi uma coisa só: AAA até 1955, USAC até 1978, a CART até
 1995, a cisão com a IRL de 1996 a 2007 e a reunificação em 2008. Nos anos da
 cisão existem dois campeonatos, com equipes, calendários e força de carro

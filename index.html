@@ -1283,6 +1283,24 @@ const CAL_F1 = {
 };
 
 /* ─────────────── REGULAMENTOS DE PONTUAÇÃO, POR CATEGORIA E ANO ─────────────── */
+/* quantos resultados contavam no campeonato de pilotos da F1 */
+const MELHORES_F1 = (function(){
+  const m = {};
+  const faixa = (de, ate, v) => { for(let y = de; y <= ate; y++) m[y] = v; };
+  faixa(1950, 1953, 4); faixa(1954, 1957, 5); m[1958] = 6; m[1959] = 5; m[1960] = 6;
+  faixa(1961, 1962, 5); faixa(1963, 1965, 6); m[1966] = 5; m[1967] = 9; m[1968] = 10; m[1969] = 9;
+  m[1970] = 11; m[1971] = 9; m[1972] = 10; m[1973] = 13; m[1974] = 13; m[1975] = 12; m[1976] = 14;
+  m[1977] = 15; m[1978] = 14; m[1979] = 8; m[1980] = 10; faixa(1981, 1990, 11);
+  return m;
+})();
+/* os pontos que valem no campeonato: a soma, ou a soma dos melhores resultados */
+function ptsValidos(sea, id){
+  const tot = (sea.dstand && sea.dstand[id]) || 0;
+  const N = sea.pts && sea.pts.melhores;
+  const lista = sea.porCorrida && sea.porCorrida[id];
+  if(!N || !lista || lista.length <= N) return tot;
+  return lista.slice().sort((a, b) => b - a).slice(0, N).reduce((a, b) => a + b, 0);
+}
 function pointsFor(year, sk){
   sk = sk || 'f1';
   if(sk === 'indy'){
@@ -1290,8 +1308,13 @@ function pointsFor(year, sk){
       label:'USAC 200-160-140… (Indianápolis vale em dobro)'};
     if(year<=1995) return {p:[20,16,14,12,10,8,6,5,4,3,2,1], fl:0, pole:1,
       label:'CART 20-16-14-12-10-8-6-5-4-3-2-1 + 1 pela pole'};
-    return {p:[50,40,35,32,30,28,26,24,22,20,19,18,17,16,15,14,13,12,11,10], fl:0, pole:1, dblId:'indy',
-      label:'IndyCar 50-40-35-32-30… (Indianápolis vale em dobro)'};
+    /* do 21º para baixo a escala segue caindo de um em um até 5, e todo
+       mundo que larga pontua */
+    const p = [50,40,35,32,30,28,26,24,22,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5];
+    while(p.length < 33) p.push(5);
+    const dobro = year >= 2014 && year <= 2023;
+    return {p, fl:0, pole:1, dblId: dobro ? 'indy' : null,
+      label:'IndyCar 50-40-35-32-30… até o último + 1 pela pole' + (dobro ? ' (Indianápolis vale em dobro)' : '')};
   }
   if(sk === 'wec'){
     if(year<=1980) return {p:[9,6,4,3,2,1], fl:0, dblId:'fr_lem', label:'9-6-4-3-2-1 (Le Mans vale em dobro)'};
@@ -1303,16 +1326,32 @@ function pointsFor(year, sk){
   if(sk === 'nascar'){
     if(year<=1974) return {p:[100,80,70,60,55,50,45,40,35,30,25,22,19,16,13,10,8,6,4,2], fl:0,
       label:'100-80-70-60-55… (sistema por prova)'};
-    if(year<=2010) return {p:[175,170,165,160,155,150,146,142,138,134,130,127,124,121,118,115,112,109,106,103], fl:0,
-      label:'175-170-165-160-155… (sistema Latford)'};
-    return {p:[40,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17], fl:0, pole:1,
-      label:'40-35-34-33-32… + 1 pela pole'};
+    if(year<=2010){
+      /* sistema Latford: 175 para o vencedor (mais 5 por liderar uma volta),
+         caindo de 5 em 5 até o 6º, de 4 em 4 até o 11º e de 3 em 3 até o 43º */
+      const p = [];
+      for(let i = 1; i <= 43; i++) p.push(i === 1 ? (year >= 2004 ? 185 : 180) : i <= 6 ? 175 - (i - 1) * 5 : i <= 11 ? 150 - (i - 6) * 4 : 130 - (i - 11) * 3);
+      return {p, fl:0, label:'Latford: ' + p[0] + ' para o vencedor, 170, 165… até o 43º (34)'};
+    }
+    if(year<=2016){
+      /* 43 para o vencedor mais 3 de bônus, e um a menos por posição até o 43º */
+      const p = [];
+      for(let i = 1; i <= 43; i++) p.push(i === 1 ? 46 : 44 - i);
+      return {p, fl:0, label:'46 para o vencedor, 42, 41… até o 43º (1)'};
+    }
+    /* desde 2017: 40, 35, 34… até o 36º, e pontos de etapa para quem anda na frente */
+    const p = [40];
+    for(let i = 2; i <= 36; i++) p.push(37 - i);
+    return {p, fl:0, etapas:true, label:'40-35-34-33… até o 36º (1), mais pontos de etapa para os dez primeiros'};
   }
   if(sk === 'dtm'){
     if(year<=1995) return {p:[20,15,12,10,8,6,4,3,2,1], fl:0, label:'20-15-12-10-8-6-4-3-2-1'};
-    return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, pole:1, label:'25-18-15-12-10… + 1 pela pole'};
+    if(year<=2014) return {p:[10,8,6,5,4,3,2,1], fl:0, label:'10-8-6-5-4-3-2-1'};
+    return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, pole:3, label:'25-18-15-12-10… + 3 pela pole'};
   }
   if(sk === 'fe'){
+    if(year<=2017) return {p:[25,18,15,12,10,8,6,4,2,1], fl:2, pole:3,
+      label:'25-18-15-12-10… + 3 pela pole + 2 pela volta mais rápida'};
     return {p:[25,18,15,12,10,8,6,4,2,1], fl:1, pole:3,
       label:'25-18-15-12-10… + 3 pela pole + 1 volta mais rápida'};
   }
@@ -1323,14 +1362,29 @@ function pointsFor(year, sk){
     return {p:[30,25,22,20,18,16,14,12,10,9,8,7,6,5,4,3,2,1], fl:1, pole:1,
       label:'30-25-22-20-18… + 1 pela pole + 1 pela volta mais rápida'};
   }
-  /* Fórmula 1 */
-  if(year<=1959) return {p:[8,6,4,3,2], fl:1, label:'8-6-4-3-2 + 1 volta mais rápida'};
-  if(year===1960) return {p:[8,6,4,3,2,1], fl:0, label:'8-6-4-3-2-1'};
-  if(year<=1990) return {p:[9,6,4,3,2,1], fl:0, label:'9-6-4-3-2-1'};
+  /* Fórmula 1 — até 1990 só os melhores resultados contavam no campeonato
+     de pilotos (nos anos 70, a melhor parte de cada metade da temporada;
+     aqui, o total dessas duas partes) */
+  const mel = MELHORES_F1[year] || null;
+  const mTxt = mel ? ' · valem os ' + mel + ' melhores resultados' : '';
+  if(year<=1959) return {p:[8,6,4,3,2], fl:1, melhores:mel, label:'8-6-4-3-2 + 1 volta mais rápida' + mTxt};
+  if(year===1960) return {p:[8,6,4,3,2,1], fl:0, melhores:mel, label:'8-6-4-3-2-1' + mTxt};
+  if(year<=1990) return {p:[9,6,4,3,2,1], fl:0, melhores:mel, label:'9-6-4-3-2-1' + mTxt};
   if(year<=2002) return {p:[10,6,4,3,2,1], fl:0, label:'10-6-4-3-2-1'};
   if(year<=2009) return {p:[10,8,6,5,4,3,2,1], fl:0, label:'10-8-6-5-4-3-2-1'};
   if(year<=2018) return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1'};
-  return {p:[25,18,15,12,10,8,6,4,2,1], fl:1, label:'25-18-15… + 1 volta mais rápida (top 10)'};
+  if(year<=2024) return {p:[25,18,15,12,10,8,6,4,2,1], fl:1, label:'25-18-15… + 1 volta mais rápida (top 10)'};
+  return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1'};
+}
+
+/* ─────────────── AS CATEGORIAS DE BASE ───────────────
+   Cada época pontua do seu jeito: ninguém dava 25 pontos por vitória numa
+   Fórmula Júnior de 1960. */
+function pontosBase(year){
+  if(year<=1990) return {p:[9,6,4,3,2,1], fl:0, label:'9-6-4-3-2-1'};
+  if(year<=2002) return {p:[10,6,4,3,2,1], fl:0, label:'10-6-4-3-2-1'};
+  if(year<=2009) return {p:[10,8,6,5,4,3,2,1], fl:0, label:'10-8-6-5-4-3-2-1'};
+  return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1'};
 }
 
 /* embaralhamento determinístico: o calendário de 1987 é sempre o mesmo calendário de 1987 */
@@ -5959,8 +6013,7 @@ const Engine = {
     S.lastCat = cat;
     S.yearsInSeries = (S.lastSeries === S.series) ? (S.yearsInSeries||0) + 1 : 1;
     S.lastSeries = S.series;
-    const pts = isTop ? pointsFor(S.year, S.series)
-                      : {p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1'};
+    const pts = isTop ? pointsFor(S.year, S.series) : pontosBase(S.year);
 
     /* calendário do ano — na categoria principal ele é o calendário daquele ano exato */
     let ids;
@@ -8975,8 +9028,11 @@ const Engine = {
     finish.forEach(x=>{
       x.pts = 0;
       if(!x.out && x.pos <= P.p.length) x.pts = P.p[x.pos-1] * mult;
-      if(P.fl && x.f.id===flId && (!x.out) && (sea.year<=1959 || x.pos<=10)) x.pts += 1;
+      if(P.fl && x.f.id===flId && (!x.out) && (sea.year<=1959 || x.pos<=10)) x.pts += (typeof P.fl === 'number' ? P.fl : 1);
       if(P.pole && grid[x.f.id] === 1) x.pts += (typeof P.pole === 'number' ? P.pole : 1);
+      /* NASCAR desde 2017: as duas etapas dão pontos aos dez primeiros de cada
+         uma — quem anda na frente o dia inteiro soma mais do que quem só chega */
+      if(P.etapas && !x.out && x.pos <= 10) x.pts += Math.round((11 - x.pos) * 1.6);
     });
 
     /* a temporada regular acabou? é hora de abrir o playoff */
@@ -8986,6 +9042,7 @@ const Engine = {
     /* acumula campeonato + contagem de resultados (critério de desempate) */
     finish.forEach(x=>{
       sea.dstand[x.f.id] = (sea.dstand[x.f.id]||0) + x.pts;
+      ((sea.porCorrida = sea.porCorrida || {})[x.f.id] = sea.porCorrida[x.f.id] || []).push(x.pts);
       sea.cstand[x.f.teamId] = (sea.cstand[x.f.teamId]||0) + x.pts;
       if(!x.out){
         const f = sea.fin[x.f.id] || (sea.fin[x.f.id] = []);
@@ -9207,10 +9264,13 @@ const Engine = {
       dentro = porPontos.concat(resto.slice(0, fmt.wild));
     } else dentro = tab.slice(0, fmt.vagas);
 
-    const pts = {};
+    const pts = {}, bonus = {};
+    /* desde 2017 a temporada regular também paga: 15 ao primeiro, 10 ao segundo, 8 ao terceiro… */
+    const BONUS_REG = [15, 10, 8, 7, 6, 5, 4, 3, 2, 1];
     dentro.forEach((x, i) => {
-      pts[x.id] = fmt.base + (fmt.passo ? (dentro.length - 1 - i) * fmt.passo : 0)
-                + (fmt.porVit ? x.vit * fmt.porVit : 0);
+      bonus[x.id] = (fmt.porVit ? x.vit * fmt.porVit : 0) + (fmt.stage ? (BONUS_REG[i] || 0) : 0);
+      /* Chase 2004-2006: o líder volta com 5050, o décimo com 5005 */
+      pts[x.id] = fmt.base + (fmt.passo ? (dentro.length - i) * fmt.passo : 0) + bonus[x.id];
     });
     sea.playoff = {
       fmt: fmt.tipo, nome: fmt.n, desc: fmt.d,
@@ -9218,7 +9278,7 @@ const Engine = {
       seeds: dentro.map((x, i) => ({ id:x.id, name:x.name, cc:x.cc, me:x.me,
                                      seed:i+1, vitReg:x.vit, ptsReg:x.pts })),
       vivos: dentro.map(x => x.id),
-      pts,
+      pts, bonus, porVit: fmt.porVit || 0,
       rodadas: fmt.rodadas ? (function(){
         const restantes = Math.max(4, sea.calendar.length - (sea.round + 1));
         const antes = Math.max(3, restantes - 1);          /* a decisão é sempre uma prova */
@@ -9260,6 +9320,8 @@ const Engine = {
         p.garantidos = (p.garantidos || []).concat([{ id: venc.f.id, rodada: p.rodadas[p.rodadaAtual].n }]);
       }
     }
+    /* vencer dentro do playoff também vale pontos de playoff para as próximas fases */
+    if(venc && p.bonus && p.bonus[venc.f.id] != null) p.bonus[venc.f.id] += p.porVit || 0;
 
     if(!p.rodadas){
       /* Chase: dez ou doze corridas somando, e acabou */
@@ -9303,9 +9365,12 @@ const Engine = {
     p.passaram = [];
     p.rodadaAtual++;
     p.feitasNaRodada = 0;
-    /* quem sobrou volta nivelado, como manda o regulamento */
-    const baseR = 3000 + p.rodadaAtual * 1000;
-    p.vivos.forEach((id, i) => { p.pts[id] = baseR + (p.vivos.length - 1 - i) * 0; });
+    /* quem sobrou volta nivelado, como manda o regulamento: 3000 na fase de
+       doze, 4000 na de oito, sempre mais os pontos de playoff guardados; os
+       quatro finalistas voltam com 5000 cada, e a última corrida decide */
+    const baseR = 2000 + p.rodadaAtual * 1000;
+    const final = p.rodadaAtual === p.rodadas.length - 1;
+    p.vivos.forEach(id => { p.pts[id] = baseR + (final || !p.bonus ? 0 : (p.bonus[id] || 0)); });
     return nota;
   },
 
@@ -9336,7 +9401,7 @@ const Engine = {
   /* pontos que a tabela deve mostrar durante o playoff */
   ptsDe(sea, id){
     if(sea.playoff && sea.playoff.pts[id] != null) return sea.playoff.pts[id];
-    return sea.dstand[id] || 0;
+    return ptsValidos(sea, id);
   },
 
   /* desempate por contagem de melhores resultados, como no regulamento de verdade */
@@ -9362,7 +9427,7 @@ const Engine = {
     return sea.field.map(f=>({
         id:f.id, name:f.name, cc:f.cc, me:!!f.isMe,
         team: sea.teams.find(t=>t.id===f.teamId),
-        pts: sea.dstand[f.id]||0
+        pts: ptsValidos(sea, f.id), brutos: sea.dstand[f.id]||0
       })).sort((a,b)=> (b.pts-a.pts) || Engine.countback(sea,a.id,b.id) || a.name.localeCompare(b.name));
   },
 
@@ -9382,7 +9447,9 @@ const Engine = {
       tmWins, qWins, tmRaces: h2h.length,
       year:sea.year, cat:sea.cat, team:S.team.name, teamColor:S.team.color,
       races: rs.length, total: sea.calendar.length,
-      pts: sea.dstand['ME']||0,
+      /* a pontuação oficial do campeonato: no playoff, a do playoff */
+      pts: Engine.ptsDe(sea, 'ME'),
+      ptsCorridas: sea.dstand['ME']||0,
       pos: Engine.champPos(sea,'ME'),
       wins: fin.filter(r=>r.pos===1).length,
       podiums: fin.filter(r=>r.pos<=3).length,
@@ -11311,7 +11378,8 @@ const UI = {
         <td class="p">${i+1}</td>
         <td class="dn">${fg(d.cc)}${esc(d.name)}${d.me?' <span style="color:var(--gold);font-size:9.5px;font-weight:900;letter-spacing:.08em">VOCÊ</span>':''}</td>
         <td class="tm"><span class="stripe" style="background:${d.team.color}"></span>${esc(d.team.name)}</td>
-        <td class="pt">${d.pts}</td></tr>`).join('')}</tbody></table></div>`;
+        <td class="pt">${d.pts}${d.brutos != null && d.brutos !== d.pts ? `<small style="display:block;font-size:10.5px;color:var(--dim2);font-weight:600">${d.brutos} no total</small>` : ''}</td></tr>`).join('')}</tbody></table></div>${
+      sea.pts.melhores ? `<p class="mut" style="font-size:12px;padding:8px 12px;margin:0">Em ${sea.year} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato. O total aparece embaixo, quando é diferente.</p>` : ''}`;
 
     const ct = Engine.constructors(sea);
     el('pane-con').innerHTML = `<div class="tbl-scroll"><table class="st">
@@ -15503,10 +15571,7 @@ const Chefe = {
                                 skill:Math.round(x.r.h), doc: reaisAno.has(x.r.n) }));
   },
   corridasJunior(){ return Chefe.catInfoAtual().races; },
-  pontosJunior(ano){
-    return ano < 2003 ? { p:[9,6,4,3,2,1], fl:0, label:'9-6-4-3-2-1' }
-                      : { p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1' };
-  },
+  pontosJunior(ano){ return pontosBase(ano); },
 
   /* ═══ A TEMPORADA ═══ */
   montarTemporada(){
@@ -15709,6 +15774,7 @@ const Chefe = {
       if(!x.out && x.pos <= P.p.length) x.pts = P.p[x.pos - 1];
       if(P.fl && x.f.id === flId && !x.out && (sea.ano <= 1959 || x.pos <= 10)) x.pts += 1;
       sea.dstand[x.f.id] = (sea.dstand[x.f.id] || 0) + x.pts;
+      ((sea.porCorrida = sea.porCorrida || {})[x.f.id] = sea.porCorrida[x.f.id] || []).push(x.pts);
       sea.cstand[x.f.teamId] = (sea.cstand[x.f.teamId] || 0) + x.pts;
       if(!x.out){ const fn = sea.fin[x.f.id] || (sea.fin[x.f.id] = []); fn[x.pos] = (fn[x.pos] || 0) + 1; }
     });
@@ -15817,7 +15883,7 @@ const Chefe = {
   },
   pilotosTabela(sea){
     return sea.field.filter(f => (sea.dstand[f.id] != null) || f.ativo)
-      .map(f => ({ f, pts: sea.dstand[f.id] || 0, fin: sea.fin[f.id] || [] }))
+      .map(f => ({ f, pts: ptsValidos(sea, f.id), brutos: sea.dstand[f.id] || 0, fin: sea.fin[f.id] || [] }))
       .sort((a, b) => {
         if(b.pts !== a.pts) return b.pts - a.pts;
         for(let k = 1; k <= 30; k++){ const d = (b.fin[k] || 0) - (a.fin[k] || 0); if(d) return d; }
@@ -17511,8 +17577,8 @@ const UIC = {
     return `<div class="tbl-scroll"><table class="st"><thead><tr><th class="p">#</th><th>Piloto</th><th>Equipe</th><th class="pt">Pts</th></tr></thead><tbody>
       ${tab.map((x, i) => { const t = sea.teams.find(tt => tt.id === x.f.teamId) || {};
         return `<tr class="${x.f.teamId === 'EU' ? 'me' : 'clica'}" onclick="UIC.ficha(${i})"><td class="p">${i + 1}</td><td class="dn">${fg(x.f.cc)}${esc(x.f.name)}</td>
-          <td class="tm"><span class="stripe" style="background:${t.color}"></span>${esc(t.name || '')}</td><td class="pt">${x.pts}</td></tr>`; }).join('')}
-    </tbody></table></div>`;
+          <td class="tm"><span class="stripe" style="background:${t.color}"></span>${esc(t.name || '')}</td><td class="pt">${x.pts}${x.brutos !== x.pts ? `<small style="display:block;font-size:10.5px;color:var(--dim2);font-weight:600">${x.brutos} no total</small>` : ''}</td></tr>`; }).join('')}
+    </tbody></table></div>${sea.pts.melhores ? `<p class="mut" style="font-size:12px;padding:8px 12px;margin:0">Em ${sea.ano} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato.</p>` : ''}`;
   },
   ficha(i){
     const sea = C.temporada; if(!sea) return;
