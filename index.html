@@ -877,7 +877,7 @@ table.ch-livro .pt{font-size:15px}
       </label>
       <label class="switch" style="margin-top:8px">
         <input type="checkbox" id="chkFast">
-        <span class="tx"><b>Modo rápido</b><span>Você cuida só de contrato, mercado e das decisões do piloto: a equipe monta o carro e define o inverno, e as categorias de base têm menos corridas. Dá para ligar e desligar no meio da carreira.</span></span>
+        <span class="tx"><b>Modo rápido</b><span>Você cuida só de contrato, mercado e das decisões do piloto: a equipe monta o carro e define a pré-temporada, e as categorias de base têm menos corridas. Dá para ligar e desligar no meio da carreira.</span></span>
       </label>
     </div>
   </div>
@@ -3719,7 +3719,7 @@ const INVERNO = [
   { k:'fabrica', ic:'🏭', n:'Morar perto da fábrica',
     d:'Você aparece todo dia, atrapalha, pergunta e aprende. Some da própria vida por quatro meses.',
     area:'eng', custo:0, tom:'tecnico', traco:'metodico',
-    otimo:{ t:'Você saiu do inverno sabendo desenhar meia asa. A engenharia passou a te tratar como par.',
+    otimo:{ t:'Você saiu da pré-temporada sabendo desenhar meia asa. A engenharia passou a te tratar como par.',
             prep:{eng:3, sim:1}, e:{ eng:{conf:14, resp:8}, dev:.8 } },
     bom:  { t:'Você entendeu o carro de um jeito que não entendia. Ninguém mais fala com você em outubro.',
             prep:{eng:3}, e:{ eng:{conf:8}, dev:.4, moral:-3 } },
@@ -3749,13 +3749,13 @@ const INVERNO = [
             prep:{sim:1}, e:{ moral:-5, dev:-.3 } } },
 
   { k:'paralela', ic:'🏆', n:'Temporada paralela em outra categoria',
-    d:'Correr de verdade no inverno: carro diferente, gente diferente, risco de verdade.',
+    d:'Correr de verdade na pré-temporada: carro diferente, gente diferente, risco de verdade.',
     area:'race', custo:220e3, tom:'direto',
     otimo:{ t:'Você voltou com quilometragem de corrida que nenhum simulador dá — e com uma taça.',
             prep:{race:3, sim:1}, e:{ race:1.1, fama:7, moral:8 } },
     bom:  { t:'Duas corridas boas, uma ruim, e uma leitura de corrida melhor do que a de dezembro.',
             prep:{race:3}, e:{ race:.6, fama:3 } },
-    morno:{ t:'Carro ruim, resultado ruim, e o inverno passou.', prep:{race:2}, e:{ moral:-4 } },
+    morno:{ t:'Carro ruim, resultado ruim, e a pré-temporada passou.', prep:{race:2}, e:{ moral:-4 } },
     ruim: { t:'Batida feia na terceira etapa. Você começa a temporada se recuperando.',
             prep:{race:1}, e:{ lesao:1, moral:-10, fama:4 } } },
 
@@ -3766,7 +3766,7 @@ const INVERNO = [
             prep:{wet:3, race:1}, e:{ wet:1.2 } },
     bom:  { t:'A sensibilidade de traseira melhorou muito.', prep:{wet:3}, e:{ wet:.6 } },
     morno:{ t:'Choveu pouco. Você treinou no seco a maior parte do tempo.', prep:{wet:2}, e:{} },
-    ruim: { t:'Você pegou os piores karts da Europa e passou o inverno com raiva.',
+    ruim: { t:'Você pegou os piores karts da Europa e passou a pré-temporada com raiva.',
             prep:{wet:1}, e:{ moral:-5 } } },
 
   { k:'vida', ic:'🏖️', n:'Sumir do mundo por dois meses',
@@ -3782,7 +3782,7 @@ const INVERNO = [
   { k:'imprensa', ic:'🎙️', n:'Temporada de eventos e entrevistas',
     d:'Aparecer. Falar. Ser lembrado por quem assina contrato e por quem paga a conta.',
     area:null, custo:0, tom:'publico', traco:'politico',
-    otimo:{ t:'Seu nome circulou o inverno inteiro. Duas portas se abriram sem você bater.',
+    otimo:{ t:'Seu nome circulou a pré-temporada inteira. Duas portas se abriram sem você bater.',
             prep:{}, e:{ fama:14, porta:1, dinheiro:180e3 } },
     bom:  { t:'Você virou nome conhecido fora do paddock.', prep:{}, e:{ fama:9, dinheiro:90e3 } },
     morno:{ t:'Muito avião, pouca repercussão.', prep:{}, e:{ fama:3, moral:-4 } },
@@ -3793,13 +3793,13 @@ const INVERNO = [
 /* onde você põe a si mesmo — continua sendo escolha, agora com nome */
 const COMPROMISSOS = [
   { k:'eu',     ic:'🫵', n:'Em você',
-    d:'O inverno inteiro é seu. A equipe que se vire com o carro.',
+    d:'A pré-temporada inteira é sua. A equipe que se vire com o carro.',
     ds:'Você evolui mais rápido e a fábrica sente a sua falta.' },
   { k:'meio',   ic:'⚖️', n:'Dividido',
     d:'Metade no seu preparo, metade dentro da equipe.',
     ds:'Nem um extremo nem outro.' },
   { k:'equipe', ic:'🔧', n:'Na equipe',
-    d:'Você entrega o inverno para a fábrica e para o desenvolvimento do carro.',
+    d:'Você entrega a pré-temporada para a fábrica e para o desenvolvimento do carro.',
     ds:'O carro melhora, a relação melhora, e você evolui menos.' }
 ];
 
@@ -4046,7 +4046,7 @@ const CONVERSAS = [
               e:{ conf:15, afeto:9, promessa:'apoio_comp' } },
       bom:  { t:'Ele topa. Se vai cumprir, ninguém sabe.', e:{ conf:8, promessa:'apoio_comp' } },
       morno:{ t:'Ele agradece e não se compromete com nada.', e:{ } },
-      ruim: { t:'Ele aceita, usa o seu apoio o ano inteiro e some no inverno.', e:{ tens:9, conf:-8, traido:1 } } }
+      ruim: { t:'Ele aceita, usa o seu apoio o ano inteiro e some na pré-temporada.', e:{ tens:9, conf:-8, traido:1 } } }
   ] },
 
 { id:'comp_toque', papel:'comp', peso:3, uma:false, cd:2, exige:{ aposToque:true },
@@ -10411,7 +10411,7 @@ const UI = {
       const men = Engine.genteAtiva().find(p => p.papel === 'mentor');
       h += `<div class="pad-sm" style="border-top:1px solid var(--line)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <span class="lbl">Gente</span>
+          <span class="lbl">Parceiros</span>
           <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:10.5px"
                   onclick="UI.pessoas()">abrir</button>
         </div>
@@ -10586,7 +10586,7 @@ const UI = {
       h = `<button class="btn btn-gold btn-lg" onclick="Game.endSeason()">Encerrar a temporada ${sea.year} →</button>`;
     }
     if(nx && !S.opts.fast && !Engine.invernoFeito())
-      h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">❄️ O inverno</button>`;
+      h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">🔧 Pré-temporada</button>`;
     if(Engine.tracosSabidos().length)
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.tracosModal()">🧭 Como você anda</button>`;
     if(S.season && S.season.playoff)
@@ -10594,7 +10594,7 @@ const UI = {
     if(S.series === 'indy' && Engine.cisaoAtiva(S.year))
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.ladoModal()">${
         Engine.LADOS[S.ladoIndy || 'cart'].ic} ${esc(Engine.LADOS[S.ladoIndy || 'cart'].n)}</button>`;
-    h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Gente</button>
+    h += `<button class="btn btn-ghost btn-sm" onclick="UI.pessoas()">🤝 Parceiros</button>
       <button class="btn btn-ghost btn-sm" onclick="UI.empresarios()">💼 ${Engine.emp() ? esc(Engine.emp().n.split(' ').pop()) : 'Empresário'}</button>`;
     if(Engine.ehRealista())
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.financas()">💰 ${fmtD(S.money.saldo)}</button>`;
@@ -10776,7 +10776,7 @@ UI.prepModal = function(){
       style="${S.compromisso === c.k ? 'border-color:var(--gold)' : ''}" onclick="Game.setCompromisso('${c.k}')">
       <b>${c.ic} ${esc(c.n)}</b><span>${esc(c.d)} ${esc(c.ds)}</span></button>`).join('');
 
-  UI.modal(UI.head('O inverno', `${S.year - 1} vira ${S.year} · ${esc(S.team ? S.team.name : '')}`, false) +
+  UI.modal(UI.head('Pré-temporada', `${S.year - 1} vira ${S.year} · ${esc(S.team ? S.team.name : '')}`, false) +
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">
         Quatro meses até a primeira corrida. Dá para estar em ${vagas === 3 ? 'três lugares' : 'dois lugares'},
@@ -10784,7 +10784,7 @@ UI.prepModal = function(){
         que você ainda não sabe sobre si mesmo.
       </div>
       <div style="display:flex;align-items:baseline;gap:8px;margin:14px 0 8px">
-        <span class="lbl">Onde você vai passar o inverno</span>
+        <span class="lbl">Onde você vai passar a pré-temporada</span>
         <span class="sp"></span>
         <span style="font-size:11px;font-weight:800;color:${esc0.length >= vagas ? 'var(--green)' : 'var(--gold)'}">
           ${esc0.length} de ${vagas}</span>
@@ -10797,7 +10797,7 @@ UI.prepModal = function(){
       <button class="btn btn-ghost btn-sm" onclick="Game.invernoAuto()">Deixar com a equipe</button>
       <span class="sp"></span>
       <button class="btn btn-primary" ${esc0.length ? '' : 'disabled style="opacity:.45"'}
-              onclick="Game.fecharInverno()">Passar o inverno →</button>
+              onclick="Game.fecharInverno()">Fechar a pré-temporada →</button>
     </div>`);
 };
 
@@ -10819,7 +10819,7 @@ UI.invernoResumo = function(){
          </div>
          <div style="font-size:13px;line-height:1.55">${esc(x.t)}</div>
        </div>`).join('')
-        : '<div class="empty" style="padding:12px">O inverno passou sem nada de especial.</div>'}
+        : '<div class="empty" style="padding:12px">A pré-temporada passou sem nada de especial.</div>'}
       ${(S.invernoDescobertas || []).length ? `<div style="padding:11px 13px;border-radius:var(--r-sm);
          border:1px dashed var(--gold);margin-top:4px">
          <span class="lbl" style="display:block;margin-bottom:4px;color:var(--gold)">Alguma coisa sobre você</span>
@@ -13435,7 +13435,7 @@ UI.pessoas = function(){
     </div>`;
   };
 
-  UI.modal(UI.head('Gente', 'Quem anda com você, quem anda contra, e o que cada um quer.') +
+  UI.modal(UI.head('Parceiros', 'Quem anda com você, quem anda contra, e o que cada um quer.') +
     `<div class="mbd">
       ${lista.length ? lista.map(cartao).join('')
         : '<div class="empty" style="padding:14px">Ninguém ainda. O paddock se povoa correndo.</div>'}
@@ -16257,7 +16257,7 @@ const CH_EVENTOS = [
     },
     texto: c => `A ${c.rival} oferece ${fmtD(c.valor)} para tirar ${c.nome} do contrato no fim do ano. Ele sabe da proposta.`,
     ops:[
-      { t:'Vender o passe', d:'O dinheiro entra; a vaga abre no inverno.',
+      { t:'Vender o passe', d:'O dinheiro entra; a vaga abre na pré-temporada.',
         res(t, c){
           const p = C.pilotos.find(x => x.id === c.pid);
           Chefe.lancar('outros', c.valor);
@@ -16434,10 +16434,10 @@ const UIC = {
       ? `Você é o novo chefe da ${esc(C.eq.nome)}. O carro, os pilotos e o dono já estão aqui — a diretoria vai dizer o que espera depois dos testes de pré-temporada. Contratos, motor, patrocínio e o dinheiro de desenvolvimento passam pela sua mesa a partir de agora.`
       : m === 'criar'
       ? `A ${esc(C.eq.nome)} existe no papel e numa fábrica alugada. Falta quase tudo: pilotos, um contrato de motor que faça sentido e patrocinadores. O dinheiro dos investidores parece muito. Não é.`
-      : `A ${esc(C.eq.nome)} tem dois carros, um caminhão e um sonho. Na ${esc(C.cat)} os pilotos pagam para correr: escolher entre o talentoso e o que traz dinheiro é a primeira decisão de todo inverno.`;
+      : `A ${esc(C.eq.nome)} tem dois carros, um caminhão e um sonho. Na ${esc(C.cat)} os pilotos pagam para correr: escolher entre o talentoso e o que traz dinheiro é a primeira decisão de toda pré-temporada.`;
     UI.modal(UI.head('Muro dos boxes', `${esc(C.cat)} · pré-temporada de ${C.ano}`) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0">${txt}</div>
-        <p class="mut" style="font-size:13px;margin:0">O inverno é uma lista de tarefas. Quando os dois carros tiverem piloto${Chefe.ehF1() ? ' e motor' : ''}, dá para largar.</p></div>
+        <p class="mut" style="font-size:13px;margin:0">A pré-temporada é uma lista de tarefas. Quando os dois carros tiverem piloto${Chefe.ehF1() ? ' e motor' : ''}, dá para largar.</p></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Ao trabalho</button></div>`);
   },
 
@@ -16602,7 +16602,7 @@ const UIC = {
     const era = eraOfSeries(C.ano, 'f1');
     box.innerHTML = `
       <div class="season-hd">
-        <div><div class="cat">Inverno · ${esc(C.cat)}</div><div class="yr">${C.ano}</div>
+        <div><div class="cat">Pré-temporada · ${esc(C.cat)}</div><div class="yr">${C.ano}</div>
           <div class="era">${esc(era.tag)}${CH_REGRAS[C.ano] && f1 ? ' · regulamento novo: ' + esc(CH_REGRAS[C.ano]) : ''}</div></div>
         <span class="sp"></span>
         <div class="pos-big"><b class="${pr.saldo < 0 ? 'neg' : ''}" style="font-size:30px">${fmtD(pr.saldo)}</b><span>Saldo previsto</span></div>
@@ -16769,7 +16769,7 @@ const UIC = {
     const ok = rec.nossos.filter(x => x.pos).sort((a, b) => a.pos - b.pos);
     const fora = rec.nossos.filter(x => x.dnf);
     const nm = x => Engine.sobrenome(x.nome);
-    if(rec.nossos.length === 2 && ok.length === 2 && ok[0].pos === 1 && ok[1].pos === 2) return `Dobradinha. ${nm(ok[0])} na frente, ${nm(ok[1])} logo atrás. O tipo de domingo que paga um inverno inteiro.`;
+    if(rec.nossos.length === 2 && ok.length === 2 && ok[0].pos === 1 && ok[1].pos === 2) return `Dobradinha. ${nm(ok[0])} na frente, ${nm(ok[1])} logo atrás. O tipo de domingo que paga uma pré-temporada inteira.`;
     if(ok[0] && ok[0].pos === 1) return `${nm(ok[0])} venceu${rec.wet ? ' debaixo de chuva' : ''}. ${fora.length ? 'O outro carro não chegou, mas ninguém vai lembrar disso.' : 'A fábrica vai trabalhar sorrindo amanhã.'}`;
     if(ok[0] && ok[0].pos <= 3) return `Pódio com ${nm(ok[0])} em ${ord(ok[0].pos)}. ${ok[1] ? nm(ok[1]) + ' terminou em ' + ord(ok[1].pos) + '.' : ''}`;
     if(fora.length === 2) return 'Os dois carros fora. Um domingo que custa pontos, dinheiro de reparo e a paciência de quem assina os cheques.';
@@ -16883,7 +16883,7 @@ const UIC = {
     const f1 = r.cat === 'Fórmula 1';
     let nar;
     if(r.excluida) nar = 'Um ano que vai ficar nos livros pelo motivo errado: a equipe foi excluída do campeonato de construtores.';
-    else if(r.pos === 1) nar = `Campeã. A ${esc(C.eq.nome)} termina ${r.ano} no topo${b.nossoCampeao ? ', com o campeão entre os pilotos' : ''}. É para isso que se passa o inverno inteiro na fábrica.`;
+    else if(r.pos === 1) nar = `Campeã. A ${esc(C.eq.nome)} termina ${r.ano} no topo${b.nossoCampeao ? ', com o campeão entre os pilotos' : ''}. É para isso que se passa a pré-temporada inteira na fábrica.`;
     else if(r.pos < r.rankCarro) nar = `O carro era o ${ord(r.rankCarro)} do grid e a equipe terminou em ${ord(r.pos)}. Os pilotos e o box tiraram mais do que o material permitia.`;
     else if(r.pos > r.rankCarro + 1) nar = `O carro era o ${ord(r.rankCarro)} do grid e a equipe terminou em ${ord(r.pos)}. Ficou ponto pelo caminho — quebra, erro ou azar.`;
     else nar = `${ord(r.pos)} nos construtores, mais ou menos onde o carro permitia. Nem milagre, nem desastre.`;
@@ -17002,7 +17002,7 @@ const UIC = {
     if(d){
       const p = C.pilotos.find(x => x.id === d.pid);
       if(!p){ inv.decisoes.shift(); return UIC.inverno(); }
-      UI.modal(UI.head('Proposta pelo seu piloto', 'Inverno de ' + C.ano, false) +
+      UI.modal(UI.head('Proposta pelo seu piloto', 'Pré-temporada de ' + C.ano, false) +
         `<div class="mbd"><div class="res-nar" style="margin-top:0">A ${esc(d.eq)} quer ${esc(p.nome)} para ${C.ano}. Ele ainda tem contrato com você até ${p.ate} — e quer ir.</div>
           <button class="dil" onclick="UIC.saidaOp('liberar')"><b>Liberar por ${fmtD(d.multa)}</b><span>A multa entra no caixa e a vaga abre.</span></button>
           <button class="dil" onclick="UIC.saidaOp('aumento')"><b>Oferecer aumento de 40%</b><span>Pode resolver. Pode só adiar.</span></button>
@@ -17010,7 +17010,7 @@ const UIC = {
       return;
     }
     if(!inv.msgs.length) return;
-    UI.modal(UI.head('Inverno de ' + C.ano, 'O que mudou desde a última bandeirada') +
+    UI.modal(UI.head('Pré-temporada de ' + C.ano, 'O que mudou desde a última bandeirada') +
       `<div class="mbd">${inv.msgs.map(m => `<div class="ch-news">${esc(m.t)}</div>`).join('')}</div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Entendido</button></div>`);
     inv.msgs = [];
@@ -17073,7 +17073,7 @@ const UIC = {
           · ${p.aporte ? 'traz ' + fmtD(p.aporte) + (p.pede ? ' e pede ' + fmtD(p.pede) : '') : 'pede ' + fmtD(p.pede) + ' por ano'}
           ${p.eqHist ? '<br>Na história, corre pela ' + esc(p.eqHist) + ' em ' + C.ano + '.' : ''}</div></button>`;
     };
-    UI.modal(UI.head('Mercado de pilotos', `${resta} conversa(s) sobrando neste inverno`) +
+    UI.modal(UI.head('Mercado de pilotos', `${resta} conversa(s) sobrando nesta pré-temporada`) +
       `<div class="mbd">
         <span class="lbl">Seus pilotos</span>
         <div style="margin:8px 0 16px">${atuais.map(minha).join('') || '<div class="empty" style="padding:10px 0">Ninguém sob contrato.</div>'}</div>
@@ -17247,7 +17247,7 @@ const UIC = {
       <div class="od">Pede ${fmtD(s.sal)} por ano. ${Chefe.interesseTxt(Chefe.chanceStaff(s, 1))[0]}.</div>
       <div class="ch-opts" style="margin-top:8px">${[[1, 'O pedido'], [1.25, '+25%'], [1.5, '+50%']].map(([m, n]) =>
         `<button class="ch-opt" ${resta ? '' : 'disabled'} onclick="UIC.contratarStaff(${i},${m})">${n} · ${fmtD(s.sal * m)}</button>`).join('')}</div></div>`;
-    UI.modal(UI.head('Engenharia', `${resta} conversa(s) sobrando neste inverno`) +
+    UI.modal(UI.head('Engenharia', `${resta} conversa(s) sobrando nesta pré-temporada`) +
       `<div class="mbd"><span class="lbl">A sua equipe técnica</span><div style="margin:8px 0 16px">${atual}</div>
         <span class="lbl">Disponíveis</span><div style="margin-top:8px">${inv.staffMerc.map(cand).join('') || '<div class="empty">Ninguém.</div>'}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
@@ -17366,7 +17366,7 @@ const UIC = {
       `<div class="mbd"><div class="res-nar" style="margin-top:0">${op.topo
         ? 'A inscrição, a fábrica maior e o primeiro carro de verdade. A Fórmula 1 exige estrutura' + (C.ano >= 1990 ? ', e a federação decide quem entra' : '') + '. Os garotos da base vão ter de provar que servem para o grid — ou dar lugar a quem sirva.'
         : 'Carro novo, grid mais forte, orçamento maior. Os pilotos também pagam mais para correr lá.'}</div>
-        ${op.negado ? '<p class="mut" style="font-size:13px">A federação já respondeu neste inverno.</p>'
+        ${op.negado ? '<p class="mut" style="font-size:13px">A federação já respondeu nesta pré-temporada.</p>'
           : op.ok ? '' : `<p class="mut" style="font-size:13px">Para subir é preciso terminar entre os três primeiros ou ter reputação ${op.repMin}. Hoje: ${Math.round(C.rep)}.</p>`}
         ${op.banca && op.ok ? `<div class="ch-card"><div class="oh"><span class="on">${esc(op.banca.quem)}</span><span class="oc">${op.banca.pct}%</span></div>
           <div class="od">Paga a inscrição e põe mais ${fmtD(op.banca.capital)} no caixa, em troca de ${op.banca.pct}% da equipe.${C.part - op.banca.pct < 50 ? ' <b style="color:var(--orange)">Você perde a maioria e passa a responder a um conselho.</b>' : ''}</div>

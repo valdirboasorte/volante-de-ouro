@@ -31,12 +31,12 @@ ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
   erra mais nos anos 50 do que hoje. Depois da bandeirada o dado real volta e
   diz o que era verdade: o que fica guardado é o conhecimento da pista e o
   histórico de acertos do engenheiro.
-- **O inverno** no lugar da planilha de pré-temporada. Quatro meses e duas ou
+- **A pré-temporada** no lugar de uma planilha. Quatro meses e duas ou
   três decisões: morar perto da fábrica, um preparador físico de verdade,
   simulador até enjoar, uma temporada paralela com risco real, semanas de kart
-  na chuva, sumir do mundo, ou passar o inverno aparecendo. Cada uma pode sair
+  na chuva, sumir do mundo, ou passar a pré-temporada aparecendo. Cada uma pode sair
   melhor do que devia, funcionar, ficar no meio do caminho ou dar errado, e
-  março responde em prosa. Passar o inverno num lugar acaba formando você.
+  março responde em prosa. Passar a pré-temporada num lugar acaba formando você.
 - **Traços que ninguém te contou**: todo piloto nasce com uma ou duas coisas —
   homem de chuva, piloto de uma volta só, piloto de domingo, sangue-frio, mão
   pesada, racha sob pressão. Valem desde a primeira corrida e não aparecem em
@@ -258,7 +258,7 @@ local, marca nacional ou grande anunciante, conforme o que você entregou na
 pista. Quem não vence continua sentindo o bolso: sem orçamento, o mercado
 mostra as escadas mais baratas em vez de encerrar a carreira.
 
-## Gente
+## Parceiros
 
 O paddock não é uma barra de 0 a 100. Cada pessoa tem um jeito — fechado,
 orgulhoso, leal, político, inseguro, ambicioso, veterano cansado — que muda
@@ -359,7 +359,7 @@ tempo, e se a conta não fecha o mercado mostra rotas mais baratas.
 ## Uma janela por vez
 
 Nada nunca abre por cima do que você está lendo. Acontecimento, cobrança de
-promessa, convite de outra categoria, mesa de patrocínio, inverno: quem chega
+promessa, convite de outra categoria, mesa de patrocínio, pré-temporada: quem chega
 e encontra a tela ocupada entra numa fila e espera a vez.
 
 ## As categorias nacionais são nacionais
