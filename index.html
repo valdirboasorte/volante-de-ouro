@@ -6399,6 +6399,18 @@ const Engine = {
      uma sobe ou desce com memória — quem está bem tende a continuar bem —,
      e a cada cinco anos um regulamento novo mexe mais no grid. A conta é a
      mesma em qualquer modo e em qualquer save: depende só da equipe e do ano. */
+  /* A forma de uma estrutura da base muda de um ano para o outro, com
+     memória: a equipe campeã tende a seguir forte, mas perde engenheiro,
+     perde piloto e cai. Mesma conta em qualquer modo e em qualquer save. */
+  formaBase(chave, nome, ano){
+    let d = 0;
+    for(let y = ano - 6; y <= ano; y++){
+      const u = seedOf('fb' + chave + nome + y);
+      const g = ((u % 1000) + ((u >>> 10) % 1000) + ((u >>> 20) % 1000)) / 1000 - 1.5;
+      d = d * .6 + g * 2;
+    }
+    return d;
+  },
   derivaEquipe(sk, nome, year){
     const H = Engine.HORIZONTE;
     if(year <= H) return 0;
@@ -6483,7 +6495,7 @@ const Engine = {
     const ult = Math.max(1, names.length - 1);
     return names.map((n,i)=>({
       id:'t'+i, name:n, color:Engine.jrColor(i),
-      str: clamp(Math.round(86 - (i / ult) * faixa), 45, 95)
+      str: clamp(Math.round(86 - (i / ult) * faixa + Engine.formaBase(sk + cat, n, year) * faixa * .3), 45, 95)
     }));
   },
   jrColor(i){
@@ -15645,7 +15657,7 @@ const Chefe = {
     const nomes = Engine.jrTeamNames(C.cat, n + 1, era.id, 'f1', false).filter(x => x !== C.eq.nome).slice(0, n);
     return nomes.map((nm, i) => ({
       id:'j' + i, name:nm, color: Engine.jrColor(i),
-      str: Math.round(info.base + (1 - i / Math.max(1, n - 1)) * 9 - 4 + ((seedOf(nm + ano) % 5) - 2))
+      str: Math.round(info.base + (1 - i / Math.max(1, n - 1)) * 9 - 4 + Engine.formaBase('f1' + C.cat, nm, ano) * 2.7)
     }));
   },
   /* quem corre na base: os nomes reais daquele ano, os futuros pilotos de
