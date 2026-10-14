@@ -10328,7 +10328,7 @@ const Mundo = {
     W.nome[o.n] = id;
     return rec;
   },
-  porNome(W, n){ const id = W.nome[n]; return id ? W.p[id] : null; },
+  porNome(W, n){ const id = W.nome[n]; return id ? W.p[id] || null : null; },
   idade(rec, ano){ return ano - rec.nasc; },
   ativos(W){ return Object.values(W.p).filter(r => r.st !== 'f'); },
   noDegrau(W, g){ return Object.values(W.p).filter(r => r.st === 'a' && r.g === g); },
@@ -10581,7 +10581,7 @@ const Mundo = {
     Mundo.ativos(W).forEach(r => {
       if(r.st === 'a' && r.g != null){
         r.hs.push([prev, r.g, r.eq || '', r.psAno === prev ? r.ps : null]);
-        if(r.hs.length > 18) r.hs.shift();
+        if(r.hs.length > 12) r.hs.shift();
       }
     });
     /* 1. idade e forma */
@@ -10613,7 +10613,7 @@ const Mundo = {
       if(reais.length) comReal.add(g);
       reais.forEach(r => fixados.add(r.id));
     }
-    Mundo.ativos(W).forEach(r => { r.projetado = 0; });
+    Mundo.ativos(W).forEach(r => { delete r.projetado; });
     Mundo.posicionarFuturos(W, ano);
     Mundo.ativos(W).forEach(r => { if(r.projetado && r.g != null) fixados.add(r.id); });
     /* 5. a base: quem sai, quem sobe, quem entra */
@@ -10840,10 +10840,18 @@ const Mundo = {
   /* ── cuidado com o tamanho do save ── */
   podar(W, ano){
     Object.values(W.p).forEach(r => {
-      if(r.st !== 'f' || r.jog || r.marcou) return;
+      if(r.st !== 'f' || r.jog || r.exNosso) return;
       const chegou = r.hs.some(h => h[1] === 0);
-      if(!chegou && ano - (r.fim || ano) > 6){ delete W.nome[r.n]; delete W.p[r.id]; }
-      else if(chegou && r.hs.length > 6) r.hs = r.hs.slice(-6);
+      /* quem parou sem chegar à principal sai do registro; o nome fica
+         reservado, para nunca reaparecer como outra pessoa */
+      if(!chegou && ano - (r.fim || ano) > 2){ W.nome[r.n] = 0; delete W.p[r.id]; return; }
+      /* quem chegou lá fica para sempre, só com o essencial */
+      if(chegou && !r.compacto){
+        ['eq','ate','ad','ps','psN','psAno','camp','campAno','pk','dc','fa','pt','semVaga','mudou','estreouTopo','realAno','entrou']
+          .forEach(k => delete r[k]);
+        if(r.hs.length > 8) r.hs = r.hs.slice(-8);
+        r.compacto = 1;
+      }
     });
   },
 
