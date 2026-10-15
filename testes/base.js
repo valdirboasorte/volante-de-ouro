@@ -12,6 +12,7 @@ function fakeEl(){
       toggle:(c, f) => { (f === undefined ? !cl.has(c) : f) ? cl.add(c) : cl.delete(c); }, contains:c => cl.has(c) },
     get value(){ return this._v; }, set value(v){ this._v = String(v); },
     addEventListener(){}, appendChild(){}, focus(){}, scrollIntoView(){}, setAttribute(){}, getAttribute(){ return null; },
+    play(){ return Promise.resolve(); }, pause(){}, load(){},
     querySelector(){ return fakeEl(); }, querySelectorAll(){ return []; },
     getBoundingClientRect(){ return { top:0, left:0, width:0, height:0, right:0, bottom:0 }; }
   };
@@ -38,6 +39,10 @@ function carregar(opts){
   };
   ctx.window = ctx; ctx.self = ctx;
   vm.createContext(ctx);
+  /* o banco histórico, que a página carrega por <script src> antes do jogo */
+  const HISTARQ = require('path').join(__dirname, '..', 'dados', 'historico.js');
+  if(!opts.semHistorico && fs.existsSync(HISTARQ)) vm.runInContext(fs.readFileSync(HISTARQ, 'utf8'), ctx, { filename:'historico.js' });
+  if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
   const run = c => vm.runInContext(c, ctx);
@@ -78,6 +83,8 @@ function temporada(J, politica){
     if(politica === 'ficar' && of.team && S().team && of.team.name === S().team.name) v += 500;
     if(v > nota){ nota = v; melhor = i; }
   });
+  /* a política pode ser uma função que escolhe a proposta pelo índice */
+  if(typeof politica === 'function'){ const i = politica(ofs, S()); if(i != null && i >= 0) melhor = i; }
   if(melhor < 0) return { sea, sum, fim:'nada cabia' };
   J.run(`Game.takeOffer(${melhor}); UI.limparFila(); UI.close();`);
   return { sea, sum };

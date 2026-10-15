@@ -15,6 +15,11 @@ desktop.ini
 *.swp
 .claude/
 
+# Banco histórico: páginas baixadas e leituras intermediárias (o importador refaz)
+ferramentas/historico/cache/
+ferramentas/historico/brutos/
+ferramentas/historico/*.log
+
 # Capturas das ferramentas de design
 .taste-skill/inspect/
 .taste-skill/telas/

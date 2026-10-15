@@ -1,0 +1,436 @@
+[
+ {
+  "sk": "f1",
+  "ano": 1951,
+  "piloto": "Gerard",
+  "equipeJogo": "BRM",
+  "wikipedia": "Bob Gerard"
+ },
+ {
+  "sk": "f1",
+  "ano": 1952,
+  "piloto": "Salvadori",
+  "equipeJogo": "Connaught",
+  "wikipedia": "G. Caprara"
+ },
+ {
+  "sk": "f1",
+  "ano": 1952,
+  "piloto": "Rosier",
+  "equipeJogo": "Talbot-Lago",
+  "wikipedia": "Écurie Rosier"
+ },
+ {
+  "sk": "f1",
+  "ano": 1953,
+  "piloto": "Rosier",
+  "equipeJogo": "Talbot-Lago",
+  "wikipedia": "Ecurie Rosier"
+ },
+ {
+  "sk": "f1",
+  "ano": 1954,
+  "piloto": "Schell",
+  "equipeJogo": "Vanwall",
+  "wikipedia": "Officine Alfieri Maserati / Harry Schell"
+ },
+ {
+  "sk": "f1",
+  "ano": 1954,
+  "piloto": "Salvadori",
+  "equipeJogo": "Connaught",
+  "wikipedia": "Gilby Engineering"
+ },
+ {
+  "sk": "f1",
+  "ano": 1955,
+  "piloto": "Salvadori",
+  "equipeJogo": "Connaught",
+  "wikipedia": "Gilby Engineering"
+ },
+ {
+  "sk": "f1",
+  "ano": 1956,
+  "piloto": "Salvadori",
+  "equipeJogo": "Connaught",
+  "wikipedia": "Gilby Engineering"
+ },
+ {
+  "sk": "f1",
+  "ano": 1956,
+  "piloto": "Bonnier",
+  "equipeJogo": "Cooper",
+  "wikipedia": "Officine Alfieri Maserati"
+ },
+ {
+  "sk": "f1",
+  "ano": 1956,
+  "piloto": "Musso",
+  "equipeJogo": "Kurtis Kraft",
+  "wikipedia": "Scuderia Ferrari"
+ },
+ {
+  "sk": "f1",
+  "ano": 1957,
+  "piloto": "Bonnier",
+  "equipeJogo": "Porsche",
+  "wikipedia": "Scuderia Centro Sud / Jo Bonnier"
+ },
+ {
+  "sk": "f1",
+  "ano": 1957,
+  "piloto": "Gregory",
+  "equipeJogo": "BRM",
+  "wikipedia": "Scuderia Centro Sud"
+ },
+ {
+  "sk": "f1",
+  "ano": 1958,
+  "piloto": "Gregory",
+  "equipeJogo": "Porsche",
+  "wikipedia": "H.H. Gould / Scuderia Centro Sud / Temple Buell"
+ },
+ {
+  "sk": "f1",
+  "ano": 1960,
+  "piloto": "Bianchi",
+  "equipeJogo": "Scuderia Centro Sud",
+  "wikipedia": "Fred Tuck Cars / Equipe Nationale Belge"
+ },
+ {
+  "sk": "f1",
+  "ano": 1961,
+  "piloto": "Bianchi",
+  "equipeJogo": "Scuderia Centro Sud",
+  "wikipedia": "Equipe Nationale Belge / UDT Laystall Racing Team"
+ },
+ {
+  "sk": "f1",
+  "ano": 1962,
+  "piloto": "Siffert",
+  "equipeJogo": "Rob Walker",
+  "wikipedia": "Ecurie Nationale Suisse / Ecurie Filipinetti"
+ },
+ {
+  "sk": "f1",
+  "ano": 1963,
+  "piloto": "Bianchi",
+  "equipeJogo": "Scirocco",
+  "wikipedia": "Reg Parnell Racing"
+ },
+ {
+  "sk": "f1",
+  "ano": 1963,
+  "piloto": "Siffert",
+  "equipeJogo": "Rob Walker",
+  "wikipedia": "Siffert Racing Team"
+ },
+ {
+  "sk": "f1",
+  "ano": 1969,
+  "piloto": "Courage",
+  "equipeJogo": "Parnell",
+  "wikipedia": "Frank Williams Racing Cars"
+ },
+ {
+  "sk": "f1",
+  "ano": 1973,
+  "piloto": "Beuttler",
+  "equipeJogo": "Ensign",
+  "wikipedia": "Clarke-Mordaunt-Guthrie Racing / Team Pierre Robert"
+ },
+ {
+  "sk": "f1",
+  "ano": 1974,
+  "piloto": "Watson",
+  "equipeJogo": "Surtees",
+  "wikipedia": "John Goldie Racing with Hexagon / John Goldie Racing with Radio Luxembourg / Allied Polymer Group"
+ },
+ {
+  "sk": "f1",
+  "ano": 1974,
+  "piloto": "Schenken",
+  "equipeJogo": "Ensign",
+  "wikipedia": "John Player Team Lotus / Trojan-Tauranac Racing"
+ },
+ {
+  "sk": "f1",
+  "ano": 1976,
+  "piloto": "Ribeiro",
+  "equipeJogo": "Ensign",
+  "wikipedia": "Hesketh Racing / Penthouse Rizla+. Racing with Hesketh"
+ },
+ {
+  "sk": "f1",
+  "ano": 1977,
+  "piloto": "Tambay",
+  "equipeJogo": "McLaren",
+  "wikipedia": "Durex Team Surtees / Beta Team Surtees / Team Tissot Ensign with Castrol / Theodore Racing Hong Kong"
+ },
+ {
+  "sk": "f1",
+  "ano": 1977,
+  "piloto": "Fittipaldi",
+  "equipeJogo": "Copersucar",
+  "wikipedia": "Fittipaldi Automotive"
+ },
+ {
+  "sk": "f1",
+  "ano": 1977,
+  "piloto": "Merzario",
+  "equipeJogo": "Williams",
+  "wikipedia": "Ambrosio Shadow Racing / Ambrosio Tabatip Shadow Racing / Ambrosio Villiger Shadow Racing / Team Merzario"
+ },
+ {
+  "sk": "f1",
+  "ano": 1978,
+  "piloto": "Fittipaldi",
+  "equipeJogo": "Copersucar",
+  "wikipedia": "Fittipaldi Automotive"
+ },
+ {
+  "sk": "f1",
+  "ano": 1978,
+  "piloto": "Rebaque",
+  "equipeJogo": "Hesketh",
+  "wikipedia": "Team Rebaque"
+ },
+ {
+  "sk": "f1",
+  "ano": 1978,
+  "piloto": "Merzario",
+  "equipeJogo": "Williams",
+  "wikipedia": "Team Merzario"
+ },
+ {
+  "sk": "f1",
+  "ano": 1979,
+  "piloto": "Fittipaldi",
+  "equipeJogo": "Copersucar",
+  "wikipedia": "Fittipaldi Automotive"
+ },
+ {
+  "sk": "f1",
+  "ano": 1981,
+  "piloto": "Salazar",
+  "equipeJogo": "ATS",
+  "wikipedia": "Ensign Racing / March Grand Prix Team / Guinness RIzla+. March"
+ },
+ {
+  "sk": "f1",
+  "ano": 2006,
+  "piloto": "Monteiro",
+  "equipeJogo": "Midland",
+  "wikipedia": "MF1 Racing"
+ },
+ {
+  "sk": "f1",
+  "ano": 2006,
+  "piloto": "Albers",
+  "equipeJogo": "Midland",
+  "wikipedia": "MF1 Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 1996,
+  "piloto": "Fernández",
+  "equipeJogo": "Galles Racing",
+  "wikipedia": "Tasman Motorsports Group"
+ },
+ {
+  "sk": "indy",
+  "ano": 1996,
+  "piloto": "Papis",
+  "equipeJogo": "All American Racers",
+  "wikipedia": "Arciero-Wells Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 1997,
+  "piloto": "Fernández",
+  "equipeJogo": "All American Racers",
+  "wikipedia": "Tasman Motorsports"
+ },
+ {
+  "sk": "indy",
+  "ano": 1997,
+  "piloto": "Franchitti",
+  "equipeJogo": "Team Green",
+  "wikipedia": "Hogan Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 1998,
+  "piloto": "Papis",
+  "equipeJogo": "Payton/Coyne",
+  "wikipedia": "Arciero-Wells Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2000,
+  "piloto": "Hornish Jr.",
+  "equipeJogo": "Panther",
+  "wikipedia": "?"
+ },
+ {
+  "sk": "indy",
+  "ano": 2000,
+  "piloto": "Sharp",
+  "equipeJogo": "Foyt",
+  "wikipedia": "?"
+ },
+ {
+  "sk": "indy",
+  "ano": 2000,
+  "piloto": "Fernández",
+  "equipeJogo": "Forsythe",
+  "wikipedia": "Patrick Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2001,
+  "piloto": "Sharp",
+  "equipeJogo": "Foyt",
+  "wikipedia": "Kelley Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2001,
+  "piloto": "M. Andretti",
+  "equipeJogo": "Newman/Haas",
+  "wikipedia": "Team Motorola"
+ },
+ {
+  "sk": "indy",
+  "ano": 2001,
+  "piloto": "Fernández",
+  "equipeJogo": "Forsythe",
+  "wikipedia": "Fernández Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2002,
+  "piloto": "Sharp",
+  "equipeJogo": "Foyt",
+  "wikipedia": "Kelley Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2002,
+  "piloto": "Meira",
+  "equipeJogo": "Dreyer & Reinbold",
+  "wikipedia": "Team Menard"
+ },
+ {
+  "sk": "indy",
+  "ano": 2002,
+  "piloto": "Fernández",
+  "equipeJogo": "Forsythe",
+  "wikipedia": "Fernández Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2003,
+  "piloto": "Meira",
+  "equipeJogo": "Foyt",
+  "wikipedia": "Team Menard"
+ },
+ {
+  "sk": "indy",
+  "ano": 2003,
+  "piloto": "Fernández",
+  "equipeJogo": "Forsythe",
+  "wikipedia": "Fernández Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2004,
+  "piloto": "Fernández",
+  "equipeJogo": "Forsythe",
+  "wikipedia": "Fernández Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2005,
+  "piloto": "Sharp",
+  "equipeJogo": "Dreyer & Reinbold",
+  "wikipedia": "Aguri-Fernández Racing / Delphi Fernández Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2006,
+  "piloto": "Rice",
+  "equipeJogo": "Rahal Letterman",
+  "wikipedia": "Forsythe Championship Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2006,
+  "piloto": "Scheckter",
+  "equipeJogo": "Dreyer & Reinbold",
+  "wikipedia": "Vision Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2008,
+  "piloto": "Junqueira",
+  "equipeJogo": "Foyt",
+  "wikipedia": "Dale Coyne Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2009,
+  "piloto": "Junqueira",
+  "equipeJogo": "Foyt",
+  "wikipedia": "Conquest Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2009,
+  "piloto": "Matos",
+  "equipeJogo": "Dreyer & Reinbold",
+  "wikipedia": "Luczo-Dragon Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2009,
+  "piloto": "Rahal",
+  "equipeJogo": "Vision",
+  "wikipedia": "Newman/Haas/Lanigan Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2010,
+  "piloto": "Rahal",
+  "equipeJogo": "Dale Coyne",
+  "wikipedia": "Dreyer & Reinbold Racing / Newman/Haas Racing / Newman/Haas/Lanigan Racing / Rahal Letterman Racing / Sarah Fisher Racing / Newman/Haas Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2015,
+  "piloto": "Newgarden",
+  "equipeJogo": "Ed Carpenter",
+  "wikipedia": "CFH Racing"
+ },
+ {
+  "sk": "indy",
+  "ano": 2018,
+  "piloto": "Chilton",
+  "equipeJogo": "Dale Coyne",
+  "wikipedia": "Carlin"
+ },
+ {
+  "sk": "indy",
+  "ano": 2018,
+  "piloto": "Kimball",
+  "equipeJogo": "A.J. Foyt",
+  "wikipedia": "Carlin"
+ },
+ {
+  "sk": "indy",
+  "ano": 2025,
+  "piloto": "Ilott",
+  "equipeJogo": "Juncos Hollinger",
+  "wikipedia": "PREMA Racing"
+ }
+]

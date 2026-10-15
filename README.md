@@ -153,6 +153,63 @@ segundos é o que separa rápido de campeão.
 Três a seis candidatos ao título por temporada concentram os pontos, para que
 o campeonato vá até o fim.
 
+## Os campeonatos reais
+
+O jogo traz um catálogo de 122 campeonatos reais, de 1950 a hoje: F1 e tudo o
+que leva a ela (F2, F3000, GP2, F3 europeias e nacionais, Fórmula Regional,
+Fórmula Renault, F4, Fórmula Ford, Vee, kart), a escada americana (AAA, USAC,
+CART, IndyCar, Indy Lights, Indy Pro 2000, USF2000, Atlantic), turismo, GT,
+endurance, stock e Fórmula E. Cada um tem o nome oficial de cada época, país,
+nível, tipo, sucessor e, temporada a temporada, o que se sabe dela: a lista de
+inscritos com equipe, carro e número, a classificação final, o campeão e o
+calendário.
+
+Esses dados saem da Wikipedia em inglês, uma página por temporada, e cada
+temporada guarda de onde veio (a página e a revisão lida). **Nada ali é dado
+como verificado**: é uma fonte só. Uma temporada aparece como *grid real* quando
+a lista de inscritos foi lida; como *só a classificação* quando a página tem
+apenas a tabela final (quem não pontuou pode faltar); e como *pendente* quando
+não há página ou a tabela não pôde ser lida. Nessas, o grid continua simulado,
+como sempre foi, e o jogo não inventa nome nenhum no lugar.
+
+No jogo isso aparece de três jeitos:
+
+- **O grid ao seu lado é o de verdade.** Na F3 britânica de 1995 você corre
+  contra da Matta, Firman e Castroneves; na F3 Euro Series de 2005, contra
+  Hamilton, Vettel e Sutil. Quem chegou à F1 no jogo tem o mesmo nome nos dois
+  lugares, então o garoto que você enfrentou na base é o mesmo que aparece no
+  grid da F1 anos depois.
+- **A janela Campeonatos** (no menu do topo) lista todos, com filtros por ano,
+  região, país, nível, tipo e situação, e mostra cada temporada: pilotos na
+  ordem do campeonato, equipe e carro, campeão, calendário, campeões de todos os
+  anos e a faixa de cobertura (verde: grid lido; amarelo: só a classificação).
+- **Todos os campeonatos são jogáveis.** No formulário de carreira, o
+  campeonato de estreia pode ser qualquer um que existia naquele ano e aceita
+  a sua idade, de qualquer país e de qualquer tipo de carro — F3 japonesa,
+  BTCC, Super GT, Supercars, Fórmula Ford, kart. O jogo encaixa cada um numa
+  carreira e num degrau: o BTCC na escada do DTM, o Super GT na do endurance,
+  a F3 japonesa na da F1. Durante a carreira, a janela Campeonatos oferece
+  trocar o campeonato do seu degrau por outro do mesmo nível.
+- **Convites conforme o desempenho.** No fim de cada temporada, campeonatos
+  reais de qualquer país podem ligar, com uma equipe que de fato corria ali:
+  quem foi bem recebe convites do mesmo nível e de um acima, quem foi muito bem
+  recebe mais e de equipes melhores, quem foi mal às vezes recebe um convite
+  para recomeçar um degrau abaixo. Aceitar pode mudar de carreira — do BTCC
+  para a Stock Car, por exemplo.
+- **Grid, equipes e calendário reais.** Quando a temporada tem fonte, o grid é
+  o de verdade e as pistas são as daquele ano, na ordem real (BTCC 2020:
+  Donington, Brands Hatch, Oulton Park, Knockhill…), desde que o jogo tenha os
+  circuitos; senão, o calendário é montado como antes.
+- **Dos 8 anos em diante.** A carreira pode começar aos 8, no kart. Ninguém
+  sobe antes da idade do degrau: kart até os 14 (o Mundial a partir dos 12), F4
+  e Fórmula Ford aos 15, F3 aos 16, F2 aos 17 e F1 aos 17 (18 a partir de 2016).
+
+A escada também deixou de ter anacronismo: o degrau abaixo da F1 é a Fórmula 2
+europeia até 1984, a F3000 de 1985 a 2004, a GP2 de 2005 a 2016 e a Fórmula 2
+a partir de 2017; a Fórmula Júnior some em 1963; a Fórmula Ford Brasil só
+existe de 1971 a 1995. O que falta, campeonato por campeonato, está em
+[`ferramentas/historico/RELATORIO.md`](ferramentas/historico/RELATORIO.md).
+
 ## Um mundo que continua
 
 Os pilotos vivem num registro persistente, um por categoria principal. Cada um
@@ -427,8 +484,9 @@ index.html      o jogo inteiro — HTML, CSS, dados e motor de simulação
 assets/         fotografias, filme de 1906, logos das categorias e credits.json
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
+dados/          o banco histórico (historico.js), gerado por ferramentas/historico
 testes/         verificações que rodam no Node, sem navegador (não vão para o site)
-ferramentas/    geração dos traçados reais e capturas de tela (não vão para o site)
+ferramentas/    geração dos traçados reais, do banco histórico e capturas de tela
 ```
 
 ## Testes
@@ -450,8 +508,19 @@ IndyCar e um da F2), a corrida contada volta a volta (de 1975 a 2024, do kart
 à F1: termina na ordem do resultado, volta mais rápida certa, todo abandono
 acontece na pista, a tabela da bandeirada é a classificação final, ninguém fica
 trocando de posição com o mesmo carro volta sim, volta não), o clique duplo nos
-botões que avançam o jogo, um save feito pela versão anterior abrindo na atual e
-o tamanho do save em carreiras de 25 anos.
+botões que avançam o jogo, um save feito pela versão anterior abrindo na atual,
+o tamanho do save em carreiras de 25 anos e o banco histórico (nenhum
+anacronismo nas escadas de 1950, 1960, 1975, 1985, 1995, 2005, 2015 e 2026, o
+grid real aparecendo na carreira, a escolha de campeonato de estreia e um save
+de antes do banco abrindo e seguindo sem piloto duplicado).
+
+Para atualizar o banco histórico (baixa só o que não está no cache; veja
+[`ferramentas/historico/LEIAME.md`](ferramentas/historico/LEIAME.md)):
+
+```bash
+node ferramentas/historico/importar.mjs todos
+node ferramentas/historico/gerar.mjs
+```
 
 Para refazer os traçados reais a partir dos arquivos de origem, e as capturas
 das telas internas (precisa do Chrome e da skill de design instalada):
@@ -479,6 +548,12 @@ são geradas pelo jogo e **não são declarações reais dessas pessoas ou veíc
 
 Se você é dono de alguma dessas imagens ou perfis e quer que seja retirado,
 abra uma issue — sai na hora.
+
+**Campeonatos e temporadas.** As listas de inscritos, classificações,
+campeões e calendários do banco histórico foram lidos das páginas de
+temporada da Wikipedia em inglês (texto sob CC BY-SA 4.0), pela API pública
+do MediaWiki; cada temporada guarda a página e a revisão de origem, e a janela
+Campeonatos do jogo leva direto a ela.
 
 **Traçados.** Os 40 traçados reais usados na corrida (50 circuitos do jogo,
 cada versão com o ano em que entrou em uso) vêm do

@@ -1,0 +1,5850 @@
+[
+ {
+  "nome": "Giuseppe Farina",
+  "jogo": "Farina",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1950–1957",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Juan Manuel Fangio",
+  "jogo": "Fangio",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1950–1958",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Luigi Fagioli",
+  "jogo": "Fagioli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1950–1951",
+  "camps": "f1"
+ },
+ {
+  "nome": "Alberto Ascari",
+  "jogo": "Ascari",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1950–1955",
+  "camps": "f1 aaa"
+ },
+ {
+  "nome": "Luigi Villoresi",
+  "jogo": "Villoresi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1950–1956",
+  "camps": "f1"
+ },
+ {
+  "nome": "José Froilán González",
+  "jogo": "González",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1950–1960",
+  "camps": "f1"
+ },
+ {
+  "nome": "Birabongse Bhanudej",
+  "jogo": "Bira",
+  "como": "escalacao",
+  "cc": "TH",
+  "anos": "1950–1954",
+  "camps": "f1"
+ },
+ {
+  "nome": "Louis Rosier",
+  "jogo": "Rosier",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1950–1956",
+  "camps": "f1"
+ },
+ {
+  "nome": "Robert Manzon",
+  "jogo": "Manzon",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1950–1956",
+  "camps": "f1"
+ },
+ {
+  "nome": "André Simon",
+  "jogo": "Simon",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1950–1957",
+  "camps": "f1"
+ },
+ {
+  "nome": "Bob Gerard",
+  "jogo": "Gerard",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1950–1957",
+  "camps": "f1"
+ },
+ {
+  "nome": "Felice Bonetto",
+  "jogo": "Bonetto",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1950–1953",
+  "camps": "f1"
+ },
+ {
+  "nome": "Paco Godia",
+  "jogo": "Godia",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "1951–1967",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Louis Chiron",
+  "jogo": "Chiron",
+  "como": "escalacao",
+  "cc": "MC",
+  "anos": "1950–1958",
+  "camps": "f1"
+ },
+ {
+  "nome": "Stirling Moss",
+  "jogo": "Moss",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1951–1981",
+  "camps": "f1 btcc"
+ },
+ {
+  "nome": "Piero Taruffi",
+  "jogo": "Taruffi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1950–1956",
+  "camps": "f1 aaa"
+ },
+ {
+  "nome": "Jean Behra",
+  "jogo": "Behra",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1951–1959",
+  "camps": "f1"
+ },
+ {
+  "nome": "Maurice Trintignant",
+  "jogo": "Trintignant",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1950–1964",
+  "camps": "f1"
+ },
+ {
+  "nome": "Peter Collins",
+  "jogo": "Collins",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1952–1958",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Mike Hawthorn",
+  "jogo": "Hawthorn",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1952–1958",
+  "camps": "f1"
+ },
+ {
+  "nome": "Roy Salvadori",
+  "jogo": "Salvadori",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1952–1963",
+  "camps": "f1 btcc"
+ },
+ {
+  "nome": "Onofre Marimón",
+  "jogo": "Marimón",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1951–1954",
+  "camps": "f1"
+ },
+ {
+  "nome": "Harry Schell",
+  "jogo": "Schell",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1950–1960",
+  "camps": "f1"
+ },
+ {
+  "nome": "Roberto Mieres",
+  "jogo": "Mieres",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1953–1955",
+  "camps": "f1"
+ },
+ {
+  "nome": "Eugenio Castellotti",
+  "jogo": "Castellotti",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1955–1957",
+  "camps": "f1"
+ },
+ {
+  "nome": "Luigi Musso",
+  "jogo": "Musso",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1953–1958",
+  "camps": "f1"
+ },
+ {
+  "nome": "Tony Brooks",
+  "jogo": "Brooks",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1956–1961",
+  "camps": "f1"
+ },
+ {
+  "nome": "Jo Bonnier",
+  "jogo": "Bonnier",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "1956–1971",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Carlos Menditeguy",
+  "jogo": "Menditeguy",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1953–1960",
+  "camps": "f1"
+ },
+ {
+  "nome": "Jack Brabham",
+  "jogo": "Brabham",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "1955–1984",
+  "camps": "f1 euro_f2 usac supercars wsc canam"
+ },
+ {
+  "nome": "Masten Gregory",
+  "jogo": "Gregory",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1957–1968",
+  "camps": "f1 usac canam"
+ },
+ {
+  "nome": "Bruce McLaren",
+  "jogo": "McLaren",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "1958–1970",
+  "camps": "f1 euro_f2 usac wsc canam"
+ },
+ {
+  "nome": "Jim Clark",
+  "jogo": "Clark",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1954–1968",
+  "camps": "f1 euro_f2 usac nascar_cup"
+ },
+ {
+  "nome": "Innes Ireland",
+  "jogo": "Ireland",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1959–1966",
+  "camps": "f1"
+ },
+ {
+  "nome": "John Surtees",
+  "jogo": "Surtees",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1960–1972",
+  "camps": "f1 euro_f2 usac canam"
+ },
+ {
+  "nome": "Graham Hill",
+  "jogo": "G. Hill",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1958–1975",
+  "camps": "f1 euro_f2 usac btcc canam"
+ },
+ {
+  "nome": "Richie Ginther",
+  "jogo": "Ginther",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1960–1967",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Lucien Bianchi",
+  "jogo": "Bianchi",
+  "como": "escalacao",
+  "cc": "BE",
+  "anos": "1959–1968",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Giancarlo Baghetti",
+  "jogo": "Baghetti",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1961–1967",
+  "camps": "f1"
+ },
+ {
+  "nome": "Dan Gurney",
+  "jogo": "Gurney",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1959–1980",
+  "camps": "f1 usac nascar_cup wsc canam"
+ },
+ {
+  "nome": "Lorenzo Bandini",
+  "jogo": "Bandini",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1961–1967",
+  "camps": "f1 usac wsc"
+ },
+ {
+  "nome": "Jo Siffert",
+  "jogo": "Siffert",
+  "como": "escalacao",
+  "cc": "CH",
+  "anos": "1962–1971",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Mike Spence",
+  "jogo": "Spence",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1963–1968",
+  "camps": "f1 euro_f2 f3_brit usac wsc canam"
+ },
+ {
+  "nome": "Pedro Rodríguez",
+  "jogo": "Rodríguez",
+  "como": "escalacao",
+  "cc": "MX",
+  "anos": "1963–1971",
+  "camps": "f1 euro_f2 usac canam"
+ },
+ {
+  "nome": "Mike Hailwood",
+  "jogo": "Hailwood",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1963–1974",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Richard Attwood",
+  "jogo": "Attwood",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1963–1984",
+  "camps": "f1 euro_f2 f3_brit wsc canam"
+ },
+ {
+  "nome": "Jackie Stewart",
+  "jogo": "Stewart",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1965–1973",
+  "camps": "f1 euro_f2 usac canam"
+ },
+ {
+  "nome": "Jochen Rindt",
+  "jogo": "Rindt",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "1964–1970",
+  "camps": "f1 euro_f2 usac"
+ },
+ {
+  "nome": "Denny Hulme",
+  "jogo": "Hulme",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "1963–1987",
+  "camps": "f1 euro_f2 f3_brit usac etcc supercars canam"
+ },
+ {
+  "nome": "Ludovico Scarfiotti",
+  "jogo": "Scarfiotti",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1963–1968",
+  "camps": "f1 canam"
+ },
+ {
+  "nome": "Jean-Pierre Beltoise",
+  "jogo": "Beltoise",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1966–1974",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Chris Amon",
+  "jogo": "Amon",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "1963–1976",
+  "camps": "f1 euro_f2 usac wsc canam"
+ },
+ {
+  "nome": "Johnny Servoz-Gavin",
+  "jogo": "Servoz-Gavin",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1967–1970",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Jacky Ickx",
+  "jogo": "Ickx",
+  "como": "escalacao",
+  "cc": "BE",
+  "anos": "1966–1985",
+  "camps": "f1 euro_f2 wsc canam"
+ },
+ {
+  "nome": "Piers Courage",
+  "jogo": "Courage",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1966–1970",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Emerson Fittipaldi",
+  "jogo": "Fittipaldi",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1969–2014",
+  "camps": "f1 euro_f2 f3_brit cart wec"
+ },
+ {
+  "nome": "Clay Regazzoni",
+  "jogo": "Regazzoni",
+  "como": "escalacao",
+  "cc": "CH",
+  "anos": "1968–1980",
+  "camps": "f1 euro_f2 usac"
+ },
+ {
+  "nome": "François Cevert",
+  "jogo": "Cevert",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1969–1973",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Peter Gethin",
+  "jogo": "Gethin",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1967–1974",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Jackie Oliver",
+  "jogo": "Oliver",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1967–1977",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Rolf Stommelen",
+  "jogo": "Stommelen",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1967–1983",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "Henri Pescarolo",
+  "jogo": "Pescarolo",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1967–1993",
+  "camps": "f1 euro_f2 wsc imsa canam"
+ },
+ {
+  "nome": "Andrea de Adamich",
+  "jogo": "de Adamich",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1967–1973",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Mario Andretti",
+  "jogo": "Andretti",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1964–1994",
+  "camps": "f1 cart usac wsc imsa canam"
+ },
+ {
+  "nome": "Ronnie Peterson",
+  "jogo": "Peterson",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "1970–1978",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Nanni Galli",
+  "jogo": "Galli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1967–1973",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Mike Beuttler",
+  "jogo": "Beuttler",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1968–1973",
+  "camps": "f1 euro_f2 f3_brit"
+ },
+ {
+  "nome": "Reine Wisell",
+  "jogo": "Wisell",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "1969–1974",
+  "camps": "f1 euro_f2 f3_brit canam"
+ },
+ {
+  "nome": "Tim Schenken",
+  "jogo": "Schenken",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "1968–1974",
+  "camps": "f1 euro_f2 f3_brit"
+ },
+ {
+  "nome": "Arturo Merzario",
+  "jogo": "Merzario",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1971–2009",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_italiana porsche_supercup gt_open canam"
+ },
+ {
+  "nome": "Peter Revson",
+  "jogo": "Revson",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1964–1974",
+  "camps": "f1 usac canam"
+ },
+ {
+  "nome": "Niki Lauda",
+  "jogo": "Lauda",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "1971–1985",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Howden Ganley",
+  "jogo": "Ganley",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "1971–1974",
+  "camps": "f1 canam"
+ },
+ {
+  "nome": "Carlos Reutemann",
+  "jogo": "Reutemann",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1970–1982",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Wilson Fittipaldi",
+  "jogo": "W. Fittipaldi",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1971–1975",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Carlos Pace",
+  "jogo": "Pace",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1970–1977",
+  "camps": "f1 euro_f2 f3_brit canam"
+ },
+ {
+  "nome": "Jody Scheckter",
+  "jogo": "Scheckter",
+  "como": "escalacao",
+  "cc": "ZA",
+  "anos": "1972–1980",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "Jochen Mass",
+  "jogo": "Mass",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1971–1991",
+  "camps": "f1 euro_f2 f3_alema dtm wsc"
+ },
+ {
+  "nome": "Jean-Pierre Jarier",
+  "jogo": "Jarier",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1971–2002",
+  "camps": "f1 euro_f2 fia_gt wsc imsa canam"
+ },
+ {
+  "nome": "Patrick Depailler",
+  "jogo": "Depailler",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1970–1980",
+  "camps": "f1 euro_f2 atlantic"
+ },
+ {
+  "nome": "Tom Pryce",
+  "jogo": "Pryce",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1973–1977",
+  "camps": "f1 euro_f2 atlantic"
+ },
+ {
+  "nome": "Hans-Joachim Stuck",
+  "jogo": "Stuck",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1971–2009",
+  "camps": "f1 euro_f2 dtm btcc fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Vittorio Brambilla",
+  "jogo": "Brambilla",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1970–1980",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "James Hunt",
+  "jogo": "Hunt",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1969–1979",
+  "camps": "f1 euro_f2 f3_brit canam"
+ },
+ {
+  "nome": "John Watson",
+  "jogo": "Watson",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1969–1990",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "François Migault",
+  "jogo": "Migault",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1971–2000",
+  "camps": "f1 euro_f2 fia_gt wsc imsa"
+ },
+ {
+  "nome": "Jacques Laffite",
+  "jogo": "Laffite",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1974–1992",
+  "camps": "f1 euro_f2 dtm"
+ },
+ {
+  "nome": "Brett Lunger",
+  "jogo": "Lunger",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1966–1978",
+  "camps": "f1 euro_f2 usac canam"
+ },
+ {
+  "nome": "Renzo Zorzi",
+  "jogo": "Zorzi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1975–1985",
+  "camps": "f1 f3_euro_7584 f3_brit wsc"
+ },
+ {
+  "nome": "Gunnar Nilsson",
+  "jogo": "Nilsson",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "1973–1977",
+  "camps": "f1 euro_f2 f3_brit etcc"
+ },
+ {
+  "nome": "Alex Ribeiro",
+  "jogo": "Ribeiro",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1975–1979",
+  "camps": "f1 euro_f2 f3_brit"
+ },
+ {
+  "nome": "Gilles Villeneuve",
+  "jogo": "G. Villeneuve",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "1974–1982",
+  "camps": "f1 atlantic"
+ },
+ {
+  "nome": "Patrick Tambay",
+  "jogo": "Tambay",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1974–1989",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "Riccardo Patrese",
+  "jogo": "Patrese",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1976–1993",
+  "camps": "f1 euro_f2 f3_euro_7584 wsc"
+ },
+ {
+  "nome": "Jean-Pierre Jabouille",
+  "jogo": "Jabouille",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1968–1992",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "Héctor Rebaque",
+  "jogo": "Rebaque",
+  "como": "escalacao",
+  "cc": "MX",
+  "anos": "1975–1982",
+  "camps": "f1 euro_f2 cart"
+ },
+ {
+  "nome": "Didier Pironi",
+  "jogo": "Pironi",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1977–1982",
+  "camps": "f1 euro_f2 f3_brit"
+ },
+ {
+  "nome": "Derek Daly",
+  "jogo": "Daly",
+  "como": "escalacao",
+  "cc": "IE",
+  "anos": "1977–1991",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit cart wsc imsa"
+ },
+ {
+  "nome": "Alan Jones",
+  "jogo": "Jones",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "1973–2002",
+  "camps": "f1 euro_f2 f3_brit cart usac supercars wsc canam"
+ },
+ {
+  "nome": "Nelson Piquet",
+  "jogo": "Piquet",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1977–1993",
+  "camps": "f1 f3_euro_7584 f3_brit cart"
+ },
+ {
+  "nome": "René Arnoux",
+  "jogo": "Arnoux",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1976–1989",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Elio de Angelis",
+  "jogo": "de Angelis",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1977–1986",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit"
+ },
+ {
+  "nome": "Alain Prost",
+  "jogo": "Prost",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1977–1993",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit"
+ },
+ {
+  "nome": "Nigel Mansell",
+  "jogo": "Mansell",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1978–2009",
+  "camps": "f1 euro_f2 f3_brit cart btcc fia_gt elms"
+ },
+ {
+  "nome": "Manfred Winkelhock",
+  "jogo": "Winkelhock",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1978–1985",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "Bruno Giacomelli",
+  "jogo": "Giacomelli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1976–1990",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit cart wsc"
+ },
+ {
+  "nome": "Marc Surer",
+  "jogo": "Surer",
+  "como": "escalacao",
+  "cc": "CH",
+  "anos": "1975–2005",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_alema porsche_supercup wsc"
+ },
+ {
+  "nome": "Eddie Cheever",
+  "jogo": "Cheever",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1975–2007",
+  "camps": "f1 euro_f2 f3_brit indy cart wsc grand_am"
+ },
+ {
+  "nome": "Andrea de Cesaris",
+  "jogo": "de Cesaris",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1978–1994",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit wsc"
+ },
+ {
+  "nome": "Derek Warwick",
+  "jogo": "Warwick",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1977–2007",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit porsche_supercup btcc wsc"
+ },
+ {
+  "nome": "Piercarlo Ghinzani",
+  "jogo": "Ghinzani",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1975–1989",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit wsc"
+ },
+ {
+  "nome": "Eliseo Salazar",
+  "jogo": "Salazar",
+  "como": "escalacao",
+  "cc": "CL",
+  "anos": "1979–2015",
+  "camps": "f1 f3000 f3_alema indy cart wsc imsa alms grand_am"
+ },
+ {
+  "nome": "Keke Rosberg",
+  "jogo": "K. Rosberg",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "1976–1995",
+  "camps": "f1 euro_f2 dtm wsc canam"
+ },
+ {
+  "nome": "Michele Alboreto",
+  "jogo": "Alboreto",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1979–2001",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_alema indy dtm wsc imsa alms"
+ },
+ {
+  "nome": "Teo Fabi",
+  "jogo": "Fabi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1978–1996",
+  "camps": "f1 euro_f2 f3_euro_7584 cart wsc"
+ },
+ {
+  "nome": "Mauro Baldi",
+  "jogo": "Baldi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1978–2003",
+  "camps": "f1 f3_euro_7584 f3_alema cart fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Thierry Boutsen",
+  "jogo": "Boutsen",
+  "como": "escalacao",
+  "cc": "BE",
+  "anos": "1979–1999",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit f3_alema fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Chico Serra",
+  "jogo": "Serra",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1978–2015",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit cart stock_car stock_light wsc"
+ },
+ {
+  "nome": "Raul Boesel",
+  "jogo": "Boesel",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1979–2006",
+  "camps": "f1 f3_euro_7584 f3_brit indy cart stock_car stock_light wsc imsa grand_am"
+ },
+ {
+  "nome": "Ayrton Senna",
+  "jogo": "Senna",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1983–1994",
+  "camps": "f1 f3_euro_7584 f3_brit wsc"
+ },
+ {
+  "nome": "Martin Brundle",
+  "jogo": "Brundle",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1981–2012",
+  "camps": "f1 f3_euro_7584 f3_brit btcc wec wsc grand_am"
+ },
+ {
+  "nome": "Stefan Bellof",
+  "jogo": "Bellof",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1981–1985",
+  "camps": "f1 euro_f2 f3_alema wsc"
+ },
+ {
+  "nome": "Gerhard Berger",
+  "jogo": "Berger",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "1982–1997",
+  "camps": "f1 f3_euro_7584 f3_alema etcc wsc"
+ },
+ {
+  "nome": "Jo Gartner",
+  "jogo": "Gartner",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "1979–1986",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_alema wsc"
+ },
+ {
+  "nome": "Stefan Johansson",
+  "jogo": "Johansson",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "1976–2014",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit cart fia_gt wec wsc elms imsa alms grand_am"
+ },
+ {
+  "nome": "Philippe Streiff",
+  "jogo": "Streiff",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1979–1988",
+  "camps": "f1 euro_f2 f3000 f3_euro_7584 f3_alema wsc"
+ },
+ {
+  "nome": "Jonathan Palmer",
+  "jogo": "Palmer",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1981–1991",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit btcc wsc"
+ },
+ {
+  "nome": "Pierluigi Martini",
+  "jogo": "Martini",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1983–2000",
+  "camps": "f1 euro_f2 f3000 f3_euro_7584 fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Christian Danner",
+  "jogo": "Danner",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1981–1997",
+  "camps": "f1 euro_f2 f3000 cart dtm btcc wsc"
+ },
+ {
+  "nome": "Alessandro Nannini",
+  "jogo": "Nannini",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1982–1997",
+  "camps": "f1 euro_f2 dtm fia_gt wsc"
+ },
+ {
+  "nome": "Alex Caffi",
+  "jogo": "Caffi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1984–2005",
+  "camps": "f1 f3_italiana porsche_supercup fia_gt wsc elms alms"
+ },
+ {
+  "nome": "Huub Rothengatter",
+  "jogo": "Rothengatter",
+  "como": "escalacao",
+  "cc": "NL",
+  "anos": "1976–1986",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit wsc"
+ },
+ {
+  "nome": "Ivan Capelli",
+  "jogo": "Capelli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1983–2003",
+  "camps": "f1 f3000 f3_euro_7584 f3_italiana porsche_supercup fia_gt"
+ },
+ {
+  "nome": "Satoru Nakajima",
+  "jogo": "Nakajima",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "1982–1991",
+  "camps": "f1 euro_f2 f3000 wsc"
+ },
+ {
+  "nome": "Adrián Campos",
+  "jogo": "Campos",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "1983–1988",
+  "camps": "f1 f3000 f3_euro_7584 f3_alema wsc"
+ },
+ {
+  "nome": "Gabriele Tarquini",
+  "jogo": "Tarquini",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1984–2021",
+  "camps": "f1 f3000 f3_euro_7584 f3_italiana dtm btcc wtcc etcc wsc"
+ },
+ {
+  "nome": "Nicola Larini",
+  "jogo": "Larini",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1984–2009",
+  "camps": "f1 f3000 f3_italiana porsche_supercup dtm btcc wtcc etcc"
+ },
+ {
+  "nome": "Philippe Alliot",
+  "jogo": "Alliot",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1980–2004",
+  "camps": "f1 euro_f2 f3000 f3_euro_7584 f3_alema fia_gt wsc"
+ },
+ {
+  "nome": "Maurício Gugelmin",
+  "jogo": "Gugelmin",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1985–2001",
+  "camps": "f1 f3000 f3_brit cart"
+ },
+ {
+  "nome": "Julian Bailey",
+  "jogo": "Bailey",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1987–2001",
+  "camps": "f1 f3000 btcc fia_gt british_gt wsc"
+ },
+ {
+  "nome": "Luis Pérez-Sala",
+  "jogo": "Sala",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "1984–2004",
+  "camps": "f1 f3000 f3_euro_7584 f3_italiana porsche_supercup wsc"
+ },
+ {
+  "nome": "Pierre-Henri Raphanel",
+  "jogo": "Raphanel",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1986–2000",
+  "camps": "f1 f3000 super_gt fia_gt wsc alms"
+ },
+ {
+  "nome": "Bernd Schneider",
+  "jogo": "Schneider",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1986–2018",
+  "camps": "f1 f3_alema dtm fia_gt wsc imsa"
+ },
+ {
+  "nome": "Stefano Modena",
+  "jogo": "Modena",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1987–2000",
+  "camps": "f1 f3000 dtm"
+ },
+ {
+  "nome": "Jean Alesi",
+  "jogo": "Alesi",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1988–2012",
+  "camps": "f1 f3000 indy dtm"
+ },
+ {
+  "nome": "Volker Weidler",
+  "jogo": "Weidler",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1983–1992",
+  "camps": "f1 f3000 f3_euro_7584 f3_brit f3_alema dtm wsc"
+ },
+ {
+  "nome": "Paolo Barilla",
+  "jogo": "Barilla",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1981–1991",
+  "camps": "f1 euro_f2 f3000 wsc"
+ },
+ {
+  "nome": "Aguri Suzuki",
+  "jogo": "Suzuki",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "1983–2000",
+  "camps": "f1 f3000 dtm super_gt fia_gt wsc"
+ },
+ {
+  "nome": "Michael Schumacher",
+  "jogo": "M. Schumacher",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1989–2012",
+  "camps": "f1 f3_alema dtm wsc"
+ },
+ {
+  "nome": "Bertrand Gachot",
+  "jogo": "Gachot",
+  "como": "escalacao",
+  "cc": "BE",
+  "anos": "1987–1997",
+  "camps": "f1 f3000 f3_brit cart super_gt wsc"
+ },
+ {
+  "nome": "Mika Häkkinen",
+  "jogo": "Häkkinen",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "1989–2007",
+  "camps": "f1 f3_brit f3_alema dtm"
+ },
+ {
+  "nome": "Johnny Herbert",
+  "jogo": "Herbert",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1987–2015",
+  "camps": "f1 f3000 f3_brit indy porsche_supercup btcc fia_gt wsc elms alms"
+ },
+ {
+  "nome": "Mark Blundell",
+  "jogo": "Blundell",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1987–2019",
+  "camps": "f1 f3000 f3_brit cart btcc british_gt wsc alms grand_am"
+ },
+ {
+  "nome": "Gianni Morbidelli",
+  "jogo": "Morbidelli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1990–2018",
+  "camps": "f1 f3000 btcc wtcc etcc supercars fia_gt alms"
+ },
+ {
+  "nome": "Érik Comas",
+  "jogo": "Comas",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1989–2006",
+  "camps": "f1 f3000 nascar_cup super_gt elms alms"
+ },
+ {
+  "nome": "Christian Fittipaldi",
+  "jogo": "C. Fittipaldi",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1990–2019",
+  "camps": "f1 f3000 a1gp f3_brit cart nascar_cup nascar_xfinity arca stock_car stock_light dtm imsa alms grand_am"
+ },
+ {
+  "nome": "Ukyo Katayama",
+  "jogo": "Katayama",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "1988–2002",
+  "camps": "f1 f3000 super_gt wsc"
+ },
+ {
+  "nome": "Damon Hill",
+  "jogo": "D. Hill",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1987–1999",
+  "camps": "f1 f3000 f3000_brit f3_brit"
+ },
+ {
+  "nome": "Alessandro Zanardi",
+  "jogo": "Zanardi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1989–2019",
+  "camps": "f3000 wtcc etcc f1 cart dtm super_gt imsa"
+ },
+ {
+  "nome": "JJ Lehto",
+  "jogo": "Lehto",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "1988–2007",
+  "camps": "f1 f3000 f3_brit cart dtm fia_gt wsc alms grand_am"
+ },
+ {
+  "nome": "Rubens Barrichello",
+  "jogo": "Barrichello",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1991–2026",
+  "camps": "f1 f3000 f3_brit indy stock_car stock_light gt_open imsa"
+ },
+ {
+  "nome": "David Coulthard",
+  "jogo": "Coulthard",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1990–2012",
+  "camps": "f1 f3000 f3_brit dtm btcc"
+ },
+ {
+  "nome": "Jos Verstappen",
+  "jogo": "J. Verstappen",
+  "como": "escalacao",
+  "cc": "NL",
+  "anos": "1993–2008",
+  "camps": "f1 a1gp f3_alema elms"
+ },
+ {
+  "nome": "Eddie Irvine",
+  "jogo": "Irvine",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1988–2002",
+  "camps": "f1 f3000 f3_brit"
+ },
+ {
+  "nome": "Olivier Panis",
+  "jogo": "Panis",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1992–2011",
+  "camps": "f1 f3000 fia_gt elms alms"
+ },
+ {
+  "nome": "Éric Bernard",
+  "jogo": "Bernard",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1988–2002",
+  "camps": "f1 f3000 fia_gt imsa alms"
+ },
+ {
+  "nome": "Heinz-Harald Frentzen",
+  "jogo": "Frentzen",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1989–2006",
+  "camps": "f1 f3000 f3_alema dtm super_gt wsc"
+ },
+ {
+  "nome": "Pedro Lamy",
+  "jogo": "Lamy",
+  "como": "escalacao",
+  "cc": "PT",
+  "anos": "1992–2020",
+  "camps": "f1 f3000 f3_alema porsche_supercup dtm fia_gt wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Mika Salo",
+  "jogo": "Salo",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "1989–2014",
+  "camps": "f1 f3_brit cart supercars fia_gt wec elms imsa alms"
+ },
+ {
+  "nome": "Massimiliano Papis",
+  "jogo": "Papis",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1993–1995",
+  "camps": "f1 f3000"
+ },
+ {
+  "nome": "Luca Badoer",
+  "jogo": "Badoer",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1992–2009",
+  "camps": "f1 f3000 fia_gt"
+ },
+ {
+  "nome": "Pedro Diniz",
+  "jogo": "Diniz",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1991–2000",
+  "camps": "f1 f3000 f3_brit"
+ },
+ {
+  "nome": "Jacques Villeneuve",
+  "jogo": "J. Villeneuve",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "1993–2026",
+  "camps": "f1 atlantic indy cart nascar_cup nascar_xfinity nascar_truck stock_car stock_light porsche_supercup supercars wec elms fe"
+ },
+ {
+  "nome": "Ricardo Rosset",
+  "jogo": "Rosset",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1993–2015",
+  "camps": "f1 f3000 f3_brit stock_car stock_light"
+ },
+ {
+  "nome": "Giancarlo Fisichella",
+  "jogo": "Fisichella",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1994–2022",
+  "camps": "f1 f3_brit dtm etcc gtwc_europe wec asian_lms imsa alms grand_am"
+ },
+ {
+  "nome": "Ralf Schumacher",
+  "jogo": "R. Schumacher",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1994–2012",
+  "camps": "f1 fnippon f3_alema dtm super_gt fia_gt"
+ },
+ {
+  "nome": "Jarno Trulli",
+  "jogo": "Trulli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "1994–2016",
+  "camps": "f1 f3_brit f3_alema fe"
+ },
+ {
+  "nome": "Shinji Nakano",
+  "jogo": "Nakano",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "1996–2018",
+  "camps": "f1 fnippon indy cart super_gt wec elms asian_lms"
+ },
+ {
+  "nome": "Jan Magnussen",
+  "jogo": "J. Magnussen",
+  "como": "escalacao",
+  "cc": "DK",
+  "anos": "1993–2023",
+  "camps": "f1 f3_brit cart nascar_cup dtm wtcc etcc supercars super_gt gt_open wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Alexander Wurz",
+  "jogo": "Wurz",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "1993–2016",
+  "camps": "f1 f3_brit f3_alema dtm fia_gt wec elms imsa alms"
+ },
+ {
+  "nome": "Toranosuke Takagi",
+  "jogo": "Takagi",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "1996–2026",
+  "camps": "f1 fnippon indy cart super_gt f4_japao"
+ },
+ {
+  "nome": "Pedro de la Rosa",
+  "jogo": "de la Rosa",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "1993–2012",
+  "camps": "f1 fnippon f3_brit super_gt"
+ },
+ {
+  "nome": "Marc Gené",
+  "jogo": "Gené",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "1994–2014",
+  "camps": "f1 f3000 wsbn f3_brit wec elms alms"
+ },
+ {
+  "nome": "Ricardo Zonta",
+  "jogo": "Zonta",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1996–2026",
+  "camps": "f1 f3000 wsbn stock_car stock_light porsche_supercup dtm fia_gt grand_am"
+ },
+ {
+  "nome": "Jenson Button",
+  "jogo": "Button",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1999–2025",
+  "camps": "f1 f3_brit nascar_cup dtm super_gt british_gt wec imsa"
+ },
+ {
+  "nome": "Gastón Mazzacane",
+  "jogo": "Mazzacane",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "1996–2008",
+  "camps": "f1 f3000 cart fia_gt grand_am"
+ },
+ {
+  "nome": "Nick Heidfeld",
+  "jogo": "Heidfeld",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "1996–2018",
+  "camps": "f1 f3000 f3_alema porsche_supercup wec imsa alms fe"
+ },
+ {
+  "nome": "Juan Pablo Montoya",
+  "jogo": "Montoya",
+  "como": "escalacao",
+  "cc": "CO",
+  "anos": "1994–2024",
+  "camps": "f1 f3000 f3_brit barber indy cart nascar_cup nascar_xfinity arca dtm wec elms imsa grand_am"
+ },
+ {
+  "nome": "Kimi Räikkönen",
+  "jogo": "Räikkönen",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "2000–2023",
+  "camps": "f1 fr_eurocup fr_uk nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Luciano Burti",
+  "jogo": "Burti",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1998–2018",
+  "camps": "f1 f3_brit stock_car stock_light porsche_supercup fia_gt"
+ },
+ {
+  "nome": "Enrique Bernoldi",
+  "jogo": "Bernoldi",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1997–2015",
+  "camps": "f1 f3000 wsbn f3_brit indy stock_car stock_light fia_gt wec"
+ },
+ {
+  "nome": "Fernando Alonso",
+  "jogo": "Alonso",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "1999–2026",
+  "camps": "f1 f3000 wsbn indy wec imsa"
+ },
+ {
+  "nome": "Felipe Massa",
+  "jogo": "Massa",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2000–2026",
+  "camps": "f1 fr_eurocup stock_car stock_light etcc imsa fe"
+ },
+ {
+  "nome": "Takuma Sato",
+  "jogo": "Sato",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "1999–2026",
+  "camps": "f1 fnippon f3_brit indy wec fe"
+ },
+ {
+  "nome": "Allan McNish",
+  "jogo": "McNish",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1989–2013",
+  "camps": "f1 f3000 f3_brit dtm fia_gt wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Mark Webber",
+  "jogo": "Webber",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "1994–2016",
+  "camps": "f1 f3000 f3_brit ff_brasil fia_gt wec"
+ },
+ {
+  "nome": "Alex Yoong",
+  "jogo": "Yoong",
+  "como": "escalacao",
+  "cc": "MY",
+  "anos": "1997–2017",
+  "camps": "f1 f3000 gp2_asia a1gp fnippon f3_brit cart supercars elms asian_lms"
+ },
+ {
+  "nome": "Antônio Pizzonia",
+  "jogo": "Pizzonia",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2000–2026",
+  "camps": "f1 f3000 gp2 f3_brit indy cart stock_car stock_light wec alms"
+ },
+ {
+  "nome": "Ralph Firman",
+  "jogo": "Firman",
+  "como": "escalacao",
+  "cc": "IE",
+  "anos": "1995–2013",
+  "camps": "f1 wsbn a1gp f3_brit super_gt alms"
+ },
+ {
+  "nome": "Cristiano da Matta",
+  "jogo": "da Matta",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1995–2011",
+  "camps": "f1 f3000 f3_brit cart indy_lights alms grand_am"
+ },
+ {
+  "nome": "Justin Wilson",
+  "jogo": "Wilson",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1999–2015",
+  "camps": "f1 f3000 wsbn indy cart fia_gt imsa alms grand_am fe"
+ },
+ {
+  "nome": "Christian Klien",
+  "jogo": "Klien",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "2002–2022",
+  "camps": "f1 f3_euroseries fr_eurocup dtm supercars super_gt gtwc_europe gt_open wec elms alms"
+ },
+ {
+  "nome": "Timo Glock",
+  "jogo": "Glock",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2002–2026",
+  "camps": "f1 gp2 f3_euroseries f3_alema cart stock_car stock_light porsche_supercup dtm gtwc_europe imsa"
+ },
+ {
+  "nome": "Gianmaria Bruni",
+  "jogo": "Bruni",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "2000–2025",
+  "camps": "f1 gp2 f3_brit fia_gt gt_open wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Zsolt Baumgartner",
+  "jogo": "Baumgartner",
+  "como": "escalacao",
+  "cc": "HU",
+  "anos": "2000–2004",
+  "camps": "f1 f3000 f3_alema"
+ },
+ {
+  "nome": "Narain Karthikeyan",
+  "jogo": "Karthikeyan",
+  "como": "escalacao",
+  "cc": "IN",
+  "anos": "1998–2026",
+  "camps": "f1 wsbn a1gp fnippon f3_brit nascar_truck dtm super_gt fia_gt elms asian_lms"
+ },
+ {
+  "nome": "Tiago Monteiro",
+  "jogo": "Monteiro",
+  "como": "escalacao",
+  "cc": "PT",
+  "anos": "1998–2022",
+  "camps": "f1 f3000 wsbn f3_brit cart wtcc fia_gt gt_open wec elms"
+ },
+ {
+  "nome": "Christijan Albers",
+  "jogo": "Albers",
+  "como": "escalacao",
+  "cc": "NL",
+  "anos": "1998–2012",
+  "camps": "f1 f3000 f3_brit f3_alema dtm wec elms alms"
+ },
+ {
+  "nome": "Patrick Friesacher",
+  "jogo": "Friesacher",
+  "como": "escalacao",
+  "cc": "AT",
+  "anos": "1999–2008",
+  "camps": "f1 f3000 a1gp f3_brit f3_alema alms"
+ },
+ {
+  "nome": "Robert Kubica",
+  "jogo": "Kubica",
+  "como": "escalacao",
+  "cc": "PL",
+  "anos": "2001–2026",
+  "camps": "f1 wsr f3_euroseries f3_brit fr_eurocup dtm wec elms imsa"
+ },
+ {
+  "nome": "Nico Rosberg",
+  "jogo": "N. Rosberg",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2002–2016",
+  "camps": "f1 gp2 f3_euroseries fbmw_adac"
+ },
+ {
+  "nome": "Vitantonio Liuzzi",
+  "jogo": "Liuzzi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "2001–2017",
+  "camps": "f1 f3000 wsbn a1gp fnippon f3_alema f3_italiana fr_eurocup stock_car stock_light supercars super_gt gt_open wec asian_lms fe"
+ },
+ {
+  "nome": "Scott Speed",
+  "jogo": "Speed",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2003–2015",
+  "camps": "f1 gp2 a1gp f3_brit fr_eurocup indy nascar_cup nascar_xfinity nascar_truck arca grand_am fe"
+ },
+ {
+  "nome": "Franck Montagny",
+  "jogo": "Montagny",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1997–2015",
+  "camps": "f1 f3000 wsbn a1gp f3_brit indy wec alms fe"
+ },
+ {
+  "nome": "Lewis Hamilton",
+  "jogo": "Hamilton",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2002–2026",
+  "camps": "f1 gp2 f3_euroseries f3_brit fr_eurocup fr_uk"
+ },
+ {
+  "nome": "Heikki Kovalainen",
+  "jogo": "Kovalainen",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "2001–2021",
+  "camps": "f1 gp2 wsbn f3_brit fr_uk dtm super_gt"
+ },
+ {
+  "nome": "Sebastian Vettel",
+  "jogo": "Vettel",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2003–2022",
+  "camps": "f1 wsr f3_euroseries euroformula fbmw_adac"
+ },
+ {
+  "nome": "Anthony Davidson",
+  "jogo": "Davidson",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2000–2021",
+  "camps": "f1 f3_brit fr_eurocup fia_gt wec elms alms"
+ },
+ {
+  "nome": "Adrian Sutil",
+  "jogo": "Sutil",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2003–2014",
+  "camps": "f1 a1gp f3_euroseries f3_japao fbmw_adac super_gt"
+ },
+ {
+  "nome": "Nelson Piquet Jr.",
+  "jogo": "Piquet Jr.",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2003–2026",
+  "camps": "f1 gp2 a1gp f3_brit indy_lights nascar_cup nascar_xfinity nascar_truck arca stock_car stock_light porsche_supercup tcr_world tcr_sa gt_open wec elms fe"
+ },
+ {
+  "nome": "Sébastien Bourdais",
+  "jogo": "Bourdais",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "1998–2026",
+  "camps": "f1 f3000 f3_brit indy cart supercars fia_gt wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Kazuki Nakajima",
+  "jogo": "K. Nakajima",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "2004–2021",
+  "camps": "f1 gp2 fnippon f3_euroseries f3_japao dtm super_gt wec"
+ },
+ {
+  "nome": "Romain Grosjean",
+  "jogo": "Grosjean",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2004–2026",
+  "camps": "f1 gp2 gp2_asia f3_euroseries f3_brit fr_eurocup indy imsa"
+ },
+ {
+  "nome": "Sébastien Buemi",
+  "jogo": "Buemi",
+  "como": "escalacao",
+  "cc": "CH",
+  "anos": "2004–2026",
+  "camps": "f1 gp2 gp2_asia a1gp f3_euroseries euroformula fr_eurocup fr_nec fbmw_adac wec elms imsa fe"
+ },
+ {
+  "nome": "Jaime Alguersuari",
+  "jogo": "Alguersuari",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "2005–2015",
+  "camps": "f1 wsr f3_brit euroformula fr_eurocup stock_car stock_light fe"
+ },
+ {
+  "nome": "Vitaly Petrov",
+  "jogo": "Petrov",
+  "como": "escalacao",
+  "cc": "RU",
+  "anos": "2003–2019",
+  "camps": "f1 gp2 gp2_asia fr_eurocup fr_uk fmasters dtm wec elms"
+ },
+ {
+  "nome": "Nico Hülkenberg",
+  "jogo": "Hülkenberg",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2005–2026",
+  "camps": "f1 gp2 gp2_asia a1gp f3_euroseries f3_alema fbmw_adac wec"
+ },
+ {
+  "nome": "Kamui Kobayashi",
+  "jogo": "Kobayashi",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "2005–2026",
+  "camps": "f1 gp2 gp2_asia fnippon f3_euroseries fr_eurocup nascar_cup dtm super_gt gtwc_europe wec asian_lms imsa fe"
+ },
+ {
+  "nome": "Bruno Senna",
+  "jogo": "B. Senna",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2004–2020",
+  "camps": "f1 gp2 gp2_asia f3_brit fbmw_uk stock_car stock_light porsche_supercup wec elms imsa alms fe"
+ },
+ {
+  "nome": "Paul di Resta",
+  "jogo": "di Resta",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2003–2026",
+  "camps": "f1 f3_euroseries fr_eurocup fr_uk dtm wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Sergio Pérez",
+  "jogo": "Pérez",
+  "como": "escalacao",
+  "cc": "MX",
+  "anos": "2005–2026",
+  "camps": "f1 gp2 gp2_asia a1gp f3_brit fbmw_adac"
+ },
+ {
+  "nome": "Pastor Maldonado",
+  "jogo": "Maldonado",
+  "como": "escalacao",
+  "cc": "VE",
+  "anos": "2004–2019",
+  "camps": "f1 gp2 gp2_asia wsr fr_eurocup wec imsa"
+ },
+ {
+  "nome": "Daniel Ricciardo",
+  "jogo": "Ricciardo",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "2006–2024",
+  "camps": "f1 wsr f3_euroseries f3_brit fr_eurocup fbmw_uk"
+ },
+ {
+  "nome": "Jean-Éric Vergne",
+  "jogo": "Vergne",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2008–2026",
+  "camps": "f1 wsr gp3 f3_brit fr_eurocup wec elms fe"
+ },
+ {
+  "nome": "Esteban Gutiérrez",
+  "jogo": "Gutiérrez",
+  "como": "escalacao",
+  "cc": "MX",
+  "anos": "2007–2023",
+  "camps": "f1 gp2 gp2_asia gp3 f3_euroseries f3_brit f3_alema fbmw_adac fbmw_europe fbmw_usa fmasters indy wec imsa fe"
+ },
+ {
+  "nome": "Valtteri Bottas",
+  "jogo": "Bottas",
+  "como": "escalacao",
+  "cc": "FI",
+  "anos": "2007–2026",
+  "camps": "f1 gp3 f3_euroseries f3_brit fr_eurocup fr_nec"
+ },
+ {
+  "nome": "Jules Bianchi",
+  "jogo": "J. Bianchi",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2007–2014",
+  "camps": "f1 gp2 gp2_asia wsr f3_euroseries f3_brit fr_eurocup"
+ },
+ {
+  "nome": "Kevin Magnussen",
+  "jogo": "Magnussen",
+  "como": "escalacao",
+  "cc": "DK",
+  "anos": "2009–2026",
+  "camps": "f1 wsr f3_euroseries f3_brit f3_alema fr_eurocup fr_nec indy nascar_cup gtwc_europe wec imsa"
+ },
+ {
+  "nome": "Daniil Kvyat",
+  "jogo": "Kvyat",
+  "como": "escalacao",
+  "cc": "RU",
+  "anos": "2010–2026",
+  "camps": "f1 gp3 f3_euro_fia fr_eurocup fr_uk fr_nec fr_alps froc fbmw_europe nascar_cup nascar_xfinity super_gt wec imsa"
+ },
+ {
+  "nome": "Marcus Ericsson",
+  "jogo": "Ericsson",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "2007–2026",
+  "camps": "f1 gp2 gp2_asia f3_brit f3_japao fbmw_uk indy gtwc_america imsa"
+ },
+ {
+  "nome": "Max Verstappen",
+  "jogo": "Verstappen",
+  "como": "escalacao",
+  "cc": "NL",
+  "anos": "2014–2026",
+  "camps": "f1 f3_euro_fia gtwc_europe"
+ },
+ {
+  "nome": "Carlos Sainz Jr.",
+  "jogo": "Sainz",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "2010–2026",
+  "camps": "f1 wsr gp3 f3_euro_fia f3_euroseries f3_brit euroformula fr_eurocup fr_uk fr_nec fbmw_europe"
+ },
+ {
+  "nome": "Felipe Nasr",
+  "jogo": "Nasr",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2009–2026",
+  "camps": "f1 gp2 f3_euro_fia f3_euroseries f3_brit fbmw_europe stock_car gtwc_europe wec elms imsa grand_am fe"
+ },
+ {
+  "nome": "Jolyon Palmer",
+  "jogo": "J. Palmer",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2011–2017",
+  "camps": "f1 gp2 gp2_asia"
+ },
+ {
+  "nome": "Pascal Wehrlein",
+  "jogo": "Wehrlein",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2012–2026",
+  "camps": "f1 f3_euro_fia f3_euroseries f3_brit dtm wec imsa fe"
+ },
+ {
+  "nome": "Esteban Ocon",
+  "jogo": "Ocon",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2012–2026",
+  "camps": "f1 wsr gp3 f3_euro_fia fr_eurocup fr_nec fr_alps dtm"
+ },
+ {
+  "nome": "Lance Stroll",
+  "jogo": "Stroll",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "2014–2026",
+  "camps": "f1 f3_euro_fia froc f4_italia gtwc_europe imsa"
+ },
+ {
+  "nome": "Stoffel Vandoorne",
+  "jogo": "Vandoorne",
+  "como": "escalacao",
+  "cc": "BE",
+  "anos": "2011–2026",
+  "camps": "f1 gp2 wsr fnippon fr_eurocup fr_nec wec asian_lms imsa fe"
+ },
+ {
+  "nome": "Charles Leclerc",
+  "jogo": "Leclerc",
+  "como": "escalacao",
+  "cc": "MC",
+  "anos": "2014–2026",
+  "camps": "f1 f2 gp3 f3_euro_fia fr_eurocup fr_alps"
+ },
+ {
+  "nome": "Pierre Gasly",
+  "jogo": "Gasly",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2011–2026",
+  "camps": "f1 gp2 wsr fnippon fr_eurocup fr_nec fr_alps f4_franca fe"
+ },
+ {
+  "nome": "Brendon Hartley",
+  "jogo": "Hartley",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "2005–2026",
+  "camps": "f1 gp2 wsr f3_euroseries f3_brit fr_eurocup fr_nec froc wec elms imsa grand_am fe"
+ },
+ {
+  "nome": "Sergey Sirotkin",
+  "jogo": "Sirotkin",
+  "como": "escalacao",
+  "cc": "RU",
+  "anos": "2010–2020",
+  "camps": "gp2 f2 wsr f3_italiana fabarth gtwc_europe f1 wec"
+ },
+ {
+  "nome": "Lando Norris",
+  "jogo": "Norris",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2015–2026",
+  "camps": "f1 f2 f3_euro_fia gb3 fr_eurocup fr_nec froc f4_italia f4_brit f4_adac imsa"
+ },
+ {
+  "nome": "Alexander Albon",
+  "jogo": "Albon",
+  "como": "escalacao",
+  "cc": "TH",
+  "anos": "2012–2026",
+  "camps": "f1 f2 wsr gp3 f3_euro_fia fr_eurocup fr_nec fr_alps dtm"
+ },
+ {
+  "nome": "Antonio Giovinazzi",
+  "jogo": "Giovinazzi",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "2012–2026",
+  "camps": "f1 gp2 f3_euro_fia f3_brit fabarth dtm wec elms asian_lms fe"
+ },
+ {
+  "nome": "George Russell",
+  "jogo": "Russell",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2014–2026",
+  "camps": "f1 f2 gp3 f3_euro_fia fr_eurocup fr_alps"
+ },
+ {
+  "nome": "Nicholas Latifi",
+  "jogo": "Latifi",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "2012–2022",
+  "camps": "f1 gp2 f2 wsr f3_euro_fia f3_brit f3_italiana froc"
+ },
+ {
+  "nome": "Yuki Tsunoda",
+  "jogo": "Tsunoda",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "2016–2026",
+  "camps": "f1 f2 f3 euroformula froc f4_japao"
+ },
+ {
+  "nome": "Mick Schumacher",
+  "jogo": "Mick Schumacher",
+  "como": "escalacao",
+  "cc": "DE",
+  "anos": "2015–2026",
+  "camps": "f1 f2 f3_euro_fia f4_italia f4_adac indy wec"
+ },
+ {
+  "nome": "Nikita Mazepin",
+  "jogo": "Mazepin",
+  "como": "escalacao",
+  "cc": "RU",
+  "anos": "2015–2026",
+  "camps": "f1 f2 gp3 f3_euro_fia gb3 fr_eurocup fr_nec froc gtwc_europe gt_open asian_lms"
+ },
+ {
+  "nome": "Guanyu Zhou",
+  "jogo": "Zhou",
+  "como": "escalacao",
+  "cc": "CN",
+  "anos": "2014–2024",
+  "camps": "f2 f3_euro_fia froc f4_italia f4_adac f1"
+ },
+ {
+  "nome": "Oscar Piastri",
+  "jogo": "Piastri",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "2017–2026",
+  "camps": "f1 f2 f3 fr_eurocup fr_nec f4_brit f4_uae"
+ },
+ {
+  "nome": "Logan Sargeant",
+  "jogo": "Sargeant",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2017–2026",
+  "camps": "f1 f2 f3 fr_eurocup fr_nec f4_brit f4_uae wec elms imsa"
+ },
+ {
+  "nome": "Kimi Antonelli",
+  "jogo": "Antonelli",
+  "como": "escalacao",
+  "cc": "IT",
+  "anos": "2023–2026",
+  "camps": "f1 frec"
+ },
+ {
+  "nome": "Isack Hadjar",
+  "jogo": "Hadjar",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2019–2026",
+  "camps": "f1 f2 f3 frec f4_franca f4_uae"
+ },
+ {
+  "nome": "Liam Lawson",
+  "jogo": "Lawson",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "2017–2026",
+  "camps": "f1 f2 fnippon f3 euroformula froc f4_adac f4_australia dtm"
+ },
+ {
+  "nome": "Oliver Bearman",
+  "jogo": "Bearman",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2020–2026",
+  "camps": "f1 f2 f3 gb3 f4_italia f4_adac"
+ },
+ {
+  "nome": "Jack Doohan",
+  "jogo": "Doohan",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "2018–2026",
+  "camps": "f2 f3 euroformula f4_italia f4_brit f4_adac f1 elms"
+ },
+ {
+  "nome": "Gabriel Bortoleto",
+  "jogo": "Bortoleto",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2020–2026",
+  "camps": "f1 f2 f3 frec f4_italia stock_car stock_light"
+ },
+ {
+  "nome": "Arvid Lindblad",
+  "jogo": "Lindblad",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2022–2026",
+  "camps": "f1 f2 f3 frme froc f4_italia f4_uae"
+ },
+ {
+  "nome": "Franco Colapinto",
+  "jogo": "Colapinto",
+  "como": "escalacao",
+  "cc": "AR",
+  "anos": "2018–2026",
+  "camps": "f1 f2 f3 euroformula frec fr_eurocup froc f4_espanha gtwc_europe elms asian_lms"
+ },
+ {
+  "nome": "Al Unser Jr.",
+  "jogo": "A. Unser Jr.",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1982–2007",
+  "camps": "indy cart nascar_cup grand_am"
+ },
+ {
+  "nome": "Paul Tracy",
+  "jogo": "Tracy",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "1991–2012",
+  "camps": "indy cart nascar_xfinity nascar_truck grand_am"
+ },
+ {
+  "nome": "Jimmy Vasser",
+  "jogo": "Vasser",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1991–2010",
+  "camps": "atlantic indy cart nascar_xfinity grand_am"
+ },
+ {
+  "nome": "Michael Andretti",
+  "jogo": "M. Andretti",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1983–2007",
+  "camps": "f1 indy cart wsc"
+ },
+ {
+  "nome": "Bobby Rahal",
+  "jogo": "Rahal",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1978–1998",
+  "camps": "f1 euro_f2 f3_euro_7584 cart nascar_cup canam"
+ },
+ {
+  "nome": "Bryan Herta",
+  "jogo": "B. Herta",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1990–2008",
+  "camps": "a1gp barber indy cart alms grand_am"
+ },
+ {
+  "nome": "Greg Moore",
+  "jogo": "Moore",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "1996–1999",
+  "camps": "cart fia_gt"
+ },
+ {
+  "nome": "Scott Pruett",
+  "jogo": "Pruett",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1988–2018",
+  "camps": "cart nascar_cup nascar_xfinity imsa alms grand_am"
+ },
+ {
+  "nome": "Adrián Fernández",
+  "jogo": "Fernández",
+  "como": "escalacao",
+  "cc": "MX",
+  "anos": "1990–2012",
+  "camps": "f3_brit indy cart nascar_xfinity wec elms alms grand_am"
+ },
+ {
+  "nome": "Gil de Ferran",
+  "jogo": "de Ferran",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1991–2011",
+  "camps": "f3000 f3_brit indy cart supercars alms"
+ },
+ {
+  "nome": "Dario Franchitti",
+  "jogo": "Franchitti",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1993–2026",
+  "camps": "f3_brit indy cart nascar_cup nascar_xfinity nascar_truck arca dtm alms grand_am"
+ },
+ {
+  "nome": "Hélio Castroneves",
+  "jogo": "Castroneves",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1995–2026",
+  "camps": "f3_brit indy cart indy_lights nascar_cup arca stock_car stock_light supercars imsa alms grand_am"
+ },
+ {
+  "nome": "Sam Hornish Jr.",
+  "jogo": "Hornish Jr.",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1997–2017",
+  "camps": "indy usf2000 nascar_cup nascar_xfinity nascar_truck arca porsche_supercup grand_am"
+ },
+ {
+  "nome": "Scott Sharp",
+  "jogo": "Sharp",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1991–2018",
+  "camps": "indy cart nascar_cup wec imsa alms grand_am"
+ },
+ {
+  "nome": "Bruno Junqueira",
+  "jogo": "Junqueira",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1998–2018",
+  "camps": "f3000 a1gp indy cart stock_car stock_light imsa alms grand_am"
+ },
+ {
+  "nome": "Scott Dixon",
+  "jogo": "Dixon",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "1999–2026",
+  "camps": "indy cart indy_lights imsa alms grand_am"
+ },
+ {
+  "nome": "Vítor Meira",
+  "jogo": "Meira",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2002–2018",
+  "camps": "a1gp indy stock_car stock_light alms grand_am"
+ },
+ {
+  "nome": "Tony Kanaan",
+  "jogo": "Kanaan",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "1996–2023",
+  "camps": "fnippon indy cart indy_lights stock_car stock_light dtm wec imsa alms"
+ },
+ {
+  "nome": "Dan Wheldon",
+  "jogo": "Wheldon",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2001–2011",
+  "camps": "indy indy_lights grand_am"
+ },
+ {
+  "nome": "Darren Manning",
+  "jogo": "Manning",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "1996–2010",
+  "camps": "f3000 a1gp f3_brit indy cart porsche_supercup super_gt fia_gt elms alms grand_am"
+ },
+ {
+  "nome": "Buddy Rice",
+  "jogo": "Rice",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1997–2017",
+  "camps": "a1gp indy cart usf2000 nascar_truck imsa grand_am"
+ },
+ {
+  "nome": "Danica Patrick",
+  "jogo": "Patrick",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2002–2018",
+  "camps": "atlantic barber indy nascar_cup nascar_xfinity arca alms grand_am"
+ },
+ {
+  "nome": "Hideki Mutoh",
+  "jogo": "Mutoh",
+  "como": "escalacao",
+  "cc": "JP",
+  "anos": "2004–2022",
+  "camps": "fnippon f3_japao indy indy_lights dtm super_gt asian_lms"
+ },
+ {
+  "nome": "Ryan Briscoe",
+  "jogo": "Briscoe",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "2001–2023",
+  "camps": "f3000 a1gp f3_euroseries f3_brit f3_alema f3_italiana fr_eurocup indy cart supercars gtwc_america wec imsa alms grand_am"
+ },
+ {
+  "nome": "Ryan Hunter-Reay",
+  "jogo": "Hunter-Reay",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "1998–2026",
+  "camps": "a1gp barber indy cart imsa alms grand_am"
+ },
+ {
+  "nome": "E. J. Viso",
+  "jogo": "Viso",
+  "como": "escalacao",
+  "cc": "VE",
+  "anos": "2002–2014",
+  "camps": "f3000 gp2 f3_brit fr_eurocup fr_uk indy imsa alms grand_am"
+ },
+ {
+  "nome": "Will Power",
+  "jogo": "Power",
+  "como": "escalacao",
+  "cc": "AU",
+  "anos": "2002–2026",
+  "camps": "wsr a1gp f3_brit indy cart supercars gtwc_america imsa"
+ },
+ {
+  "nome": "Raphael Matos",
+  "jogo": "Matos",
+  "como": "escalacao",
+  "cc": "BR",
+  "anos": "2006–2018",
+  "camps": "a1gp atlantic indy indy_lights stock_car stock_light imsa alms grand_am"
+ },
+ {
+  "nome": "Charlie Kimball",
+  "jogo": "Kimball",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2004–2021",
+  "camps": "wsr a1gp f3_euroseries f3_brit ff_brit indy indy_lights imsa"
+ },
+ {
+  "nome": "James Hinchcliffe",
+  "jogo": "Hinchcliffe",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "2004–2026",
+  "camps": "a1gp fbmw_usa atlantic indy indy_lights nascar_truck supercars imsa grand_am"
+ },
+ {
+  "nome": "Josef Newgarden",
+  "jogo": "Newgarden",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2009–2026",
+  "camps": "gp3 ff_brit indy indy_lights imsa"
+ },
+ {
+  "nome": "Carlos Muñoz",
+  "jogo": "Munoz",
+  "como": "escalacao",
+  "cc": "CO",
+  "anos": "2008–2018",
+  "camps": "f3_euroseries f3_brit euroformula fr_eurocup indy indy_lights"
+ },
+ {
+  "nome": "Simon Pagenaud",
+  "jogo": "Pagenaud",
+  "como": "escalacao",
+  "cc": "FR",
+  "anos": "2002–2023",
+  "camps": "wsr fr_eurocup atlantic indy cart supercars elms imsa alms"
+ },
+ {
+  "nome": "Mikhail Aleshin",
+  "jogo": "Aleshin",
+  "como": "escalacao",
+  "cc": "RU",
+  "anos": "2004–2019",
+  "camps": "gp2 gp2_asia wsr a1gp gp3 f3_alema fr_eurocup indy wec elms imsa"
+ },
+ {
+  "nome": "Max Chilton",
+  "jogo": "Chilton",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2007–2021",
+  "camps": "f1 gp2 gp2_asia wsr f3_brit indy indy_lights wec elms"
+ },
+ {
+  "nome": "Alexander Rossi",
+  "jogo": "Rossi",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2007–2026",
+  "camps": "f1 gp2 gp2_asia gp3 fbmw_usa indy supercars imsa wsr fbmw_europe fmasters wec"
+ },
+ {
+  "nome": "Zach Veach",
+  "jogo": "Veach",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2010–2024",
+  "camps": "indy indy_lights ip2000 usf2000 gtwc_america imsa"
+ },
+ {
+  "nome": "Robert Wickens",
+  "jogo": "Wickens",
+  "como": "escalacao",
+  "cc": "CA",
+  "anos": "2005–2026",
+  "camps": "wsr a1gp gp3 f3_euroseries f3_brit fr_eurocup fbmw_adac fbmw_usa atlantic indy dtm imsa"
+ },
+ {
+  "nome": "Felix Rosenqvist",
+  "jogo": "Rosenqvist",
+  "como": "escalacao",
+  "cc": "SE",
+  "anos": "2007–2026",
+  "camps": "fnippon f3_euro_fia f3_euroseries f3_brit f3_alema fr_nec indy indy_lights porsche_supercup dtm super_gt imsa fe"
+ },
+ {
+  "nome": "Colton Herta",
+  "jogo": "Herta",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2014–2026",
+  "camps": "f2 euroformula gb3 f4_brit indy indy_lights usf2000 imsa"
+ },
+ {
+  "nome": "Pato O'Ward",
+  "jogo": "O’Ward",
+  "como": "escalacao",
+  "cc": "MX",
+  "anos": "2014–2026",
+  "camps": "f2 f4_franca indy imsa fnippon f4_nacam indy_lights ip2000"
+ },
+ {
+  "nome": "Álex Palou",
+  "jogo": "Palou",
+  "como": "escalacao",
+  "cc": "ES",
+  "anos": "2014–2026",
+  "camps": "f2 wsr fnippon gp3 f3_euro_fia f3_japao euroformula fr_nec indy super_gt gtwc_america wec imsa"
+ },
+ {
+  "nome": "Santino Ferrucci",
+  "jogo": "Ferrucci",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2014–2026",
+  "camps": "f2 gp3 f3_euro_fia f3_brit f3_alema froc indy nascar_xfinity"
+ },
+ {
+  "nome": "Rinus VeeKay",
+  "jogo": "VeeKay",
+  "como": "escalacao",
+  "cc": "NL",
+  "anos": "2017–2026",
+  "camps": "indy_lights ip2000 usf2000 indy imsa"
+ },
+ {
+  "nome": "Scott McLaughlin",
+  "jogo": "McLaughlin",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "2012–2026",
+  "camps": "indy supercars imsa"
+ },
+ {
+  "nome": "Kyle Kirkwood",
+  "jogo": "Kirkwood",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2016–2026",
+  "camps": "euroformula fram f4_eua indy indy_lights ip2000 usf2000 imsa"
+ },
+ {
+  "nome": "Christian Lundgaard",
+  "jogo": "Lundgaard",
+  "como": "escalacao",
+  "cc": "DK",
+  "anos": "2017–2026",
+  "camps": "f2 f3 gp3 fr_eurocup fr_nec f4_espanha f4_danish f4_neerlandesa indy"
+ },
+ {
+  "nome": "David Malukas",
+  "jogo": "Malukas",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2017–2026",
+  "camps": "fram f4_adac f4_uae indy indy_lights ip2000 usf2000"
+ },
+ {
+  "nome": "Callum Ilott",
+  "jogo": "Ilott",
+  "como": "escalacao",
+  "cc": "GB",
+  "anos": "2015–2026",
+  "camps": "f2 gp3 f3_euro_fia froc indy gtwc_europe gtwc_america wec imsa"
+ },
+ {
+  "nome": "Marcus Armstrong",
+  "jogo": "Armstrong",
+  "como": "escalacao",
+  "cc": "NZ",
+  "anos": "2016–2026",
+  "camps": "f2 f3 f3_euro_fia gb3 fr_eurocup fr_nec froc f4_italia f4_adac indy"
+ },
+ {
+  "nome": "Sting Ray Robb",
+  "jogo": "Robb",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2017–2026",
+  "camps": "indy indy_lights ip2000"
+ },
+ {
+  "nome": "Kyffin Simpson",
+  "jogo": "Simpson",
+  "como": "escalacao",
+  "cc": "KY",
+  "anos": "2020–2026",
+  "camps": "fram f4_eua indy indy_lights ip2000 elms asian_lms imsa"
+ },
+ {
+  "nome": "Nolan Siegel",
+  "jogo": "Siegel",
+  "como": "escalacao",
+  "cc": "US",
+  "anos": "2019–2026",
+  "camps": "f4_eua f4_nacam indy indy_lights ip2000 usf2000 gtwc_america asian_lms imsa"
+ },
+ {
+  "nome": "Luigi Piotti",
+  "jogo": "Piotti",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1955–1958",
+  "camps": "f1"
+ },
+ {
+  "nome": "Conny Andersson",
+  "jogo": "Andersson",
+  "como": "base",
+  "cc": "SE",
+  "anos": "1974–1977",
+  "camps": "f1 f3_euro_7584 f3_brit"
+ },
+ {
+  "nome": "Roberto Guerrero",
+  "jogo": "Guerrero",
+  "como": "base",
+  "cc": "CO",
+  "anos": "1979–2002",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit indy cart nascar_xfinity"
+ },
+ {
+  "nome": "Esteban Tuero",
+  "jogo": "Tuero",
+  "como": "base",
+  "cc": "AR",
+  "anos": "1996–2008",
+  "camps": "f1 f3000 fnippon stock_car stock_light fia_gt"
+ },
+ {
+  "nome": "Nyck de Vries",
+  "jogo": "de Vries",
+  "como": "base",
+  "cc": "NL",
+  "anos": "2012–2026",
+  "camps": "f1 f2 wsr fnippon gp3 fr_eurocup fr_nec fr_alps wec elms fe"
+ },
+ {
+  "nome": "Jimmy Bryan",
+  "jogo": "Bryan",
+  "como": "base",
+  "cc": "US",
+  "anos": "1951–1960",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Rodger Ward",
+  "jogo": "Ward",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1966",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Sam Hanks",
+  "jogo": "Hanks",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1957",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Jack McGrath",
+  "jogo": "McGrath",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1955",
+  "camps": "f1 aaa"
+ },
+ {
+  "nome": "Bob Sweikert",
+  "jogo": "Sweikert",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1956",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Troy Ruttman",
+  "jogo": "Ruttman",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1964",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Pat Flaherty",
+  "jogo": "Flaherty",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1963",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Johnnie Parsons",
+  "jogo": "Parsons",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1959",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Eddie Sachs",
+  "jogo": "Sachs",
+  "como": "base",
+  "cc": "US",
+  "anos": "1951–1964",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Jimmy Reece",
+  "jogo": "Reece",
+  "como": "base",
+  "cc": "US",
+  "anos": "1952–1958",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Don Freeland",
+  "jogo": "Freeland",
+  "como": "base",
+  "cc": "US",
+  "anos": "1952–1963",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Jerry Hoyt",
+  "jogo": "Hoyt",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1955",
+  "camps": "f1 aaa"
+ },
+ {
+  "nome": "Johnny Thomson",
+  "jogo": "Thomson",
+  "como": "base",
+  "cc": "US",
+  "anos": "1953–1960",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Ed Elisian",
+  "jogo": "Elisian",
+  "como": "base",
+  "cc": "US",
+  "anos": "1953–1959",
+  "camps": "f1 aaa usac"
+ },
+ {
+  "nome": "Walt Faulkner",
+  "jogo": "Faulkner",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1955",
+  "camps": "f1 aaa"
+ },
+ {
+  "nome": "Andy Linden",
+  "jogo": "Linden",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1957",
+  "camps": "aaa usac f1"
+ },
+ {
+  "nome": "A. J. Foyt",
+  "jogo": "Foyt",
+  "como": "base",
+  "cc": "US",
+  "anos": "1957–1997",
+  "camps": "f1 cart usac nascar_cup nascar_truck wsc canam"
+ },
+ {
+  "nome": "Parnelli Jones",
+  "jogo": "P. Jones",
+  "como": "base",
+  "cc": "US",
+  "anos": "1960–1967",
+  "camps": "usac canam"
+ },
+ {
+  "nome": "Bobby Unser",
+  "jogo": "B. Unser",
+  "como": "base",
+  "cc": "US",
+  "anos": "1955–1990",
+  "camps": "f1 cart aaa usac nascar_cup wsc canam"
+ },
+ {
+  "nome": "Al Unser",
+  "jogo": "A. Unser",
+  "como": "base",
+  "cc": "US",
+  "anos": "1964–1994",
+  "camps": "cart usac nascar_cup canam"
+ },
+ {
+  "nome": "Lloyd Ruby",
+  "jogo": "Ruby",
+  "como": "base",
+  "cc": "US",
+  "anos": "1958–1977",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Gordon Johncock",
+  "jogo": "Johncock",
+  "como": "base",
+  "cc": "US",
+  "anos": "1964–1992",
+  "camps": "cart usac nascar_cup"
+ },
+ {
+  "nome": "Joe Leonard",
+  "jogo": "Leonard",
+  "como": "base",
+  "cc": "US",
+  "anos": "1964–1975",
+  "camps": "usac canam"
+ },
+ {
+  "nome": "Roger McCluskey",
+  "jogo": "McCluskey",
+  "como": "base",
+  "cc": "US",
+  "anos": "1956–1979",
+  "camps": "cart usac nascar_cup"
+ },
+ {
+  "nome": "George Snider",
+  "jogo": "Snider",
+  "como": "base",
+  "cc": "US",
+  "anos": "1964–1992",
+  "camps": "cart usac"
+ },
+ {
+  "nome": "Jim Hurtubise",
+  "jogo": "Hurtubise",
+  "como": "base",
+  "cc": "US",
+  "anos": "1959–1980",
+  "camps": "f1 cart usac nascar_cup"
+ },
+ {
+  "nome": "Don Branson",
+  "jogo": "Branson",
+  "como": "base",
+  "cc": "US",
+  "anos": "1956–1966",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Johnny Rutherford",
+  "jogo": "Rutherford",
+  "como": "base",
+  "cc": "US",
+  "anos": "1962–1992",
+  "camps": "cart usac nascar_cup"
+ },
+ {
+  "nome": "Bobby Grim",
+  "jogo": "Grim",
+  "como": "base",
+  "cc": "US",
+  "anos": "1958–1969",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Jim Malloy",
+  "jogo": "Malloy",
+  "como": "base",
+  "cc": "US",
+  "anos": "1967–1972",
+  "camps": "usac"
+ },
+ {
+  "nome": "Jerry Hansen",
+  "jogo": "Hansen",
+  "como": "base",
+  "cc": "US",
+  "anos": "1966–1980",
+  "camps": "usac canam nascar_cup"
+ },
+ {
+  "nome": "Wally Dallenbach Sr.",
+  "jogo": "Dallenbach",
+  "como": "base",
+  "cc": "US",
+  "anos": "1965–1979",
+  "camps": "cart usac nascar_cup"
+ },
+ {
+  "nome": "Danny Ongais",
+  "jogo": "Ongais",
+  "como": "base",
+  "cc": "US",
+  "anos": "1968–1998",
+  "camps": "f1 indy cart usac wsc"
+ },
+ {
+  "nome": "Pancho Carter",
+  "jogo": "P. Carter",
+  "como": "base",
+  "cc": "US",
+  "anos": "1974–1995",
+  "camps": "cart usac nascar_cup"
+ },
+ {
+  "nome": "Steve Krisiloff",
+  "jogo": "Krisiloff",
+  "como": "base",
+  "cc": "US",
+  "anos": "1969–1984",
+  "camps": "cart usac"
+ },
+ {
+  "nome": "Tom Bigelow",
+  "jogo": "Bigelow",
+  "como": "base",
+  "cc": "US",
+  "anos": "1968–1998",
+  "camps": "cart usac nascar_cup arca"
+ },
+ {
+  "nome": "Kevin Cogan",
+  "jogo": "Cogan",
+  "como": "base",
+  "cc": "US",
+  "anos": "1980–1993",
+  "camps": "f1 cart wsc"
+ },
+ {
+  "nome": "Danny Sullivan",
+  "jogo": "Sullivan",
+  "como": "base",
+  "cc": "US",
+  "anos": "1974–2004",
+  "camps": "f1 euro_f2 f3_brit cart nascar_cup dtm wsc elms imsa alms"
+ },
+ {
+  "nome": "Arie Luyendyk",
+  "jogo": "Luyendyk",
+  "como": "base",
+  "cc": "NL",
+  "anos": "1978–2003",
+  "camps": "f3_euro_7584 indy cart"
+ },
+ {
+  "nome": "Scott Brayton",
+  "jogo": "Brayton",
+  "como": "base",
+  "cc": "US",
+  "anos": "1981–1996",
+  "camps": "indy cart nascar_cup"
+ },
+ {
+  "nome": "Bill Vukovich III",
+  "jogo": "Vukovich III",
+  "como": "base",
+  "cc": "US",
+  "anos": "1988–1990",
+  "camps": "cart"
+ },
+ {
+  "nome": "Théo Pourchaire",
+  "jogo": "Pourchaire",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2018–2026",
+  "camps": "f2 fnippon f3 f4_adac f4_franca indy wec elms"
+ },
+ {
+  "nome": "Phil Hill",
+  "jogo": "P. Hill",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1967",
+  "camps": "f1 aaa wsc canam"
+ },
+ {
+  "nome": "Olivier Gendebien",
+  "jogo": "Gendebien",
+  "como": "base",
+  "cc": "BE",
+  "anos": "1956–1961",
+  "camps": "f1"
+ },
+ {
+  "nome": "Carroll Shelby",
+  "jogo": "Shelby",
+  "como": "base",
+  "cc": "US",
+  "anos": "1958–1959",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Wolfgang von Trips",
+  "jogo": "von Trips",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1956–1961",
+  "camps": "f1"
+ },
+ {
+  "nome": "Ivor Bueb",
+  "jogo": "Bueb",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1957–1959",
+  "camps": "f1"
+ },
+ {
+  "nome": "Karl Kling",
+  "jogo": "Kling",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1954–1955",
+  "camps": "f1"
+ },
+ {
+  "nome": "Pierre Levegh",
+  "jogo": "Levegh",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1950–1951",
+  "camps": "f1"
+ },
+ {
+  "nome": "Tony Rolt",
+  "jogo": "Rolt",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1950–1955",
+  "camps": "f1"
+ },
+ {
+  "nome": "Paul Frère",
+  "jogo": "Frère",
+  "como": "base",
+  "cc": "BE",
+  "anos": "1952–1956",
+  "camps": "f1"
+ },
+ {
+  "nome": "Nino Vaccarella",
+  "jogo": "Vaccarella",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1961–1965",
+  "camps": "f1"
+ },
+ {
+  "nome": "Vic Elford",
+  "jogo": "Elford",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1968–1983",
+  "camps": "f1 euro_f2 wsc canam"
+ },
+ {
+  "nome": "Brian Redman",
+  "jogo": "Redman",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1967–1989",
+  "camps": "f1 euro_f2 wsc canam"
+ },
+ {
+  "nome": "Hans Herrmann",
+  "jogo": "Herrmann",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1953–1969",
+  "camps": "f1"
+ },
+ {
+  "nome": "Gerhard Mitter",
+  "jogo": "Mitter",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1963–1969",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "Rob Bell",
+  "jogo": "Bell",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2001–2024",
+  "camps": "fr_uk fia_gt gtwc_europe british_gt gt_open wec elms asian_lms imsa alms grand_am"
+ },
+ {
+  "nome": "Gérard Larrousse",
+  "jogo": "Larrousse",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1970–2000",
+  "camps": "f1 euro_f2 fia_gt canam"
+ },
+ {
+  "nome": "Helmut Marko",
+  "jogo": "Marko",
+  "como": "base",
+  "cc": "AT",
+  "anos": "1971–1972",
+  "camps": "f1 euro_f2"
+ },
+ {
+  "nome": "Leo Kinnunen",
+  "jogo": "Kinnunen",
+  "como": "base",
+  "cc": "FI",
+  "anos": "1974–1974",
+  "camps": "f1"
+ },
+ {
+  "nome": "Gijs van Lennep",
+  "jogo": "van Lennep",
+  "como": "base",
+  "cc": "NL",
+  "anos": "1967–1975",
+  "camps": "f1 euro_f2 canam"
+ },
+ {
+  "nome": "\"Ludwig\"",
+  "jogo": "Ludwig",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1984–1984",
+  "camps": "f3_euro_7584"
+ },
+ {
+  "nome": "Bob Wollek",
+  "jogo": "Wollek",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1971–2001",
+  "camps": "euro_f2 fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Jan Lammers",
+  "jogo": "Lammers",
+  "como": "base",
+  "cc": "NL",
+  "anos": "1978–2019",
+  "camps": "f1 euro_f2 f3000 f3_euro_7584 f3_brit cart btcc fia_gt wec wsc elms imsa alms grand_am"
+ },
+ {
+  "nome": "Johnny Dumfries",
+  "jogo": "Dumfries",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1983–1991",
+  "camps": "f1 f3000 f3_euro_7584 f3_brit wsc"
+ },
+ {
+  "nome": "Jean-Louis Schlesser",
+  "jogo": "Schlesser",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1976–1991",
+  "camps": "f1 euro_f2 f3_euro_7584 f3_brit f3_alema btcc etcc wsc"
+ },
+ {
+  "nome": "Frank Jelinski",
+  "jogo": "Jelinski",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1978–1993",
+  "camps": "euro_f2 f3_euro_7584 f3_alema dtm wsc imsa"
+ },
+ {
+  "nome": "James Weaver",
+  "jogo": "Weaver",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1981–2006",
+  "camps": "f3000 f3_euro_7584 f3_brit cart btcc fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Al Holbert",
+  "jogo": "Holbert",
+  "como": "base",
+  "cc": "US",
+  "anos": "1974–1987",
+  "camps": "fvee_brasil fvee super_vee cart nascar_cup wsc canam"
+ },
+ {
+  "nome": "Yannick Dalmas",
+  "jogo": "Dalmas",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1986–2001",
+  "camps": "f1 f3000 dtm fia_gt wsc imsa alms"
+ },
+ {
+  "nome": "Tom Kristensen",
+  "jogo": "Kristensen",
+  "como": "base",
+  "cc": "DK",
+  "anos": "1989–2014",
+  "camps": "f3000 fnippon f3_brit f3_alema dtm btcc super_gt fia_gt wec elms alms imsa"
+ },
+ {
+  "nome": "Vincenzo Sospiri",
+  "jogo": "Sospiri",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1990–2001",
+  "camps": "f1 f3000 fnippon indy cart alms"
+ },
+ {
+  "nome": "Éric Hélary",
+  "jogo": "Helary",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1991–2014",
+  "camps": "f3000 dtm wtcc fia_gt wsc elms alms"
+ },
+ {
+  "nome": "Rinaldo Capello",
+  "jogo": "Capello",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1999–2012",
+  "camps": "porsche_supercup dtm fia_gt wec elms alms"
+ },
+ {
+  "nome": "Frank Biela",
+  "jogo": "Biela",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1985–2008",
+  "camps": "f3_alema porsche_supercup dtm btcc alms"
+ },
+ {
+  "nome": "Emanuele Pirro",
+  "jogo": "Pirro",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1981–2013",
+  "camps": "f1 euro_f2 f3000 f3_euro_7584 f3_alema porsche_supercup dtm etcc supercars wsc alms grand_am"
+ },
+ {
+  "nome": "Dirk Werner",
+  "jogo": "Werner",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2004–2020",
+  "camps": "porsche_supercup dtm gtwc_europe gtwc_america wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Nicolas Minassian",
+  "jogo": "Minassian",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1996–2020",
+  "camps": "f3000 wsbn f3_brit indy cart supercars fia_gt wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Stéphane Sarrazin",
+  "jogo": "Sarrazin",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1998–2019",
+  "camps": "f1 f3000 wsbn supercars fia_gt wec elms imsa alms grand_am fe"
+ },
+ {
+  "nome": "Emmanuel Collard",
+  "jogo": "Collard",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1991–2024",
+  "camps": "f3000 porsche_supercup fia_gt british_gt gt_open wec elms asian_lms imsa alms grand_am"
+ },
+ {
+  "nome": "Mike Rockenfeller",
+  "jogo": "Rockenfeller",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2002–2026",
+  "camps": "nascar_cup porsche_supercup dtm super_gt fia_gt wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Alexandre Prémat",
+  "jogo": "Premat",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2002–2019",
+  "camps": "gp2 a1gp f3_euroseries fr_eurocup dtm supercars elms imsa alms"
+ },
+ {
+  "nome": "Timo Bernhard",
+  "jogo": "Bernhard",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2001–2020",
+  "camps": "porsche_supercup fia_gt gtwc_europe wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "André Lotterer",
+  "jogo": "Lotterer",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2000–2026",
+  "camps": "f1 a1gp fnippon f3_brit f3_alema cart super_gt fia_gt wec alms fe"
+ },
+ {
+  "nome": "Marcel Fässler",
+  "jogo": "Fässler",
+  "como": "base",
+  "cc": "CH",
+  "anos": "1997–2020",
+  "camps": "a1gp f3_brit f3_alema dtm fia_gt gt_open wec elms imsa alms"
+ },
+ {
+  "nome": "Benoît Tréluyer",
+  "jogo": "Tréluyer",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1998–2020",
+  "camps": "fnippon f3_brit f3_japao dtm super_gt wec alms"
+ },
+ {
+  "nome": "Lucas di Grassi",
+  "jogo": "di Grassi",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2003–2026",
+  "camps": "f1 gp2 f3_euroseries f3_brit stock_car stock_light dtm wec imsa alms fe"
+ },
+ {
+  "nome": "Loïc Duval",
+  "jogo": "Duval",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2004–2026",
+  "camps": "a1gp fnippon f3_euroseries dtm super_gt wec elms imsa alms fe"
+ },
+ {
+  "nome": "Neel Jani",
+  "jogo": "Jani",
+  "como": "base",
+  "cc": "CH",
+  "anos": "2001–2025",
+  "camps": "gp2 a1gp fr_eurocup cart porsche_supercup fia_gt wec elms asian_lms imsa alms fe"
+ },
+ {
+  "nome": "Marc Lieb",
+  "jogo": "Lieb",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2001–2018",
+  "camps": "porsche_supercup supercars fia_gt gt_open wec elms imsa alms grand_am"
+ },
+ {
+  "nome": "Mike Conway",
+  "jogo": "Conway",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1990–2026",
+  "camps": "gp2 f3_brit fr_eurocup fr_uk ff_brit indy wec elms imsa alms fe supercars"
+ },
+ {
+  "nome": "José María López",
+  "jogo": "López",
+  "como": "base",
+  "cc": "AR",
+  "anos": "2001–2026",
+  "camps": "f3000 gp2 fr_eurocup stock_car stock_light wtcc tcr_sa fia_gt wec elms imsa alms fe"
+ },
+ {
+  "nome": "Mathias Beche",
+  "jogo": "Beche",
+  "como": "base",
+  "cc": "CH",
+  "anos": "2012–2026",
+  "camps": "super_gt gtwc_europe wec elms asian_lms imsa alms"
+ },
+ {
+  "nome": "Ryō Hirakawa",
+  "jogo": "Hirakawa",
+  "como": "base",
+  "cc": "JP",
+  "anos": "2012–2026",
+  "camps": "fnippon f3_japao dtm super_gt wec elms"
+ },
+ {
+  "nome": "Kévin Estre",
+  "jogo": "Estre",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2011–2026",
+  "camps": "porsche_supercup supercars gtwc_europe gtwc_america gt_open wec imsa alms grand_am"
+ },
+ {
+  "nome": "Michael Christensen",
+  "jogo": "Christensen",
+  "como": "base",
+  "cc": "DK",
+  "anos": "2008–2026",
+  "camps": "gp3 fbmw_europe porsche_supercup gtwc_europe wec imsa alms"
+ },
+ {
+  "nome": "James Calado",
+  "jogo": "Calado",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2008–2026",
+  "camps": "gp2 gp3 f3_brit fr_eurocup fr_uk fr_nec gtwc_europe wec elms asian_lms imsa fe"
+ },
+ {
+  "nome": "Alessandro Pier Guidi",
+  "jogo": "Pier Guidi",
+  "como": "base",
+  "cc": "IT",
+  "anos": "2006–2026",
+  "camps": "a1gp stock_car stock_light fia_gt gtwc_europe british_gt gt_open wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Antonio Fuoco",
+  "jogo": "Fuoco",
+  "como": "base",
+  "cc": "IT",
+  "anos": "2013–2026",
+  "camps": "f2 gp3 f3_euro_fia fr_eurocup fr_alps gtwc_europe wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Miguel Molina",
+  "jogo": "Molina",
+  "como": "base",
+  "cc": "ES",
+  "anos": "2005–2026",
+  "camps": "wsr euroformula fr_eurocup stock_car stock_light dtm gtwc_europe gtwc_america wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Alex Lynn",
+  "jogo": "Lynn",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2009–2026",
+  "camps": "gp2 gp3 f3_euro_fia f3_euroseries f3_brit euroformula fr_eurocup fr_uk froc wec elms imsa fe"
+ },
+ {
+  "nome": "Jules Gounon",
+  "jogo": "Gounon",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2013–2026",
+  "camps": "fr_eurocup fr_nec f4_franca dtm super_gt gtwc_europe gtwc_america british_gt gt_open wec asian_lms imsa"
+ },
+ {
+  "nome": "Ferdinand Habsburg",
+  "jogo": "Habsburg",
+  "como": "base",
+  "cc": "AT",
+  "anos": "2015–2026",
+  "camps": "f3_euro_fia euroformula fr_eurocup fr_nec fr_alps froc dtm gt_open elms asian_lms gtwc_europe wec imsa"
+ },
+ {
+  "nome": "Ingo Hoffmann",
+  "jogo": "Ingo Hoffmann",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1975–2015",
+  "camps": "f1 euro_f2 f3_euro_7584 stock_car stock_light"
+ },
+ {
+  "nome": "Paulo Gomes",
+  "jogo": "Paulo Gomes",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1979–2007",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Affonso Giaffone Jr.",
+  "jogo": "A. Giaffone",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1979–1986",
+  "camps": "stock_car"
+ },
+ {
+  "nome": "Fábio Sotto Mayor",
+  "jogo": "Sotto Mayor",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1982–1986",
+  "camps": "stock_car"
+ },
+ {
+  "nome": "Marcos Gracia",
+  "jogo": "Marcos Gracia",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1980–1986",
+  "camps": "stock_car"
+ },
+ {
+  "nome": "Zeca Giaffone",
+  "jogo": "Zeca Giaffone",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1979–1986",
+  "camps": "stock_car"
+ },
+ {
+  "nome": "Pedro Muffato",
+  "jogo": "Muffato",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1985–1985",
+  "camps": "stock_car"
+ },
+ {
+  "nome": "Nonô Figueiredo",
+  "jogo": "Nonô Figueiredo",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2021",
+  "camps": "stock_car stock_light porsche_supercup tcr_sa gt_open"
+ },
+ {
+  "nome": "Lian Duarte",
+  "jogo": "Lian Duarte",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1972–1986",
+  "camps": "euro_f2 stock_car"
+ },
+ {
+  "nome": "Xandy Negrão",
+  "jogo": "Xandy Negrão",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2003",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "David Muffato",
+  "jogo": "David Muffato",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2018",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Beto Giorgi",
+  "jogo": "Beto Giorgi",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2009",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Fabio Carbone",
+  "jogo": "Fabio Carbone",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2018",
+  "camps": "wsr fnippon f3_euroseries f3_brit f3_alema f3_japao fr_eurocup stock_car stock_light super_gt"
+ },
+ {
+  "nome": "Cacá Bueno",
+  "jogo": "Cacá Bueno",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2002–2026",
+  "camps": "stock_car stock_light porsche_supercup wtcc tcr_sa gt_open"
+ },
+ {
+  "nome": "Pedro Gomes",
+  "jogo": "Pedro Gomes",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2002–2010",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Popó Bueno",
+  "jogo": "Popó Bueno",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2003–2016",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Luiz Bueno",
+  "jogo": "Luiz Bueno",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1973–1983",
+  "camps": "f1 stock_car"
+ },
+ {
+  "nome": "Márcio Campos",
+  "jogo": "Márcio Campos",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2016–2019",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Carlos Alves",
+  "jogo": "Carlos Alves",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2008",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Duda Pamplona",
+  "jogo": "Duda Pamplona",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2016",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Átila Abreu",
+  "jogo": "Átila Abreu",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2003–2026",
+  "camps": "f3_euroseries fbmw_adac stock_car stock_light"
+ },
+ {
+  "nome": "Ricardo Maurício",
+  "jogo": "Ricardo Maurício",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1997–2026",
+  "camps": "f3000 f3_brit euroformula stock_car stock_light"
+ },
+ {
+  "nome": "Thiago Camilo",
+  "jogo": "Thiago Camilo",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2003–2026",
+  "camps": "stock_car stock_light tcr_sa"
+ },
+ {
+  "nome": "Allam Khodair",
+  "jogo": "Allam Khodair",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2003–2026",
+  "camps": "a1gp fr_uk stock_car stock_light gtwc_america gt_open"
+ },
+ {
+  "nome": "Xandinho Negrão",
+  "jogo": "Xandinho Negrão",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2004–2016",
+  "camps": "gp2 f3_brit stock_car stock_light fia_gt wec imsa a1gp"
+ },
+ {
+  "nome": "Valdeno Brito",
+  "jogo": "Valdeno Brito",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2004–2021",
+  "camps": "stock_car stock_light porsche_supercup tcr_sa"
+ },
+ {
+  "nome": "Max Wilson",
+  "jogo": "Max Wilson",
+  "como": "base",
+  "cc": "BR",
+  "anos": "1995–2021",
+  "camps": "f3000 f3_alema cart stock_car stock_light dtm supercars alms"
+ },
+ {
+  "nome": "Guto Negrão",
+  "jogo": "Guto Negrão",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2001–2009",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Marcos Gomes",
+  "jogo": "Marcos Gomes",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2006–2026",
+  "camps": "stock_car stock_light gtwc_europe wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Felipe Lapenna",
+  "jogo": "Felipe Lapenna",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2007–2024",
+  "camps": "f3_sudam fr_eurocup stock_car stock_light tcr_sa"
+ },
+ {
+  "nome": "Galid Osman",
+  "jogo": "Galid Osman",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2007–2026",
+  "camps": "f3_sudam stock_car stock_light tcr_world tcr_sa gt_open"
+ },
+ {
+  "nome": "Daniel Serra",
+  "jogo": "Daniel Serra",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2005–2026",
+  "camps": "fr_eurocup stock_car stock_light gtwc_europe gtwc_america gt_open wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Felipe Fraga",
+  "jogo": "Felipe Fraga",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2012–2026",
+  "camps": "fr_eurocup fr_alps stock_car stock_light dtm tcr_sa gtwc_europe wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Júlio Campos",
+  "jogo": "Julio Campos",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2002–2026",
+  "camps": "barber stock_car stock_light imsa"
+ },
+ {
+  "nome": "Denis Navarro",
+  "jogo": "Denis Navarro",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2008–2026",
+  "camps": "f3_sudam ip2000 stock_car stock_light"
+ },
+ {
+  "nome": "Guilherme Salas",
+  "jogo": "Guilherme Salas",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2015–2026",
+  "camps": "stock_car stock_light tcr_sa gt_open"
+ },
+ {
+  "nome": "Lucas Foresti",
+  "jogo": "Lucas Foresti",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2009–2026",
+  "camps": "wsr gp3 f3_brit f3_sudam froc stock_car stock_light tcr_sa"
+ },
+ {
+  "nome": "Bruno Baptista",
+  "jogo": "Bruno Baptista",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2015–2025",
+  "camps": "gp3 fr_eurocup fr_nec fr_alps froc stock_car stock_light tcr_sa gtwc_europe"
+ },
+ {
+  "nome": "Sérgio Jimenez",
+  "jogo": "Sérgio Jimenez",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2003–2023",
+  "camps": "gp2 a1gp euroformula fr_uk stock_car stock_light tcr_sa gtwc_america"
+ },
+ {
+  "nome": "Diego Nunes",
+  "jogo": "Diego Nunes",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2008–2026",
+  "camps": "gp2 gp2_asia stock_car stock_light tcr_world tcr_sa gtwc_america"
+ },
+ {
+  "nome": "Vitor Genz",
+  "jogo": "Vitor Genz",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2013–2022",
+  "camps": "stock_car stock_light tcr_sa"
+ },
+ {
+  "nome": "Gabriel Casagrande",
+  "jogo": "Gabriel Casagrande",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2012–2026",
+  "camps": "f3_sudam fr_eurocup fr_nec fr_alps arca stock_car stock_light imsa"
+ },
+ {
+  "nome": "Gaetano di Mauro",
+  "jogo": "Gaetano di Mauro",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2013–2026",
+  "camps": "f3_sudam stock_car stock_light tcr_sa"
+ },
+ {
+  "nome": "Rafael Suzuki",
+  "jogo": "Rafael Suzuki",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2008–2026",
+  "camps": "f3_alema f3_japao stock_car stock_light tcr_world tcr_sa gt_open"
+ },
+ {
+  "nome": "Enzo Elias",
+  "jogo": "Enzo Elias",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2022–2026",
+  "camps": "stock_car stock_light"
+ },
+ {
+  "nome": "Zezinho Muggiati",
+  "jogo": "Zezinho Muggiati",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2019–2026",
+  "camps": "f4_italia stock_car stock_light"
+ },
+ {
+  "nome": "Arthur Leist",
+  "jogo": "Arthur Leist",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2018–2026",
+  "camps": "f4_eua stock_car stock_light tcr_sa"
+ },
+ {
+  "nome": "Herb Thomas",
+  "jogo": "Herb Thomas",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Tim Flock",
+  "jogo": "Tim Flock",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Lee Petty",
+  "jogo": "Lee Petty",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Buck Baker",
+  "jogo": "Buck Baker",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1976",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Fireball Roberts",
+  "jogo": "Fireball Roberts",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Curtis Turner",
+  "jogo": "Curtis Turner",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1963",
+  "camps": "usac nascar_cup"
+ },
+ {
+  "nome": "Junior Johnson",
+  "jogo": "Junior Johnson",
+  "como": "base",
+  "cc": "US",
+  "anos": "1954–1963",
+  "camps": "usac nascar_cup"
+ },
+ {
+  "nome": "Speedy Thompson",
+  "jogo": "Speedy Thompson",
+  "como": "base",
+  "cc": null,
+  "anos": "1953–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Fonty Flock",
+  "jogo": "Fonty Flock",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Marvin Panch",
+  "jogo": "Marvin Panch",
+  "como": "base",
+  "cc": null,
+  "anos": "1954–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Jim Paschal",
+  "jogo": "Jim Paschal",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Joe Weatherly",
+  "jogo": "Joe Weatherly",
+  "como": "base",
+  "cc": null,
+  "anos": "1954–1963",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Cotton Owens",
+  "jogo": "Cotton Owens",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Dick Rathmann",
+  "jogo": "Dick Rathmann",
+  "como": "base",
+  "cc": "US",
+  "anos": "1950–1964",
+  "camps": "f1 aaa usac nascar_cup"
+ },
+ {
+  "nome": "Bob Welborn",
+  "jogo": "Bob Welborn",
+  "como": "base",
+  "cc": null,
+  "anos": "1954–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Jack Smith",
+  "jogo": "Jack Smith",
+  "como": "base",
+  "cc": null,
+  "anos": "1950–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Gwyn Staley",
+  "jogo": "Gwyn Staley",
+  "como": "base",
+  "cc": null,
+  "anos": "1954–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Richard Petty",
+  "jogo": "Richard Petty",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1992",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "David Pearson",
+  "jogo": "David Pearson",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–1989",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Ned Jarrett",
+  "jogo": "Ned Jarrett",
+  "como": "base",
+  "cc": null,
+  "anos": "1954–1954",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Bobby Isaac",
+  "jogo": "Bobby Isaac",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1976",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Cale Yarborough",
+  "jogo": "Cale Yarborough",
+  "como": "base",
+  "cc": "US",
+  "anos": "1966–1988",
+  "camps": "usac nascar_cup"
+ },
+ {
+  "nome": "Bobby Allison",
+  "jogo": "Bobby Allison",
+  "como": "base",
+  "cc": "US",
+  "anos": "1971–1988",
+  "camps": "usac nascar_cup nascar_xfinity canam"
+ },
+ {
+  "nome": "LeeRoy Yarbrough",
+  "jogo": "LeeRoy Yarbrough",
+  "como": "base",
+  "cc": "US",
+  "anos": "1966–1971",
+  "camps": "usac canam"
+ },
+ {
+  "nome": "Buddy Baker",
+  "jogo": "Buddy Baker",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1994",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "James Hylton",
+  "jogo": "James Hylton",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–2013",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Paul Goldsmith",
+  "jogo": "Paul Goldsmith",
+  "como": "base",
+  "cc": "US",
+  "anos": "1958–1965",
+  "camps": "f1 usac"
+ },
+ {
+  "nome": "Darel Dieringer",
+  "jogo": "Darel Dieringer",
+  "como": "base",
+  "cc": null,
+  "anos": "1963–1976",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Charlie Glotzbach",
+  "jogo": "Charlie Glotzbach",
+  "como": "base",
+  "cc": "US",
+  "anos": "1969–1994",
+  "camps": "usac nascar_cup"
+ },
+ {
+  "nome": "Elmo Langley",
+  "jogo": "Elmo Langley",
+  "como": "base",
+  "cc": null,
+  "anos": "1954–1981",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Wendell Scott",
+  "jogo": "Wendell Scott",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1973",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Benny Parsons",
+  "jogo": "Benny Parsons",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1988",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Darrell Waltrip",
+  "jogo": "Darrell Waltrip",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–2006",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Donnie Allison",
+  "jogo": "Donnie Allison",
+  "como": "base",
+  "cc": "US",
+  "anos": "1970–1989",
+  "camps": "usac nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Neil Bonnett",
+  "jogo": "Neil Bonnett",
+  "como": "base",
+  "cc": "US",
+  "anos": "1974–1994",
+  "camps": "cart usac nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Dave Marcis",
+  "jogo": "Dave Marcis",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–2002",
+  "camps": "nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Lennie Pond",
+  "jogo": "Lennie Pond",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–1989",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Richard Childress",
+  "jogo": "Richard Childress",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–1981",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Cecil Gordon",
+  "jogo": "Cecil Gordon",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1985",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Coo Coo Marlin",
+  "jogo": "Coo Coo Marlin",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–1980",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "J. D. McDuffie",
+  "jogo": "J.D. McDuffie",
+  "como": "base",
+  "cc": null,
+  "anos": "1971–1991",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Dick Brooks",
+  "jogo": "Dick Brooks",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–1985",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Ricky Rudd",
+  "jogo": "Ricky Rudd",
+  "como": "base",
+  "cc": null,
+  "anos": "1975–2007",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Terry Labonte",
+  "jogo": "Terry Labonte",
+  "como": "base",
+  "cc": "US",
+  "anos": "1978–2014",
+  "camps": "nascar_cup nascar_xfinity grand_am"
+ },
+ {
+  "nome": "Harry Gant",
+  "jogo": "Harry Gant",
+  "como": "base",
+  "cc": null,
+  "anos": "1973–1996",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Bill Elliott",
+  "jogo": "Bill Elliott",
+  "como": "base",
+  "cc": null,
+  "anos": "1975–2018",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Rusty Wallace",
+  "jogo": "Rusty Wallace",
+  "como": "base",
+  "cc": "US",
+  "anos": "1980–2006",
+  "camps": "nascar_cup nascar_xfinity nascar_truck grand_am"
+ },
+ {
+  "nome": "Geoff Bodine",
+  "jogo": "Geoff Bodine",
+  "como": "base",
+  "cc": null,
+  "anos": "1979–2011",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Tim Richmond",
+  "jogo": "Tim Richmond",
+  "como": "base",
+  "cc": "US",
+  "anos": "1979–1987",
+  "camps": "cart nascar_cup"
+ },
+ {
+  "nome": "Davey Allison",
+  "jogo": "Davey Allison",
+  "como": "base",
+  "cc": null,
+  "anos": "1985–1993",
+  "camps": "nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Alan Kulwicki",
+  "jogo": "Alan Kulwicki",
+  "como": "base",
+  "cc": null,
+  "anos": "1985–1993",
+  "camps": "nascar_cup"
+ },
+ {
+  "nome": "Mark Martin",
+  "jogo": "Mark Martin",
+  "como": "base",
+  "cc": "US",
+  "anos": "1981–2013",
+  "camps": "nascar_cup nascar_xfinity nascar_truck grand_am imsa"
+ },
+ {
+  "nome": "Kyle Petty",
+  "jogo": "Kyle Petty",
+  "como": "base",
+  "cc": "US",
+  "anos": "1979–2009",
+  "camps": "nascar_cup nascar_xfinity grand_am"
+ },
+ {
+  "nome": "Dale Jarrett",
+  "jogo": "Dale Jarrett",
+  "como": "base",
+  "cc": null,
+  "anos": "1984–2008",
+  "camps": "nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Sterling Marlin",
+  "jogo": "Sterling Marlin",
+  "como": "base",
+  "cc": null,
+  "anos": "1976–2009",
+  "camps": "nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Ken Schrader",
+  "jogo": "Ken Schrader",
+  "como": "base",
+  "cc": "US",
+  "anos": "1983–2023",
+  "camps": "cart nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Morgan Shepherd",
+  "jogo": "Morgan Shepherd",
+  "como": "base",
+  "cc": null,
+  "anos": "1977–2019",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Jeff Gordon",
+  "jogo": "Jeff Gordon",
+  "como": "base",
+  "cc": "US",
+  "anos": "1990–2017",
+  "camps": "nascar_cup nascar_xfinity imsa grand_am"
+ },
+ {
+  "nome": "Ernie Irvan",
+  "jogo": "Ernie Irvan",
+  "como": "base",
+  "cc": null,
+  "anos": "1987–1999",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Bobby Labonte",
+  "jogo": "Bobby Labonte",
+  "como": "base",
+  "cc": "US",
+  "anos": "1988–2016",
+  "camps": "nascar_cup nascar_xfinity nascar_truck grand_am"
+ },
+ {
+  "nome": "Jeff Burton",
+  "jogo": "Jeff Burton",
+  "como": "base",
+  "cc": "US",
+  "anos": "1988–2025",
+  "camps": "nascar_cup nascar_xfinity nascar_truck gtwc_america"
+ },
+ {
+  "nome": "Tony Stewart",
+  "jogo": "Tony Stewart",
+  "como": "base",
+  "cc": "US",
+  "anos": "1995–2026",
+  "camps": "indy nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "Matt Kenseth",
+  "jogo": "Matt Kenseth",
+  "como": "base",
+  "cc": "US",
+  "anos": "1996–2020",
+  "camps": "nascar_cup nascar_xfinity grand_am"
+ },
+ {
+  "nome": "Jeremy Mayfield",
+  "jogo": "Jeremy Mayfield",
+  "como": "base",
+  "cc": null,
+  "anos": "1993–2009",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Michael Waltrip",
+  "jogo": "Michael Waltrip",
+  "como": "base",
+  "cc": "US",
+  "anos": "1985–2017",
+  "camps": "nascar_cup nascar_xfinity nascar_truck wec grand_am"
+ },
+ {
+  "nome": "Brett Bodine",
+  "jogo": "Brett Bodine",
+  "como": "base",
+  "cc": null,
+  "anos": "1986–2003",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Ted Musgrave",
+  "jogo": "Ted Musgrave",
+  "como": "base",
+  "cc": null,
+  "anos": "1989–2010",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Rick Mast",
+  "jogo": "Rick Mast",
+  "como": "base",
+  "cc": null,
+  "anos": "1988–2002",
+  "camps": "nascar_cup nascar_xfinity"
+ },
+ {
+  "nome": "Derrike Cope",
+  "jogo": "Derrike Cope",
+  "como": "base",
+  "cc": null,
+  "anos": "1982–2021",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Steve Grissom",
+  "jogo": "Steve Grissom",
+  "como": "base",
+  "cc": null,
+  "anos": "1988–2009",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "John Andretti",
+  "jogo": "John Andretti",
+  "como": "base",
+  "cc": "US",
+  "anos": "1987–2012",
+  "camps": "indy cart nascar_cup nascar_xfinity nascar_truck wsc imsa grand_am"
+ },
+ {
+  "nome": "Johnny Benson",
+  "jogo": "Johnny Benson",
+  "como": "base",
+  "cc": null,
+  "anos": "1993–2010",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Kenny Irwin Jr.",
+  "jogo": "Kenny Irwin",
+  "como": "base",
+  "cc": null,
+  "anos": "1994–2000",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Tony Raines",
+  "jogo": "Tony Raines",
+  "como": "base",
+  "cc": null,
+  "anos": "1997–2013",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Elliott Sadler",
+  "jogo": "Elliott Sadler",
+  "como": "base",
+  "cc": null,
+  "anos": "1995–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Casey Atwood",
+  "jogo": "Casey Atwood",
+  "como": "base",
+  "cc": null,
+  "anos": "1996–2009",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Jimmie Johnson",
+  "jogo": "Jimmie Johnson",
+  "como": "base",
+  "cc": "US",
+  "anos": "1998–2026",
+  "camps": "indy nascar_cup nascar_xfinity nascar_truck imsa grand_am"
+ },
+ {
+  "nome": "Kevin Harvick",
+  "jogo": "Kevin Harvick",
+  "como": "base",
+  "cc": null,
+  "anos": "1996–2023",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Kurt Busch",
+  "jogo": "Kurt Busch",
+  "como": "base",
+  "cc": "US",
+  "anos": "2000–2022",
+  "camps": "indy nascar_cup nascar_xfinity nascar_truck grand_am"
+ },
+ {
+  "nome": "Kyle Busch",
+  "jogo": "Kyle Busch",
+  "como": "base",
+  "cc": "US",
+  "anos": "2001–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca imsa grand_am"
+ },
+ {
+  "nome": "Carl Edwards",
+  "jogo": "Carl Edwards",
+  "como": "base",
+  "cc": "US",
+  "anos": "2002–2016",
+  "camps": "nascar_cup nascar_xfinity nascar_truck grand_am"
+ },
+ {
+  "nome": "Denny Hamlin",
+  "jogo": "Denny Hamlin",
+  "como": "base",
+  "cc": null,
+  "anos": "2004–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Greg Biffle",
+  "jogo": "Greg Biffle",
+  "como": "base",
+  "cc": "US",
+  "anos": "1996–2022",
+  "camps": "nascar_cup nascar_xfinity nascar_truck grand_am"
+ },
+ {
+  "nome": "Ryan Newman",
+  "jogo": "Ryan Newman",
+  "como": "base",
+  "cc": null,
+  "anos": "2000–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Jamie McMurray",
+  "jogo": "Jamie McMurray",
+  "como": "base",
+  "cc": "US",
+  "anos": "1999–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck imsa grand_am"
+ },
+ {
+  "nome": "Clint Bowyer",
+  "jogo": "Clint Bowyer",
+  "como": "base",
+  "cc": null,
+  "anos": "2003–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Brad Keselowski",
+  "jogo": "Brad Keselowski",
+  "como": "base",
+  "cc": null,
+  "anos": "2004–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Martin Truex Jr.",
+  "jogo": "Martin Truex Jr.",
+  "como": "base",
+  "cc": null,
+  "anos": "2001–2025",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Kasey Kahne",
+  "jogo": "Kasey Kahne",
+  "como": "base",
+  "cc": null,
+  "anos": "2002–2025",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Casey Mears",
+  "jogo": "Casey Mears",
+  "como": "base",
+  "cc": "US",
+  "anos": "1996–2026",
+  "camps": "indy cart indy_lights nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "Joey Logano",
+  "jogo": "Joey Logano",
+  "como": "base",
+  "cc": "US",
+  "anos": "2008–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "David Ragan",
+  "jogo": "David Ragan",
+  "como": "base",
+  "cc": "US",
+  "anos": "2003–2024",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "Paul Menard",
+  "jogo": "Paul Menard",
+  "como": "base",
+  "cc": "US",
+  "anos": "2003–2021",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "Reed Sorenson",
+  "jogo": "Reed Sorenson",
+  "como": "base",
+  "cc": null,
+  "anos": "2004–2020",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Scott Riggs",
+  "jogo": "Scott Riggs",
+  "como": "base",
+  "cc": null,
+  "anos": "1999–2014",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Travis Kvapil",
+  "jogo": "Travis Kvapil",
+  "como": "base",
+  "cc": null,
+  "anos": "2001–2019",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "David Reutimann",
+  "jogo": "David Reutimann",
+  "como": "base",
+  "cc": null,
+  "anos": "2002–2014",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Kyle Larson",
+  "jogo": "Kyle Larson",
+  "como": "base",
+  "cc": "US",
+  "anos": "2012–2026",
+  "camps": "indy nascar_cup nascar_xfinity nascar_truck arca imsa"
+ },
+ {
+  "nome": "Chase Elliott",
+  "jogo": "Chase Elliott",
+  "como": "base",
+  "cc": "US",
+  "anos": "2012–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca imsa"
+ },
+ {
+  "nome": "Ryan Blaney",
+  "jogo": "Ryan Blaney",
+  "como": "base",
+  "cc": null,
+  "anos": "2011–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Erik Jones",
+  "jogo": "Erik Jones",
+  "como": "base",
+  "cc": null,
+  "anos": "2012–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Austin Dillon",
+  "jogo": "Austin Dillon",
+  "como": "base",
+  "cc": "US",
+  "anos": "2008–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca imsa"
+ },
+ {
+  "nome": "Aric Almirola",
+  "jogo": "Aric Almirola",
+  "como": "base",
+  "cc": null,
+  "anos": "2005–2025",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Daniel Suárez",
+  "jogo": "Daniel Suárez",
+  "como": "base",
+  "cc": null,
+  "anos": "2014–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "William Byron",
+  "jogo": "William Byron",
+  "como": "base",
+  "cc": null,
+  "anos": "2015–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Alex Bowman",
+  "jogo": "Alex Bowman",
+  "como": "base",
+  "cc": null,
+  "anos": "2011–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Ricky Stenhouse Jr.",
+  "jogo": "Ricky Stenhouse Jr.",
+  "como": "base",
+  "cc": "US",
+  "anos": "2008–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "Chris Buescher",
+  "jogo": "Chris Buescher",
+  "como": "base",
+  "cc": null,
+  "anos": "2009–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Christopher Bell",
+  "jogo": "Christopher Bell",
+  "como": "base",
+  "cc": null,
+  "anos": "2015–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Tyler Reddick",
+  "jogo": "Tyler Reddick",
+  "como": "base",
+  "cc": null,
+  "anos": "2012–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Cole Custer",
+  "jogo": "Cole Custer",
+  "como": "base",
+  "cc": null,
+  "anos": "2014–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Bubba Wallace",
+  "jogo": "Bubba Wallace",
+  "como": "base",
+  "cc": null,
+  "anos": "2012–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Ross Chastain",
+  "jogo": "Ross Chastain",
+  "como": "base",
+  "cc": null,
+  "anos": "2011–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck"
+ },
+ {
+  "nome": "Michael McDowell",
+  "jogo": "Michael McDowell",
+  "como": "base",
+  "cc": "US",
+  "anos": "2005–2026",
+  "camps": "cart nascar_cup nascar_xfinity nascar_truck arca grand_am"
+ },
+ {
+  "nome": "Ty Dillon",
+  "jogo": "Ty Dillon",
+  "como": "base",
+  "cc": null,
+  "anos": "2010–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Corey LaJoie",
+  "jogo": "Corey LaJoie",
+  "como": "base",
+  "cc": null,
+  "anos": "2009–2026",
+  "camps": "nascar_cup nascar_xfinity nascar_truck arca"
+ },
+ {
+  "nome": "Ty Gibbs",
+  "jogo": "Ty Gibbs",
+  "como": "base",
+  "cc": null,
+  "anos": "2019–2026",
+  "camps": "nascar_cup nascar_xfinity arca"
+ },
+ {
+  "nome": "Austin Cindric",
+  "jogo": "Austin Cindric",
+  "como": "base",
+  "cc": "US",
+  "anos": "2013–2026",
+  "camps": "usf2000 nascar_cup nascar_xfinity nascar_truck arca supercars imsa"
+ },
+ {
+  "nome": "Armin Hahne",
+  "jogo": "Hahne",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1979–1999",
+  "camps": "euro_f2 dtm btcc etcc super_gt fia_gt wsc"
+ },
+ {
+  "nome": "Roberto Ravaglia",
+  "jogo": "Ravaglia",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1982–1997",
+  "camps": "f3_euro_7584 f3_alema dtm btcc etcc fia_gt wsc"
+ },
+ {
+  "nome": "Johnny Cecotto",
+  "jogo": "Cecotto",
+  "como": "base",
+  "cc": "VE",
+  "anos": "1980–2003",
+  "camps": "f1 euro_f2 dtm btcc etcc fia_gt alms"
+ },
+ {
+  "nome": "Hans Heyer",
+  "jogo": "Heyer",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1976–1986",
+  "camps": "f1 euro_f2 wsc"
+ },
+ {
+  "nome": "Otto Rensing",
+  "jogo": "Rensing",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1986–1991",
+  "camps": "f3000 f3_brit f3_alema dtm wsc"
+ },
+ {
+  "nome": "Jürgen Hamelmann",
+  "jogo": "Hamelmann",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1983–1983",
+  "camps": "wsc"
+ },
+ {
+  "nome": "Kurt Thiim",
+  "jogo": "Thiim",
+  "como": "base",
+  "cc": "DK",
+  "anos": "1980–2004",
+  "camps": "f3_euro_7584 f3_brit f3_alema porsche_supercup dtm fia_gt wsc"
+ },
+ {
+  "nome": "Leopold von Bayern",
+  "jogo": "von Bayern",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1983–1992",
+  "camps": "wsc dtm"
+ },
+ {
+  "nome": "Harald Grohs",
+  "jogo": "Grohs",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1980–1990",
+  "camps": "euro_f2 dtm wsc"
+ },
+ {
+  "nome": "Fabien Giroix",
+  "jogo": "Giroix",
+  "como": "base",
+  "cc": "FR",
+  "anos": "1986–2014",
+  "camps": "f3000 f3_alema dtm fia_gt wec imsa"
+ },
+ {
+  "nome": "Markus Oestreich",
+  "jogo": "Oestreich",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1985–1993",
+  "camps": "f3000 f3_alema dtm btcc etcc"
+ },
+ {
+  "nome": "Roland Asch",
+  "jogo": "Asch",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1990–2004",
+  "camps": "porsche_supercup dtm etcc"
+ },
+ {
+  "nome": "Manuel Reuter",
+  "jogo": "Reuter",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1985–2005",
+  "camps": "f3_alema dtm wsc imsa"
+ },
+ {
+  "nome": "Fabrizio Giovanardi",
+  "jogo": "Giovanardi",
+  "como": "base",
+  "cc": "IT",
+  "anos": "1989–2018",
+  "camps": "f3000 dtm btcc wtcc etcc supercars"
+ },
+ {
+  "nome": "Kris Nissen",
+  "jogo": "Nissen",
+  "como": "base",
+  "cc": "DK",
+  "anos": "1982–2001",
+  "camps": "f3000 f3_euro_7584 f3_alema dtm btcc wsc"
+ },
+ {
+  "nome": "Roland Ratzenberger",
+  "jogo": "Ratzenberger",
+  "como": "base",
+  "cc": "AT",
+  "anos": "1987–1994",
+  "camps": "f1 f3000_brit f3_brit btcc wsc"
+ },
+ {
+  "nome": "Ralf Kelleners",
+  "jogo": "Kelleners",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1988–2008",
+  "camps": "f3_alema porsche_supercup dtm fia_gt elms imsa alms grand_am"
+ },
+ {
+  "nome": "Jürgen von Gartzen",
+  "jogo": "von Gartzen",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1984–2003",
+  "camps": "f3_alema fia_gt alms"
+ },
+ {
+  "nome": "Mattias Ekström",
+  "jogo": "Ekström",
+  "como": "base",
+  "cc": "SE",
+  "anos": "2001–2018",
+  "camps": "nascar_cup dtm supercars"
+ },
+ {
+  "nome": "Gary Paffett",
+  "jogo": "Paffett",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2000–2019",
+  "camps": "f3000 f3_brit f3_alema dtm fe"
+ },
+ {
+  "nome": "Martin Tomczyk",
+  "jogo": "Tomczyk",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2000–2021",
+  "camps": "f3_alema dtm gtwc_europe wec imsa"
+ },
+ {
+  "nome": "Timo Scheider",
+  "jogo": "Scheider",
+  "como": "base",
+  "cc": "DE",
+  "anos": "1997–2018",
+  "camps": "a1gp f3_alema dtm wtcc fia_gt"
+ },
+ {
+  "nome": "Bruno Spengler",
+  "jogo": "Spengler",
+  "como": "base",
+  "cc": "CA",
+  "anos": "2001–2024",
+  "camps": "f3_euroseries fr_eurocup dtm super_gt wec imsa"
+ },
+ {
+  "nome": "Peter Dumbreck",
+  "jogo": "Dumbreck",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1997–2014",
+  "camps": "fnippon f3_brit porsche_supercup dtm super_gt fia_gt wec elms imsa alms"
+ },
+ {
+  "nome": "Alain Menu",
+  "jogo": "Menu",
+  "como": "base",
+  "cc": "CH",
+  "anos": "1988–2015",
+  "camps": "f3000 f3000_brit f3_brit porsche_supercup dtm btcc wtcc supercars fia_gt alms"
+ },
+ {
+  "nome": "Andy Priaulx",
+  "jogo": "Priaulx",
+  "como": "base",
+  "cc": "GB",
+  "anos": "1997–2019",
+  "camps": "wsbn f3_brit dtm btcc wtcc etcc supercars british_gt wec elms imsa alms"
+ },
+ {
+  "nome": "René Rast",
+  "jogo": "Rast",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2003–2026",
+  "camps": "fbmw_adac porsche_supercup dtm wtcc super_gt gtwc_europe wec imsa alms grand_am fe"
+ },
+ {
+  "nome": "Marco Wittmann",
+  "jogo": "Wittmann",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2007–2026",
+  "camps": "f3_euroseries f3_brit fbmw_adac fbmw_europe dtm super_gt gtwc_europe wec imsa"
+ },
+ {
+  "nome": "Nico Müller",
+  "jogo": "Müller",
+  "como": "base",
+  "cc": "CH",
+  "anos": "2009–2026",
+  "camps": "wsr gp3 fr_eurocup stock_car dtm gtwc_europe wec imsa fe"
+ },
+ {
+  "nome": "Lucas Auer",
+  "jogo": "Auer",
+  "como": "base",
+  "cc": "AT",
+  "anos": "2012–2026",
+  "camps": "fnippon f3_euro_fia f3_euroseries f3_alema froc dtm gtwc_europe gtwc_america gt_open wec asian_lms imsa"
+ },
+ {
+  "nome": "Tom Blomqvist",
+  "jogo": "Blomqvist",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2009–2026",
+  "camps": "f3_euro_fia f3_euroseries f3_brit f3_alema fr_uk indy dtm gtwc_europe wec elms asian_lms imsa fe"
+ },
+ {
+  "nome": "Christian Vietoris",
+  "jogo": "Vietoris",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2005–2016",
+  "camps": "gp2 gp2_asia a1gp f3_euroseries f3_alema fbmw_adac dtm"
+ },
+ {
+  "nome": "Daniel Juncadella",
+  "jogo": "Juncadella",
+  "como": "base",
+  "cc": "ES",
+  "anos": "2007–2026",
+  "camps": "gp3 f3_euro_fia f3_euroseries f3_brit euroformula fbmw_adac fbmw_europe dtm gtwc_europe gtwc_america british_gt wec elms imsa"
+ },
+ {
+  "nome": "Augusto Farfus",
+  "jogo": "Farfus",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2000–2026",
+  "camps": "fr_eurocup stock_car stock_light dtm wtcc etcc supercars super_gt gtwc_europe gtwc_america gt_open wec elms asian_lms imsa alms"
+ },
+ {
+  "nome": "Robin Frijns",
+  "jogo": "Frijns",
+  "como": "base",
+  "cc": "NL",
+  "anos": "2009–2026",
+  "camps": "gp2 wsr fr_eurocup fr_nec fbmw_europe stock_car dtm gtwc_europe wec imsa fe"
+ },
+ {
+  "nome": "Thomas Preining",
+  "jogo": "Preining",
+  "como": "base",
+  "cc": "AT",
+  "anos": "2015–2026",
+  "camps": "f4_italia f4_adac porsche_supercup dtm gtwc_europe gt_open wec elms imsa"
+ },
+ {
+  "nome": "Sam Bird",
+  "jogo": "Bird",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2004–2025",
+  "camps": "gp2 gp2_asia wsr f3_euroseries f3_brit fr_uk fbmw_uk wec imsa fe"
+ },
+ {
+  "nome": "Daniel Abt",
+  "jogo": "Abt",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2009–2020",
+  "camps": "gp2 wsr gp3 f3_euroseries f3_brit f3_alema wec fe"
+ },
+ {
+  "nome": "Oliver Turvey",
+  "jogo": "Turvey",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2003–2022",
+  "camps": "gp2 gp2_asia wsr f3_brit fr_eurocup fr_uk fbmw_uk super_gt wec elms fe"
+ },
+ {
+  "nome": "Mitch Evans",
+  "jogo": "Evans",
+  "como": "base",
+  "cc": "NZ",
+  "anos": "2009–2026",
+  "camps": "gp2 gp3 f3_brit froc elms fe"
+ },
+ {
+  "nome": "Tom Dillmann",
+  "jogo": "Dillmann",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2005–2026",
+  "camps": "gp2 wsr fnippon gp3 f3_euroseries f3_alema f3_italiana fr_eurocup porsche_supercup wec elms asian_lms imsa fe"
+ },
+ {
+  "nome": "Luca Filippi",
+  "jogo": "Filippi",
+  "como": "base",
+  "cc": "IT",
+  "anos": "2003–2020",
+  "camps": "gp2 gp2_asia fr_eurocup fr_uk indy wtcc gt_open fe"
+ },
+ {
+  "nome": "Maro Engel",
+  "jogo": "Engel",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2002–2026",
+  "camps": "f3_euroseries f3_brit f3_alema fbmw_adac dtm gtwc_europe gtwc_america asian_lms imsa fe"
+ },
+ {
+  "nome": "Jérôme d'Ambrosio",
+  "jogo": "d’Ambrosio",
+  "como": "base",
+  "cc": "BE",
+  "anos": "2004–2020",
+  "camps": "f1 gp2 gp2_asia wsr fr_eurocup fmasters stock_car fe"
+ },
+ {
+  "nome": "António Félix da Costa",
+  "jogo": "Da Costa",
+  "como": "base",
+  "cc": "PT",
+  "anos": "2008–2026",
+  "camps": "wsr gp3 f3_euroseries f3_brit fr_eurocup fr_nec stock_car stock_light dtm gt_open wec imsa fe"
+ },
+ {
+  "nome": "Jake Dennis",
+  "jogo": "Dennis",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2011–2026",
+  "camps": "gp3 f3_euro_fia fr_eurocup fr_uk fr_nec dtm gtwc_europe wec elms fe"
+ },
+ {
+  "nome": "Nick Cassidy",
+  "jogo": "Cassidy",
+  "como": "base",
+  "cc": "NZ",
+  "anos": "2011–2026",
+  "camps": "fnippon f3_euro_fia f3_japao fr_eurocup fr_alps froc fabarth dtm super_gt wec asian_lms imsa fe"
+ },
+ {
+  "nome": "Maximilian Günther",
+  "jogo": "Günther",
+  "como": "base",
+  "cc": "DE",
+  "anos": "2015–2026",
+  "camps": "f2 f3_euro_fia fe"
+ },
+ {
+  "nome": "Norman Nato",
+  "jogo": "Nato",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2011–2026",
+  "camps": "gp2 f2 wsr fr_eurocup fr_nec fr_alps f4_franca wec elms imsa fe"
+ },
+ {
+  "nome": "Oliver Rowland",
+  "jogo": "Rowland",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2010–2026",
+  "camps": "gp2 f2 wsr fr_eurocup fr_uk fr_nec wec fe"
+ },
+ {
+  "nome": "Jake Hughes",
+  "jogo": "Hughes",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2014–2026",
+  "camps": "f2 f3 gp3 f3_euro_fia frec fr_eurocup fr_nec fr_alps elms fe"
+ },
+ {
+  "nome": "Taylor Barnard",
+  "jogo": "Barnard",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2020–2026",
+  "camps": "f2 f3 frme f4_italia f4_adac f4_uae fe"
+ },
+ {
+  "nome": "Sacha Fenestraz",
+  "jogo": "Fenestraz",
+  "como": "base",
+  "cc": "FR",
+  "anos": "2015–2026",
+  "camps": "fnippon gp3 f3_euro_fia f3_japao fr_eurocup fr_nec f4_franca super_gt fe"
+ },
+ {
+  "nome": "Dan Ticktum",
+  "jogo": "Ticktum",
+  "como": "base",
+  "cc": "GB",
+  "anos": "2015–2026",
+  "camps": "f2 fnippon gp3 f3_euro_fia gb3 frec fr_eurocup fr_nec f4_brit fe"
+ },
+ {
+  "nome": "Sérgio Sette Câmara",
+  "jogo": "Sette Câmara",
+  "como": "base",
+  "cc": "BR",
+  "anos": "2014–2026",
+  "camps": "f2 fnippon f3_euro_fia froc stock_car gtwc_europe elms fe"
+ },
+ {
+  "nome": "Artem Markelov",
+  "jogo": "Markelov",
+  "como": "lista",
+  "cc": "RU",
+  "anos": "2011–2020",
+  "camps": "gp2 f2 fnippon f3_euroseries f3_alema froc"
+ },
+ {
+  "nome": "Luca Ghiotto",
+  "jogo": "Ghiotto",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2011–2026",
+  "camps": "gp2 f2 wsr gp3 fr_eurocup fr_nec fr_alps fabarth indy gtwc_europe wec elms imsa"
+ },
+ {
+  "nome": "Nobuharu Matsushita",
+  "jogo": "Matsushita",
+  "como": "lista",
+  "cc": "JP",
+  "anos": "2013–2026",
+  "camps": "gp2 f2 fnippon f3_japao euroformula fr_nec super_gt"
+ },
+ {
+  "nome": "Gustav Malja",
+  "jogo": "Malja",
+  "como": "lista",
+  "cc": "SE",
+  "anos": "2013–2018",
+  "camps": "gp2 f2 wsr f3_euro_fia fr_eurocup fr_nec porsche_supercup"
+ },
+ {
+  "nome": "Jordan King",
+  "jogo": "King",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2010–2024",
+  "camps": "gp2 f2 f3_euro_fia f3_brit euroformula fr_eurocup fr_uk fr_nec froc indy wec fe"
+ },
+ {
+  "nome": "Johnny Cecotto Jr.",
+  "jogo": "Cecotto Jr.",
+  "como": "lista",
+  "cc": "VE",
+  "anos": "2005–2017",
+  "camps": "gp2 f2 gp2_asia wsr f3_euroseries f3_brit f3_alema fr_nec fbmw_adac fmasters"
+ },
+ {
+  "nome": "Jack Aitken",
+  "jogo": "Aitken",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2013–2026",
+  "camps": "f1 f2 wsr gp3 euroformula fr_eurocup fr_nec fr_alps ip2000 dtm gtwc_europe wec elms imsa"
+ },
+ {
+  "nome": "Louis Delétraz",
+  "jogo": "Delétraz",
+  "como": "lista",
+  "cc": "CH",
+  "anos": "2013–2026",
+  "camps": "gp2 f2 wsr fr_eurocup fr_nec gtwc_europe wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Nirei Fukuzumi",
+  "jogo": "Fukuzumi",
+  "como": "lista",
+  "cc": "JP",
+  "anos": "2015–2026",
+  "camps": "f2 fnippon gp3 f3_japao super_gt"
+ },
+ {
+  "nome": "Tadasuke Makino",
+  "jogo": "Makino",
+  "como": "lista",
+  "cc": "JP",
+  "anos": "2015–2026",
+  "camps": "f2 fnippon f3_euro_fia f3_japao f4_japao dtm super_gt"
+ },
+ {
+  "nome": "Ralph Boschung",
+  "jogo": "Boschung",
+  "como": "lista",
+  "cc": "CH",
+  "anos": "2015–2023",
+  "camps": "f2 gp3"
+ },
+ {
+  "nome": "Roy Nissany",
+  "jogo": "Nissany",
+  "como": "lista",
+  "cc": "IL",
+  "anos": "2013–2026",
+  "camps": "f2 wsr f3_euro_fia elms"
+ },
+ {
+  "nome": "Arjun Maini",
+  "jogo": "Maini",
+  "como": "lista",
+  "cc": "IN",
+  "anos": "2015–2026",
+  "camps": "f2 gp3 f3_euro_fia froc dtm gtwc_europe gtwc_america elms asian_lms"
+ },
+ {
+  "nome": "Roberto Merhi",
+  "jogo": "Merhi",
+  "como": "lista",
+  "cc": "ES",
+  "anos": "2006–2026",
+  "camps": "f1 f2 wsr gp3 f3_euroseries f3_brit sf_lights euroformula fr_eurocup stock_car stock_light dtm super_gt gtwc_europe wec elms asian_lms fe"
+ },
+ {
+  "nome": "Giuliano Alesi",
+  "jogo": "G. Alesi",
+  "como": "lista",
+  "cc": "FR",
+  "anos": "2015–2026",
+  "camps": "f2 fnippon gp3 sf_lights f4_franca super_gt"
+ },
+ {
+  "nome": "Juan Manuel Correa",
+  "jogo": "Correa",
+  "como": "lista",
+  "cc": "US",
+  "anos": "2016–2026",
+  "camps": "f2 f3 gp3 froc f4_italia f4_adac indy_lights wec elms imsa"
+ },
+ {
+  "nome": "Anthoine Hubert",
+  "jogo": "Hubert",
+  "como": "lista",
+  "cc": "FR",
+  "anos": "2013–2019",
+  "camps": "f2 gp3 f3_euro_fia fr_eurocup fr_alps f4_franca"
+ },
+ {
+  "nome": "Robert Shwartzman",
+  "jogo": "Shwartzman",
+  "como": "lista",
+  "cc": "RU",
+  "anos": "2014–2025",
+  "camps": "f2 f3 f3_euro_fia fr_eurocup fr_nec froc f4_italia f4_adac indy gtwc_europe wec"
+ },
+ {
+  "nome": "Felipe Drugovich",
+  "jogo": "Drugovich",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2016–2026",
+  "camps": "f2 f3 f3_euro_fia euroformula f4_italia f4_adac ip2000 stock_car stock_light elms imsa fe"
+ },
+ {
+  "nome": "Jehan Daruvala",
+  "jogo": "Daruvala",
+  "como": "lista",
+  "cc": "IN",
+  "anos": "2015–2024",
+  "camps": "f2 f3 gp3 f3_euro_fia fr_eurocup fr_nec fr_alps froc fe"
+ },
+ {
+  "nome": "Guilherme Samaia",
+  "jogo": "Samaia",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2017–2021",
+  "camps": "f2 euroformula gb3"
+ },
+ {
+  "nome": "Pedro Piquet",
+  "jogo": "Pedro Piquet",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2014–2026",
+  "camps": "f2 f3 gp3 f3_euro_fia froc stock_car stock_light porsche_supercup"
+ },
+ {
+  "nome": "Richard Verschoor",
+  "jogo": "Verschoor",
+  "como": "lista",
+  "cc": "NL",
+  "anos": "2016–2026",
+  "camps": "f2 f3 gp3 fr_eurocup fr_nec froc f4_italia f4_adac f4_espanha f4_neerlandesa elms"
+ },
+ {
+  "nome": "Jüri Vips",
+  "jogo": "Vips",
+  "como": "lista",
+  "cc": "EE",
+  "anos": "2016–2026",
+  "camps": "f2 fnippon f3 f3_euro_fia frec f4_italia f4_adac indy imsa"
+ },
+ {
+  "nome": "David Beckmann",
+  "jogo": "Beckmann",
+  "como": "lista",
+  "cc": "DE",
+  "anos": "2015–2025",
+  "camps": "f2 f3 gp3 f3_euro_fia f4_italia f4_adac fe"
+ },
+ {
+  "nome": "Lirim Zendeli",
+  "jogo": "Zendeli",
+  "como": "lista",
+  "cc": "DE",
+  "anos": "2016–2024",
+  "camps": "f2 f3 frec froc f4_italia f4_adac ip2000 porsche_supercup"
+ },
+ {
+  "nome": "Bent Viscaal",
+  "jogo": "Viscaal",
+  "como": "lista",
+  "cc": "NL",
+  "anos": "2017–2025",
+  "camps": "f2 f3 euroformula f4_espanha f4_neerlandesa wec elms imsa"
+ },
+ {
+  "nome": "Marino Sato",
+  "jogo": "M. Sato",
+  "como": "lista",
+  "cc": "JP",
+  "anos": "2015–2026",
+  "camps": "f2 f3_euro_fia euroformula f4_italia wec elms asian_lms"
+ },
+ {
+  "nome": "Alessio Deledda",
+  "jogo": "Deledda",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2018–2025",
+  "camps": "f2 f3 euroformula fr_eurocup f4_italia dtm gtwc_europe gt_open imsa"
+ },
+ {
+  "nome": "Ayumu Iwasa",
+  "jogo": "Iwasa",
+  "como": "lista",
+  "cc": "JP",
+  "anos": "2017–2026",
+  "camps": "f2 fnippon f3 f4_franca f4_japao"
+ },
+ {
+  "nome": "Dennis Hauger",
+  "jogo": "Hauger",
+  "como": "lista",
+  "cc": "NO",
+  "anos": "2018–2026",
+  "camps": "f2 f3 euroformula frec f4_italia f4_brit f4_adac indy indy_lights"
+ },
+ {
+  "nome": "Frederik Vesti",
+  "jogo": "Vesti",
+  "como": "lista",
+  "cc": "DK",
+  "anos": "2017–2026",
+  "camps": "f2 f3 f3_euro_fia frec f4_italia f4_adac f4_eua f4_danish gtwc_europe elms imsa"
+ },
+ {
+  "nome": "Amaury Cordeel",
+  "jogo": "Cordeel",
+  "como": "lista",
+  "cc": "BE",
+  "anos": "2017–2026",
+  "camps": "f2 f3 fr_eurocup froc f4_italia f4_adac f4_espanha f4_franca f4_uae f4_neerlandesa gtwc_europe"
+ },
+ {
+  "nome": "Clément Novalak",
+  "jogo": "Novalak",
+  "como": "lista",
+  "cc": "FR",
+  "anos": "2018–2025",
+  "camps": "f2 f3 gb3 fr_eurocup fr_nec froc elms"
+ },
+ {
+  "nome": "Enzo Fittipaldi",
+  "jogo": "Enzo Fittipaldi",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2017–2026",
+  "camps": "f2 f3 frec f4_italia f4_adac f4_nacam indy_lights ip2000 elms imsa"
+ },
+ {
+  "nome": "Olli Caldwell",
+  "jogo": "Caldwell",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2017–2025",
+  "camps": "f2 f3 frec f4_italia f4_brit f4_adac f4_uae wec elms asian_lms"
+ },
+ {
+  "nome": "Victor Martins",
+  "jogo": "Martins",
+  "como": "lista",
+  "cc": "FR",
+  "anos": "2016–2026",
+  "camps": "f2 f3 fr_eurocup fr_nec f4_franca wec"
+ },
+ {
+  "nome": "Zane Maloney",
+  "jogo": "Maloney",
+  "como": "lista",
+  "cc": "BB",
+  "anos": "2019–2026",
+  "camps": "f2 f3 euroformula frec f4_brit fe"
+ },
+ {
+  "nome": "Roman Staněk",
+  "jogo": "Stanek",
+  "como": "lista",
+  "cc": "CZ",
+  "anos": "2019–2026",
+  "camps": "f2 fnippon f3 euroformula fr_eurocup f4_italia f4_adac f4_uae"
+ },
+ {
+  "nome": "Jak Crawford",
+  "jogo": "Crawford",
+  "como": "lista",
+  "cc": "US",
+  "anos": "2019–2025",
+  "camps": "f2 f3 euroformula frme f4_italia f4_adac f4_nacam usf2000"
+ },
+ {
+  "nome": "Paul Aron",
+  "jogo": "Aron",
+  "como": "lista",
+  "cc": "EE",
+  "anos": "2019–2024",
+  "camps": "f2 f3 frec fr_eurocup f4_italia f4_adac fe"
+ },
+ {
+  "nome": "Rafael Villagómez",
+  "jogo": "Villagómez",
+  "como": "lista",
+  "cc": "MX",
+  "anos": "2020–2026",
+  "camps": "f2 f3 euroformula frme f4_brit f4_franca"
+ },
+ {
+  "nome": "Ritomo Miyata",
+  "jogo": "Miyata",
+  "como": "lista",
+  "cc": "JP",
+  "anos": "2015–2026",
+  "camps": "f2 fnippon f3_japao sf_lights f4_japao wtcc super_gt wec elms imsa"
+ },
+ {
+  "nome": "Joshua Dürksen",
+  "jogo": "Dürksen",
+  "como": "lista",
+  "cc": "PY",
+  "anos": "2019–2026",
+  "camps": "f2 euroformula frec frme f4_italia f4_adac f4_uae"
+ },
+ {
+  "nome": "Leonardo Fornaroli",
+  "jogo": "Fornaroli",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2020–2025",
+  "camps": "f2 f3 frec f4_italia f4_adac"
+ },
+ {
+  "nome": "Dino Beganovic",
+  "jogo": "Beganovic",
+  "como": "lista",
+  "cc": "SE",
+  "anos": "2020–2026",
+  "camps": "f2 f3 frec frme f4_italia f4_adac"
+ },
+ {
+  "nome": "Luke Browning",
+  "jogo": "Browning",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2019–2026",
+  "camps": "f2 fnippon f3 gb3 frme f4_italia f4_brit f4_adac f4_uae"
+ },
+ {
+  "nome": "Pepe Martí",
+  "jogo": "Marti",
+  "como": "lista",
+  "cc": "ES",
+  "anos": "2021–2026",
+  "camps": "f2 f3 frme f4_espanha f4_uae fe"
+ },
+ {
+  "nome": "Sebastián Fernández",
+  "jogo": "S. Fernández",
+  "como": "lista",
+  "cc": "VE",
+  "anos": "2016–2020",
+  "camps": "f3 f3_euro_fia fr_eurocup f4_italia f4_adac f4_espanha f4_uae"
+ },
+ {
+  "nome": "Leonardo Pulcini",
+  "jogo": "Pulcini",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2014–2025",
+  "camps": "f3 gp3 euroformula f4_italia gtwc_europe gt_open imsa"
+ },
+ {
+  "nome": "Alex Peroni",
+  "jogo": "Peroni",
+  "como": "lista",
+  "cc": "AU",
+  "anos": "2015–2023",
+  "camps": "f3 euroformula fr_eurocup fr_nec f4_italia indy_lights gtwc_europe elms"
+ },
+ {
+  "nome": "Alexander Smolyar",
+  "jogo": "Smolyar",
+  "como": "lista",
+  "cc": "RU",
+  "anos": "2020–2022",
+  "camps": "f3"
+ },
+ {
+  "nome": "Matteo Nannini",
+  "jogo": "M. Nannini",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2019–2026",
+  "camps": "f2 f3 frec fr_eurocup f4_espanha f4_uae indy_lights"
+ },
+ {
+  "nome": "Arthur Leclerc",
+  "jogo": "A. Leclerc",
+  "como": "lista",
+  "cc": "MC",
+  "anos": "2018–2026",
+  "camps": "f2 f3 frec f4_adac f4_franca gtwc_europe elms imsa"
+ },
+ {
+  "nome": "Caio Collet",
+  "jogo": "Collet",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2018–2026",
+  "camps": "f3 fr_eurocup froc f4_adac f4_franca f4_uae indy indy_lights stock_car fe"
+ },
+ {
+  "nome": "Jonny Edgar",
+  "jogo": "Edgar",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2019–2026",
+  "camps": "f3 f4_italia f4_adac f4_espanha british_gt wec elms imsa"
+ },
+ {
+  "nome": "Grégoire Saucy",
+  "jogo": "Saucy",
+  "como": "lista",
+  "cc": "CH",
+  "anos": "2017–2026",
+  "camps": "f3 frec fr_eurocup froc f4_italia f4_adac wec elms asian_lms imsa"
+ },
+ {
+  "nome": "Oliver Goethe",
+  "jogo": "Goethe",
+  "como": "lista",
+  "cc": "DE",
+  "anos": "2019–2026",
+  "camps": "f2 f3 euroformula frec f4_espanha"
+ },
+ {
+  "nome": "Zak O'Sullivan",
+  "jogo": "O’Sullivan",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2020–2026",
+  "camps": "f2 fnippon f3 gb3 f4_brit super_gt"
+ },
+ {
+  "nome": "Christian Mansell",
+  "jogo": "C. Mansell",
+  "como": "lista",
+  "cc": "AU",
+  "anos": "2019–2026",
+  "camps": "f2 f3 euroformula gb3 froc f4_brit f4_australia gtwc_europe gt_open"
+ },
+ {
+  "nome": "Gabriele Minì",
+  "jogo": "Minì",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2020–2026",
+  "camps": "f2 f3 frec frme f4_italia f4_adac"
+ },
+ {
+  "nome": "Nikola Tsolov",
+  "jogo": "Tsolov",
+  "como": "lista",
+  "cc": "BG",
+  "anos": "2022–2026",
+  "camps": "f2 f3 eurocup3 frme f4_espanha"
+ },
+ {
+  "nome": "Martinius Stenshorne",
+  "jogo": "Stenshorne",
+  "como": "lista",
+  "cc": "NO",
+  "anos": "2022–2026",
+  "camps": "f2 f3 gb3 frec frme f4_italia f4_adac f4_espanha f4_uae"
+ },
+ {
+  "nome": "James Wharton",
+  "jogo": "Wharton",
+  "como": "lista",
+  "cc": "AU",
+  "anos": "2022–2026",
+  "camps": "f2 f3 gb3 frec frme froc f4_italia f4_adac f4_uae"
+ },
+ {
+  "nome": "Tasanapol Inthraphuvasak",
+  "jogo": "Inthraphuvasak",
+  "como": "lista",
+  "cc": "TH",
+  "anos": "2021–2026",
+  "camps": "f2 f3 eurocup3 frme f4_brit f4_espanha f4_franca f4_uae"
+ },
+ {
+  "nome": "Joshua Dufek",
+  "jogo": "Dufek",
+  "como": "lista",
+  "cc": "CH",
+  "anos": "2020–2025",
+  "camps": "f3 euroformula frec frme f4_italia f4_adac f4_espanha"
+ },
+ {
+  "nome": "Callum Voisin",
+  "jogo": "Voisin",
+  "como": "lista",
+  "cc": "GB",
+  "anos": "2022–2026",
+  "camps": "f3 gb3 asian_lms"
+ },
+ {
+  "nome": "Nikita Bedrin",
+  "jogo": "Bedrin",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2021–2026",
+  "camps": "f3 gb3 eurocup3 frec frme f4_italia f4_adac f4_uae"
+ },
+ {
+  "nome": "Rafael Câmara",
+  "jogo": "Câmara",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2022–2026",
+  "camps": "f2 f3 frec frme f4_italia f4_adac f4_uae"
+ },
+ {
+  "nome": "Noel León",
+  "jogo": "León",
+  "como": "lista",
+  "cc": "MX",
+  "anos": "2018–2026",
+  "camps": "f2 f3 euroformula frec f4_eua f4_nacam"
+ },
+ {
+  "nome": "Tuukka Taponen",
+  "jogo": "Taponen",
+  "como": "lista",
+  "cc": "FI",
+  "anos": "2023–2026",
+  "camps": "f3 frec frme f4_italia f4_uae"
+ },
+ {
+  "nome": "Brando Badoer",
+  "jogo": "B. Badoer",
+  "como": "lista",
+  "cc": "IT",
+  "anos": "2022–2026",
+  "camps": "f3 frec frme f4_italia f4_adac f4_uae"
+ },
+ {
+  "nome": "Théophile Naël",
+  "jogo": "Naël",
+  "como": "lista",
+  "cc": "FR",
+  "anos": "2022–2026",
+  "camps": "f3 frec frme f4_espanha f4_uae"
+ },
+ {
+  "nome": "Ugo Ugochukwu",
+  "jogo": "Ugochukwu",
+  "como": "lista",
+  "cc": "US",
+  "anos": "2022–2026",
+  "camps": "f3 gb3 frec frme froc f4_italia f4_brit f4_adac f4_uae"
+ },
+ {
+  "nome": "Alessandro Giusti",
+  "jogo": "Giusti",
+  "como": "lista",
+  "cc": "FR",
+  "anos": "2021–2026",
+  "camps": "f3 frec f4_franca"
+ },
+ {
+  "nome": "Mari Boya",
+  "jogo": "Boya",
+  "como": "lista",
+  "cc": "ES",
+  "anos": "2020–2026",
+  "camps": "f2 f3 eurocup3 frec frme f4_espanha gtwc_europe"
+ },
+ {
+  "nome": "Charlie Wurz",
+  "jogo": "C. Wurz",
+  "como": "lista",
+  "cc": "AT",
+  "anos": "2021–2026",
+  "camps": "fnippon f3 euroformula frec froc f4_italia f4_adac f4_espanha f4_uae super_gt"
+ },
+ {
+  "nome": "Gianluca Petecof",
+  "jogo": "Petecof",
+  "como": "lista",
+  "cc": "BR",
+  "anos": "2018–2026",
+  "camps": "f2 frec f4_italia f4_adac stock_car stock_light"
+ },
+ {
+  "nome": "David Vidales",
+  "jogo": "Vidales",
+  "como": "lista",
+  "cc": "ES",
+  "anos": "2020–2024",
+  "camps": "f3 sf_lights frec fr_eurocup gtwc_europe"
+ }
+]

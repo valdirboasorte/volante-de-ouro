@@ -14,6 +14,8 @@ const testes = [
   ['corrida volta a volta', 'prova.js'],
   ['clique duplo', 'clique-duplo.js'],
   ['save antigo abre na versão nova', 'migracao.js'],
+  ['banco histórico (escadas e grids reais)', 'historico.js'],
+  ['save de antes do banco histórico', 'migracao-historico.js'],
   ['tamanho do save', 'save.js']
 ];
 let falhou = 0;

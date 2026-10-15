@@ -211,6 +211,8 @@ body[data-tela="intro"] .wrap{max-width:none; padding:0}
 .ini-anos{display:grid; gap:2px; margin:0; text-align:right}
 .ini-anos b{font-size:36px; font-weight:800; font-stretch:72%; line-height:1}
 .ini-anos span{font-size:14px; color:var(--soft)}
+.ini-link{font:inherit; color:var(--ink); text-decoration:underline; text-underline-offset:3px; transition:color .15s}
+.ini-link:hover{color:var(--accent)}
 
 /* os três modos */
 .ini-modos{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr); gap:14px}
@@ -1005,6 +1007,85 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .ctry-list button{border-radius:10px}
 .mclose{background:var(--s2)}
 .creditos{margin:0 0 14px; padding-left:18px; display:grid; gap:6px; font-size:15px; line-height:1.45}
+
+/* o campeonato de estreia, no formulário de carreira */
+.est-camp{display:grid; gap:6px; margin-top:12px; font-size:14px; color:var(--soft)}
+.est-camp select{height:44px; max-width:100%; padding:0 12px; border-radius:12px; background:var(--s2); color:var(--ink); border:1px solid var(--rule); font:inherit; font-size:15px}
+
+/* ═══ CAMPEONATOS REAIS ═══ */
+.modal.hc{max-width:1080px}
+.hc-filtros{display:grid; grid-template-columns:minmax(0,1.2fr) repeat(3,minmax(0,1fr)); gap:10px; margin:4px 0 12px}
+.hc-filtros label{display:grid; gap:5px; font-size:13px; color:var(--soft)}
+.hc-filtros input,.hc-filtros select{height:42px; padding:0 12px; border-radius:12px; background:var(--s2); color:var(--ink); border:1px solid var(--rule); font:inherit; font-size:15px}
+.hc-ano{display:flex; align-items:center; gap:10px}
+.hc-ano input[type=range]{flex:1; height:auto; padding:0; border:0; background:transparent; accent-color:var(--acao)}
+.hc-ano b{font-size:22px; font-weight:800; min-width:56px; text-align:right; font-variant-numeric:tabular-nums}
+.hc-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
+.hc-chip{height:34px; padding:0 14px; border-radius:999px; background:var(--s2); color:var(--soft); font-size:14px; font-weight:600; transition:background .15s,color .15s,transform .15s}
+.hc-chip:hover{background:var(--s3); color:var(--ink)}
+.hc-chip:active{transform:scale(.97)}
+.hc-chip.on{background:var(--acao); color:#fff}
+.hc-conta{font-size:14px; color:var(--soft); margin:0 0 10px}
+.hc-lista{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:8px}
+.hc-card{display:grid; gap:8px; text-align:left; padding:16px 18px; border-radius:18px; background:var(--s2); transition:background .15s,transform .2s var(--ease-out)}
+.hc-card:hover{background:var(--s3); transform:translateY(-2px)}
+.hc-card:active{transform:translateY(0) scale(.99)}
+.hc-card .t{display:flex; align-items:flex-start; gap:10px}
+.hc-card .t b{flex:1; font-size:18px; font-weight:700; line-height:1.15}
+.hc-card .of{font-size:14px; color:var(--soft); line-height:1.35}
+.hc-card .m{display:flex; flex-wrap:wrap; gap:6px; font-size:13px}
+.hc-tag{display:inline-flex; align-items:center; height:26px; padding:0 10px; border-radius:999px; background:var(--s1); color:var(--soft); font-size:13px; font-weight:600; white-space:nowrap}
+.hc-tag.ok{background:color-mix(in srgb,#00b46e 22%,var(--s1)); color:var(--ink)}
+.hc-tag.parc{background:color-mix(in srgb,var(--gold2) 30%,var(--s1)); color:var(--ink)}
+.hc-tag.pend{background:var(--s1); color:var(--faint)}
+.hc-tag.fora{background:transparent; color:var(--faint); padding-left:0}
+.hc-card .ch{font-size:14px; color:var(--soft)}
+.hc-card .ch b{color:var(--ink); font-weight:600}
+.hc-faixa{display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:2px; height:8px; border-radius:4px; overflow:hidden}
+.hc-faixa i{display:block; background:var(--s4)}
+.hc-faixa i.L{background:#00b46e} .hc-faixa i.C{background:var(--gold2)} .hc-faixa i.n{background:transparent}
+.hc-faixa i.sel{outline:2px solid var(--ink); outline-offset:-2px}
+.hc-volta{display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 14px; border-radius:999px; background:var(--s2); font-size:14px; font-weight:600; margin-bottom:12px}
+.hc-volta:hover{background:var(--s3)}
+.hc-topo{display:grid; gap:6px; margin-bottom:14px}
+.hc-topo h3{font-size:26px; font-weight:800; line-height:1.1}
+.hc-topo p{font-size:15px; color:var(--soft); line-height:1.5}
+.hc-anos{display:flex; align-items:center; gap:8px; margin:6px 0 12px}
+.hc-anos button{width:40px; height:40px; border-radius:50%; background:var(--s2); font-size:18px; font-weight:700}
+.hc-anos button:hover:not(:disabled){background:var(--s3)}
+.hc-anos button:disabled{opacity:.35}
+.hc-anos select{height:40px; padding:0 12px; border-radius:12px; background:var(--s2); color:var(--ink); border:1px solid var(--rule); font:inherit; font-size:16px; font-weight:700}
+.hc-cols{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:14px; align-items:start}
+.hc-box{background:var(--s2); border-radius:18px; padding:14px 16px}
+.hc-box h4{font-size:15px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px}
+.hc-box h4 span{font-weight:500; color:var(--soft); font-size:13px}
+.hc-aviso{font-size:14px; line-height:1.5; color:var(--soft); background:var(--s1); border-radius:12px; padding:10px 12px; margin-bottom:10px}
+.hc-aviso a{color:var(--ink); text-decoration:underline; text-underline-offset:3px}
+.hc-grid{width:100%; border-collapse:collapse; font-size:14px}
+.hc-grid th{text-align:left; font-size:12px; font-weight:600; color:var(--soft); padding:4px 6px}
+.hc-grid td{padding:6px; border-top:1px solid var(--rule); vertical-align:top}
+.hc-grid td.p{width:34px; font-weight:700; font-variant-numeric:tabular-nums}
+.hc-grid td.n{font-weight:600}
+.hc-grid td.n small{display:block; font-weight:500; color:var(--faint); font-size:12px}
+.hc-grid td.e{color:var(--soft)}
+.hc-cf{display:inline; font-size:11px; color:var(--soft); margin-right:5px; font-weight:700; letter-spacing:.02em}
+.hc-grid tr.campeao td{background:color-mix(in srgb,var(--gold2) 14%,transparent)}
+.hc-cal{display:grid; gap:2px; font-size:14px; max-height:360px; overflow-y:auto}
+.hc-cal div{display:flex; gap:8px; padding:5px 0; border-top:1px solid var(--rule)}
+.hc-cal i{font-style:normal; color:var(--faint); min-width:22px; font-variant-numeric:tabular-nums}
+.hc-cal span{flex:1}
+.hc-cal em{font-style:normal; color:var(--soft); font-size:13px}
+.hc-camps{display:grid; gap:0; font-size:14px; max-height:300px; overflow-y:auto}
+.hc-camps button{display:flex; gap:10px; padding:5px 4px; border-top:1px solid var(--rule); text-align:left; border-radius:6px}
+.hc-camps button:hover{background:var(--s3)}
+.hc-camps i{font-style:normal; color:var(--faint); min-width:40px; font-variant-numeric:tabular-nums}
+@media(max-width:760px){
+  .hc-filtros{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .hc-filtros label:first-child{grid-column:1 / -1}
+  .hc-cols{grid-template-columns:minmax(0,1fr)}
+  .hc-lista{grid-template-columns:minmax(0,1fr)}
+  .hc-grid td.e.k,.hc-grid th.k{display:none}
+}
 </style>
 </head>
 <body>
@@ -1017,6 +1098,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   <span class="sp"></span>
   <nav class="topnav" id="topMenu" aria-label="Seções">
     <button onclick="UI.archive()">Arquivo</button>
+    <button onclick="UI.campeonatos()">Campeonatos</button>
     <button onclick="UI.hall()">Lendas</button>
     <button onclick="UI.records()" id="btnRecords">Recordes</button>
     <button onclick="UI.help()">Como funciona</button>
@@ -1060,7 +1142,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 
       <div class="ini-cats">
         <div class="ini-logos" id="iniLogos" aria-label="As sete categorias: escolha uma para começar"></div>
-        <p class="ini-anos"><b>1950 — 2026</b><span>7 categorias, 77 temporadas de grids reais</span></p>
+        <p class="ini-anos"><b>1950 — 2026</b><span id="iniAnosTx">7 categorias, 77 temporadas de grids reais</span></p>
       </div>
 
       <div class="ini-modos">
@@ -1189,7 +1271,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
       <div style="margin-top:20px">
         <span class="lbl" style="display:block; margin-bottom:9px">Idade ao começar</span>
         <div class="agebox">
-          <input type="range" id="inAge" min="13" max="30" value="17" oninput="UI.ageChanged()">
+          <input type="range" id="inAge" min="8" max="30" value="17" oninput="UI.ageChanged()">
           <div class="agev"><b id="ageVal">17</b><span>anos</span></div>
         </div>
         <div class="agehint mut" id="ageHint"></div>
@@ -1364,6 +1446,8 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <div class="ov" id="ov"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 
+<!-- o banco histórico (campeonatos, temporadas, grids reais e fontes), gerado por ferramentas/historico -->
+<script src="dados/historico.js" defer></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
    VOLANTE DE OURO — simulador de carreira no automobilismo
@@ -1813,7 +1897,7 @@ const ERAS = [
   y:1960, id:'60s', name:'Anos 60', tag:'Motor Traseiro', color:'#3d8bfd',
   desc:'A revolução do motor traseiro. Carros leves, pilotos-engenheiros e Nürburgring de 22 km.',
   rel:.63, danger:.095, rain:.85, races:10, bigTeams:2, cars:3,
-  ladder:['KART_REG','KART_NAC','Fórmula Júnior','Fórmula 2','Fórmula 1'],
+  ladder:['KART_REG','KART_NAC','FJ_F3','Fórmula 2','Fórmula 1'],
   teams:[['Lotus','#0b6136',92],['Ferrari','#d40000',89],['BRM','#0f5132',87],['Brabham','#0b7a4b',86,1962],
          ['Cooper','#1b7a3e',81,1960,1968],['Matra','#1358a8',80,1966],['McLaren','#ff7300',78,1966],
          ['Honda','#c8102e',76,1964,1968],['Eagle','#1a3a7a',74,1966,1969],['Rob Walker','#00519c',77,1960,1969],
@@ -1878,7 +1962,7 @@ const ERAS = [
   y:1980, id:'80s', name:'Anos 80', tag:'Era Turbo', color:'#b06cf5',
   desc:'1.500 cv na classificação, fumaça branca e três nomes decidindo tudo: Prost, Senna, Piquet.',
   rel:.70, danger:.045, rain:.85, races:16,
-  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','Fórmula 3000','Fórmula 1'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','F2_TOPO','Fórmula 1'],
   teams:[['McLaren','#ff8000',94],['Williams','#0a3d91',92],['Ferrari','#d40000',88],
          ['Brabham','#1a4fa0',85,1980,1989,[['Brabham',1980,1987],['Brabham',1989,1989]]],
          ['Lotus','#f7d417',84],['Renault','#f7d417',83,1980,1985],
@@ -1923,7 +2007,7 @@ const ERAS = [
   y:1990, id:'90s', name:'Anos 90', tag:'Eletrônica e Rivalidade', color:'#00d68f',
   desc:'Suspensão ativa, controle de tração e o duelo que definiu uma geração. Depois, Imola muda tudo.',
   rel:.76, danger:.028, rain:.85, races:16,
-  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','Fórmula 3000','Fórmula 1'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','F2_TOPO','Fórmula 1'],
   teams:[['Williams','#0a3d91',95],['McLaren','#c0c0c0',92],['Ferrari','#d40000',89],['Benetton','#00953b',88],
          ['Jordan','#f7d417',82,1991],
          ['Ligier','#1b7fd4',78,1990,1999,[['Ligier',1990,1996,78],['Prost',1997,1999,74]]],
@@ -1963,7 +2047,7 @@ const ERAS = [
   y:2000, id:'00s', name:'Anos 2000', tag:'Domínio e Reação', color:'#e8112d',
   desc:'V10 a 19 mil giros, pit stops com reabastecimento e uma vermelha que ganhou cinco seguidos.',
   rel:.84, danger:.012, rain:.8, races:18,
-  ladder:['KART_REG','KART_NAC','KART_MUN','Fórmula Renault','Fórmula 3','World Series','GP2 Series','Fórmula 1'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','Fórmula Renault','Fórmula 3','World Series','F2_TOPO','Fórmula 1'],
   teams:[['Ferrari','#d40000',95],['McLaren','#c0c0c0',92],
          ['Renault','#f7d417',89,2000,2009,[['Benetton',2000,2001,80],['Renault',2002,2009,89]]],
          ['Williams','#0a3d91',85],
@@ -2007,7 +2091,7 @@ const ERAS = [
   y:2010, id:'10s', name:'Anos 2010', tag:'Híbridos e Dinastias', color:'#3d8bfd',
   desc:'DRS, pneus que se degradam de propósito e motores híbridos. Duas equipes ganham quase tudo.',
   rel:.90, danger:.008, rain:.75, races:20,
-  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','Fórmula 2','Fórmula 1'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','F2_TOPO','Fórmula 1'],
   teams:[['Mercedes','#00d2be',96,2010,2019,[['Mercedes',2010,2013,84],['Mercedes',2014,2019,97]]],
          ['Red Bull','#1e2a5a',94],['Ferrari','#d40000',91],['McLaren','#ff8000',87],
          ['Renault','#f7d417',84,2010,2019,[['Renault',2010,2011,80],['Lotus',2012,2015,85],['Renault',2016,2019,82]]],
@@ -2048,7 +2132,7 @@ const ERAS = [
   y:2020, id:'20s', name:'Anos 2020', tag:'Efeito Solo de Volta', color:'#f5c518',
   desc:'Teto orçamentário, efeito solo e um grid que se renova. A história ainda está sendo escrita.',
   rel:.93, danger:.006, rain:.7, races:22,
-  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','Fórmula 2','Fórmula 1'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','F2_TOPO','Fórmula 1'],
   teams:[['Red Bull','#1e2a5a',94],['McLaren','#ff8000',93],['Mercedes','#00d2be',92],['Ferrari','#d40000',91],
          ['Aston Martin','#00594f',82,2020,9999,[['Racing Point',2020,2020,84],['Aston Martin',2021,9999,82]]],
          ['Alpine','#0090ff',78,2020,9999,[['Renault',2020,2020,82],['Alpine',2021,9999,78]]],
@@ -2266,7 +2350,7 @@ const ERAS_WEC = [
 { y:1982, id:'80s', name:'Anos 80', tag:'Grupo C', color:'#b06cf5',
   desc:'Consumo limitado, 956 e 962 dominando tudo e a Jaguar voltando para quebrar a hegemonia.',
   rel:.74, danger:.045, rain:.8, races:10,
-  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','Fórmula 3000','Mundial de Sport'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','F2_TOPO','Mundial de Sport'],
   teams:[['Porsche','#c0c0c0',95],['Jaguar TWR','#0b6136',92],['Sauber-Mercedes','#b9c0c7',91],['Lancia','#1f4b8e',88],
     ['Nissan','#e8112d',84],['Toyota','#d40000',83],['Aston Martin','#00594f',80],['Mazda','#1358a8',79],
     ['Spice','#f5a623',76],['Cougar','#8a1f3d',72]],
@@ -2280,7 +2364,7 @@ const ERAS_WEC = [
 { y:1992, id:'90s', name:'Anos 90', tag:'GT1 e a Travessia', color:'#00d68f',
   desc:'O Mundial acaba, Le Mans vira o mundo inteiro e os GT1 de rua transformam a corrida em espetáculo.',
   rel:.80, danger:.030, rain:.8, races:8,
-  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','Fórmula 3000','Endurance'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','FF_NAC','Fórmula 3','F2_TOPO','Endurance'],
   teams:[['Peugeot','#0090ff',94],['Toyota','#d40000',92],['Porsche','#c0c0c0',93],['McLaren','#ff8000',92],
     ['Mercedes','#b9c0c7',91],['Nissan','#e8112d',86],['BMW','#1358a8',88],['Panoz','#00594f',80],
     ['Courage','#f5a623',78],['Lister','#0b6136',74]],
@@ -2294,7 +2378,7 @@ const ERAS_WEC = [
 { y:2000, id:'00s', name:'Anos 2000', tag:'A Década da Audi', color:'#e8112d',
   desc:'R8, diesel R10 e a Peugeot 908 como única resposta. Le Mans decidido no detalhe, ano após ano.',
   rel:.86, danger:.014, rain:.75, races:9,
-  ladder:['KART_REG','KART_NAC','KART_MUN','Fórmula Renault','Fórmula 3','Fórmula 3000','Endurance'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','Fórmula Renault','Fórmula 3','F2_TOPO','Endurance'],
   teams:[['Audi','#c0c0c0',96],['Peugeot','#0090ff',93],['Bentley','#0b6136',88],['Pescarolo','#00953b',85],
     ['Courage','#f5a623',82],['Zytek','#1358a8',80],['Aston Martin','#00594f',84],['Porsche','#b9c0c7',86],
     ['Lola','#b06cf5',78],['Creation','#8a8f98',74]],
@@ -2574,7 +2658,7 @@ const ERAS_FE = [
 { y:2014, id:'10s', name:'Anos 2010', tag:'A Aposta Elétrica', color:'#00d2be',
   desc:'Carros elétricos correndo dentro das cidades. Ninguém levava a sério — até os grandes fabricantes chegarem.',
   rel:.86, danger:.010, rain:.7, races:12,
-  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','Fórmula 2','Fórmula E'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','F2_TOPO','Fórmula E'],
   teams:[['Renault e.dams','#f7d417',92,2014,2018,[['e.dams Renault',2014,2015,88],['Renault e.dams',2016,2018,92]]],
     ['Audi Abt','#c0c0c0',90],['Techeetah','#111111',89,2016,2019],['DS Virgin','#e8112d',86],
     ['Mahindra','#c8102e',84],['Venturi','#00d2be',82],['Andretti','#0057b8',80],
@@ -2591,7 +2675,7 @@ const ERAS_FE = [
 { y:2020, id:'20s', name:'Anos 2020', tag:'Gen3 e Fabricantes', color:'#00e701',
   desc:'Porsche, Jaguar, Nissan e Mercedes disputando de verdade. Corrida de ataque, energia contada até a última volta.',
   rel:.89, danger:.008, rain:.7, races:16,
-  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','Fórmula 2','Fórmula E'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','F4_NAC','FREGIONAL','Fórmula 3','F2_TOPO','Fórmula E'],
   teams:[['Porsche','#c0c0c0',93,2020],['Jaguar TCS','#0b6136',94],['Nissan','#e8112d',88,2021],
     ['Envision','#00d2be',89],
     ['DS Penske','#d4b400',87,2020,9999,[['DS Techeetah',2020,2022,90],['DS Penske',2023,9999,87]]],
@@ -2642,7 +2726,7 @@ const ERAS_DTM = [
 { y:2000, id:'00s', name:'Anos 2000', tag:'O Renascimento', color:'#e8112d',
   desc:'A categoria volta com Mercedes, Audi e Opel — e vira o destino de quem saiu da Fórmula 1.',
   rel:.86, danger:.014, rain:.8, races:11,
-  ladder:['KART_REG','KART_NAC','KART_MUN','Fórmula Renault','Fórmula 3','Fórmula 3000','DTM'],
+  ladder:['KART_REG','KART_NAC','KART_MUN','Fórmula Renault','Fórmula 3','F2_TOPO','DTM'],
   teams:[['HWA Mercedes','#b9c0c7',94],['Abt Audi','#c0c0c0',92],['Opel Euroteam','#f5c518',86],
     ['Phoenix','#e8112d',88],['Persson','#8a8f98',84],['Rosberg','#00953b',85],
     ['Mücke','#1a3a7a',83],['Holzer','#b06cf5',80],['Kolles','#c8102e',82],['Futurecom','#1358a8',78]],
@@ -2969,58 +3053,58 @@ const NASC = {
    até 2001, Renault de 2002 em diante.
    ═══════════════════════════════════════════════════════════════ */
 const LINEUPS = { f1: {
-1950:'Alfa Romeo:Farina,Fangio,Fagioli|Ferrari:Ascari,Villoresi|Maserati:González,Bira|Talbot-Lago:Rosier,Chiron|Gordini:Manzon,Simon|ERA:Gerard',
+1950:'Alfa Romeo:Farina,Fangio,Fagioli|Ferrari:Ascari,Villoresi|Maserati:González,Bira|Talbot-Lago:Rosier|Gordini:Manzon,Simon|ERA:Gerard',
 1951:'Alfa Romeo:Fangio,Farina,Bonetto|Ferrari:Ascari,Villoresi,González|Maserati:Bira,Godia|Talbot-Lago:Rosier,Chiron|Gordini:Manzon,Simon|BRM:Gerard|HWM:Moss',
-1952:'Ferrari:Ascari,Farina,Taruffi|Maserati:González,Bonetto|Gordini:Manzon,Behra,Trintignant|HWM:Collins,Moss|Cooper:Hawthorn|Connaught:Salvadori|Talbot-Lago:Rosier|ERA:Gerard',
+1952:'Ferrari:Ascari,Farina,Taruffi|Maserati:González,Bonetto|Gordini:Manzon,Behra,Trintignant|HWM:Collins,Moss|Cooper:Hawthorn|Connaught:Salvadori|Talbot-Lago:Rosier',
 1953:'Ferrari:Ascari,Farina,Hawthorn,Villoresi|Maserati:Fangio,González,Marimón,Bonetto|Gordini:Behra,Trintignant,Schell|Cooper:Moss|Connaught:Salvadori|HWM:Collins|Talbot-Lago:Rosier',
-1954:'Mercedes:Fangio,Trintignant|Ferrari:González,Hawthorn,Farina|Maserati:Moss,Marimón,Mieres|Lancia:Ascari,Villoresi|Gordini:Behra,Bira|Vanwall:Schell|Connaught:Salvadori|HWM:Collins',
-1955:'Mercedes:Fangio,Moss,Taruffi|Ferrari:Castellotti,Trintignant,Farina|Maserati:Behra,Mieres,Musso|Lancia:Ascari,Villoresi|Vanwall:Hawthorn,Schell|Gordini:Manzon|Connaught:Salvadori|BRM:Gerard',
+1954:'Mercedes:Fangio|Ferrari:González,Hawthorn,Farina|Maserati:Moss,Marimón,Mieres|Lancia:Ascari,Villoresi|Gordini:Behra|Vanwall:Schell,Collins|Connaught:Salvadori',
+1955:'Mercedes:Fangio,Moss,Taruffi|Ferrari:Castellotti,Trintignant,Farina|Maserati:Behra,Mieres,Musso|Lancia:Ascari,Villoresi|Vanwall:Hawthorn,Schell|Gordini:Manzon|Connaught:Salvadori',
 1956:'Ferrari:Fangio,Collins,Castellotti|Maserati:Moss,Behra,Villoresi|Vanwall:Schell,Trintignant|BRM:Hawthorn,Brooks|Connaught:Salvadori|Gordini:Manzon|Cooper:Bonnier|Kurtis Kraft:Musso',
-1957:'Maserati:Fangio,Behra,Schell,Menditeguy|Vanwall:Moss,Brooks,Salvadori|Ferrari:Hawthorn,Collins,Musso,Trintignant|Cooper:Bira|Porsche:Bonnier|BRM:Gregory',
-1958:'Vanwall:Moss,Brooks|Ferrari:Hawthorn,Collins,Musso|BRM:Behra,Schell,Bonnier|Cooper:Trintignant,Salvadori|Connaught:Gerard|Porsche:Gregory',
-1959:'Cooper:Moss,Gregory,Trintignant|BRM:Bonnier,Schell|Ferrari:Brooks,Behra|Aston Martin:Salvadori|Porsche:Bira',
-1960:'Cooper:Brabham,McLaren|Lotus:Clark,Ireland,Surtees|BRM:G. Hill,Bonnier|Ferrari:Ginther|Aston Martin:Ireland|Scuderia Centro Sud:Bianchi',
+1957:'Maserati:Fangio,Behra,Schell,Menditeguy|Vanwall:Moss,Brooks,Salvadori|Ferrari:Hawthorn,Collins,Musso,Trintignant|Cooper:Brabham|Porsche:Bonnier|BRM:Gregory',
+1958:'Vanwall:Moss,Brooks|Ferrari:Hawthorn,Collins,Musso|BRM:Behra,Schell,Bonnier|Cooper:Trintignant,Salvadori|Porsche:Gregory',
+1959:'Cooper:Moss,Gregory,Trintignant|BRM:Bonnier,Schell|Ferrari:Brooks,Behra|Aston Martin:Salvadori',
+1960:'Cooper:Brabham,McLaren|Lotus:Clark,Ireland,Surtees|BRM:G. Hill,Bonnier|Ferrari:Ginther|Scuderia Centro Sud:Bianchi',
 1961:'Ferrari:Ginther,Baghetti|Lotus:Clark,Ireland|Cooper:Brabham,McLaren|BRM:G. Hill|Porsche:Bonnier,Gurney|Scuderia Centro Sud:Bianchi',
 1962:'Lotus:Clark,Ireland|BRM:G. Hill,Ginther|Ferrari:Bandini,Baghetti|Cooper:McLaren|Lola:Surtees|Porsche:Gurney,Bonnier|Brabham:Brabham|Rob Walker:Siffert',
-1963:'Lotus:Clark,Spence|BRM:G. Hill,Ginther|Ferrari:Surtees,Bandini|Brabham:Brabham,Gurney|Cooper:McLaren|BRP:Ireland|Parnell:Hailwood|ATS:Baghetti|Scirocco:Bianchi|Rob Walker:Siffert|Scuderia Centro Sud:Rodríguez',
-1964:'Lotus:Clark,Spence|BRM:G. Hill,Ginther|Ferrari:Surtees,Bandini|Brabham:Brabham,Gurney|Cooper:McLaren|BRP:Ireland|Parnell:Hailwood,Attwood|Rob Walker:Siffert|Scuderia Centro Sud:Rodríguez',
-1965:'Lotus:Clark,Spence|BRM:G. Hill,Stewart|Ferrari:Surtees,Bandini|Brabham:Brabham,Gurney|Cooper:McLaren,Rindt|Honda:Ginther|Parnell:Attwood,Bianchi|Rob Walker:Siffert',
+1963:'Lotus:Clark,Spence,Rodríguez|BRM:G. Hill,Ginther|Ferrari:Surtees,Bandini|Brabham:Brabham,Gurney|Cooper:McLaren|BRP:Ireland|Parnell:Hailwood|ATS:Baghetti|Scirocco:Bianchi|Rob Walker:Siffert',
+1964:'Lotus:Clark,Spence|BRM:G. Hill,Ginther,Attwood|Ferrari:Surtees,Bandini|Brabham:Brabham,Gurney|Cooper:McLaren|BRP:Ireland|Parnell:Hailwood|Rob Walker:Siffert|Scuderia Centro Sud:Rodríguez',
+1965:'Lotus:Clark,Spence|BRM:G. Hill,Stewart|Ferrari:Surtees,Bandini|Brabham:Brabham,Gurney|Cooper:McLaren,Rindt|Honda:Ginther|Parnell:Attwood|Rob Walker:Siffert',
 1966:'Brabham:Brabham,Hulme|Ferrari:Surtees,Bandini,Scarfiotti|Lotus:Clark,Spence|BRM:G. Hill,Stewart|Cooper:Rindt,Ginther|McLaren:McLaren|Eagle:Gurney|Rob Walker:Siffert|Matra:Beltoise',
 1967:'Lotus:Clark,G. Hill|Brabham:Brabham,Hulme|Ferrari:Amon,Scarfiotti,Bandini|BRM:Stewart,Spence|Cooper:Rindt,Rodríguez|Eagle:Gurney|McLaren:McLaren|Honda:Surtees|Rob Walker:Siffert|Matra:Beltoise,Servoz-Gavin',
 1968:'Lotus:Clark,G. Hill|Matra:Stewart,Beltoise,Servoz-Gavin|Ferrari:Amon,Ickx|McLaren:McLaren,Hulme|Brabham:Brabham,Rindt|BRM:Rodríguez,Attwood,Courage|Honda:Surtees|Cooper:Bianchi,Scarfiotti|Rob Walker:Siffert',
-1969:'Matra:Stewart,Beltoise,Servoz-Gavin|Lotus:G. Hill,Rindt|Brabham:Brabham,Ickx|McLaren:McLaren,Hulme|Ferrari:Amon|BRM:Surtees,Rodríguez,Attwood|Rob Walker:Siffert|Parnell:Courage',
+1969:'Matra:Stewart,Beltoise,Servoz-Gavin|Lotus:G. Hill,Rindt,Attwood|Brabham:Brabham,Ickx|McLaren:McLaren,Hulme|Ferrari:Amon|BRM:Surtees,Rodríguez|Rob Walker:Siffert|Parnell:Courage',
 1970:'Lotus:Rindt,Fittipaldi|Ferrari:Ickx,Regazzoni|Tyrrell:Stewart|March:Amon,Cevert|McLaren:Hulme,Gethin|BRM:Rodríguez,Oliver|Brabham:Brabham,Stommelen|Matra:Beltoise,Pescarolo|Surtees:Surtees|Frank Williams Racing:de Adamich',
 1971:'Tyrrell:Stewart,Cevert|Ferrari:Ickx,Regazzoni,Andretti|BRM:Rodríguez,Siffert,Gethin|March:Peterson,Galli,Beuttler|Lotus:Fittipaldi,Wisell|McLaren:Hulme,Oliver|Matra:Amon,Beltoise|Surtees:Surtees,Stommelen|Brabham:G. Hill,Schenken|Frank Williams Racing:Pescarolo',
-1972:'Lotus:Fittipaldi|Tyrrell:Stewart,Cevert|Ferrari:Ickx,Regazzoni,Merzario|McLaren:Hulme,Revson|March:Peterson,Lauda|BRM:Beltoise,Gethin,Ganley|Brabham:Reutemann,W. Fittipaldi,G. Hill|Surtees:Pace,Schenken,Hailwood|Matra:Amon|Frank Williams Racing:Pescarolo,Galli',
-1973:'Lotus:Fittipaldi,Peterson|Tyrrell:Stewart,Cevert|McLaren:Hulme,Revson,Scheckter|Ferrari:Ickx,Merzario|Brabham:Reutemann,W. Fittipaldi|BRM:Regazzoni,Beltoise,Lauda|Surtees:Pace,Mass,Hailwood|Shadow:Oliver,Jarier|Ensign:Beuttler|Frank Williams Racing:Galli,Ganley|March:Wisell',
-1974:'McLaren:Fittipaldi,Mass,Hailwood|Ferrari:Lauda,Regazzoni|Tyrrell:Scheckter,Depailler|Lotus:Peterson,Ickx|Brabham:Reutemann,Pace|Shadow:Jarier,Pryce|March:Stuck,Brambilla|Hesketh:Hunt|Surtees:Watson|BRM:Beltoise,Migault|Frank Williams Racing:Merzario,Lunger|Ensign:Schenken',
-1975:'Ferrari:Lauda,Regazzoni|McLaren:Fittipaldi,Mass|Brabham:Reutemann,Pace|Tyrrell:Scheckter,Depailler|Lotus:Peterson,Ickx|Hesketh:Hunt,Lunger|March:Stuck,Brambilla,Wisell|Shadow:Pryce,Jarier|Copersucar:W. Fittipaldi|Penske:Watson|Frank Williams Racing:Merzario|Ensign:Zorzi|BRM:Pescarolo',
-1976:'Ferrari:Lauda,Regazzoni|McLaren:Hunt,Mass|Tyrrell:Scheckter,Depailler|Lotus:Andretti,Nilsson|Brabham:Reutemann,Pace|March:Peterson,Brambilla,Stuck|Shadow:Pryce,Jarier|Ligier:Laffite|Copersucar:Fittipaldi,W. Fittipaldi|Penske:Watson|Surtees:Lunger|Ensign:Ribeiro|Frank Williams Racing:Merzario|BRM:Pescarolo',
-1977:'Ferrari:Lauda,Reutemann,G. Villeneuve|McLaren:Hunt,Mass,Tambay|Lotus:Andretti,Nilsson|Tyrrell:Depailler,Peterson|Brabham:Watson,Stuck|Ligier:Laffite|Shadow:Patrese,Jarier|Wolf:Scheckter|Renault:Jabouille|Copersucar:Fittipaldi|Surtees:Brambilla|Ensign:Regazzoni|March:Ribeiro|ATS:Zorzi|Hesketh:Rebaque|Williams:Merzario',
+1972:'Lotus:Fittipaldi|Tyrrell:Stewart,Cevert|Ferrari:Ickx,Regazzoni,Merzario|McLaren:Hulme,Revson|March:Peterson,Lauda|BRM:Beltoise,Gethin,Ganley|Brabham:Reutemann,W. Fittipaldi,G. Hill|Surtees:Schenken,Hailwood|Matra:Amon|Frank Williams Racing:Pescarolo,Galli,Pace',
+1973:'Lotus:Fittipaldi,Peterson|Tyrrell:Stewart,Cevert|McLaren:Hulme,Revson,Scheckter|Ferrari:Ickx,Merzario|Brabham:Reutemann,W. Fittipaldi|BRM:Regazzoni,Beltoise,Lauda|Surtees:Pace,Mass,Hailwood|Shadow:Oliver|Ensign:Beuttler|Frank Williams Racing:Galli,Ganley|March:Wisell,Jarier',
+1974:'McLaren:Fittipaldi,Mass,Hailwood|Ferrari:Lauda,Regazzoni|Tyrrell:Scheckter,Depailler|Lotus:Peterson,Ickx|Brabham:Reutemann,Pace|Shadow:Jarier,Pryce|March:Stuck,Brambilla|Hesketh:Hunt|Surtees:Watson|BRM:Beltoise,Migault|Frank Williams Racing:Merzario,Laffite|Ensign:Schenken',
+1975:'Ferrari:Lauda,Regazzoni|McLaren:Fittipaldi,Mass|Brabham:Reutemann,Pace|Tyrrell:Scheckter,Depailler|Lotus:Peterson,Ickx|Hesketh:Hunt,Lunger|March:Stuck,Brambilla|Shadow:Pryce,Jarier|Copersucar:W. Fittipaldi|Penske:Watson|Frank Williams Racing:Merzario,Zorzi',
+1976:'Ferrari:Lauda,Regazzoni|McLaren:Hunt,Mass|Tyrrell:Scheckter,Depailler|Lotus:Andretti,Nilsson|Brabham:Reutemann,Pace|March:Peterson,Brambilla,Stuck|Shadow:Pryce,Jarier|Ligier:Laffite|Copersucar:Fittipaldi|Penske:Watson|Surtees:Lunger,Pescarolo|Ensign:Ribeiro|Frank Williams Racing:Merzario',
+1977:'Ferrari:Lauda,Reutemann,G. Villeneuve|McLaren:Hunt,Mass,Tambay|Lotus:Andretti,Nilsson|Tyrrell:Depailler,Peterson|Brabham:Watson,Stuck|Ligier:Laffite|Shadow:Patrese,Jarier,Zorzi|Wolf:Scheckter|Renault:Jabouille|Copersucar:Fittipaldi|Surtees:Brambilla|Ensign:Regazzoni|March:Ribeiro|Hesketh:Rebaque|Williams:Merzario',
 1978:'Lotus:Andretti,Peterson|Ferrari:G. Villeneuve,Reutemann|Brabham:Lauda,Watson|Tyrrell:Depailler,Pironi|Ligier:Laffite|McLaren:Hunt,Tambay|Wolf:Scheckter|Arrows:Patrese,Stommelen|Renault:Jabouille|ATS:Mass,Jarier|Copersucar:Fittipaldi|Shadow:Stuck|Ensign:Daly|Surtees:Brambilla|Hesketh:Rebaque|Williams:Merzario',
-1979:'Ferrari:Scheckter,G. Villeneuve|Williams:Jones,Regazzoni|Ligier:Laffite,Depailler|Lotus:Andretti,Reutemann|Brabham:Lauda,Piquet|Tyrrell:Jarier,Pironi|McLaren:Watson,Tambay|Renault:Arnoux,Jabouille|Wolf:Hunt|Arrows:Patrese,Mass|Copersucar:Fittipaldi|ATS:Stuck|Ensign:Daly|Shadow:de Angelis,Lunger',
-1980:'Williams:Jones,Reutemann|Brabham:Piquet,Rebaque|Ligier:Laffite,Pironi|Renault:Arnoux|Ferrari:Scheckter,G. Villeneuve|McLaren:Watson,Prost|Lotus:Andretti,de Angelis,Mansell|Tyrrell:Jarier,Daly|Arrows:Patrese,Surer|Alfa Romeo:Depailler,Giacomelli|ATS:Winkelhock|Osella:Cheever',
-1981:'Williams:Jones,Reutemann|Brabham:Piquet,Rebaque|Renault:Prost,Arnoux|Ferrari:G. Villeneuve,Pironi|McLaren:Watson,de Cesaris|Lotus:de Angelis,Mansell|Ligier:Laffite,Jarier|Tyrrell:Cheever,Serra|Arrows:Patrese,Surer|Alfa Romeo:Giacomelli,Andretti|Toleman:Warwick|Osella:Ghinzani|ATS:Salazar',
-1982:'Ferrari:G. Villeneuve,Pironi,Tambay|Renault:Prost,Arnoux|Brabham:Piquet,Patrese|Williams:K. Rosberg,Reutemann|McLaren:Lauda,Watson|Lotus:de Angelis,Mansell|Tyrrell:Alboreto,Daly|Ligier:Laffite,Cheever|Toleman:Warwick,Fabi|Alfa Romeo:de Cesaris,Giacomelli|Arrows:Baldi,Surer|Osella:Guerrero,Jarier|ATS:Winkelhock',
-1983:'Brabham:Piquet,Patrese|Renault:Prost,Cheever|Ferrari:Arnoux,Tambay|Williams:K. Rosberg,Laffite|McLaren:Lauda,Watson|Lotus:de Angelis,Mansell|Tyrrell:Alboreto|Alfa Romeo:de Cesaris,Baldi|Toleman:Warwick,Giacomelli|Arrows:Surer,Boutsen|Osella:Ghinzani,Jarier|ATS:Winkelhock|Ligier:Boesel,Serra',
+1979:'Ferrari:Scheckter,G. Villeneuve|Williams:Jones,Regazzoni|Ligier:Laffite,Depailler|Lotus:Andretti,Reutemann|Brabham:Lauda,Piquet|Tyrrell:Jarier,Pironi|McLaren:Watson,Tambay|Renault:Arnoux,Jabouille|Wolf:Hunt|Arrows:Patrese,Mass|Copersucar:Fittipaldi|ATS:Stuck|Ensign:Daly|Shadow:de Angelis',
+1980:'Williams:Jones,Reutemann|Brabham:Piquet,Rebaque|Ligier:Laffite,Pironi|Renault:Arnoux|Ferrari:Scheckter,G. Villeneuve|McLaren:Watson,Prost|Lotus:Andretti,de Angelis,Mansell|Tyrrell:Jarier,Daly|Arrows:Patrese,Winkelhock|Alfa Romeo:Depailler,Giacomelli|ATS:Surer|Osella:Cheever',
+1981:'Williams:Jones,Reutemann|Brabham:Piquet,Rebaque|Renault:Prost,Arnoux|Ferrari:G. Villeneuve,Pironi|McLaren:Watson,de Cesaris|Lotus:de Angelis,Mansell|Ligier:Laffite,Jarier|Tyrrell:Cheever|Arrows:Patrese|Alfa Romeo:Giacomelli,Andretti|Toleman:Warwick|Osella:Ghinzani|ATS:Salazar',
+1982:'Ferrari:G. Villeneuve,Pironi,Tambay|Renault:Prost,Arnoux|Brabham:Piquet,Patrese|Williams:K. Rosberg,Reutemann,Daly|McLaren:Lauda,Watson|Lotus:de Angelis,Mansell|Tyrrell:Alboreto|Ligier:Laffite,Cheever|Toleman:Warwick,Fabi|Alfa Romeo:de Cesaris,Giacomelli|Arrows:Baldi,Surer|Osella:Jarier|ATS:Winkelhock',
+1983:'Brabham:Piquet,Patrese|Renault:Prost,Cheever|Ferrari:Arnoux,Tambay|Williams:K. Rosberg,Laffite|McLaren:Lauda,Watson|Lotus:de Angelis,Mansell|Tyrrell:Alboreto|Alfa Romeo:de Cesaris,Baldi|Toleman:Warwick,Giacomelli|Arrows:Surer,Boutsen,Serra|Osella:Ghinzani|ATS:Winkelhock|Ligier:Boesel,Jarier',
 1984:'McLaren:Lauda,Prost|Ferrari:Alboreto,Arnoux|Brabham:Piquet,Fabi|Lotus:de Angelis,Mansell|Renault:Tambay,Warwick|Williams:K. Rosberg,Laffite|Toleman:Senna|Alfa Romeo:Cheever,Patrese|Tyrrell:Brundle,Bellof|Arrows:Boutsen,Surer|Ligier:de Cesaris|ATS:Berger|Osella:Ghinzani,Gartner',
-1985:'McLaren:Prost,Lauda|Ferrari:Alboreto,Johansson|Williams:K. Rosberg,Mansell|Lotus:Senna,de Angelis|Brabham:Piquet,Surer|Ligier:Laffite,Streiff|Renault:Tambay,Warwick|Arrows:Boutsen,Berger|Tyrrell:Brundle,Bellof|Osella:Ghinzani|Zakspeed:Palmer|Toleman:Watson,Fabi|Minardi:Martini',
+1985:'McLaren:Prost,Lauda,Watson|Ferrari:Alboreto,Johansson|Williams:K. Rosberg,Mansell|Lotus:Senna,de Angelis|Brabham:Piquet,Surer|Ligier:Laffite,Streiff|Renault:Tambay,Warwick|Arrows:Boutsen,Berger|Tyrrell:Brundle,Bellof|Osella:Ghinzani|Zakspeed:Palmer|Toleman:Fabi|Minardi:Martini',
 1986:'Williams:Mansell,Piquet|McLaren:Prost,K. Rosberg|Lotus:Senna|Ferrari:Alboreto,Johansson|Benetton:Berger,Fabi|Ligier:Laffite,Arnoux|Brabham:Patrese,de Angelis|Tyrrell:Brundle,Streiff|Arrows:Boutsen,Danner|Minardi:Nannini,de Cesaris|Osella:Ghinzani,Caffi|Zakspeed:Palmer,Rothengatter|AGS:Capelli',
-1987:'Williams:Mansell,Piquet|McLaren:Prost,Johansson|Lotus:Senna,Nakajima|Ferrari:Alboreto,Berger|Benetton:Boutsen,Fabi|Tyrrell:Palmer,Streiff|Arrows:Cheever,Warwick|Brabham:Patrese,de Cesaris|Ligier:Arnoux,Ghinzani|March:Capelli|Minardi:Nannini,Campos|AGS:Tarquini|Osella:Caffi|Zakspeed:Danner|Coloni:Larini|Larrousse:Alliot',
-1988:'McLaren:Senna,Prost|Ferrari:Berger,Alboreto|Benetton:Nannini,Boutsen|Williams:Mansell,Patrese|Lotus:Piquet,Nakajima|Arrows:Warwick,Cheever|March:Capelli,Gugelmin|Tyrrell:Palmer,Bailey|Ligier:Arnoux,Johansson|Minardi:de Cesaris,Sala|Rial:Danner|Osella:Larini|Dallara:Caffi|AGS:Streiff|Larrousse:Alliot,Raphanel|Coloni:Tarquini|Zakspeed:Schneider,Ghinzani|EuroBrun:Modena,Campos',
-1989:'McLaren:Senna,Prost|Ferrari:Mansell,Berger|Williams:Patrese,Boutsen|Benetton:Nannini|Lotus:Piquet,Nakajima|Tyrrell:Alboreto,Alesi|March:Capelli,Gugelmin|Ligier:Arnoux|Brabham:Brundle,Modena|Dallara:de Cesaris,Caffi|Arrows:Warwick,Cheever|Larrousse:Alliot,Raphanel|AGS:Tarquini|Rial:Danner,Weidler|Osella:Ghinzani|Onyx:Johansson|Zakspeed:Schneider|Minardi:Martini,Sala|Coloni:Barilla|EuroBrun:Berg',
-1990:'McLaren:Senna,Berger|Ferrari:Prost,Mansell|Williams:Patrese,Boutsen|Benetton:Piquet,Nannini|Lotus:Warwick,Suzuki|Tyrrell:Alesi|Leyton House:Capelli,Gugelmin|Brabham:Modena|Minardi:Martini|Larrousse:Alliot|Arrows:Alboreto,Caffi|Ligier:Larini',
-1991:'McLaren:Senna,Berger|Williams:Mansell,Patrese|Ferrari:Prost,Alesi|Benetton:Piquet,M. Schumacher|Jordan:Gachot,de Cesaris|Lotus:Häkkinen,Herbert|Tyrrell:Modena|Brabham:Blundell,Brundle|Leyton House:Capelli,Gugelmin|Footwork:Alboreto,Caffi|Minardi:Martini,Morbidelli|Larrousse:Comas|Ligier:Boutsen',
-1992:'Williams:Mansell,Patrese|McLaren:Senna,Berger|Benetton:M. Schumacher,Brundle|Ferrari:Alesi,Capelli|Lotus:Häkkinen,Herbert|Tyrrell:de Cesaris,Modena|Ligier:Boutsen,Comas|Footwork:Alboreto,Suzuki|Minardi:Morbidelli,C. Fittipaldi|Jordan:Gugelmin|Larrousse:Katayama,Gachot|Brabham:D. Hill',
+1987:'Williams:Mansell,Piquet|McLaren:Prost,Johansson|Lotus:Senna,Nakajima|Ferrari:Alboreto,Berger|Benetton:Boutsen,Fabi|Tyrrell:Palmer,Streiff|Arrows:Cheever,Warwick|Brabham:Patrese,de Cesaris|Ligier:Arnoux,Ghinzani|March:Capelli|Minardi:Nannini,Campos|Osella:Caffi,Tarquini|Zakspeed:Danner|Coloni:Larini|Larrousse:Alliot',
+1988:'McLaren:Senna,Prost|Ferrari:Berger,Alboreto|Benetton:Nannini,Boutsen|Williams:Mansell,Patrese|Lotus:Piquet,Nakajima|Arrows:Warwick,Cheever|March:Capelli,Gugelmin|Tyrrell:Palmer,Bailey|Ligier:Arnoux,Johansson|Minardi:Martini,Sala|Rial:de Cesaris|Osella:Larini|Dallara:Caffi|AGS:Streiff|Larrousse:Alliot,Raphanel|Coloni:Tarquini|Zakspeed:Schneider,Ghinzani|EuroBrun:Modena',
+1989:'McLaren:Senna,Prost|Ferrari:Mansell,Berger|Williams:Patrese,Boutsen|Benetton:Nannini|Lotus:Piquet,Nakajima|Tyrrell:Alboreto,Alesi|March:Capelli,Gugelmin|Ligier:Arnoux|Brabham:Brundle,Modena|Dallara:de Cesaris,Caffi|Arrows:Warwick,Cheever|Larrousse:Alliot|AGS:Tarquini|Rial:Danner,Weidler|Osella:Ghinzani|Onyx:Johansson|Zakspeed:Schneider|Minardi:Martini,Sala,Barilla|Coloni:Raphanel',
+1990:'McLaren:Senna,Berger|Ferrari:Prost,Mansell|Williams:Patrese,Boutsen|Benetton:Piquet,Nannini|Lotus:Warwick|Tyrrell:Alesi|Leyton House:Capelli,Gugelmin|Brabham:Modena|Minardi:Martini|Larrousse:Suzuki|Arrows:Alboreto,Caffi|Ligier:Larini,Alliot',
+1991:'McLaren:Senna,Berger|Williams:Mansell,Patrese|Ferrari:Prost,Alesi|Benetton:Piquet,M. Schumacher|Jordan:Gachot,de Cesaris|Lotus:Häkkinen,Herbert|Tyrrell:Modena|Brabham:Blundell,Brundle|Leyton House:Capelli,Gugelmin|Footwork:Alboreto,Caffi|Minardi:Martini,Morbidelli|Ligier:Boutsen,Comas',
+1992:'Williams:Mansell,Patrese|McLaren:Senna,Berger|Benetton:M. Schumacher,Brundle|Ferrari:Alesi,Capelli|Lotus:Häkkinen,Herbert|Tyrrell:de Cesaris|Ligier:Boutsen,Comas|Footwork:Alboreto,Suzuki|Minardi:Morbidelli,C. Fittipaldi|Jordan:Gugelmin,Modena|Larrousse:Katayama,Gachot|Brabham:D. Hill',
 1993:'Williams:Prost,D. Hill|McLaren:Senna|Benetton:M. Schumacher,Patrese|Ferrari:Alesi,Berger|Ligier:Brundle,Blundell|Lotus:Herbert,Zanardi|Sauber:Lehto|Jordan:Barrichello,Boutsen|Footwork:Warwick,Suzuki|Minardi:Martini,C. Fittipaldi|Tyrrell:Katayama,de Cesaris|Larrousse:Comas,Alliot',
 1994:'Williams:Senna,D. Hill,Coulthard|Benetton:M. Schumacher,J. Verstappen|Ferrari:Alesi,Berger|McLaren:Häkkinen,Brundle|Jordan:Barrichello,Irvine|Ligier:Panis,Bernard|Tyrrell:Katayama,Blundell|Footwork:Morbidelli,C. Fittipaldi|Sauber:Frentzen,de Cesaris|Minardi:Martini,Alboreto|Larrousse:Comas,Alliot|Lotus:Herbert,Zanardi,Lamy|Pacific:Gachot',
 1995:'Benetton:M. Schumacher,Herbert|Williams:D. Hill,Coulthard|Ferrari:Alesi,Berger|McLaren:Häkkinen,Blundell|Jordan:Barrichello,Irvine|Ligier:Panis,Suzuki|Sauber:Frentzen|Tyrrell:Katayama,Salo|Footwork:Morbidelli,Papis|Minardi:Martini,Badoer,Lamy|Forti:Diniz|Pacific:Gachot|Simtek:J. Verstappen',
 1996:'Williams:D. Hill,J. Villeneuve|Benetton:Alesi,Berger|Ferrari:M. Schumacher,Irvine|McLaren:Häkkinen,Coulthard|Jordan:Barrichello,Brundle|Ligier:Panis,Diniz|Sauber:Herbert,Frentzen|Tyrrell:Katayama,Salo|Footwork:J. Verstappen,Rosset|Minardi:Lamy,Fisichella|Forti:Badoer',
-1997:'Williams:J. Villeneuve,Frentzen|Ferrari:M. Schumacher,Irvine|McLaren:Häkkinen,Coulthard|Benetton:Berger,Alesi|Jordan:Fisichella,R. Schumacher|Prost:Panis,Trulli,Nakano|Sauber:Herbert,Morbidelli|Arrows:D. Hill,Diniz|Stewart:Barrichello,J. Magnussen|Tyrrell:Salo,J. Verstappen|Minardi:Katayama,Lamy',
+1997:'Williams:J. Villeneuve,Frentzen|Ferrari:M. Schumacher,Irvine|McLaren:Häkkinen,Coulthard|Benetton:Berger,Alesi|Jordan:Fisichella,R. Schumacher|Prost:Panis,Trulli,Nakano|Sauber:Herbert,Morbidelli|Arrows:D. Hill,Diniz|Stewart:Barrichello,J. Magnussen|Tyrrell:Salo,J. Verstappen|Minardi:Katayama',
 1998:'McLaren:Häkkinen,Coulthard|Ferrari:M. Schumacher,Irvine|Williams:Frentzen,J. Villeneuve|Jordan:D. Hill,R. Schumacher|Benetton:Wurz,Fisichella|Sauber:Herbert,Alesi|Arrows:Salo,Diniz|Stewart:Barrichello,J. Magnussen|Prost:Trulli,Panis|Tyrrell:Rosset,Takagi|Minardi:Nakano',
 1999:'Ferrari:M. Schumacher,Irvine|McLaren:Häkkinen,Coulthard|Jordan:Frentzen,D. Hill|Williams:R. Schumacher,Zanardi|Benetton:Fisichella,Wurz|Stewart:Barrichello,Herbert|Prost:Panis,Trulli|Sauber:Alesi,Diniz|Arrows:de la Rosa,Takagi|Minardi:Badoer,Gené|BAR:J. Villeneuve,Zonta',
 2000:'Ferrari:M. Schumacher,Barrichello|McLaren:Häkkinen,Coulthard|Williams:R. Schumacher,Button|Benetton:Fisichella,Wurz|Jordan:Frentzen,Trulli|BAR:J. Villeneuve,Zonta|Jaguar:Irvine,Herbert|Sauber:Salo,Diniz|Arrows:de la Rosa,J. Verstappen|Minardi:Gené,Mazzacane|Prost:Alesi,Heidfeld',
-2001:'Ferrari:M. Schumacher,Barrichello|McLaren:Häkkinen,Coulthard|Williams:R. Schumacher,Montoya|Sauber:Räikkönen,Heidfeld|Jordan:Frentzen,Trulli|BAR:J. Villeneuve,Panis|Benetton:Fisichella,Button|Jaguar:Irvine,Burti|Arrows:Bernoldi,J. Verstappen|Prost:Alesi,Burti|Minardi:Alonso,Zonta',
+2001:'Ferrari:M. Schumacher,Barrichello|McLaren:Häkkinen,Coulthard|Williams:R. Schumacher,Montoya|Sauber:Räikkönen,Heidfeld|Jordan:Frentzen,Trulli,Zonta|BAR:J. Villeneuve,Panis|Benetton:Fisichella,Button|Jaguar:Irvine,Burti|Arrows:Bernoldi,J. Verstappen|Prost:Alesi,Burti|Minardi:Alonso',
 2002:'Ferrari:M. Schumacher,Barrichello|Williams:Montoya,R. Schumacher|McLaren:Räikkönen,Coulthard|Renault:Button,Trulli|Sauber:Heidfeld,Massa|Jordan:Fisichella,Sato|Jaguar:Irvine,de la Rosa|BAR:J. Villeneuve,Panis|Toyota:Salo,McNish|Arrows:Frentzen,Bernoldi|Minardi:Webber,Yoong',
 2003:'Ferrari:M. Schumacher,Barrichello|McLaren:Räikkönen,Coulthard|Williams:Montoya,R. Schumacher|Renault:Alonso,Trulli|BAR:Button,J. Villeneuve|Sauber:Frentzen,Heidfeld|Jaguar:Webber,Pizzonia|Jordan:Fisichella,Firman|Toyota:Panis,da Matta|Minardi:Wilson,J. Verstappen',
 2004:'Ferrari:M. Schumacher,Barrichello|BAR:Button,Sato|Renault:Alonso,Trulli|Williams:Montoya,R. Schumacher|McLaren:Räikkönen,Coulthard|Sauber:Massa,Fisichella|Jaguar:Webber,Klien|Toyota:Panis,da Matta,Zonta|Jordan:Heidfeld,Glock|Minardi:Bruni,Baumgartner',
@@ -3029,7 +3113,7 @@ const LINEUPS = { f1: {
 2007:'Ferrari:Räikkönen,Massa|McLaren:Alonso,Hamilton|BMW Sauber:Heidfeld,Kubica|Renault:Fisichella,Kovalainen|Williams:N. Rosberg,A. Wurz|Red Bull:Webber,Coulthard|Toyota:Trulli,R. Schumacher|Toro Rosso:Liuzzi,Vettel|Honda:Button,Barrichello|Super Aguri:Sato,Davidson|Spyker:Sutil,Albers',
 2008:'Ferrari:Räikkönen,Massa|McLaren:Hamilton,Kovalainen|BMW Sauber:Kubica,Heidfeld|Renault:Alonso,Piquet Jr.|Toyota:Trulli,Glock|Toro Rosso:Vettel,Bourdais|Red Bull:Webber,Coulthard|Williams:N. Rosberg,K. Nakajima|Honda:Button,Barrichello|Force India:Fisichella,Sutil|Super Aguri:Sato,Davidson',
 2009:'Brawn:Button,Barrichello|Red Bull:Vettel,Webber|McLaren:Hamilton,Kovalainen|Ferrari:Massa,Räikkönen|Toyota:Trulli,Glock|BMW Sauber:Kubica,Heidfeld|Williams:N. Rosberg,K. Nakajima|Renault:Alonso,Grosjean|Force India:Sutil,Fisichella|Toro Rosso:Buemi,Alguersuari',
-2010:'Red Bull:Vettel,Webber|McLaren:Hamilton,Button|Ferrari:Alonso,Massa|Mercedes:M. Schumacher,N. Rosberg|Renault:Kubica,Petrov|Williams:Barrichello,Hülkenberg|Force India:Sutil,di Resta|Sauber:Kobayashi,Heidfeld|Toro Rosso:Buemi,Alguersuari|Lotus Racing:Trulli|Virgin:Glock|HRT:B. Senna',
+2010:'Red Bull:Vettel,Webber|McLaren:Hamilton,Button|Ferrari:Alonso,Massa|Mercedes:M. Schumacher,N. Rosberg|Renault:Kubica,Petrov|Williams:Barrichello,Hülkenberg|Force India:Sutil,Liuzzi|Sauber:Kobayashi,Heidfeld|Toro Rosso:Buemi,Alguersuari|Lotus Racing:Trulli|Virgin:Glock|HRT:B. Senna',
 2011:'Red Bull:Vettel,Webber|McLaren:Hamilton,Button|Ferrari:Alonso,Massa|Mercedes:M. Schumacher,N. Rosberg|Renault:Petrov,Heidfeld,B. Senna|Force India:Sutil,di Resta|Sauber:Kobayashi,Pérez|Toro Rosso:Buemi,Alguersuari|Williams:Barrichello,Maldonado|Team Lotus:Trulli|Virgin:Glock|HRT:Ricciardo',
 2012:'Red Bull:Vettel,Webber|McLaren:Hamilton,Button|Ferrari:Alonso,Massa|Lotus:Räikkönen,Grosjean|Mercedes:M. Schumacher,N. Rosberg|Sauber:Pérez,Kobayashi|Force India:di Resta,Hülkenberg|Williams:Maldonado,B. Senna|Toro Rosso:Ricciardo,Vergne|Caterham:Petrov|Marussia:Glock',
 2013:'Red Bull:Vettel,Webber|Mercedes:Hamilton,N. Rosberg|Ferrari:Alonso,Massa|Lotus:Räikkönen,Grosjean|McLaren:Button,Pérez|Force India:di Resta,Sutil|Sauber:Hülkenberg,Gutiérrez|Toro Rosso:Ricciardo,Vergne|Williams:Maldonado,Bottas|Marussia:J. Bianchi',
@@ -3052,34 +3136,34 @@ const LINEUPS = { f1: {
 indy: {
 1996:'Penske:A. Unser Jr.,Tracy,E. Fittipaldi|Chip Ganassi:Vasser,Zanardi|Newman/Haas:M. Andretti,C. Fittipaldi|Rahal/Hogan:Rahal,B. Herta|PacWest:Gugelmin,Blundell|Forsythe:Moore|Patrick Racing:Pruett|Galles Racing:Fernández|All American Racers:Papis',
 1997:'Penske:A. Unser Jr.,Tracy|Chip Ganassi:Zanardi,Vasser|Newman/Haas:M. Andretti,C. Fittipaldi|Walker Racing:de Ferran|Forsythe:Moore|Rahal/Hogan:Rahal,B. Herta|PacWest:Gugelmin,Blundell|Patrick Racing:Pruett|All American Racers:Fernández|Team Green:Franchitti',
-1998:'Chip Ganassi:Zanardi,Vasser|Penske:A. Unser Jr.,Ribeiro|Team Green:Franchitti,Tracy|Newman/Haas:M. Andretti,C. Fittipaldi|Forsythe:Moore|Walker Racing:de Ferran|Rahal/Hogan:Rahal,B. Herta|PacWest:Gugelmin,Blundell|Patrick Racing:Pruett|All American Racers:Fernández|Payton/Coyne:Papis',
-1999:'Chip Ganassi:Montoya,Vasser|Team Green:Franchitti,Tracy|Newman/Haas:M. Andretti,C. Fittipaldi|Walker Racing:de Ferran|Forsythe:Moore|Rahal/Hogan:Rahal,B. Herta|PacWest:Gugelmin,Blundell|Patrick Racing:Fernández|Penske:A. Unser Jr.|All American Racers:Papis',
-2000:'Chip Ganassi:Montoya,Vasser|Penske:de Ferran,Castroneves|Team Green:Franchitti,Tracy|Newman/Haas:M. Andretti|Panther:Hornish Jr.|Foyt:Sharp|Walker Racing:Junqueira|Forsythe:Fernández',
-2001:'Chip Ganassi:Junqueira,Vasser|Penske:de Ferran,Castroneves|Team Green:Franchitti,Tracy|Panther:Hornish Jr.|Foyt:Sharp|Newman/Haas:M. Andretti|Forsythe:Fernández|PacWest:Manning',
-2002:'Penske:de Ferran,Castroneves|Panther:Hornish Jr.|Chip Ganassi:Junqueira|Team Green:Franchitti,Tracy|Foyt:Sharp|Newman/Haas:Junqueira|Dreyer & Reinbold:Meira|Forsythe:Fernández',
-2003:'Andretti Green:Kanaan,Franchitti,Wheldon,B. Herta|Penske:Castroneves,de Ferran|Chip Ganassi:Dixon|Panther:Hornish Jr.|Foyt:Meira|Newman/Haas:Junqueira|Forsythe:Fernández',
-2004:'Andretti Green:Kanaan,Wheldon,Franchitti,B. Herta|Penske:Castroneves,Hornish Jr.|Chip Ganassi:Dixon|Panther:Manning|Foyt:Meira|Rahal Letterman:Rice|Newman/Haas:Junqueira|Forsythe:Fernández',
-2005:'Andretti Green:Wheldon,Kanaan,Franchitti,B. Herta|Rahal Letterman:Patrick,Rice|Penske:Castroneves,Hornish Jr.|Chip Ganassi:Dixon,Scheckter|Panther:Manning|Foyt:Meira|Dreyer & Reinbold:Sharp|Newman/Haas:Junqueira',
-2006:'Penske:Hornish Jr.,Castroneves|Chip Ganassi:Dixon,Wheldon|Andretti Green:Kanaan,Franchitti,B. Herta|Rahal Letterman:Patrick,Rice|Panther:Manning|Foyt:Meira|Dreyer & Reinbold:Scheckter',
-2007:'Chip Ganassi:Dixon,Wheldon|Penske:Castroneves,Hornish Jr.|Andretti Green:Kanaan,Franchitti,Patrick|Rahal Letterman:Rice|Panther:Manning|Vision:Meira|Foyt:Sharp|Dreyer & Reinbold:Mutoh',
-2008:'Chip Ganassi:Dixon,Wheldon|Penske:Castroneves,Briscoe|Andretti Green:Kanaan,Patrick,Mutoh|Rahal Letterman:Hunter-Reay|Vision:Meira|Panther:Manning|Foyt:Junqueira|KV Racing:Viso',
-2009:'Chip Ganassi:Dixon,Franchitti|Penske:Castroneves,Briscoe,Power|Andretti Green:Kanaan,Patrick,Hunter-Reay|Panther:Wheldon|KV Racing:Viso|Foyt:Junqueira|Dreyer & Reinbold:Matos|Vision:Rahal',
-2010:'Penske:Power,Castroneves,Briscoe|Chip Ganassi:Dixon,Franchitti|Andretti:Kanaan,Hunter-Reay|KV Racing:Sato,Viso|Panther:Wheldon|Dale Coyne:Rahal|Sarah Fisher:Munoz|A.J. Foyt:Aleshin',
-2011:'Penske:Power,Castroneves,Briscoe|Chip Ganassi:Dixon,Franchitti|KV Racing:Kanaan,Sato,Viso|Andretti:Hunter-Reay,Hinchcliffe|Dale Coyne:Rahal|Bryan Herta:Wheldon|Panther:Munoz|Sarah Fisher:Newgarden',
-2012:'Penske:Power,Castroneves,Briscoe|Chip Ganassi:Dixon,Franchitti,Kimball|KV Racing:Kanaan,Viso|Andretti:Hunter-Reay,Hinchcliffe|Rahal Letterman Lanigan:Rahal|A.J. Foyt:Sato|Dale Coyne:Wilson|Sarah Fisher:Newgarden',
-2013:'KV Racing:Kanaan,Viso|Chip Ganassi:Dixon,Franchitti,Kimball|Penske:Castroneves,Power|Andretti:Hunter-Reay,Hinchcliffe,Munoz|A.J. Foyt:Sato|Dale Coyne:Wilson|Rahal Letterman Lanigan:Rahal|Sarah Fisher:Newgarden|Schmidt Peterson:Pagenaud',
-2014:'Chip Ganassi:Dixon,Kanaan,Kimball|Penske:Power,Castroneves,Briscoe|Andretti:Hunter-Reay,Munoz,Hinchcliffe|Schmidt Peterson:Pagenaud,Aleshin|Sarah Fisher:Newgarden|A.J. Foyt:Sato|Rahal Letterman Lanigan:Rahal|Dale Coyne:Wilson',
-2015:'Chip Ganassi:Dixon,Kanaan,Kimball|Penske:Power,Castroneves,Pagenaud|Andretti:Hunter-Reay,Munoz|Schmidt Peterson:Hinchcliffe,Aleshin|Ed Carpenter:Newgarden|A.J. Foyt:Sato|Rahal Letterman Lanigan:Rahal|Dale Coyne:Wilson',
-2016:'Penske:Pagenaud,Power,Castroneves|Chip Ganassi:Dixon,Kanaan,Kimball|Andretti:Rossi,Hunter-Reay,Munoz|Schmidt Peterson:Hinchcliffe,Aleshin|Ed Carpenter:Newgarden|A.J. Foyt:Sato|Rahal Letterman Lanigan:Rahal|Dale Coyne:Chilton',
-2017:'Penske:Newgarden,Pagenaud,Power,Castroneves|Chip Ganassi:Dixon,Kanaan,Kimball|Andretti:Rossi,Hunter-Reay,Sato|Schmidt Peterson:Hinchcliffe|Rahal Letterman Lanigan:Rahal|Dale Coyne:Chilton|A.J. Foyt:Munoz|Ed Carpenter:Veach',
-2018:'Penske:Newgarden,Power,Pagenaud|Chip Ganassi:Dixon,Kanaan|Andretti:Rossi,Hunter-Reay,Veach,Herta|Rahal Letterman Lanigan:Rahal,Sato|Schmidt Peterson:Hinchcliffe,Wickens|Dale Coyne:Chilton|A.J. Foyt:Kimball|Ed Carpenter:Munoz',
-2019:'Penske:Newgarden,Power,Pagenaud|Chip Ganassi:Dixon,Rosenqvist|Andretti:Rossi,Hunter-Reay,Herta,Veach|Rahal Letterman Lanigan:Rahal,Sato|Schmidt Peterson:Hinchcliffe|A.J. Foyt:Kanaan|Dale Coyne:Jones|Carlin:Chilton|Ed Carpenter:Kimball',
-2020:'Chip Ganassi:Dixon,Rosenqvist|Penske:Newgarden,Power,Pagenaud|Andretti Global:Rossi,Herta|Arrow McLaren:O’Ward|Dale Coyne:Palou,Ferrucci|Rahal Letterman Lanigan:Rahal|Ed Carpenter:VeeKay|A.J. Foyt:Kirkwood',
-2021:'Chip Ganassi:Palou,Dixon,Ericsson|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rosenqvist|Andretti Global:Rossi,Herta|Rahal Letterman Lanigan:Rahal|Ed Carpenter:VeeKay|Dale Coyne:Ferrucci|A.J. Foyt:Kirkwood',
+1998:'Chip Ganassi:Zanardi,Vasser|Penske:A. Unser Jr.,Ribeiro|Team Green:Franchitti,Tracy|Newman/Haas:M. Andretti,C. Fittipaldi|Forsythe:Moore|Walker Racing:de Ferran|Rahal/Hogan:Rahal,B. Herta|PacWest:Gugelmin,Blundell|Patrick Racing:Pruett,Fernández|Payton/Coyne:Papis',
+1999:'Chip Ganassi:Montoya,Vasser|Team Green:Franchitti,Tracy|Newman/Haas:M. Andretti,C. Fittipaldi|Walker Racing:de Ferran|Forsythe:Moore|Rahal/Hogan:B. Herta,Papis|PacWest:Gugelmin,Blundell|Patrick Racing:Fernández|Penske:A. Unser Jr.',
+2000:'Chip Ganassi:Montoya,Vasser|Penske:de Ferran,Castroneves|Team Green:Franchitti,Tracy|Newman/Haas:M. Andretti|Panther:Hornish Jr.|Foyt:Sharp|Walker Racing:B. Herta|Forsythe:Fernández',
+2001:'Chip Ganassi:Junqueira|Penske:de Ferran,Castroneves|Team Green:Franchitti,Tracy|Panther:Hornish Jr.|Foyt:Sharp|Newman/Haas:M. Andretti|Forsythe:Fernández|PacWest:Dixon',
+2002:'Penske:de Ferran,Castroneves|Panther:Hornish Jr.|Chip Ganassi:Junqueira|Team Green:Franchitti,Tracy|Foyt:Sharp|Dreyer & Reinbold:Meira|Forsythe:Fernández',
+2003:'Andretti Green:Kanaan,Franchitti,Wheldon|Penske:Castroneves,de Ferran|Chip Ganassi:Dixon|Panther:Hornish Jr.|Foyt:Meira|Newman/Haas:Junqueira|Forsythe:Fernández',
+2004:'Andretti Green:Kanaan,Wheldon,Franchitti,B. Herta|Penske:Castroneves,Hornish Jr.|Chip Ganassi:Dixon,Manning|Rahal Letterman:Rice,Meira|Newman/Haas:Junqueira|Forsythe:Fernández',
+2005:'Andretti Green:Wheldon,Kanaan,Franchitti,B. Herta|Rahal Letterman:Patrick,Rice,Meira|Penske:Castroneves,Hornish Jr.|Chip Ganassi:Dixon,Manning|Panther:Scheckter|Dreyer & Reinbold:Sharp|Newman/Haas:Junqueira',
+2006:'Penske:Hornish Jr.,Castroneves|Chip Ganassi:Dixon,Wheldon|Andretti Green:Kanaan,Franchitti,B. Herta|Rahal Letterman:Patrick,Rice|Panther:Meira|Dreyer & Reinbold:Scheckter',
+2007:'Chip Ganassi:Dixon,Wheldon|Penske:Castroneves,Hornish Jr.|Andretti Green:Kanaan,Franchitti,Patrick|Rahal Letterman:Sharp|Panther:Meira,Mutoh|Foyt:Manning|Dreyer & Reinbold:Rice',
+2008:'Chip Ganassi:Dixon,Wheldon|Penske:Castroneves,Briscoe|Andretti Green:Kanaan,Patrick,Mutoh|Rahal Letterman:Hunter-Reay|Foyt:Junqueira,Meira,Manning|KV Racing:Viso',
+2009:'Chip Ganassi:Dixon,Franchitti|Penske:Castroneves,Briscoe,Power|Andretti Green:Kanaan,Patrick|Panther:Wheldon|KV Racing:Viso|Foyt:Junqueira,Hunter-Reay|Dreyer & Reinbold:Matos|Vision:Rahal',
+2010:'Penske:Power,Castroneves,Briscoe|Chip Ganassi:Dixon,Franchitti|Andretti:Kanaan,Hunter-Reay|KV Racing:Sato,Viso|Panther:Wheldon|Dale Coyne:Rahal|A.J. Foyt:Meira',
+2011:'Penske:Power,Castroneves,Briscoe|Chip Ganassi:Dixon,Franchitti,Rahal|KV Racing:Kanaan,Sato,Viso|Andretti:Hunter-Reay|Bryan Herta:Wheldon',
+2012:'Penske:Power,Castroneves,Briscoe|Chip Ganassi:Dixon,Franchitti,Kimball,Rahal|KV Racing:Kanaan,Viso|Andretti:Hunter-Reay,Hinchcliffe|Rahal Letterman Lanigan:Sato|Dale Coyne:Wilson|Sarah Fisher:Newgarden',
+2013:'KV Racing:Kanaan|Chip Ganassi:Dixon,Franchitti,Kimball|Penske:Castroneves,Power|Andretti:Hunter-Reay,Hinchcliffe,Munoz,Viso|A.J. Foyt:Sato|Dale Coyne:Wilson|Rahal Letterman Lanigan:Rahal|Sarah Fisher:Newgarden|Schmidt Peterson:Pagenaud',
+2014:'Chip Ganassi:Dixon,Kanaan,Kimball,Briscoe|Penske:Power,Castroneves|Andretti:Hunter-Reay,Munoz,Hinchcliffe|Schmidt Peterson:Pagenaud,Aleshin|Sarah Fisher:Newgarden|A.J. Foyt:Sato|Rahal Letterman Lanigan:Rahal|Dale Coyne:Wilson',
+2015:'Chip Ganassi:Dixon,Kanaan,Kimball|Penske:Power,Castroneves,Pagenaud|Andretti:Hunter-Reay,Munoz,Wilson|Schmidt Peterson:Hinchcliffe,Aleshin|Ed Carpenter:Newgarden|A.J. Foyt:Sato|Rahal Letterman Lanigan:Rahal',
+2016:'Penske:Pagenaud,Power,Castroneves|Chip Ganassi:Dixon,Kanaan,Kimball,Chilton|Andretti:Rossi,Hunter-Reay,Munoz|Schmidt Peterson:Hinchcliffe,Aleshin|Ed Carpenter:Newgarden|A.J. Foyt:Sato|Rahal Letterman Lanigan:Rahal',
+2017:'Penske:Newgarden,Pagenaud,Power,Castroneves|Chip Ganassi:Dixon,Kanaan,Kimball,Chilton|Andretti:Rossi,Hunter-Reay,Sato|Schmidt Peterson:Hinchcliffe|Rahal Letterman Lanigan:Rahal|A.J. Foyt:Munoz|Ed Carpenter:Veach',
+2018:'Penske:Newgarden,Power,Pagenaud|Chip Ganassi:Dixon|Andretti:Rossi,Hunter-Reay,Veach,Munoz|Rahal Letterman Lanigan:Rahal,Sato|Schmidt Peterson:Hinchcliffe,Wickens|Dale Coyne:Chilton|A.J. Foyt:Kimball,Kanaan',
+2019:'Penske:Newgarden,Power,Pagenaud|Chip Ganassi:Dixon,Rosenqvist|Andretti:Rossi,Hunter-Reay,Veach|Rahal Letterman Lanigan:Rahal,Sato|Schmidt Peterson:Hinchcliffe|A.J. Foyt:Kanaan|Carlin:Chilton,Kimball|Ed Carpenter:Jones',
+2020:'Chip Ganassi:Dixon,Rosenqvist|Penske:Newgarden,Power,Pagenaud|Andretti Global:Rossi,Herta|Arrow McLaren:O’Ward|Dale Coyne:Palou,Ferrucci|Rahal Letterman Lanigan:Rahal|Ed Carpenter:VeeKay|A.J. Foyt:Kimball',
+2021:'Chip Ganassi:Palou,Dixon,Ericsson|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rosenqvist|Andretti Global:Rossi,Herta|Rahal Letterman Lanigan:Rahal,Ferrucci|Ed Carpenter:VeeKay',
 2022:'Chip Ganassi:Palou,Dixon,Ericsson|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rosenqvist|Andretti Global:Herta,Rossi|A.J. Foyt:Kirkwood|Rahal Letterman Lanigan:Rahal,Lundgaard|Ed Carpenter:VeeKay|Dale Coyne:Malukas|Juncos Hollinger:Ilott',
-2023:'Chip Ganassi:Palou,Dixon,Ericsson,Armstrong|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rosenqvist|Andretti Global:Herta,Kirkwood|Rahal Letterman Lanigan:Rahal,Lundgaard|Ed Carpenter:VeeKay|Dale Coyne:Malukas|Juncos Hollinger:Ilott|Meyer Shank:Simpson',
-2024:'Chip Ganassi:Palou,Dixon,Armstrong|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rossi|Andretti Global:Herta,Kirkwood,Ericsson|Rahal Letterman Lanigan:Rahal,Lundgaard|Ed Carpenter:VeeKay|A.J. Foyt:Ferrucci|Meyer Shank:Malukas|Juncos Hollinger:Ilott|Dale Coyne:Robb',
-2025:'Chip Ganassi:Palou,Dixon,Armstrong|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Siegel|Andretti Global:Herta,Kirkwood,Ericsson|Rahal Letterman Lanigan:Rahal,Lundgaard|Ed Carpenter:VeeKay|A.J. Foyt:Ferrucci|Meyer Shank:Malukas|Juncos Hollinger:Ilott|Dale Coyne:Robb,Simpson'
+2023:'Chip Ganassi:Palou,Dixon,Ericsson,Armstrong|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rosenqvist|Andretti Global:Herta,Kirkwood|Rahal Letterman Lanigan:Rahal,Lundgaard|Ed Carpenter:VeeKay|Dale Coyne:Malukas|Juncos Hollinger:Ilott|Meyer Shank:Castroneves',
+2024:'Chip Ganassi:Palou,Dixon,Armstrong|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Rossi,Ilott|Andretti Global:Herta,Kirkwood,Ericsson|Rahal Letterman Lanigan:Rahal,Lundgaard|Ed Carpenter:VeeKay|A.J. Foyt:Ferrucci,Robb|Meyer Shank:Malukas',
+2025:'Chip Ganassi:Palou,Dixon,Simpson|Penske:Newgarden,Power,McLaughlin|Arrow McLaren:O’Ward,Siegel,Lundgaard|Andretti Global:Herta,Kirkwood,Ericsson|Rahal Letterman Lanigan:Rahal|A.J. Foyt:Ferrucci,Malukas|Meyer Shank:Armstrong|Juncos Hollinger:Ilott,Robb|Dale Coyne:VeeKay'
 } };
 
 /* Janela real de atividade, deduzida das escalações. Se a tabela só põe
@@ -5640,6 +5724,171 @@ const SCENARIOS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
+   O BANCO HISTÓRICO
+   Os campeonatos reais de 1950 em diante, cada temporada com a lista de
+   inscritos (ou só a classificação final, quando é o que existe), o
+   campeão, o calendário e a página de onde saiu. Vem de dados/historico.js,
+   que é gerado por ferramentas/historico a partir da Wikipedia — nada
+   ali é preenchido por suposição: temporada sem fonte fica pendente, e o
+   grid dela é simulado, como sempre foi.
+   Status: L = lista de inscritos · C = só a classificação (parcial) ·
+   V = página sem tabela legível · X = sem página.
+   ═══════════════════════════════════════════════════════════════ */
+const Hist = {
+  ok(){ return typeof HIST !== 'undefined' && !!HIST && HIST.v === 1; },
+  _c: null, _t: {}, _p: {},
+  ST: { L:'Lista de inscritos', C:'Só a classificação final', V:'Sem tabela legível', X:'Sem fonte' },
+  camp(id){
+    if(!Hist.ok()) return null;
+    if(!Hist._c){ Hist._c = {}; HIST.C.forEach(c => { Hist._c[c.id] = c; }); }
+    return Hist._c[id] || null;
+  },
+  campeonatos(){ return Hist.ok() ? HIST.C : []; },
+  existe(c, ano){ return !!c && ano >= c.de && (c.ate == null || ano <= c.ate); },
+  /* o nome oficial que o campeonato tinha naquele ano: o título da página
+     daquela temporada ("1985 World Endurance Championship"), sem o ano; na
+     falta dela, o nome que o catálogo registra para o período */
+  nomeOficial(c, ano){
+    if(!c) return '';
+    const t = Hist.temporada(c.id, ano);
+    const n = t && Hist.nomeDaPagina(t.pagina);
+    if(n) return n;
+    const ns = c.ns || [];
+    const x = ns.find(n => ano >= n[0] && ano <= n[1]);
+    return x ? x[2] : ns.length ? (ano < ns[0][0] ? ns[0][2] : ns[ns.length - 1][2]) : c.n;
+  },
+  /* "1985 World Endurance Championship" → "World Endurance Championship" */
+  nomeDaPagina(p){
+    if(!p) return null;
+    const n = String(p).replace(/^\d{4}(?:[–-]\d{2,4})?\s+/, '').replace(/\s+season$/i, '').replace(/\s*\([^)]*\)$/, '').trim();
+    return n.length > 3 && !/^\d/.test(n) ? n : null;
+  },
+  pessoa(i){
+    if(Hist._p[i]) return Hist._p[i];
+    const [nome, cc, jogo, pagina, nh] = String(HIST.P[i] || '?').split('|');
+    return (Hist._p[i] = { i, nome, cc: cc || null, jogo: jogo || nome, pagina: pagina || nome.replace(/ /g, '_'), nh: nh || null });
+  },
+  /* uma temporada lida: inscritos na ordem da classificação final */
+  temporada(id, ano){
+    if(!Hist.ok()) return null;
+    const k = id + ':' + ano;
+    if(k in Hist._t) return Hist._t[k];
+    const row = HIST.T[id] && HIST.T[id][ano];
+    if(!row) return (Hist._t[k] = null);
+    const [st, pagina, revid, ich, chTxt, ents, cal] = row;
+    const b = s => s ? parseInt(s, 36) : -1;
+    const inscritos = ents ? ents.split('|').map(s => {
+      const [p, e, kk, num, pos] = s.split(',');
+      const P = Hist.pessoa(b(p));
+      return { p: P, name: P.jogo, cc: P.cc, eq: e ? HIST.E[b(e)] : null, carro: kk ? HIST.K[b(kk)] : null,
+               num: num || null, pos: pos ? +pos : null };
+    }) : [];
+    const calendario = cal ? cal.split('|').map(s => {
+      const [l, cc, data] = s.split(',');
+      return { circuito: l ? HIST.L[b(l)] : '?', cc: cc || null, data: data || '' };
+    }) : [];
+    return (Hist._t[k] = { id, ano, st, pagina: pagina || null, revid: revid || 0,
+      campeao: ich >= 0 ? Hist.pessoa(ich) : null, campeaoTxt: chTxt || null, inscritos, calendario });
+  },
+  /* o endereço exato da revisão lida, para quem quiser conferir */
+  fonte(t){
+    if(!t || !t.pagina || !Hist.ok()) return null;
+    return HIST.fonte.url + encodeURIComponent(t.pagina.replace(/ /g, '_')) + (t.revid ? '?oldid=' + t.revid : '');
+  },
+  doAno(ano){ return Hist.campeonatos().filter(c => Hist.existe(c, ano)); },
+  /* tem grid real (lista ou classificação) naquele ano? */
+  temGrid(id, ano){ const t = Hist.temporada(id, ano); return !!(t && (t.st === 'L' || t.st === 'C') && t.inscritos.length); }
+};
+
+/* Qual campeonato real é cada categoria da escada, ano a ano. A escada do
+   jogo diz "Fórmula 3"; de 1985 a 2002 a F3 que levava à F1 era a
+   britânica, de 2003 a 2011 a Euro Series, e assim por diante. */
+const CAT_HIST = {
+  'Fórmula 1':            [[1950, 2100, 'f1']],
+  'Fórmula 2':            [[1967, 1984, 'euro_f2'], [2017, 2100, 'f2']],
+  'Fórmula 3000':         [[1985, 2004, 'f3000']],
+  'GP2 Series':           [[2005, 2016, 'gp2']],
+  'World Series':         [[1998, 2004, 'wsbn'], [2005, 2017, 'wsr']],
+  'Fórmula 3':            [[1951, 1974, 'f3_brit'], [1975, 1984, 'f3_euro_7584'], [1985, 2002, 'f3_brit'],
+                           [2003, 2011, 'f3_euroseries'], [2012, 2018, 'f3_euro_fia'], [2019, 2100, 'f3']],
+  'Fórmula 3 (500cc)':    [[1951, 1960, 'f3_500']],
+  'Fórmula Júnior':       [[1958, 1963, 'fjunior']],
+  'Fórmula Regional':     [[2019, 2100, 'frec']],
+  'Fórmula Renault 2.0':  [[1991, 2020, 'fr_eurocup']],
+  'Fórmula Renault':      [[1989, 2011, 'fr_uk']],
+  'Fórmula Ford':         [[1967, 2015, 'ff_brit']],
+  'Fórmula Ford Britânica':[[1967, 2015, 'ff_brit']],
+  'Fórmula Ford Brasil':  [[1971, 1995, 'ff_brasil']],
+  'Fórmula 3 Britânica':  [[1951, 2014, 'f3_brit']],
+  'Fórmula 3 Alemã':      [[1950, 2014, 'f3_alema']],
+  'Fórmula 3 Italiana':   [[1964, 2012, 'f3_italiana']],
+  'Fórmula 3 Japonesa':   [[1979, 2019, 'f3_japao']],
+  'Fórmula 3 Brasil':     [[1989, 2013, 'f3_sudam'], [2014, 2017, 'f3_brasil']],
+  'Fórmula 3 Sul-Americana':[[1987, 2013, 'f3_sudam']],
+  'Fórmula 4 Italiana':   [[2014, 2100, 'f4_italia']],
+  'Fórmula 4 Britânica':  [[2015, 2100, 'f4_brit']],
+  'Fórmula 4 Alemã':      [[2015, 2022, 'f4_adac']],
+  'Fórmula 4 Espanhola':  [[2016, 2100, 'f4_espanha']],
+  'Fórmula 4 Francesa':   [[2011, 2100, 'f4_franca']],
+  'Fórmula 4 Americana':  [[2016, 2100, 'f4_eua']],
+  'Fórmula 4 Japonesa':   [[2015, 2100, 'f4_japao']],
+  'Fórmula 4 Australiana':[[2015, 2100, 'f4_australia']],
+  'Fórmula 4 Mexicana':   [[2015, 2100, 'f4_nacam']],
+  'Fórmula 4 Brasil':     [[2022, 2100, 'f4_brasil']],
+  'Mundial de Kart':      [[1964, 2100, 'kart_mundial']],
+  'Brasileiro de Kart':   [[1960, 2100, 'kart_brasil']],
+  'IndyCar':              [[1950, 1955, 'aaa'], [1956, 1978, 'usac'], [1979, 1995, 'cart'], [1996, 2100, 'indy']],
+  'Super Vee':            [[1970, 1990, 'super_vee']],
+  'Fórmula Atlantic':     [[1974, 2009, 'atlantic']],
+  'Barber Dodge':         [[1986, 2003, 'barber']],
+  'Indy Lights':          [[1986, 2100, 'indy_lights']],
+  'Indy NXT':             [[1986, 2100, 'indy_lights']],
+  'Star Mazda':           [[1991, 2100, 'ip2000']],
+  'Indy Pro 2000':        [[1991, 2100, 'ip2000']],
+  'USF2000':              [[1990, 2100, 'usf2000']],
+  'Stock Car':            [[1979, 2100, 'stock_car']],
+  'Stock Car Light':      [[1993, 2100, 'stock_light']],
+  'Stock Series':         [[1993, 2100, 'stock_light']],
+  'Fórmula Vee':          [[1964, 1980, 'fvee_brasil']],
+  'Fórmula Renault Brasil':[[2002, 2006, 'fr_brasil']],
+  'Fórmula Delta':        [[2017, 2100, 'fdelta']],
+  'NASCAR Cup':           [[1949, 2100, 'nascar_cup']],
+  'Busch Series':         [[1982, 2100, 'nascar_xfinity']],
+  'Xfinity Series':       [[1982, 2100, 'nascar_xfinity']],
+  'ARCA':                 [[1953, 2100, 'arca']],
+  'Mundial de Sport':     [[1953, 1992, 'wsc']],
+  'WEC':                  [[2012, 2100, 'wec']],
+  'LMP2 / ELMS':          [[2004, 2100, 'elms']],
+  'DTM':                  [[1984, 2100, 'dtm']],
+  'Fórmula E':            [[2014, 2100, 'fe']]
+};
+/* o campeonato real de uma categoria naquele ano (ou o que o jogador escolheu) */
+function campDaCat(cat, ano){
+  if(!cat) return null;
+  const faixas = CAT_HIST[cat];
+  if(faixas) for(const f of faixas) if(ano >= f[0] && ano <= f[1]) return f[2];
+  /* o nome da categoria pode ser o de um campeonato do catálogo (quando o
+     jogador escolheu correr nele, a escada mostra o nome oficial do ano) */
+  const c = Hist.porNome(cat, ano);
+  return c ? c.id : null;
+}
+/* o campeonato do catálogo com esse nome (o em português ou um oficial) */
+Hist.porNome = function(nome, ano){
+  if(!Hist.ok() || !nome) return null;
+  if(!Hist._nomes){
+    Hist._nomes = {};
+    const add = (n, c) => { if(!n) return; const l = Hist._nomes[n] = Hist._nomes[n] || []; if(l.indexOf(c) < 0) l.push(c); };
+    HIST.C.forEach(c => {
+      [c.n].concat((c.ns || []).map(x => x[2])).forEach(n => add(n, c));
+      /* e o nome de cada temporada, tirado do título da página dela */
+      Object.keys(HIST.T[c.id] || {}).forEach(a => add(Hist.nomeDaPagina(HIST.T[c.id][a][1]), c));
+    });
+  }
+  const cs = Hist._nomes[nome] || [];
+  return (ano != null ? cs.find(c => Hist.existe(c, ano)) : null) || cs[0] || null;
+};
+
+/* ═══════════════════════════════════════════════════════════════
    OS GRIDS REAIS DAS CATEGORIAS DE ACESSO
    Da Fórmula Regional para cima, quem está no grid ao seu lado são os
    pilotos que realmente correram naquele ano, na ordem em que terminaram
@@ -5694,8 +5943,19 @@ function jrCatId(cat){
 const JR_HOMONIMOS = { 'Cecotto':'Cecotto Jr.', 'Alesi':'G. Alesi', 'Fernández':'S. Fernández', 'Nannini':'M. Nannini',
   'Sato':'M. Sato', 'Mansell':'C. Mansell', 'Badoer':'B. Badoer', 'Wurz':'C. Wurz' };
 const JR_HOMONIMOS_DE = Object.fromEntries(Object.entries(JR_HOMONIMOS).map(([a, b]) => [b, a]));
-/* o elenco real daquela categoria naquele ano, se existir */
+/* o elenco real daquela categoria naquele ano, se existir: primeiro o banco
+   histórico (a temporada inteira, na ordem da classificação final); na falta
+   dele, a lista curta que o jogo já tinha */
 function elencoReal(cat, ano){
+  const cid = campDaCat(cat, ano);
+  const t = cid && Hist.temporada(cid, ano);
+  if(t && (t.st === 'L' || t.st === 'C') && t.inscritos.length){
+    const vistos = new Set();
+    const out = t.inscritos.filter(x => !vistos.has(x.name) && vistos.add(x.name))
+      .map(x => ({ name: x.name, cc: x.cc || 'GB', eq: x.eq, pos: x.pos, real: true }));
+    out.camp = cid; out.st = t.st;
+    return out;
+  }
   const id = jrCatId(cat);
   const tab = id && JR_REAIS[id];
   const linha = tab && tab[ano];
@@ -5785,12 +6045,27 @@ const JR_EQUIPES = {
 
 /* a equipe real de um piloto naquele ano, quando se sabe */
 function equipeReal(cat, ano, nome){
+  const cid = campDaCat(cat, ano);
+  const ht = cid && Hist.temporada(cid, ano);
+  if(ht && ht.st === 'L'){
+    const x = ht.inscritos.find(y => y.name === nome);
+    if(x) return x.eq || null;
+  }
   const id = jrCatId(cat);
   const t = id && JR_EQUIPES[id] && JR_EQUIPES[id][ano];
   return (t && (t[nome] || t[JR_HOMONIMOS_DE[nome]])) || null;
 }
-/* todas as equipes que aparecem no elenco real daquele ano */
-function equipesDoAno(cat, ano){
+/* todas as equipes que aparecem no elenco real daquele ano: no banco
+   histórico, as equipes de quem cabe no grid, da que teve o piloto mais bem
+   classificado para baixo (é a ordem de força que a temporada mostrou) */
+function equipesDoAno(cat, ano, nGrid){
+  const cid = campDaCat(cat, ano);
+  const ht = cid && Hist.temporada(cid, ano);
+  if(ht && ht.st === 'L'){
+    const vistas = [];
+    ht.inscritos.slice(0, nGrid || 22).forEach(x => { if(x.eq && vistas.indexOf(x.eq) < 0) vistas.push(x.eq); });
+    if(vistas.length) return vistas.slice(0, 14);
+  }
   const id = jrCatId(cat);
   const t = id && JR_EQUIPES[id] && JR_EQUIPES[id][ano];
   if(!t) return null;
@@ -5988,6 +6263,12 @@ function paisDaCategoria(cat){
     const n = NAT[cc];
     if(cat === 'Fórmula 4 ' + n.adj || cat === n.kart || cat === n.ff || cat === n.f3) return cc;
   }
+  /* um campeonato nacional do catálogo que o jogador escolheu correr (a F3
+     Japonesa, a F4 Chinesa…); os degraus de sempre continuam como eram */
+  if(typeof Hist !== 'undefined' && !CAT_HIST[cat]){
+    const c = Hist.porNome(cat);
+    if(c && /^[A-Z]{2}$/.test(c.p) && c.nv <= 4) return c.p;
+  }
   return null;
 }
 
@@ -6069,8 +6350,37 @@ function nomeJunior(cc, usados){
   return nm;
 }
 
+/* o calendário real de uma temporada do banco histórico, com os circuitos
+   que o jogo tem: só vale se a maior parte das etapas foi reconhecida */
+Hist.idPista = function(nome, cc){
+  if(!Hist._pistas){
+    const n = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    Hist._n = n;
+    Hist._pistas = Object.values(TRACKS).map(t => ({ id: t.id, k: n(t.circ), cc: t.cc }))
+      .filter(t => t.k.length >= 4)
+      .sort((a, b) => b.k.length - a.k.length || a.id.length - b.id.length);
+  }
+  const k = ' ' + Hist._n(nome) + ' ';
+  const t = Hist._pistas.find(p => k.indexOf(' ' + p.k + ' ') >= 0 && (!cc || !p.cc || p.cc === cc));
+  return t ? t.id : null;
+};
+Hist.pistas = function(id, ano){
+  const t = Hist.temporada(id, ano);
+  if(!t || t.calendario.length < 3) return null;
+  const ids = t.calendario.map(e => Hist.idPista(e.circuito, e.cc)).filter(Boolean);
+  if(ids.length < 3 || ids.length < t.calendario.length * .5) return null;
+  ids.real = true;
+  return ids;
+};
+
 /* o calendário de uma categoria de acesso */
 function pistasDaCategoria(cat, sk, year){
+  /* a temporada tem calendário na fonte: são essas as pistas, nessa ordem */
+  if(typeof Hist !== 'undefined' && !Engine.ehKart(cat)){
+    const cid = campDaCat(cat, year);
+    const real = cid && Hist.pistas(cid, year);
+    if(real) return real;
+  }
   if(/Kart Regional/.test(cat)) return KART_REG_IDS;
   if(/Mundial de Kart/.test(cat)) return KART_IDS;
   const paisK = /de Kart|Kart Nacional/.test(cat) ? paisDaCategoria(cat) : null;
@@ -6135,14 +6445,43 @@ function resolveRung(tok, cc, year){
       if(year >= 2019) return 'Fórmula Regional';
       if(year >= 1993) return 'Fórmula Renault 2.0';
       return null;
-    case 'FF_NAC':   return n ? n.ff : 'Fórmula Ford';
+    case 'FF_NAC': {
+      /* o campeonato nacional precisa existir naquele ano: a Fórmula Ford
+         Brasil correu de 1971 a 1995; fora disso, o degrau é a Fórmula Ford
+         de sempre */
+      const nome = n ? n.ff : 'Fórmula Ford';
+      const f = CAT_HIST[nome];
+      if(f && !f.some(x => year >= x[0] && year <= x[1])) return 'Fórmula Ford';
+      return nome;
+    }
     case 'F3_NAC':   return n ? n.f3 : 'Fórmula 3';
+    /* O degrau logo abaixo da F1 trocou de nome três vezes: Fórmula 2 europeia
+       até 1984, Fórmula 3000 de 1985 a 2004, GP2 de 2005 a 2016 e Fórmula 2
+       de novo a partir de 2017. A escada não pode chamar de GP2 o que em 2003
+       ainda era a F3000. */
+    case 'F2_TOPO':
+      if(year >= 2017) return 'Fórmula 2';
+      if(year >= 2005) return 'GP2 Series';
+      if(year >= 1985) return 'Fórmula 3000';
+      return 'Fórmula 2';
+    /* a Fórmula Júnior acabou em 1963; a partir de 1964 o degrau é a F3 de 1 litro */
+    case 'FJ_F3':    return year >= 1964 ? 'Fórmula 3' : 'Fórmula Júnior';
     default: return tok;
   }
 }
-function resolveLadder(raw, cc, year){
+/* escolhas: { ficha da escada: campeonato do catálogo } — o campeonato real
+   que o jogador foi correr naquele degrau, de qualquer país. Vale nos anos em
+   que ele existia; fora deles, o degrau volta a ser o de sempre. */
+function resolveLadder(raw, cc, year, escolhas){
   const out = [];
-  raw.forEach(t => { const n = resolveRung(t, cc, year); if(n && out.indexOf(n) < 0) out.push(n); });
+  raw.forEach(t => {
+    let n = resolveRung(t, cc, year);
+    if(n && escolhas && escolhas[t]){
+      const c = Hist.camp(escolhas[t]);
+      if(Hist.existe(c, year)) n = Hist.nomeOficial(c, year);
+    }
+    if(n && out.indexOf(n) < 0) out.push(n);
+  });
   return out;
 }
 
@@ -6174,6 +6513,15 @@ function calendarFor(year, sk){
 function juniorCalendar(cat, year, sk, n){
   const pool = pistasDaCategoria(cat, sk, year);
   if(!pool || !pool.length) return calendarFor(year, sk).slice(0, n);
+  /* calendário real: a ordem de verdade; temporada muito longa (as F3 dos
+     anos 80 tinham vinte etapas) é encurtada mantendo as etapas espalhadas */
+  if(pool.real){
+    const max = Math.max(n, 12);
+    if(pool.length <= max) return pool.slice();
+    const out = [];
+    for(let i = 0; i < max; i++) out.push(pool[Math.round(i * (pool.length - 1) / (max - 1))]);
+    return out;
+  }
   const shuffled = seededShuffle(pool, seedOf(sk+cat+year));
   if(pool.length >= n){
     const keep = new Set(shuffled.slice(0, n));
@@ -6280,10 +6628,10 @@ const Engine = {
   },
 
   newDriver(name, num, cc, style, age){
-    /* O limite de 13 a 30 é da criação de carreira (o formulário já
+    /* O limite de 8 a 30 é da criação de carreira (o formulário já
        cuida disso). Aqui ele não vale: assumir Senna em 1994 é assumir
        um piloto de 34, e Kanaan em 2013 é um piloto de 39. */
-    age = clamp(age || 17, 13, 58);
+    age = clamp(age || 17, 8, 58);
     const m = STYLES[style].mod;
     /* quem começa mais velho já chega com estrada rodada */
     const head = clamp((age - 16) * 1.7, -6, 22);
@@ -6365,7 +6713,7 @@ const Engine = {
     /* A escada é revalidada todo ano: quem chega no degrau da F4 em 2025 sendo
        brasileiro encontra a F4 Brasil, que não existia quando a carreira começou. */
     if(S.driver && S.driver.cc){
-      const nova = resolveLadder(era.ladder, S.driver.cc, S.year);
+      const nova = resolveLadder(era.ladder, S.driver.cc, S.year, Engine.escolhas(S.series));
       /* o degrau que você assinou tem nome, e é o nome que manda */
       const alvo = S.catAlvo || S.ladder[S.catIdx];
       if(nova.length && nova.join('|') !== S.ladder.join('|')){
@@ -6705,8 +7053,11 @@ const Engine = {
          trocar de dois em dois embaralhava quem já estava no lugar certo. */
       if(Object.keys(equipeDe).length){
         const porNome = {}; teams.forEach(t => porNome[t.name] = t.id);
+        /* a equipe que de fato alinhou três carros naquele ano tem três vagas */
+        const reaisPor = {};
+        field.forEach(f => { const a = porNome[equipeDe[f.name]]; if(a) reaisPor[a] = (reaisPor[a] || 0) + 1; });
         const vagas = {};
-        teams.forEach(t => vagas[t.id] = porEquipe);
+        teams.forEach(t => vagas[t.id] = Math.max(porEquipe, Math.min(4, reaisPor[t.id] || 0)));
         if(S.team && vagas[S.team.id] != null) vagas[S.team.id]--;
         const sobra = [];
         field.forEach(f => {
@@ -6929,7 +7280,7 @@ const Engine = {
     let names = Engine.jrTeamNames(cat, info.teams, era.id, sk, isEnd);
     /* se há registro de quem correu por quem naquele ano, são essas as
        equipes da temporada — senão o Bortoleto não teria uma Invicta onde ir */
-    const reaisEq = equipesDoAno(cat, year);
+    const reaisEq = equipesDoAno(cat, year, info.field);
     if(reaisEq){
       const resto = names.filter(x => reaisEq.indexOf(x) < 0);
       names = reaisEq.concat(resto).slice(0, Math.max(info.teams, reaisEq.length));
@@ -7032,6 +7383,177 @@ const Engine = {
 
   /* Carreira salva antes da separação: refaz a conta pelo arquivo de
      temporadas, que guarda o resumo de cada ano e se era categoria principal. */
+  /* save de antes do banco histórico: nada a converter na carreira (a escada
+     é refeita todo ano e o degrau é achado pelo nome ou pela posição), só a
+     escolha de campeonato, que precisa existir e apontar para o catálogo */
+  migrarHistorico(){
+    if(!S) return;
+    if(!S.campEscolhido || typeof S.campEscolhido !== 'object' || Array.isArray(S.campEscolhido)) S.campEscolhido = {};
+    /* a primeira versão guardava a escolha solta, sem dizer de qual carreira */
+    const soltas = Object.keys(S.campEscolhido).filter(k => typeof S.campEscolhido[k] === 'string');
+    if(soltas.length){
+      const daqui = S.campEscolhido[S.series] && typeof S.campEscolhido[S.series] === 'object' ? S.campEscolhido[S.series] : {};
+      soltas.forEach(k => { daqui[k] = S.campEscolhido[k]; delete S.campEscolhido[k]; });
+      S.campEscolhido[S.series] = daqui;
+    }
+    if(Hist.ok()) Object.keys(S.campEscolhido).forEach(sk => {
+      const e = S.campEscolhido[sk];
+      if(!e || typeof e !== 'object'){ delete S.campEscolhido[sk]; return; }
+      Object.keys(e).forEach(t => { if(!Hist.camp(e[t])) delete e[t]; });
+    });
+    S.vHist = 2;
+  },
+
+  /* ═══ OS CAMPEONATOS REAIS NA CARREIRA ═══
+     A escolha de campeonato vale por carreira: o degrau "Fórmula 3" da escada
+     do DTM pode ser o BTCC sem que a escada da F1 mude. */
+  escolhas(sk){
+    const e = S && S.campEscolhido;
+    return e && e[sk] && typeof e[sk] === 'object' ? e[sk] : null;
+  },
+  escolher(sk, tok, id){
+    if(!S) return;
+    S.campEscolhido = S.campEscolhido || {};
+    const e = S.campEscolhido[sk] = (S.campEscolhido[sk] && typeof S.campEscolhido[sk] === 'object') ? S.campEscolhido[sk] : {};
+    if(id) e[tok] = id; else delete e[tok];
+  },
+  /* A idade mínima de cada degrau. Ninguém sai do kart para um carro aos
+     dez anos: o kart vai dos 8 aos 14, o Mundial de Kart a partir dos 12, a
+     F4 e a Fórmula Ford a partir dos 15, a F3 dos 16, a F2 dos 17 e a F1 dos
+     17 (18 a partir de 2016, quando a superlicença passou a exigir). */
+  IDADE_NIVEL: [8, 15, 15, 16, 17, 17],
+  nivelDaCat(cat, ano, idx, len){
+    if(Engine.ehKart(cat)) return 0;
+    const id = campDaCat(cat, ano), c = id && Hist.camp(id);
+    if(c) return c.nv;
+    if(idx != null && len > 1) return clamp(Math.round(1 + (idx / (len - 1)) * 4), 1, 5);
+    return 3;
+  },
+  idadeMin(cat, ano, idx, len){
+    if(/Mundial de Kart/.test(cat || '')) return 12;
+    if(Engine.ehKart(cat)) return 8;
+    const nv = Engine.nivelDaCat(cat, ano, idx, len);
+    const top = idx != null && len && idx === len - 1;
+    if(top || nv >= 5) return ano >= 2016 ? 18 : 17;
+    return Engine.IDADE_NIVEL[nv] || 15;
+  },
+  /* no mercado a idade já é a do ano que vem (o aniversário vem no fim da temporada) */
+  idadeOk(cat, ano, idx, len){ return S.driver.age >= Engine.idadeMin(cat, ano, idx, len); },
+  /* a idade mínima de um campeonato do catálogo */
+  idadeMinCamp(c, ano){
+    if(!c) return 8;
+    if(c.nv === 0) return /mundial|europeu|euro|super|future/i.test(c.id + ' ' + c.n) ? 12 : 8;
+    if(c.nv >= 5) return ano >= 2016 ? 18 : 17;
+    return Engine.IDADE_NIVEL[c.nv] || 15;
+  },
+
+  /* Onde um campeonato do catálogo cabe numa carreira do jogo: a carreira
+     (F1, Indy, endurance, Stock, NASCAR, DTM, Fórmula E) e o degrau da escada
+     dela. Campeonato que é o topo de uma carreira vira essa carreira; o resto
+     ocupa o degrau do mesmo nível — de preferência na carreira atual, se o
+     tipo de carro combina; turismo vai para a escada do DTM, GT e endurance
+     para a do endurance, stock para a Stock Car ou a NASCAR. */
+  hospedeiro(c, ano, cc, skPref, base){
+    if(!c || !Hist.existe(c, ano)) return null;
+    const disp = sk => SERIES[sk] && ano >= (SERIES[sk].from || 0) && eraOfSeries(ano, sk);
+    /* topo de uma carreira? */
+    for(const sk of SERIES_KEYS){
+      if(!disp(sk)) continue;
+      const esc = resolveLadder(eraOfSeries(ano, sk).ladder, cc, ano);
+      if(campDaCat(esc[esc.length - 1], ano) === c.id) return { sk, top: true, idx: esc.length - 1, escada: esc, cat: esc[esc.length - 1], tok: null };
+    }
+    const MONO = ['f1', 'indy', 'fe'];
+    let ordem;
+    if(c.t === 'turismo') ordem = ['dtm', 'wec', 'stock', 'f1'];
+    else if(c.t === 'gt' || c.t === 'endurance') ordem = ['wec', 'dtm', 'f1'];
+    else if(c.t === 'stock') ordem = c.p === 'BR' ? ['stock', 'nascar'] : ['nascar', 'stock'];
+    else ordem = MONO.indexOf(skPref) >= 0 ? [skPref, 'f1', 'indy'] : (c.p === 'US' ? ['indy', 'f1'] : ['f1', 'indy']);
+    if(c.t === 'kart' && skPref) ordem = [skPref, 'f1'];
+    const sk = ordem.find(disp);
+    if(!sk) return null;
+    const raw = eraOfSeries(ano, sk).ladder;
+    const atuais = base !== undefined ? (base || {}) : (Engine.escolhas(sk) || {});
+    /* os degraus resolvidos, com a ficha de cada um e o nível do campeonato padrão */
+    const degraus = [];
+    raw.forEach(t => {
+      const n = resolveRung(t, cc, ano);
+      if(n && !degraus.some(d => d.cat === n)) degraus.push({ tok: t, cat: n });
+    });
+    const len = degraus.length;
+    let melhor = null;
+    degraus.forEach((d, i) => {
+      if(i === len - 1) return;
+      const pid = campDaCat(d.cat, ano), pc = pid && Hist.camp(pid);
+      const nv = Engine.ehKart(d.cat) ? 0 : pc ? pc.nv : clamp(Math.round(1 + (i / (len - 1)) * 4), 1, 4);
+      if((c.nv === 0) !== (nv === 0)) return;              /* kart só no kart, carro só em carro */
+      /* o degrau que já é esse campeonato vence sempre: senão ele apareceria
+         duas vezes na escada, e os pilotos dele ficariam no degrau errado */
+      const dif = pid === c.id ? -1 : Math.abs(nv - Math.min(c.nv, 4)) + (pc && pc.t === c.t ? 0 : .3) + (nv > c.nv ? .2 : 0);
+      if(!melhor || dif < melhor.dif) melhor = { dif, i, tok: d.tok };
+    });
+    if(!melhor) return null;
+    const esc = Object.assign({}, atuais, { [melhor.tok]: c.id });
+    const escada = resolveLadder(raw, cc, ano, esc);
+    return { sk, top: false, idx: melhor.i, tok: melhor.tok, escada, cat: escada[melhor.i] };
+  },
+
+  /* ═══ CONVITES DE CAMPEONATOS REAIS ═══
+     No fim de cada temporada, campeonatos de qualquer país podem ligar. Quem
+     foi bem recebe convites do mesmo nível e de um acima; quem foi muito bem,
+     mais convites e de equipes melhores; quem foi mal, às vezes um convite de
+     um degrau abaixo para recomeçar. A equipe é uma das que de fato corriam
+     ali naquele ano, quando a temporada tem fonte. */
+  convitesReais(sum){
+    if(!Hist.ok() || !S.season || S.retired) return [];
+    const ano = S.year + 1;
+    const cat = S.season.cat;
+    const nvAqui = Engine.nivelDaCat(cat, S.year, S.catIdx, S.ladder.length);
+    const pos = sum && sum.pos ? sum.pos : 10, n = (S.season.field || []).length || 20;
+    const pc = clamp(1 - (pos - 1) / Math.max(1, n - 1), 0, 1);       /* 1 = campeão */
+    const fama = (S.driver.fame || 0) / 100;
+    /* quantos convites: o desempenho manda, a fama ajuda, o acaso decide */
+    const base = (sum && sum.champion ? 1.6 : 0) + pc * 1.3 + fama * .6 + (sum && sum.wins ? Math.min(sum.wins, 5) * .12 : 0);
+    let quantos = 0;
+    for(let k = 0; k < 3; k++) if(R.chance(clamp(base / (2.2 + k * 1.4), .03, .85))) quantos++;
+    if(!quantos) return [];
+    /* níveis que podem ligar */
+    const niveis = pc >= .8 ? [nvAqui, nvAqui + 1, nvAqui + 1] : pc >= .45 ? [nvAqui, nvAqui, nvAqui + 1] : [nvAqui, nvAqui - 1];
+    const atual = campDaCat(cat, S.year);
+    const jaKart = Engine.jaSaiuDoKart();
+    const cands = Hist.doAno(ano).filter(c => c.id !== atual && niveis.indexOf(c.nv) >= 0
+      && !(jaKart && c.nv === 0) && S.driver.age >= Engine.idadeMinCamp(c, ano));
+    if(!cands.length) return [];
+    /* o tipo de carro da carreira pesa: piloto de monoposto recebe mais
+       convites de monoposto, mas um GT ou um turismo sempre pode ligar */
+    const tipoAqui = (Hist.camp(atual) || {}).t || 'monoposto';
+    const peso = c => (c.t === tipoAqui ? 3 : 1) * (Hist.temGrid(c.id, Math.min(ano, 2026)) ? 2 : 1) * (c.nv > nvAqui ? 1.3 : 1);
+    const out = [], usados = new Set();
+    for(let k = 0; k < quantos && cands.length; k++){
+      const tot = cands.reduce((a, c) => a + (usados.has(c.id) ? 0 : peso(c)), 0);
+      if(!tot) break;
+      let r = R.f() * tot, esc = null;
+      for(const c of cands){ if(usados.has(c.id)) continue; r -= peso(c); if(r <= 0){ esc = c; break; } }
+      if(!esc) break;
+      usados.add(esc.id);
+      const h = Engine.hospedeiro(esc, ano, S.driver.cc, S.series);
+      if(!h || (h.sk === S.series && h.cat === cat)) continue;
+      if(S.driver.age < Engine.idadeMin(h.cat, ano, h.idx, h.escada.length)) continue;
+      const times = Engine.teamsFor(h.cat, ano, h.sk, h.idx, h.escada.length);
+      if(!times || !times.length) continue;
+      /* quanto melhor o ano, melhor a equipe que liga */
+      const alvo = times[clamp(Math.round((1 - pc) * (times.length - 1) * .8) + R.int(-1, 1), 0, times.length - 1)];
+      const pais = UIH.pais(esc.p);
+      const nome = Hist.nomeOficial(esc, ano);
+      const sobe = esc.nv > nvAqui, desce = esc.nv < nvAqui;
+      out.push({ type:'f1', cat: h.cat, team: alvo, years: R.int(1, 2), convite: true, camp: esc.id, tok: h.tok,
+        sk: h.sk !== S.series ? h.sk : undefined, escada: h.escada, catIdx: h.idx, up: sobe, down: desce,
+        note: (sobe ? 'Um degrau acima: ' : desce ? 'Recomeçar um degrau abaixo: ' : 'Outro campeonato do mesmo nível: ')
+          + `a ${alvo.name} quer você no ${nome}${esc.p !== 'INT' ? ' (' + pais + ')' : ''}.`
+          + (h.sk !== S.series ? ` A carreira passa a seguir a escada ${SERIES[h.sk].short === 'F1' ? 'da F1' : 'de ' + SERIES[h.sk].name}.` : '')
+          + (Hist.temGrid(esc.id, Math.min(ano, 2026)) ? ' Grid real daquele ano.' : '') });
+    }
+    return out;
+  },
   migrarCartel(){
     const c = S.career;
     if(c.base) return false;
@@ -7075,8 +7597,12 @@ const Engine = {
     return null;
   },
   KART_MAX: 2,
+  /* duas temporadas de kart bastam — para quem já tem idade de carro; quem
+     começou criança segue no kart até lá */
   kartEsgotado(){
-    return Engine.ehKart(S.ladder[S.catIdx]) && (S.anosKart || 0) >= Engine.KART_MAX;
+    if(!Engine.ehKart(S.ladder[S.catIdx]) || (S.anosKart || 0) < Engine.KART_MAX) return false;
+    const c = Engine.primeiroCarro();
+    return !c || Engine.idadeOk(c.cat, S.year + 1, c.idx, S.ladder.length);
   },
 
   ehRealista(){ return !!(S && S.modo === 'realista'); },
@@ -7246,7 +7772,7 @@ const Engine = {
       const sr = SERIES[k];
       if(nextYear < sr.from) return;
       const era = eraOfSeries(nextYear, k);
-      const escada = resolveLadder(era.ladder, S.driver.cc, nextYear);
+      const escada = resolveLadder(era.ladder, S.driver.cc, nextYear, Engine.escolhas(k));
       /* Entra no degrau mais alto que a idade permite E que o bolso aguenta.
          Um piloto de 26 anos não recomeça no kart, mas também não assina uma
          categoria que não tem como pagar: desce até onde a conta fecha. */
@@ -7417,7 +7943,7 @@ const Engine = {
       if(inter < .18 || !R.chance(clamp(inter * .34, .04, .32))) return;
       const era2 = eraOfSeries(ano, sk);
       if(!era2) return;
-      const esc2 = resolveLadder(era2.ladder, S.driver.cc, ano);
+      const esc2 = resolveLadder(era2.ladder, S.driver.cc, ano, Engine.escolhas(sk));
       const cat2 = esc2[esc2.length - 1];
       const times = Engine.teamsFor(cat2, ano, sk, esc2.length - 1, esc2.length);
       if(!times || !times.length) return;
@@ -7996,7 +8522,7 @@ const Engine = {
       excluir: eu, reservados: eu,
       equipes: ano => {
         const era = eraOfSeries(ano, sk);
-        const esc = resolveLadder(era.ladder, S.driver.cc, ano);
+        const esc = resolveLadder(era.ladder, S.driver.cc, ano, Engine.escolhas(sk));
         return Engine.teamsFor(esc[esc.length - 1], ano, sk, esc.length - 1, esc.length);
       },
       /* o seu carro é uma vaga a menos no mercado */
@@ -9856,8 +10382,10 @@ const Engine = {
          carreira, e ficar ali até os dezenove não acontece com ninguém */
       const saiDoKart = Engine.kartEsgotado();
       const carro = saiDoKart ? Engine.primeiroCarro() : null;
-      const promote = sum.champion || sum.pos <= need || saiDoKart;
       const nextCat = carro ? carro.cat : S.ladder[S.catIdx+1];
+      /* ninguém sobe antes da idade do degrau de cima */
+      const idadeSobe = !!nextCat && Engine.idadeOk(nextCat, nextYear, carro ? carro.idx : S.catIdx + 1, S.ladder.length);
+      const promote = (sum.champion || sum.pos <= need || saiDoKart) && idadeSobe;
       const jrRep = clamp(S.driver.fame*.7 + (S.driver.ovr-42)*1.5
                         + (sum.champion?24:0) + (10 - Math.min(sum.pos,12))*2.2
                         + (S.academy ? 20 : 0) + Engine.bonusMercado(), 0, 130);
@@ -9868,6 +10396,7 @@ const Engine = {
          chamado direto para dois degraus acima. */
       const pular = S.ladder[S.catIdx+2];
       if(pular && sum.champion && sum.wins >= Math.max(3, Math.round(sum.races*.35))
+         && Engine.idadeOk(pular, nextYear, S.catIdx + 2, S.ladder.length)
          && (S.driver.ovr >= 74 || S.academy)){
         const pi = S.catIdx + 2;
         let pTeams = Engine.teamsFor(pular, nextYear, S.series, pi, S.ladder.length);
@@ -9906,7 +10435,7 @@ const Engine = {
          ou descer deixam de ser opção. Se o dinheiro não permitir subir, o
          mercado ainda mostra as rotas mais baratas — e, em último caso, um
          ano de espera aparece explicitamente como o que é. */
-      const soParaFrente = sum.champion || saiDoKart;
+      const soParaFrente = (sum.champion || saiDoKart) && idadeSobe;
       /* ficar mais um ano — com escolha de equipe */
       const cTeams = soParaFrente ? [] : Engine.teamsFor(S.season.cat, nextYear, S.series, S.catIdx, S.ladder.length);
       const stayCands = cTeams.filter(t => jrRep >= (t.str - 46) * 1.6).slice(0, 3);
@@ -10662,38 +11191,48 @@ const Mundo = {
     if(!lista) return [];
     const n = lista.length, out = [];
     lista.forEach((x, i) => {
-      let rec = Mundo.porNome(W, x.name);
-      if(!rec){
-        const d = Mundo.doc(W.sk)[x.name];
-        if(d) rec = Mundo.real(W, W.sk, x.name, ano, g, x.cc);
-        else {
-          /* piloto real da base que não está na nossa lista da categoria
-             principal: idade e teto saem do que ele fez naquele grid */
-          const idade = (g === 1 ? 21 : g === 2 ? 19 : 17) + (seedOf('id' + x.name) % 3) - 1;
-          /* hoje, na mesma escala de quem a história levou à F1 (o campeão da
-             F2 perto de 72, como um estreante); o teto, pela colocação */
-          const frac = i / Math.max(1, n - 1), ruido = R.gauss() * 1.5;
-          const h = clamp(Math.round(deg.base + 12 - frac * 16 + ruido), 30, 90);
-          const teto = deg.base + 24 - frac * 20 + ruido + Math.max(1, 23 - idade) * 1.3;
-          rec = Mundo.criar(W, { n:x.name, cc:x.cc, nasc: ano - idade, r:1, h, pt: Math.max(h + 2, teto),
-            g, pk: R.int(25, 30), dc: R.int(30, 35), fa: R.int(31, 38), doc:1, entrou: ano });
-        }
-      }
-      /* o resultado de verdade do ano diz quanto ele vale: quem venceu a F3
-         não pode continuar com a nota do garoto que estreou no fundo da FRECA */
-      if(!Mundo.temCurva(W, rec)){
-        const frac = i / Math.max(1, n - 1), idade = ano - rec.nasc;
-        const alvo = deg.base + 12 - frac * 16;
-        if(rec.h < alvo - 2) rec.h = Math.round((rec.h + alvo) / 2 * 10) / 10;
-        rec.pt = Math.max(rec.pt, deg.base + 24 - frac * 20 + Math.max(1, 23 - idade) * 1.3);
-      }
+      const rec = Mundo.criarReal(W, x, i, n, g, ano, deg);
+      if(!rec) return;
       rec.g = g; rec.st = 'a'; rec.doc = 1;
-      rec.eq = equipeReal(deg.cat, ano, x.name) || rec.eq;
+      rec.eq = x.eq || equipeReal(deg.cat, ano, x.name) || rec.eq;
       rec.ps = i + 1; rec.psN = n; rec.psAno = ano;
       rec.realAno = ano;
       out.push(rec);
     });
     return out;
+  },
+  /* um piloto real de um grid de base: quem já existe no mundo é ele mesmo;
+     quem não existe nasce com idade e teto tirados do que fez naquele grid.
+     O piloto do jogador nunca é mexido pelo dado real. */
+  criarReal(W, x, i, n, g, ano, deg){
+    let rec = Mundo.porNome(W, x.name);
+    if(rec && rec.jog) return null;
+    if(!rec){
+      const d = Mundo.doc(W.sk)[x.name];
+      if(d) rec = Mundo.real(W, W.sk, x.name, ano, g, x.cc);
+      else {
+        /* piloto real da base que não está na nossa lista da categoria
+           principal: idade e teto saem do que ele fez naquele grid */
+        const meio = deg && deg.kart ? Math.round((deg.idade[0] + deg.idade[1]) / 2) : (g === 1 ? 21 : g === 2 ? 19 : 17);
+        const idade = meio + (seedOf('id' + x.name) % 3) - 1;
+        /* hoje, na mesma escala de quem a história levou à F1 (o campeão da
+           F2 perto de 72, como um estreante); o teto, pela colocação */
+        const frac = i / Math.max(1, n - 1), ruido = R.gauss() * 1.5;
+        const h = clamp(Math.round(deg.base + 12 - frac * 16 + ruido), 30, 90);
+        const teto = deg.base + 24 - frac * 20 + ruido + Math.max(1, 23 - idade) * 1.3;
+        rec = Mundo.criar(W, { n:x.name, cc:x.cc, nasc: ano - idade, r:1, h, pt: Math.max(h + 2, teto),
+          g, pk: R.int(25, 30), dc: R.int(30, 35), fa: R.int(31, 38), doc:1, entrou: ano });
+      }
+    }
+    /* o resultado de verdade do ano diz quanto ele vale: quem venceu a F3
+       não pode continuar com a nota do garoto que estreou no fundo da FRECA */
+    if(!Mundo.temCurva(W, rec)){
+      const frac = i / Math.max(1, n - 1), idade = ano - rec.nasc;
+      const alvo = deg.base + 12 - frac * 16;
+      if(rec.h < alvo - 2) rec.h = Math.round((rec.h + alvo) / 2 * 10) / 10;
+      rec.pt = Math.max(rec.pt, deg.base + 24 - frac * 20 + Math.max(1, 23 - idade) * 1.3);
+    }
+    return rec;
   },
 
   /* quem a história leva à principal fica na base nos anos que antecedem a estreia */
@@ -11030,7 +11569,20 @@ const Mundo = {
                         ids.add(r.id); escolhidos.push(r); return true; };
     /* 1. o grid real daquele campeonato */
     const real = o.cat ? elencoReal(o.cat, ano) : null;
-    if(real) real.forEach(x => { const r = Mundo.porNome(W, x.name); if(r && r.g === g && escolhidos.length < n) pega(r); });
+    if(real) real.forEach((x, i) => {
+      if(escolhidos.length >= n || excluir.has(x.name)) return;
+      let r = Mundo.porNome(W, x.name);
+      /* O campeonato do jogador pode não ser o que o mundo simula naquele
+         degrau — uma F4 de outro país, uma F3 de outro continente. Quem correu
+         nele de verdade passa a existir, no degrau do jogador; quem o mundo
+         tinha dado como parado, mas correu, volta. Quem naquele ano está em
+         outro degrau do mundo continua lá. */
+      if(real.camp && (!r || (!r.jog && r.st !== 'a' && r.g == null))){
+        r = Mundo.criarReal(W, x, i, real.length, g, ano, deg);
+        if(r){ r.g = g; r.st = 'a'; r.doc = 1; r.semVaga = null; r.eq = x.eq || r.eq; }
+      }
+      if(r && r.g === g) pega(r);
+    });
     /* 2. quem já corria aqui */
     const doDegrau = Mundo.noDegrau(W, g);
     if(o.cat) doDegrau.filter(r => r.camp === o.cat && r.campAno === ano - 1)
@@ -11954,13 +12506,39 @@ const UI = {
     const era = eraOfSeries(Math.max(yr, SERIES[sk].from), sk);
     const escada = resolveLadder(era.ladder, UI.country || 'BR', yr);
     const rung = Engine.rungForAge(UI.age, escada.length);
-    const cat = escada[rung];
-    const txt = UI.age <= 15 ? 'Comecinho de tudo: muitos anos de base pela frente, e todo o tempo do mundo para evoluir.'
+    let cat = escada[rung];
+    const txt = UI.age <= 11 ? 'Criança no kart, como quase todo campeão começou. Anos de kart pela frente: carro, só a partir dos 15.'
+      : UI.age <= 15 ? 'Comecinho de tudo: muitos anos de base pela frente, e todo o tempo do mundo para evoluir.'
       : UI.age <= 18 ? 'A idade clássica de quem sonha em subir. Tempo de sobra para crescer.'
       : UI.age <= 22 ? 'Entrada mais tarde, já com alguma bagagem — e menos anos para provar seu valor.'
       : UI.age <= 26 ? 'Começo tardio: você já chega formado, mas o relógio corre contra.'
       : 'Estreia muito tarde. Chega quase pronto e vai direto ao ponto — a janela é curta.';
-    el('ageHint').innerHTML = `Você estreia na <b style="color:var(--gold)">${esc(cat)}</b> em ${yr}. ${txt}`;
+    /* onde estrear: qualquer campeonato real que existia naquele ano e aceita
+       a sua idade, de qualquer país e de qualquer tipo de carro. O jogo
+       encaixa cada um numa carreira e num degrau — o BTCC na escada do DTM,
+       o Super GT na do endurance, a F3 japonesa na da F1. */
+    const lista = UI.estreiasPossiveis(yr, UI.age, sk);
+    if(UI.estreia && !lista.some(x => x.c.id === UI.estreia)) UI.estreia = '';
+    const esco = UI.estreia ? lista.find(x => x.c.id === UI.estreia) : null;
+    if(esco) cat = esco.h.cat;
+    const grupos = [5, 4, 3, 2, 1, 0].map(nv => [nv, lista.filter(x => x.c.nv === nv)]).filter(g => g[1].length);
+    const sel = lista.length ? `<label class="est-camp">Campeonato de estreia
+        <select onchange="UI.estreia = this.value; UI.ageChanged()">
+          <option value=""${!UI.estreia ? ' selected' : ''}>Pela idade: ${esc(escada[rung])}</option>
+          ${grupos.map(([nv, xs]) => `<optgroup label="${UIH.NIVEL[nv]}">${xs.map(x => `<option value="${x.c.id}"${x.c.id === UI.estreia ? ' selected' : ''}>${esc(Hist.nomeOficial(x.c, yr))} · ${esc(UIH.pais(x.c.p))}${Hist.temGrid(x.c.id, yr) ? ' · grid real' : ''}</option>`).join('')}</optgroup>`).join('')}
+        </select></label>` : '';
+    const outra = esco && esco.h.sk !== sk ? ` A carreira segue a escada ${esco.h.sk === 'f1' ? 'da F1' : 'de ' + SERIES[esco.h.sk].name}.` : '';
+    el('ageHint').innerHTML = `Você estreia na <b style="color:var(--gold)">${esc(cat)}</b> em ${yr}.${outra} ${txt}${sel}`;
+  },
+  estreia: '',
+  /* todos os campeonatos em que dá para estrear naquele ano, com a idade que
+     você tem, e onde cada um se encaixa */
+  estreiasPossiveis(yr, idade, sk){
+    if(!Hist.ok()) return [];
+    return Hist.doAno(yr).filter(c => idade >= Engine.idadeMinCamp(c, yr))
+      .map(c => ({ c, h: Engine.hospedeiro(c, yr, UI.country || 'BR', sk, {}) }))
+      .filter(x => x.h && (!x.h.top || idade >= Engine.idadeMin(x.h.cat, yr, x.h.idx, x.h.escada.length)))
+      .sort((a, b) => b.c.nv - a.c.nv || UIH.pais(a.c.p).localeCompare(UIH.pais(b.c.p)) || a.c.n.localeCompare(b.c.n));
   },
 
   seriesGrid(){
@@ -13067,6 +13645,8 @@ const Game = {
       /* save de quando o playoff da Copa NASCAR vazava para o kart e para
          as divisões de acesso: os pontos de verdade continuam guardados */
       if(S && S.season && !S.season.isTop && S.season.playoff) delete S.season.playoff;
+      /* a escolha de campeonato real por degrau (banco histórico) */
+      if(S) Engine.migrarHistorico();
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },
@@ -13189,11 +13769,15 @@ const Game = {
     if(!UI.country) return UI.toast('Escolha uma nacionalidade da lista.');
 
     const anoEscolhido = UI.year || ERAS[UI.eraSel].y;
-    const sk = (anoEscolhido >= SERIES[UI.serie].from) ? UI.serie : 'f1';
-    const startY = Math.max(anoEscolhido, SERIES[sk].from);
+    let sk = (anoEscolhido >= SERIES[UI.serie].from) ? UI.serie : 'f1';
+    const idade = clamp(parseInt(el('inAge').value,10) || 17, 8, 30);
+    /* o campeonato de estreia escolhido no formulário decide a carreira e o
+       degrau: o BTCC leva à escada do DTM, o Super GT à do endurance */
+    const est = UI.estreia ? UI.estreiasPossiveis(anoEscolhido, idade, sk).find(x => x.c.id === UI.estreia) : null;
+    if(est) sk = est.h.sk;
+    const startY = est ? anoEscolhido : Math.max(anoEscolhido, SERIES[sk].from);
     const era = eraOfSeries(startY, sk);
-    const idade = clamp(parseInt(el('inAge').value,10) || 17, 13, 30);
-    const escada = resolveLadder(era.ladder, UI.country, startY);
+    const escada = est ? est.h.escada : resolveLadder(era.ladder, UI.country, startY);
     S = {
       v: 2, series: sk,
       driver: Engine.estreiaTardia(Engine.newDriver(name, num, UI.country, UI.style, idade)),
@@ -13204,12 +13788,13 @@ const Game = {
       rel: { eng: 50, comp: 50, amigos: [] },
       startEra: era.id, startYear: startY,
       year: startY, ladder: escada,
-      catIdx: Engine.rungForAge(idade, escada.length),
+      catIdx: est ? est.h.idx : Engine.rungForAge(idade, escada.length),
       /* ajustado logo abaixo quando o modo realista está ligado */
       team: null, contract: { years:1 }, teamRel: 50, firedBy: null,
       prospects: [], history: [], archive: [], season: null,
       career: { gps:0, wins:0, podiums:0, poles:0, fls:0, pts:0, titles:0, jrTitles:0, seasons:0, dnfs:0, best:null },
-      retired: false
+      retired: false, vHist: 2,
+      campEscolhido: est && est.h.tok ? { [sk]: { [est.h.tok]: est.c.id } } : {}
     };
     /* Modo realista: ninguém entra num degrau que não consegue pagar. Quem vem
        de origem humilde começa mais embaixo — e é dali que precisa subir. */
@@ -14240,11 +14825,18 @@ const Game = {
     }
     /* o telefone não toca só da sua categoria */
     Engine.ofertasDeFora(sum).forEach(o => offers.push(o));
+    /* nem só das sete carreiras: campeonatos reais de qualquer país ligam,
+       conforme o ano que você fez (uma carreira de fora só uma vez) */
+    Engine.convitesReais(sum).forEach(o => {
+      if(o.sk && offers.some(x => x.sk === o.sk)) return;
+      if(offers.some(x => x.cat === o.cat)) return;
+      offers.push(o);
+    });
     /* nos anos da cisão americana, os dois campeonatos existem e disputam você */
     if(S.series === 'indy' && Engine.cisaoAtiva(S.year + 1)){
       const outro = Engine.ladoAtual(S.year) === 'irl' ? 'cart' : 'irl';
       const era2 = eraOfSeries(S.year + 1, 'indy');
-      const esc2 = resolveLadder(era2.ladder, S.driver.cc, S.year + 1);
+      const esc2 = resolveLadder(era2.ladder, S.driver.cc, S.year + 1, Engine.escolhas('indy'));
       const cat2 = esc2[esc2.length - 1];
       const todas = [];
       era2.teams.forEach((tt, i) => { const r = Engine.resolveTeam(tt, i, S.year + 1, 'indy'); if(r) todas.push(r); });
@@ -14356,18 +14948,24 @@ const Game = {
     /* trocar de equipe não apaga o currículo: só uma boa temporada limpa a ficha */
     if(trocouEquipe) S.teamRel = 50;
     S.firedBy = null;
+    /* convite de um campeonato real: o degrau daquela carreira passa a ser ele */
+    if(o.camp && o.tok) Engine.escolher(o.sk || S.series, o.tok, o.camp);
     /* ── trocar de carreira: outra categoria, outro mundo ── */
     if(o.sk && o.sk !== S.series){
       S.year++;
       S.series = o.sk;
       const era = eraOfSeries(S.year, o.sk);
-      S.ladder = resolveLadder(era.ladder, S.driver.cc, S.year);
+      S.ladder = resolveLadder(era.ladder, S.driver.cc, S.year, Engine.escolhas(o.sk));
       S.catIdx = Math.max(0, S.ladder.indexOf(o.cat));
-      if(S.ladder.indexOf(o.cat) < 0) S.catIdx = S.ladder.length - 1;
+      /* sem o nome na escada, vale o degrau que veio na proposta (um convite
+         para a base de outra carreira não pode virar a categoria principal) */
+      if(S.ladder.indexOf(o.cat) < 0) S.catIdx = o.catIdx != null ? clamp(o.catIdx, 0, S.ladder.length - 1) : S.ladder.length - 1;
       S.catAlvo = S.ladder[S.catIdx] || null;
       S.team = { id:o.team.id, name:o.team.name, color:o.team.color, str:o.team.str };
       S.contract = { years:o.years || 1 };
       S.lastCat = null; S.yearsInCat = 0; S.yearsInSeries = 0; S.lastSeries = null;
+      /* os rivais da base eram do outro campeonato: não vêm junto */
+      S.prospects = [];
       UI.close();
       Game.startSeason();
       setTimeout(()=>UI.toast(`Nova carreira: ${SERIES[o.sk].name}.`), 500);
@@ -14403,7 +15001,7 @@ const Game = {
            Series e acordava na Fórmula 3 de novo, porque 2009 virou 2010. */
         if(!S.catAlvo){
           const rel = S.ladder.length>1 ? S.catIdx/(S.ladder.length-1) : 0;
-          S.ladder = resolveLadder(newEra.ladder, S.driver.cc, S.year);
+          S.ladder = resolveLadder(newEra.ladder, S.driver.cc, S.year, Engine.escolhas(S.series));
           S.catIdx = clamp(Math.round(rel*(S.ladder.length-1)), 0, S.ladder.length-1);
         }
       } else {
@@ -15444,6 +16042,219 @@ UI.archive = function(){
     <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`, true);
 };
 
+/* ══════════ CAMPEONATOS REAIS ══════════
+   O catálogo do banco histórico: cada campeonato com o nome oficial de cada
+   ano, o grid de cada temporada (quando há fonte), o calendário, os campeões
+   e de onde saiu cada dado. Estar no catálogo não é estar verificado: a
+   janela diz, temporada por temporada, o que foi lido e o que falta. */
+const UIH = {
+  f: { ano: 1985, busca: '', regiao: '', pais: '', nivel: -1, tipo: '', situ: 'ativos' },
+  NIVEL: ['Kart', 'Entrada', 'Regional', 'Fórmula 3', 'F2 e topo nacional', 'Topo mundial'],
+  TIPO: { monoposto:'Monopostos', turismo:'Turismo', gt:'GT', endurance:'Endurance', stock:'Stock car', oval:'Oval', kart:'Kart' },
+  pais(cc){
+    if(cc === 'INT') return 'Internacional';
+    const c = COUNTRIES.find(x => x.cc === cc);
+    return c ? c.name : cc;
+  },
+  /* prestígio é estimativa do jogo, pelo nível; o catálogo não inventa número */
+  estrelas(c){ const n = Math.max(1, Math.min(5, c.nv === 0 ? 1 : c.nv)); return '●'.repeat(n) + '○'.repeat(5 - n); },
+  statusTag(t, existe){
+    if(!existe) return '<span class="hc-tag fora">não existia</span>';
+    if(!t || t.st === 'X') return '<span class="hc-tag pend">pendente: sem fonte</span>';
+    if(t.st === 'V') return '<span class="hc-tag pend">pendente: tabela ilegível</span>';
+    if(t.st === 'C') return `<span class="hc-tag parc">só a classificação · ${t.inscritos.length}</span>`;
+    return `<span class="hc-tag ok">grid real · ${t.inscritos.length} pilotos</span>`;
+  },
+  faixa(c, sel){
+    const fim = c.ate == null ? 2026 : Math.min(c.ate, 2026);
+    let h = '';
+    for(let a = c.de; a <= fim; a++){
+      const t = HIST.T[c.id] && HIST.T[c.id][a];
+      const st = t ? t[0] : 'X';
+      h += `<i class="${st === 'L' || st === 'C' ? st : ''}${a === sel ? ' sel' : ''}" title="${a}: ${Hist.ST[st]}"></i>`;
+    }
+    return `<div class="hc-faixa" aria-hidden="true">${h}</div>`;
+  },
+  abrir(){
+    if(!Hist.ok()) return UI.toast('O banco de campeonatos ainda está carregando. Tente de novo em um instante.');
+    if(S && S.year) UIH.f.ano = S.year;
+    const cs = Hist.campeonatos();
+    const regioes = [...new Set(cs.map(c => c.r))].sort();
+    const paises = [...new Set(cs.map(c => c.p))].sort((a, b) => UIH.pais(a).localeCompare(UIH.pais(b)));
+    const tipos = [...new Set(cs.map(c => c.t))];
+    const f = UIH.f;
+    UI.modal(UI.head('Campeonatos reais', `${cs.length} campeonatos de 1950 a hoje, com a fonte de cada temporada`) +
+      `<div class="mbd">
+        <div class="hc-filtros">
+          <label>Temporada
+            <span class="hc-ano"><input type="range" min="1950" max="2026" value="${f.ano}" aria-label="Ano"
+              style="--pct:${((f.ano - 1950) / 76 * 100).toFixed(1)}%"
+              oninput="this.style.setProperty('--pct', ((this.value - 1950) / 76 * 100).toFixed(1) + '%'); UIH.set('ano', +this.value); this.nextElementSibling.textContent = this.value"><b>${f.ano}</b></span></label>
+          <label>Região<select onchange="UIH.set('regiao', this.value)"><option value="">Todas</option>
+            ${regioes.map(r => `<option${r === f.regiao ? ' selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
+          <label>País<select onchange="UIH.set('pais', this.value)"><option value="">Todos</option>
+            ${paises.map(p => `<option value="${p}"${p === f.pais ? ' selected' : ''}>${esc(UIH.pais(p))}</option>`).join('')}</select></label>
+          <label>Buscar<input type="search" placeholder="Ex.: Fórmula 3, GP2, Macau" value="${esc(f.busca)}"
+            oninput="UIH.set('busca', this.value)"></label>
+        </div>
+        <div class="hc-chips" role="group" aria-label="Nível">
+          ${[-1, 5, 4, 3, 2, 1, 0].map(n => `<button class="hc-chip${f.nivel === n ? ' on' : ''}" onclick="UIH.chip(this, 'nivel', ${n})">${n < 0 ? 'Todos os níveis' : UIH.NIVEL[n]}</button>`).join('')}
+        </div>
+        <div class="hc-chips" role="group" aria-label="Tipo e situação">
+          <button class="hc-chip${!f.tipo ? ' on' : ''}" data-g="tipo" onclick="UIH.chip(this, 'tipo', '')">Todos os tipos</button>
+          ${tipos.map(t => `<button class="hc-chip${f.tipo === t ? ' on' : ''}" data-g="tipo" onclick="UIH.chip(this, 'tipo', '${t}')">${UIH.TIPO[t] || t}</button>`).join('')}
+          <span style="width:12px"></span>
+          ${[['ativos', 'Existiam no ano'], ['todos', 'Todos'], ['extintos', 'Extintos hoje']].map(([k, r]) =>
+            `<button class="hc-chip${f.situ === k ? ' on' : ''}" data-g="situ" onclick="UIH.chip(this, 'situ', '${k}')">${r}</button>`).join('')}
+        </div>
+        <p class="hc-conta" id="hcConta"></p>
+        <div class="hc-lista" id="hcLista"></div>
+      </div>
+      <div class="mft"><span style="font-size:13px;color:var(--soft)">Dados: Wikipedia em inglês (CC BY-SA 4.0). Uma fonte só: nada aqui é dado como verificado.</span>
+        <span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`, true);
+    el('modal').classList.add('hc');
+    UIH.lista();
+  },
+  chip(b, k, v){
+    const grupo = b.dataset.g;
+    b.parentElement.querySelectorAll('.hc-chip').forEach(x => { if(!grupo || x.dataset.g === grupo) x.classList.toggle('on', x === b); });
+    UIH.set(k, v);
+  },
+  set(k, v){ UIH.f[k] = v; UIH.lista(); },
+  filtrados(){
+    const f = UIH.f, q = f.busca.trim().toLowerCase();
+    return Hist.campeonatos().filter(c => {
+      const existe = Hist.existe(c, f.ano);
+      if(f.situ === 'ativos' && !existe) return false;
+      if(f.situ === 'extintos' && c.ate == null) return false;
+      if(f.regiao && c.r !== f.regiao) return false;
+      if(f.pais && c.p !== f.pais) return false;
+      if(f.nivel >= 0 && c.nv !== f.nivel) return false;
+      if(f.tipo && c.t !== f.tipo) return false;
+      if(q){
+        const alvo = (c.n + ' ' + (c.ns || []).map(x => x[2]).join(' ') + ' ' + c.id + ' ' + UIH.pais(c.p)).toLowerCase();
+        if(!q.split(/\s+/).every(w => alvo.includes(w))) return false;
+      }
+      return true;
+    }).sort((a, b) => b.nv - a.nv || a.de - b.de);
+  },
+  lista(){
+    const box = el('hcLista'); if(!box) return;
+    const f = UIH.f, cs = UIH.filtrados();
+    let comGrid = 0;
+    box.innerHTML = cs.length ? cs.map(c => {
+      const existe = Hist.existe(c, f.ano), t = existe ? Hist.temporada(c.id, f.ano) : null;
+      if(t && (t.st === 'L' || t.st === 'C')) comGrid++;
+      const camp = t && (t.campeao ? `<span class="hc-cf">${flag(t.campeao.cc)}</span> ${esc(t.campeao.nome)}` : t.campeaoTxt ? esc(t.campeaoTxt) : '');
+      return `<button class="hc-card" onclick="UIH.ver('${c.id}', ${existe ? f.ano : c.de})">
+        <span class="t"><b>${esc(existe ? Hist.nomeOficial(c, f.ano) : c.n)}</b><span class="hc-tag">${esc(UIH.pais(c.p))}</span></span>
+        <span class="of">${esc(c.n)} · ${c.de}–${c.ate == null ? 'hoje' : c.ate} · ${UIH.NIVEL[c.nv]}</span>
+        <span class="m">${UIH.statusTag(t, existe)}<span class="hc-tag" title="Prestígio estimado pelo nível">${UIH.estrelas(c)}</span></span>
+        ${camp ? `<span class="ch">Campeão em ${f.ano}: <b>${camp}</b></span>` : ''}
+        ${UIH.faixa(c, f.ano)}
+      </button>`;
+    }).join('') : '<div class="empty">Nenhum campeonato com esses filtros.</div>';
+    el('hcConta').textContent = `${cs.length} campeonato${cs.length === 1 ? '' : 's'}` +
+      (f.situ !== 'todos' || cs.some(c => Hist.existe(c, f.ano)) ? ` · ${comGrid} com grid real de ${f.ano}` : '') +
+      ' · verde: grid lido · amarelo: só a classificação · cinza: pendente';
+  },
+  /* Em que degrau da sua carreira este campeonato caberia (o do mesmo
+     nível, de qualquer país). A nacionalidade não prende ninguém — um
+     brasileiro pode correr a F3 japonesa. Mudar de carreira (do monoposto
+     para o turismo, por exemplo) só por convite, no fim da temporada. */
+  carreira(c, ano){
+    if(!S || !S.driver || !S.series || S.retired || !S.ladder || !SERIES[S.series]) return '';
+    const prox = S.year + 1;
+    const hAgora = Engine.hospedeiro(c, S.year, S.driver.cc, S.series);
+    const escAtual = Engine.escolhas(S.series) || {};
+    if(hAgora && !hAgora.top && hAgora.sk === S.series && escAtual[hAgora.tok] === c.id)
+      return `<div class="hc-aviso">Na sua carreira, este é o campeonato do degrau <b>${esc(resolveRung(hAgora.tok, S.driver.cc, S.year) || hAgora.tok)}</b>.
+        <button class="hc-chip" style="margin-left:8px" onclick="UIH.escolher('${hAgora.tok}', null, '${c.id}')">Voltar ao de sempre</button></div>`;
+    if(!Hist.existe(c, prox)) return '';
+    const h = Engine.hospedeiro(c, prox, S.driver.cc, S.series);
+    if(!h) return '';
+    if(h.top || h.sk !== S.series)
+      return `<div class="hc-aviso">Este campeonato fica fora da sua escada atual. Ele pode te chamar: os convites chegam no fim de cada temporada, conforme o seu desempenho.</div>`;
+    const padrao = resolveRung(h.tok, S.driver.cc, prox);
+    if(campDaCat(padrao, prox) === c.id) return `<div class="hc-aviso">É o campeonato do degrau <b>${esc(padrao)}</b> na sua carreira.</div>`;
+    if((S.driver.age + 1) < Engine.idadeMinCamp(c, prox)) return `<div class="hc-aviso">Você ainda não tem idade para este campeonato (mínimo de ${Engine.idadeMinCamp(c, prox)} anos).</div>`;
+    return `<div class="hc-aviso">Correr este campeonato no lugar de <b>${esc(padrao)}</b>? Vale da temporada ${prox} em diante,
+      sempre que você estiver nesse degrau${Hist.temGrid(c.id, Math.min(prox, 2026)) ? ', com o grid real de cada ano' : ''}.
+      <button class="hc-chip on" style="margin-left:8px" onclick="UIH.escolher('${h.tok}', '${c.id}', '${c.id}')">Correr este campeonato</button></div>`;
+  },
+  escolher(tok, id, voltar){
+    if(!S) return;
+    Engine.escolher(S.series, tok, id);
+    try { Game.save(); } catch(e){}
+    const c = id && Hist.camp(id);
+    UI.toast(c ? `A partir de ${S.year + 1}, esse degrau é ${Hist.nomeOficial(c, S.year + 1)}.` : 'O degrau volta ao campeonato de sempre.');
+    if(UIH._vendo) UIH.ver(voltar || UIH._vendo.id, UIH._vendo.ano);
+  },
+  /* uma temporada de um campeonato */
+  ver(id, ano){
+    const c = Hist.camp(id); if(!c) return;
+    const fim = c.ate == null ? 2026 : Math.min(c.ate, 2026);
+    ano = clamp(ano, c.de, fim);
+    UIH._vendo = { id, ano };
+    const t = Hist.temporada(id, ano);
+    const fonte = Hist.fonte(t);
+    const linkFonte = fonte ? `<a href="${fonte}" target="_blank" rel="noopener">${esc(t.pagina)}</a> (revisão ${t.revid})` : '';
+    const aviso = !t || t.st === 'X'
+      ? `Não há página desta temporada na fonte usada (Wikipedia em inglês). <b>Pendente:</b> no jogo, este grid é simulado.`
+      : t.st === 'V' ? `A página ${linkFonte} existe, mas nenhuma tabela foi lida. <b>Pendente:</b> no jogo, este grid é simulado.`
+      : t.st === 'C' ? `A página ${linkFonte} só tem a classificação final: quem não pontuou pode faltar. <b>Parcial</b>, e de uma fonte só.`
+      : `Lista de inscritos lida de ${linkFonte}. É uma fonte só: o dado ainda não foi conferido com uma segunda.`;
+    const suc = c.s && Hist.camp(c.s);
+    const anos = []; for(let a = c.de; a <= fim; a++) anos.push(a);
+    const grid = t && t.inscritos.length ? `<table class="hc-grid">
+        <thead><tr><th>Pos.</th><th>Piloto</th><th>Equipe</th><th class="k">Carro</th><th>Nº</th></tr></thead>
+        <tbody>${t.inscritos.map(x => `<tr${t.campeao && x.p.i === t.campeao.i ? ' class="campeao"' : ''}>
+          <td class="p">${x.pos || '–'}</td>
+          <td class="n"><span class="hc-cf" title="${esc(x.p.nh || UIH.pais(x.cc || ''))}">${flag(x.cc)}</span>${esc(x.p.nome)}${x.p.jogo !== x.p.nome ? `<small>no jogo: ${esc(x.p.jogo)}</small>` : ''}</td>
+          <td class="e">${esc(x.eq || '—')}</td><td class="e k">${esc(x.carro || '—')}</td><td class="e">${esc(x.num || '')}</td></tr>`).join('')}</tbody></table>`
+      : '<div class="empty" style="padding:24px 8px">Sem lista de pilotos para esta temporada.</div>';
+    const cal = t && t.calendario.length ? `<div class="hc-cal">${t.calendario.map((e, i) =>
+        `<div><i>${i + 1}</i><span>${esc(e.circuito)}</span><em>${esc(e.data)}</em></div>`).join('')}</div>`
+      : '<p style="font-size:14px;color:var(--soft)">Calendário não lido.</p>';
+    const campeoes = anos.map(a => { const x = Hist.temporada(id, a); const n = x && (x.campeao ? x.campeao.nome : x.campeaoTxt); return n ? [a, n, x.campeao && x.campeao.cc] : null; }).filter(Boolean).reverse();
+    UI.modal(UI.head(esc(Hist.nomeOficial(c, ano)), `${esc(c.n)} · ${esc(UIH.pais(c.p))} · ${UIH.NIVEL[c.nv]}`) +
+      `<div class="mbd">
+        <button class="hc-volta" onclick="UIH.abrir()">← Todos os campeonatos</button>
+        <div class="hc-topo">
+          <p>${c.de}–${c.ate == null ? 'em atividade' : c.ate + (suc ? ` · sucedido por <a href="javascript:void 0" onclick="UIH.ver('${suc.id}', ${suc.de})" style="color:var(--ink);text-decoration:underline">${esc(suc.n)}</a>` : ' · extinto')}
+            · ${UIH.TIPO[c.t] || c.t} · prestígio estimado ${UIH.estrelas(c)}</p>
+          ${UIH.faixa(c, ano)}
+        </div>
+        <div class="hc-anos">
+          <button onclick="UIH.ver('${id}', ${ano - 1})" ${ano <= c.de ? 'disabled' : ''} aria-label="Temporada anterior">‹</button>
+          <select onchange="UIH.ver('${id}', +this.value)" aria-label="Temporada">${anos.map(a => `<option${a === ano ? ' selected' : ''}>${a}</option>`).join('')}</select>
+          <button onclick="UIH.ver('${id}', ${ano + 1})" ${ano >= fim ? 'disabled' : ''} aria-label="Próxima temporada">›</button>
+          ${UIH.statusTag(t, true)}
+        </div>
+        <div class="hc-aviso">${aviso}</div>
+        ${UIH.carreira(c, ano)}
+        <div class="hc-cols">
+          <div class="hc-box"><h4>Pilotos <span>${t && t.st === 'C' ? 'classificação final' : 'na ordem da classificação final'}</span></h4>${grid}</div>
+          <div style="display:grid;gap:14px">
+            <div class="hc-box"><h4>Campeão de ${ano}</h4><p style="font-size:17px;font-weight:700">${t && t.campeao ? `<span class="hc-cf" style="font-size:12px;color:var(--soft);margin-right:6px">${flag(t.campeao.cc)}</span>${esc(t.campeao.nome)}` : t && t.campeaoTxt ? esc(t.campeaoTxt) : '<span style="color:var(--soft);font-weight:500">sem registro na fonte</span>'}</p></div>
+            <div class="hc-box"><h4>Calendário <span>${t ? t.calendario.length : 0} etapas</span></h4>${cal}</div>
+            <div class="hc-box"><h4>Campeões <span>${campeoes.length} temporadas</span></h4><div class="hc-camps">${campeoes.map(([a, n, cc]) =>
+              `<button onclick="UIH.ver('${id}', ${a})"><i>${a}</i><span>${cc ? `<span class="hc-cf" style="font-size:11px;color:var(--soft);margin-right:5px">${flag(cc)}</span>` : ''}${esc(n)}</span></button>`).join('') || '<p style="font-size:14px;color:var(--soft)">Nenhum lido.</p>'}</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="mft"><span style="font-size:13px;color:var(--soft)">Dados: Wikipedia em inglês (CC BY-SA 4.0).</span><span class="sp"></span>
+        <button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`, true);
+    el('modal').classList.add('hc');
+  }
+};
+UI.campeonatos = function(){ UIH.abrir(); };
+/* a abertura conta os campeonatos do catálogo quando o banco termina de carregar */
+addEventListener('DOMContentLoaded', () => {
+  const e = el('iniAnosTx');
+  if(e && Hist.ok()) e.innerHTML = `7 carreiras · <button class="ini-link" onclick="UI.campeonatos()">${HIST.C.length} campeonatos reais</button>`;
+});
+
 UI.hall = function(){
   let hall = [];
   try{ hall = JSON.parse(Store.get('vdo_hall')||'[]'); }catch(e){}
@@ -15719,7 +16530,7 @@ UI.help = function(){
       <p><b>O grid.</b> O tamanho do pelotão e o número de carros por equipe seguem a época: 29 carros e escuderias
       com três monopostos nos anos 50, 20 carros e dois por equipe hoje. E só entram os pilotos que realmente
       corriam naquele ano — Schumacher não divide a pista com Antonelli.</p>
-      <p><b>Você escolhe quando começar.</b> O ano exato dentro da década e a idade de estreia, de 13 a 30 anos.
+      <p><b>Você escolhe quando começar.</b> O ano exato dentro da década e a idade de estreia, de 8 a 30 anos: quem começa criança fica no kart até ter idade para um carro.
       Começar cedo dá muitos anos de base; começar tarde te coloca direto numa categoria alta, com menos tempo
       para provar seu valor. E o fim não tem idade fixa: há quem apague antes dos 35 e quem ainda corra depois dos 50.</p>
       <p><b>Modo Cenário.</b> Assuma um piloto real num ponto exato da história — Massa em 2008, Hamilton em 2021,
@@ -19642,7 +20453,10 @@ UI.ofertasModal = function(){
           <div class="od">${esc(o.note)}</div></button>`;
         const sr = o.sk ? SERIES[o.sk] : null;
         let tag, tagCor = '';
-        if(sr){ tag = ico(sr.ic) + ' ' + sr.short; tagCor = `color:${sr.color};border-color:${sr.color}55`; }
+        /* convite de um campeonato real do catálogo, de qualquer país */
+        const cv = o.convite && Hist.camp(o.camp);
+        if(cv){ tag = ico('bussola') + ' Convite · ' + esc(UIH.pais(cv.p)); tagCor = 'color:var(--gold);border-color:var(--gold)'; }
+        else if(sr){ tag = ico(sr.ic) + ' ' + sr.short; tagCor = `color:${sr.color};border-color:${sr.color}55`; }
         else if(o.pulo) tag = (ico('pular')+' Salto duplo');
         else if(o.up)   tag = (ico('sobe')+' Promoção');
         else if(o.down) tag = (ico('desce')+' Recomeço');
