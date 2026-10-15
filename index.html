@@ -19,8 +19,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <script>
-/* animações: a escolha guardada no aparelho; sem escolha, a do sistema */
-try{ var mv = localStorage.getItem('vdo_mov'), liga = mv ? mv === '1' : !matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* animações: ligadas, a não ser que a pessoa tenha desligado neste aparelho */
+try{ var mv = localStorage.getItem('vdo_mov'), liga = mv ? mv === '1' : true;
   document.documentElement.classList.add(liga ? 'mov' : 'sem-mov'); }catch(e){ document.documentElement.classList.add('mov'); }
 </script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0f14'/%3E%3Cg fill='%23f5c518'%3E%3Crect x='12' y='12' width='10' height='10'/%3E%3Crect x='32' y='12' width='10' height='10'/%3E%3Crect x='22' y='22' width='10' height='10'/%3E%3Crect x='42' y='22' width='10' height='10'/%3E%3Crect x='12' y='32' width='10' height='10'/%3E%3Crect x='32' y='32' width='10' height='10'/%3E%3Crect x='22' y='42' width='10' height='10'/%3E%3Crect x='42' y='42' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E">
@@ -810,11 +810,11 @@ body.em-corrida{overflow:hidden}
 .cc-cab{position:sticky; top:0; z-index:2; background:var(--bg); color:var(--soft); font-size:13px; min-height:38px; border-bottom:1px solid var(--rule2)} /* tabela de verdade (taste-skill-ignore) */
 .cc-l{min-height:38px; border-bottom:1px solid var(--rule); background:var(--bg); position:relative} /* tabela de verdade (taste-skill-ignore) */
 .cc-l b{font-weight:700; font-size:16px; text-align:right}
-.cc-l .g{font-style:normal; font-size:12px; font-weight:500; color:var(--faint)}
+.cc-l .g{font-style:normal; font-size:13px; font-weight:500; color:var(--faint)}
 .cc-l .g.sobe{color:var(--green)} .cc-l .g.cai{color:var(--red-txt)}
 .cc-l .p{display:flex; align-items:center; gap:8px; font-weight:500; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .cc-l .p s{display:inline-block; width:4px; height:18px; flex:none; text-decoration:none}
-.cc-l .p em{font-style:normal; font-size:12px; color:var(--soft); font-weight:500; width:28px; flex:none}
+.cc-l .p em{font-style:normal; font-size:13px; color:var(--soft); font-weight:500; width:28px; flex:none}
 .cc-l .eq{color:var(--soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .cc-tab .n{text-align:right; white-space:nowrap}
 .cc-l .pb{color:var(--green)}
@@ -976,6 +976,34 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 
 .mov #topBar{animation:barra-desce .8s var(--ease-out) both}
 @keyframes barra-desce{from{opacity:0; transform:translateY(-14px)}to{opacity:1; transform:none}}
+.to-ano{display:flex; align-items:center; gap:12px; margin-bottom:16px}
+.to-ano input{flex:1}
+.to-ano b{font-size:30px; font-weight:800; font-stretch:72%; min-width:64px; text-align:center}
+.to-lista{background:var(--s2); border-radius:var(--r-sm); max-height:330px; overflow-y:auto}
+.to-pil{display:flex; align-items:center; gap:12px; width:100%; padding:10px 14px; text-align:left; transition:background .15s}
+.to-pil + .to-pil{box-shadow:0 -1px 0 var(--rule)} /* separador da lista (taste-skill-ignore) */
+.to-pil:hover{background:var(--s3)}
+.to-pil .flag{font-size:13px; color:var(--soft); min-width:2.6em}
+.to-pil .tx{flex:1; min-width:0}
+.to-pil .tx b{display:block; font-size:16px; font-weight:600}
+.to-pil .tx span{display:block; font-size:14px; color:var(--soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.to-pil .posbox{min-width:34px}
+
+/* nada quadrado: as peças do modo chefe e as listas antigas */
+.ch-opt{border-radius:999px; padding:0 16px}
+.ch-opt.sel,.ch-card .ch-opt.sel,.offer .ch-opt.sel{background:var(--acao); color:#fff}
+.ch-card,.ch-news,.ch-notas{border-radius:var(--r-sm)}
+.ch-card .oc,.ch-tag,.offer .oc{border-radius:999px}
+.ch-row .st{border-radius:8px}
+.ch-cor{border-radius:10px}
+.ch-pips i{border-radius:3px}
+.ch-money,.ch-proj{gap:6px; background:transparent}
+.ch-money > div,.ch-proj > div{border-radius:var(--r-sm)}
+.ch-rows{gap:0; background:transparent}
+.ch-row + .ch-row{box-shadow:0 -1px 0 var(--rule)} /* separador da lista (taste-skill-ignore) */
+.ch-sel{border-radius:14px}
+.ctry-list button{border-radius:10px}
+.mclose{background:var(--s2)}
 .creditos{margin:0 0 14px; padding-left:18px; display:grid; gap:6px; font-size:15px; line-height:1.45}
 </style>
 </head>
@@ -1059,7 +1087,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
           <span class="ini-modo-tx">
             <b>Modo cenário</b>
             <em>Reescreva a história</em>
-            <span>Assuma um piloto real num ponto exato: Senna em 1994, Massa em 2008, Hamilton em 2021.</span>
+            <span>Senna em 1994, Massa em 2008, Hamilton em 2021: o que vem depois é com você.</span>
           </span>
           <span class="ini-modo-ir" aria-hidden="true">→</span>
         </button>
@@ -1101,7 +1129,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   </section>
 
   <footer class="ini-pe">
-    <span class="brand-pe"><span class="cf" id="peFlag"></span>Volante de <b>Ouro</b></span>
+    <span class="brand-pe"><span class="cf" id="peFlag"></span><span>Volante de <b>Ouro</b></span></span>
     <p>Projeto de fã, sem vínculo com a Fórmula 1, a FIA, a IndyCar, a NASCAR, o WEC, a Stock Car, o DTM, a Fórmula E ou as equipes. Nomes, logos e marcas pertencem a seus titulares e aparecem só para identificar cada campeonato. Tudo roda no seu navegador; a carreira fica salva só no seu aparelho.</p>
     <nav aria-label="Rodapé">
       <button onclick="Abertura.creditos()">Créditos das fotos</button>
@@ -1128,7 +1156,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
       <div class="row c3" style="margin-bottom:18px">
         <div class="field" style="margin:0">
           <span class="lbl">Sobrenome</span>
-          <input type="text" id="inName" placeholder="Ex.: Fernandes" maxlength="16" autocomplete="off">
+          <input type="text" id="inName" placeholder="Ex.: Senna" maxlength="16" autocomplete="off">
         </div>
         <div class="field" style="margin:0">
           <span class="lbl">Número (1–99)</span>
@@ -1278,7 +1306,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
       <div class="row c3">
         <div class="field" style="margin:0">
           <span class="lbl">Nome do chefe</span>
-          <input type="text" id="chnChefe" maxlength="24" placeholder="Ex.: Valdir Fernandes" autocomplete="off">
+          <input type="text" id="chnChefe" maxlength="24" placeholder="Ex.: Ayrton Senna" autocomplete="off">
         </div>
         <div class="field" style="margin:0">
           <span class="lbl">Nacionalidade</span>
@@ -11836,8 +11864,8 @@ const UI = {
     Game.checkSave();
   },
 
-  /* animações: o padrão é o do sistema; quem quiser liga ou desliga, e fica guardado */
-  movimentoLigado(){ const p = Store.get('vdo_mov'); return p ? p === '1' : !matchMedia('(prefers-reduced-motion: reduce)').matches; },
+  /* animações: ligadas por padrão; quem quiser desliga, e a escolha fica guardada */
+  movimentoLigado(){ const p = Store.get('vdo_mov'); return p ? p === '1' : true; },
   aplicarMovimento(){
     const on = UI.movimentoLigado(), r = document.documentElement;
     r.classList.toggle('mov', on); r.classList.toggle('sem-mov', !on);
@@ -11975,7 +12003,7 @@ const UI = {
         const o = ORIGENS[k];
         return `<button class="dil ${UI.origem===k?'sel':''}" style="${UI.origem===k?'border-color:var(--gold)':''}"
           onclick="UI.pickOrigem('${k}')"><b>${ico(o.ic)} ${esc(o.n)}</b><span>${esc(o.ds)}</span>
-          <span style="display:block;font-size:11px;color:var(--gold);font-weight:800;margin-top:3px">
+          <span style="display:block;font-size:13px;color:var(--gold);font-weight:800;margin-top:3px">
             começa com ${fmtD(o.saldo)}${o.apoio ? ' · a família banca ' + fmtD(o.apoio) + ' por ano até os ' + o.ate : ''}</span>
         </button>`;
       }).join('');
@@ -12080,12 +12108,12 @@ const UI = {
           <span class="av">${d.morale}</span>
         </div>
       </div>
-      ${S.academy ? `<div class="pad-sm" style="border-top:2px solid var(--bg);
+      ${S.academy ? `<div class="pad-sm" style="border-top:2px solid var(--s1);
            border-left:3px solid ${S.academy.c};display:flex;align-items:center;gap:9px">
           <span style="font-size:17px">${ico('formatura')}</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:13.5px;font-weight:800;line-height:1.2">${esc(S.academy.n)}</div>
-            <div style="font-size:11.5px;color:var(--dim)">desde ${S.academy.desde}${S.academy.t?` · ligado à ${esc(S.academy.t)}`:''}</div>
+            <div style="font-size:13px;color:var(--dim)">desde ${S.academy.desde}${S.academy.t?` · ligado à ${esc(S.academy.t)}`:''}</div>
           </div>
         </div>` : ''}
       <div class="trophies">
@@ -12117,13 +12145,13 @@ const UI = {
     let h = '';
     if(nx){
       const tn = {fast:'Alta velocidade', street:'Circuito de rua', tech:'Técnico', mixed:'Misto', oval:'Oval'}[nx.type];
-      h += `<div class="pad" style="border-bottom:2px solid var(--bg)">
+      h += `<div class="pad" style="border-bottom:2px solid var(--s1)">
         <span class="lbl">Próxima etapa · rodada ${nx.r} de ${sea.calendar.length}</span>
         <div style="display:flex;align-items:center;gap:11px;margin-top:9px">
           <span class="flag" style="font-size:30px">${flag(nx.cc)}</span>
           <div style="min-width:0">
             <div style="font-family:var(--fd);font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:.02em;line-height:1">${esc(nx.gp)}</div>
-            <div style="font-size:12.5px;color:var(--dim);font-weight:600">${esc(nx.circ)}</div>
+            <div style="font-size:14px;color:var(--dim);font-weight:600">${esc(nx.circ)}</div>
           </div>
         </div>
         <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
@@ -12133,7 +12161,7 @@ const UI = {
         </div>
       </div>`;
     } else if(S.retired){
-      h += `<div class="pad" style="border-bottom:2px solid var(--bg);border-left:3px solid var(--red2)">
+      h += `<div class="pad" style="border-bottom:2px solid var(--s1);border-left:3px solid var(--red2)">
         <span class="lbl">Carreira encerrada</span>
         <div style="font-weight:800;margin-top:7px;font-size:14px">${esc({
           acidente:'Um acidente encerrou sua carreira.',
@@ -12141,11 +12169,11 @@ const UI = {
           semvaga:'Nenhuma equipe ofereceu um lugar no grid.',
           escolha:'Você pendurou o capacete.'
         }[S.fimRazao] || 'Você não corre mais.')}</div>
-        <div style="font-size:12px;color:var(--dim);margin-top:5px">
+        <div style="font-size:14px;color:var(--dim);margin-top:5px">
           Daqui em diante você só acompanha os números e o retrospecto.</div>
       </div>`;
     } else {
-      h += `<div class="pad" style="border-bottom:2px solid var(--bg)">
+      h += `<div class="pad" style="border-bottom:2px solid var(--s1)">
         <span class="lbl">Temporada encerrada</span>
         <div style="font-weight:800;margin-top:7px;font-size:14px">Todas as ${sea.calendar.length} etapas disputadas.</div>
       </div>`;
@@ -12153,17 +12181,17 @@ const UI = {
     /* objetivo do cenário, enquanto o ano dele estiver em disputa */
     if(S.goal && S.goal.type !== 'livre' && S.year === S.goalYear){
       const st = Engine.goalStatus();
-      h += `<div class="pad-sm" style="border-bottom:2px solid var(--bg);
+      h += `<div class="pad-sm" style="border-bottom:2px solid var(--s1);
             border-left:3px solid ${st.done?'var(--green)':'var(--gold)'}">
         <span class="lbl" style="display:block;margin-bottom:4px">Objetivo do cenário</span>
         <div style="font-size:13.5px;font-weight:800">${ico('alvo')} ${esc(S.goal.txt)}</div>
-        <div style="font-size:12px;color:${st.done?'var(--green)':'var(--dim)'};margin-top:4px;font-weight:700">${esc(st.txt)}</div>
+        <div style="font-size:14px;color:${st.done?'var(--green)':'var(--dim)'};margin-top:4px;font-weight:700">${esc(st.txt)}</div>
       </div>`;
     }
     const tm = sea.teammateId ? sea.field.find(f=>f.id===sea.teammateId) : null;
-    h += `<div class="pad-sm" style="display:grid;gap:7px;font-size:12.5px">
+    h += `<div class="pad-sm" style="display:grid;gap:7px;font-size:14px">
       <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Época</span><b style="text-align:right">${era.name} · ${esc(era.tag)}</b></div>
-      <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Pontuação</span><b style="font-size:11.5px;text-align:right">${esc(sea.pts.label)}</b></div>
+      <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Pontuação</span><b style="font-size:13px;text-align:right">${esc(sea.pts.label)}</b></div>
       <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Confiabilidade</span><b>${Math.round(era.rel*100)}%</b></div>
       ${tm?`<div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Companheiro</span><b>${fg(tm.cc)}${esc(tm.name)}</b></div>`:''}
     </div>`;
@@ -12181,12 +12209,12 @@ const UI = {
         const nota = Engine.nota(p);
         const tenso = p.rel.tens >= 35;
         return `<div style="display:flex;align-items:center;gap:7px;padding:6px 0;
-             border-top:2px solid var(--bg)">
+             border-top:2px solid var(--s1)">
            <span class="flag" style="font-size:13px">${flag(p.cc)}</span>
            <div style="flex:1;min-width:0">
-             <div style="font-size:11.5px;font-weight:900;white-space:nowrap;overflow:hidden;
+             <div style="font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;
                   text-overflow:ellipsis">${ico(per.ic)} ${esc(p.n)}</div>
-             <div style="font-size:10.5px;color:${tenso ? 'var(--red2)' : 'var(--dim2)'}">
+             <div style="font-size:13px;color:${tenso ? 'var(--red2)' : 'var(--dim2)'}">
                ${esc(tenso ? Engine.dimTxt('tens', p.rel.tens) : Engine.dimTxt('resp', p.rel.resp))}</div>
            </div>
            <span class="bar" style="width:34px;height:5px;flex:none"><i style="width:${nota}%"></i></span>
@@ -12195,19 +12223,19 @@ const UI = {
       const eng = Engine.pessoa('eng'), cmp = Engine.pessoa('comp');
       const riv = Engine.genteAtiva().find(p => p.papel === 'rival');
       const men = Engine.genteAtiva().find(p => p.papel === 'mentor');
-      h += `<div class="pad-sm" style="border-top:2px solid var(--bg)">
+      h += `<div class="pad-sm" style="border-top:2px solid var(--s1)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <span class="lbl">Parceiros</span>
-          <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:10.5px"
+          <button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:13px"
                   onclick="UI.pessoas()">abrir</button>
         </div>
         <div style="margin-bottom:6px">
-          <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800">
+          <div style="display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:800">
             <span style="color:var(--dim)">Equipe</span>
             <span style="color:${cor(rel)}">${rel >= 70 ? 'apostam em você' : rel >= 40 ? 'observando' : 'perdendo a paciência'}</span>
           </div>
           <span class="bar" style="display:block;height:5px;margin-top:3px"><i style="width:${rel}%"></i></span>
-          <div style="font-size:10.5px;color:var(--dim2);margin-top:2px">${
+          <div style="font-size:13px;color:var(--dim2);margin-top:2px">${
             S.contract && S.contract.years > 1 ? 'contrato por mais ' + S.contract.years + ' anos' : 'contrato no último ano'}</div>
         </div>
         ${pessoa(eng)}${pessoa(cmp)}${pessoa(riv)}${pessoa(men)}
@@ -12218,22 +12246,22 @@ const UI = {
                        padrao:[ico('papel'),'contrato padrão','var(--dim2)'],
                        livre:[ico('aberto'),'contrato livre','var(--green)'] }[cl] || [ico('papel'),'',''];
           const ult = (S.paralelas || [])[(S.paralelas || []).length - 1];
-          return `<div style="font-size:10.5px;color:var(--dim2);padding:5px 0 0;
-               border-top:2px solid var(--bg);margin-top:5px">
+          return `<div style="font-size:13px;color:var(--dim2);padding:5px 0 0;
+               border-top:2px solid var(--s1);margin-top:5px">
             <span style="color:${CL[2]}">${CL[0]} ${esc(CL[1])}</span>
             ${ult ? ' · ' + esc(SERIES[ult.sk].short) + ' ' + ult.ano + ': ' +
                      (ult.bateu ? 'abandono' : ord(ult.pos)) : ''}
             ${(S.cansaco || 0) >= 5 ? ' · <span style="color:var(--red2)">cansado</span>' : ''}
           </div>`;
         })()}
-        ${riv && riv.duelos ? `<div style="font-size:10.5px;color:var(--dim2);padding:3px 0 0">
+        ${riv && riv.duelos ? `<div style="font-size:13px;color:var(--dim2);padding:3px 0 0">
              ${ico('duelo')} duelos com ${esc(Engine.sobrenome(riv.n))}: ${riv.duelos.v||0} a ${riv.duelos.p||0}</div>` : ''}
-        ${emp ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;font-size:11px;color:var(--dim)">
+        ${emp ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;font-size:13px;color:var(--dim)">
              <span class="flag" style="font-size:13px">${flag(emp.cc)}</span>
              <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                ${ico('maleta')} ${esc(emp.n)}</span>
              <span style="color:var(--dim2)">${Math.round(emp.taxa*100)}%</span>
-           </div>` : `<button class="btn btn-sm btn-ghost" style="width:100%;margin-top:7px;font-size:11px"
+           </div>` : `<button class="btn btn-sm btn-ghost" style="width:100%;margin-top:7px;font-size:13px"
              onclick="UI.empresarios()">${ico('maleta')} Contratar um empresário</button>`}
       </div>`;
     }
@@ -12351,7 +12379,7 @@ const UI = {
         <path class="ln" d="${line}" vector-effect="non-scaling-stroke"/>
         ${pts.map(p=>`<path class="pt" d="M${p[0].toFixed(1)},${p[1].toFixed(1)}h0" vector-effect="non-scaling-stroke"/>`).join('')}
       </svg>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim2);font-weight:800">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--dim2);font-weight:800">
         <span>1º (topo)</span><span>${ord(maxP)} (base)</span>
       </div>`;
   },
@@ -12411,8 +12439,8 @@ const UI = {
         <td class="p">${i+1}</td>
         <td class="dn">${fg(d.cc)}${esc(d.name)}${d.me?' <span style="color:var(--gold);font-size:14px;font-weight:500">você</span>':''}</td>
         <td class="tm"><span class="stripe" style="background:${d.team.color}"></span>${esc(d.team.name)}</td>
-        <td class="pt">${d.pts}${d.brutos != null && d.brutos !== d.pts ? `<small style="display:block;font-size:10.5px;color:var(--dim2);font-weight:600">${d.brutos} no total</small>` : ''}</td></tr>`).join('')}</tbody></table></div>${
-      sea.pts.melhores ? `<p class="mut" style="font-size:12px;padding:8px 12px;margin:0">${Engine.ehKart(sea.cat)
+        <td class="pt">${d.pts}${d.brutos != null && d.brutos !== d.pts ? `<small style="display:block;font-size:13px;color:var(--dim2);font-weight:600">${d.brutos} no total</small>` : ''}</td></tr>`).join('')}</tbody></table></div>${
+      sea.pts.melhores ? `<p class="mut" style="font-size:14px;padding:8px 12px;margin:0">${Engine.ehKart(sea.cat)
         ? 'No kart o pior resultado de cada piloto é descartado'
         : `Em ${sea.year} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato`}. O total aparece embaixo, quando é diferente.</p>` : ''}`;
 
@@ -12432,14 +12460,14 @@ const UI = {
       <th style="text-align:center">Pole</th><th style="text-align:right">Pts</th></tr></thead>
       <tbody>${h.map((s,i)=>`<tr onclick="UI.archiveSeason(${i})">
         <td class="yr ${s.champion?'champ':''}">${s.year}${s.champion?(' '+ico('trofeu')):''}</td>
-        <td style="font-size:12px">${esc(s.cat)}</td>
-        <td style="font-size:12px"><span class="stripe" style="background:${s.teamColor}"></span>${esc(s.team)}</td>
+        <td style="font-size:14px">${esc(s.cat)}</td>
+        <td style="font-size:14px"><span class="stripe" style="background:${s.teamColor}"></span>${esc(s.team)}</td>
         <td style="text-align:center;font-weight:900">${ord(s.pos)}</td>
         <td style="text-align:center">${s.wins}</td>
         <td style="text-align:center">${s.podiums}</td>
         <td style="text-align:center">${s.poles}</td>
         <td style="text-align:right;font-weight:900">${s.pts}</td></tr>`).join('')}</tbody></table></div>
-      <div style="padding:11px 14px;font-size:11.5px;color:var(--dim2)">Toque em uma temporada para rever o retrospecto corrida a corrida.</div>`
+      <div style="padding:11px 14px;font-size:13px;color:var(--dim2)">Toque em uma temporada para rever o retrospecto corrida a corrida.</div>`
       : '<div class="empty">Sua primeira temporada ainda está em disputa.</div>';
 
     /* imprensa */
@@ -12447,7 +12475,7 @@ const UI = {
     el('pane-mid').innerHTML = m.length ? `
       <div style="padding:11px 14px 5px">
         <span class="lbl">O que dizem de você — ${m.length} ${m.length>1?'registros':'registro'}</span>
-        <div style="font-size:11px;color:var(--dim2);margin-top:4px;line-height:1.45">
+        <div style="font-size:13px;color:var(--dim2);margin-top:4px;line-height:1.45">
           Homenagem à turma da F1 brasileira nas redes. As mensagens são geradas pelo jogo
           a partir da sua carreira — não são publicações reais dessas contas.
         </div>
@@ -12544,12 +12572,12 @@ function narrative(r, sea){
 function classifHTML(r){
   return `<div style="background:var(--s2);border-radius:var(--r-sm);overflow:hidden">
     ${r.top.map((t, k)=>`
-      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;border-bottom:2px solid var(--bg);
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;border-bottom:2px solid var(--s1);
         ${t.me?'background:color-mix(in srgb,var(--gold) 12%,transparent);font-weight:800':''}">
-        <span style="width:20px;text-align:center;font-weight:900;font-size:12px;color:${t.pos<=3?'var(--gold)':'var(--dim2)'}">${t.pos||'–'}</span>
+        <span style="width:20px;text-align:center;font-weight:900;font-size:14px;color:${t.pos<=3?'var(--gold)':'var(--dim2)'}">${t.pos||'–'}</span>
         <span class="flag" style="font-size:15px">${flag(t.cc)}</span>
         <span style="flex:1;font-size:13.5px">${esc(t.n)}${t.me?' <span style="color:var(--gold);font-size:14px;font-weight:500">você</span>':''}</span>
-        <span style="font-size:11.5px;color:var(--dim)">${esc(t.t)}</span>
+        <span style="font-size:13px;color:var(--dim)">${esc(t.t)}</span>
         ${r.crono ? `<span style="width:96px;text-align:right;font-size:13px;white-space:nowrap">${Prova.difTop(r, k)}</span>` : ''}
       </div>`).join('')}
   </div>`;
@@ -12586,7 +12614,7 @@ UI.prepModal = function(){
       <div style="display:flex;align-items:baseline;gap:8px;margin:14px 0 8px">
         <span class="lbl">Onde você vai passar a pré-temporada</span>
         <span class="sp"></span>
-        <span style="font-size:11px;font-weight:800;color:${esc0.length >= vagas ? 'var(--green)' : 'var(--gold)'}">
+        <span style="font-size:13px;font-weight:800;color:${esc0.length >= vagas ? 'var(--green)' : 'var(--gold)'}">
           ${esc0.length} de ${vagas}</span>
       </div>
       ${INVERNO.map(cartao).join('')}
@@ -12615,7 +12643,7 @@ UI.invernoResumo = function(){
          margin-bottom:10px">
          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
            <b style="font-size:13px">${ico(x.ic)} ${esc(x.n)}</b><span class="sp"></span>
-           <span style="font-size:11px;font-weight:800;color:${cor(x.nivel)}">${rot(x.nivel)}</span>
+           <span style="font-size:13px;font-weight:800;color:${cor(x.nivel)}">${rot(x.nivel)}</span>
          </div>
          <div style="font-size:13px;line-height:1.55">${esc(x.t)}</div>
        </div>`).join('')
@@ -12623,7 +12651,7 @@ UI.invernoResumo = function(){
       ${(S.invernoDescobertas || []).length ? `<div style="padding:11px 13px;border-radius:var(--r-sm);
          border-left:4px solid var(--accent);margin-top:4px">
          <span class="lbl" style="display:block;margin-bottom:4px;color:var(--gold)">Alguma coisa sobre você</span>
-         ${S.invernoDescobertas.map(k => `<div style="font-size:12.5px;color:var(--dim)">
+         ${S.invernoDescobertas.map(k => `<div style="font-size:14px;color:var(--dim)">
            ${TRACOS[k] ? ico(TRACOS[k].ic) + ' ' + esc(TRACOS[k].d) : ''}</div>`).join('')}
        </div>` : ''}
     </div>
@@ -12652,11 +12680,11 @@ UI.tracosModal = function(){
             <span class="pill" style="${st === 'certo' ? 'color:var(--gold);border-color:var(--gold)55' : ''}">
               ${st === 'certo' ? 'confirmado' : 'suspeita'}</span>
           </div>
-          <div style="font-size:12.5px;color:var(--dim)">${esc(st === 'certo' ? tr.d : tr.pista)}</div>
+          <div style="font-size:14px;color:var(--dim)">${esc(st === 'certo' ? tr.d : tr.pista)}</div>
         </div>`;
       }).join('')
         : '<div class="empty" style="padding:14px">Ainda é cedo. Corra mais e alguma coisa vai começar a aparecer.</div>'}
-      <p class="mut" style="font-size:12px;margin:10px 0 0">
+      <p class="mut" style="font-size:14px;margin:10px 0 0">
         O que vale já valia antes de você desconfiar. Descobrir só muda o que você faz com isso.
       </p>
     </div>
@@ -12683,16 +12711,16 @@ UI.treinoModal = function(){
       </div>
       ${feitas.length ? `<div style="margin:12px 0 4px">
         <span class="lbl" style="display:block;margin-bottom:5px">O que já foi feito</span>
-        ${feitas.map(f => `<div style="font-size:12px;color:var(--dim);padding:2px 0">
+        ${feitas.map(f => `<div style="font-size:14px;color:var(--dim);padding:2px 0">
           ${ico(f.ic)} ${esc(f.n)} — <span style="color:${f.nivel==='otimo'?'var(--green)':f.nivel==='ruim'?'var(--red2)':'var(--dim2)'}">${esc(f.fala)}</span>
         </div>`).join('')}
       </div>` : ''}
-      ${fama ? `<div style="font-size:12px;color:var(--dim2);margin:8px 0 4px;padding:8px 11px;
+      ${fama ? `<div style="font-size:14px;color:var(--dim2);margin:8px 0 4px;padding:8px 11px;
          border-radius:var(--r-sm);background:var(--s1)">${ico('chave')} ${esc(fama)}</div>` : ''}
       <span class="lbl" style="display:block;margin:14px 0 7px">O que fazer com esta sessão</span>
       ${Engine.TREINOS.map(x => `<button class="dil" onclick="Game.fazerTreino('${x.k}')">
         <b>${ico(x.ic)} ${esc(x.n)}</b><span>${esc(x.d)}</span></button>`).join('')}
-      <p class="mut" style="font-size:12px;margin:10px 0 0">
+      <p class="mut" style="font-size:14px;margin:10px 0 0">
         Nem toda sessão rende. E o que o engenheiro conclui não é necessariamente o que aconteceu.
       </p>
     </div>
@@ -12712,7 +12740,7 @@ UI.treinoResultado = function(r, acabou){
         <span class="lbl" style="display:block;margin-bottom:5px;color:${cor}">O engenheiro</span>
         <div style="font-size:13.5px;line-height:1.55">— ${esc(r.fala)}</div>
       </div>
-      <p class="mut" style="font-size:12px;margin:0">
+      <p class="mut" style="font-size:14px;margin:0">
         Você vai saber no sábado se ele tinha razão.
       </p>
     </div>
@@ -12734,14 +12762,14 @@ UI.qualiModal = function(){
   UI.modal(UI.head(fmt.n, `${esc(trk.gp)} · ${esc(trk.circ)} · ${sea.year}`, false) +
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">${esc(fmt.d)}</div>
-      <div style="font-size:12.5px;color:var(--dim);margin:10px 0 4px">${ico('nuvem')} ${esc(prev.texto)}</div>
-      ${mem && mem.visitas ? `<div style="font-size:11.5px;color:var(--dim2);margin-bottom:8px">
+      <div style="font-size:14px;color:var(--dim);margin:10px 0 4px">${ico('nuvem')} ${esc(prev.texto)}</div>
+      ${mem && mem.visitas ? `<div style="font-size:13px;color:var(--dim2);margin-bottom:8px">
         ${ico('papel')} Você já correu aqui ${mem.visitas === 1 ? 'uma vez' : mem.visitas + ' vezes'}.</div>` : ''}
       ${janelas.length ? `
         <span class="lbl" style="display:block;margin:14px 0 7px">Quando entrar na pista</span>
         ${janelas.map(j => `<button class="dil" onclick="Game.fazerQuali('${j.k}')">
           <b>${esc(j.n)}</b><span>${esc(j.d)}</span></button>`).join('')}
-        <p class="mut" style="font-size:12px;margin:10px 0 0">
+        <p class="mut" style="font-size:14px;margin:10px 0 0">
           A pista melhora com borracha, e piora com tráfego, bandeira e tempo que vira.
           Ninguém sabe de antemão qual das três pesa mais hoje.
         </p>`
@@ -12771,7 +12799,7 @@ UI.qualiResultado = function(q){
          padding:5px 9px;border-radius:var(--r-sm);margin-bottom:3px;
          background:${x.me ? 'color-mix(in srgb,var(--gold) 14%,transparent)' : 'var(--panel2)'};
          border-left:4px solid ${x.me ? 'var(--accent)' : 'transparent'}">
-        <span style="font-size:11px;color:var(--dim2);min-width:20px">${i+1}</span>
+        <span style="font-size:13px;color:var(--dim2);min-width:20px">${i+1}</span>
         <span class="flag">${flag(x.cc)}</span>
         <span style="flex:1;min-width:0;font-size:13px;font-weight:${x.me?900:700};
               white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</span>
@@ -12816,7 +12844,7 @@ UI.setupModal = function(){
          padding:11px 13px;margin-bottom:10px;background:var(--panel2)">
       <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:5px">
         <b style="font-size:13.5px">${esc(Engine.SETOR_NOME[b.i])}</b>
-        <span style="font-size:11px;color:var(--dim2)">${esc(Engine.NOTA_EIXO[b.ax])}</span>
+        <span style="font-size:13px;color:var(--dim2)">${esc(Engine.NOTA_EIXO[b.ax])}</span>
         <span class="sp"></span>
         <span class="pill" style="color:${e.c};border-color:${e.c}55">${e.r}</span>
       </div>
@@ -12825,7 +12853,7 @@ UI.setupModal = function(){
           ? '— Aqui eu não tenho nada. A sexta não deu tempo.'
           : '— ' + esc(b.fala) + '.'}
       </div>
-      <div style="font-size:11.5px;color:var(--dim2);margin-bottom:8px">
+      <div style="font-size:13px;color:var(--dim2);margin-bottom:8px">
         ${b.estado === 'vazio' ? esc(e.d)
           : 'Na conta dele, ' + PESO_TXT(b.peso) + ', ' + TAM_TXT(b.need) + '. ' + esc(e.d)}
         ${sabido ? `<span style="color:var(--gold)"> · você já correu aqui: este trecho sempre foi ${esc(Engine.NOTA_EIXO[b.ax])}.</span>` : ''}
@@ -12853,20 +12881,20 @@ UI.setupModal = function(){
       <div style="display:flex;align-items:baseline;gap:8px;margin:16px 0 8px">
         <span class="lbl">O que o engenheiro trouxe</span>
         <span class="sp"></span>
-        <span style="font-size:11px;color:${restam ? 'var(--gold)' : 'var(--red2)'};font-weight:800">
+        <span style="font-size:13px;color:${restam ? 'var(--gold)' : 'var(--red2)'};font-weight:800">
           ${restam ? restam + (restam === 1 ? ' ataque restante' : ' ataques restantes') : 'sem tempo de pista'}</span>
       </div>
       ${bol.map(setorHtml).join('')}
-      ${bol.every(x => x.estado === 'vazio' || x.peso < .55) ? `<div style="font-size:12px;color:var(--dim2);
+      ${bol.every(x => x.estado === 'vazio' || x.peso < .55) ? `<div style="font-size:14px;color:var(--dim2);
            margin:-2px 0 12px;padding:8px 11px;border-radius:var(--r-sm);background:var(--s1)">
            ${ico('faisca')} — Sinceramente? O carro já nasceu perto do ponto nesta pista. Não vejo muito a ganhar
            mexendo, e vejo bastante a perder.</div>` : ''}
 
-      ${Engine.engFama() ? `<div style="font-size:12px;color:var(--dim2);margin:-2px 0 10px;padding:8px 11px;
+      ${Engine.engFama() ? `<div style="font-size:14px;color:var(--dim2);margin:-2px 0 10px;padding:8px 11px;
            border-radius:var(--r-sm);background:var(--s1)">
            ${ico('chave')} O histórico dele com você: ${esc(Engine.engFama())}</div>` : ''}
 
-      ${mem && mem.visitas ? `<div style="font-size:12px;color:var(--dim2);margin:-2px 0 14px;padding:8px 11px;
+      ${mem && mem.visitas ? `<div style="font-size:14px;color:var(--dim2);margin:-2px 0 14px;padding:8px 11px;
            border-radius:var(--r-sm);background:var(--s1)">
            ${ico('papel')} Você já correu aqui ${mem.visitas === 1 ? 'uma vez' : mem.visitas + ' vezes'}${
              mem.anos && mem.anos.length ? ' (' + mem.anos.slice(-3).join(', ') + ')' : ''}.
@@ -12883,7 +12911,7 @@ UI.setupModal = function(){
         ${Engine.MOTOR_ROT.map((v, i) => `<button class="yr-b ${st.motor === i ? 'sel' : ''}"
             onclick="Game.setMotor(${i})">${esc(v)}</button>`).join('')}
       </div>
-      <p class="mut" style="font-size:12px;margin:0 0 12px">
+      <p class="mut" style="font-size:14px;margin:0 0 12px">
         Mais motor é mais ritmo e mais chance de o fim de semana acabar no muro de boxes.
       </p>
 
@@ -12928,10 +12956,10 @@ UI.raceResult = function(r){
       ${r.setup ? `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
            background:var(--s2);border-left:3px solid ${r.setup.erro<=1?'var(--green)':r.setup.erro<=3?'var(--gold)':'var(--red2)'};margin-bottom:14px">
            <span class="lbl" style="display:block;margin-bottom:4px">Acerto${r.setup.auto?' (automático)':''}</span>
-           <div style="font-size:12.5px;color:var(--dim);margin-bottom:5px">
+           <div style="font-size:14px;color:var(--dim);margin-bottom:5px">
              ${esc(Engine.ASA_ROT[r.setup.asa])} · ${esc(Engine.SUSP_ROT[r.setup.susp])} · motor ${esc((Engine.MOTOR_ROT[r.setup.motor]||'').toLowerCase())}</div>
            <div style="font-size:13px;font-weight:700">${esc(Engine.setupNota(r))}</div>
-           ${r.setup.rev ? `<div style="margin-top:9px;border-top:2px solid var(--bg);padding-top:8px">
+           ${r.setup.rev ? `<div style="margin-top:9px;border-top:2px solid var(--s1);padding-top:8px">
              <span class="lbl" style="display:block;margin-bottom:5px">O que o dado real mostrou</span>
              ${r.setup.rev.map(v => {
                const eixo = Engine.NOTA_EIXO[v.ax];
@@ -12949,7 +12977,7 @@ UI.raceResult = function(r){
                const peso = v.share >= .42 ? 'Era o trecho que decidia a volta.'
                  : v.share >= .28 ? 'Contava, mas não era tudo.'
                  : 'No fim, era o trecho que menos importava.';
-               return `<div style="font-size:12px;color:var(--dim);padding:4px 0;border-bottom:2px solid
+               return `<div style="font-size:14px;color:var(--dim);padding:4px 0;border-bottom:2px solid
                     color-mix(in srgb,var(--line) 45%,transparent)">
                     <b style="color:var(--dim2)">${esc(Engine.SETOR_NOME[v.i])}</b> ·
                     ${esc(eixo)} — ${esc(dito)} ${esc(fez)} ${esc(peso)}</div>`;
@@ -14471,7 +14499,7 @@ UI.seasonEndModal = function(sum, growth){
     const v = growth[k];
     const c = v > .4 ? 'var(--green)' : v < -.4 ? 'var(--red2)' : 'var(--dim)';
     const s = (v>0?'+':'') + v.toFixed(1);
-    return `<span style="color:${c};font-weight:900;font-size:12px">${s}</span>`;
+    return `<span style="color:${c};font-weight:900;font-size:14px">${s}</span>`;
   };
   S.lastSum = sum;
   const titleTxt = sum.champion
@@ -14519,7 +14547,7 @@ UI.seasonEndModal = function(sum, growth){
           <span class="lbl" style="display:block;margin-bottom:5px">Academia</span>
           <div style="font-size:13.5px;font-weight:700;color:var(--red2)">
             ${ico('formatura')} A ${esc(S.academyDropped)} encerrou seu contrato de formação.</div>
-          <div style="font-size:12.5px;color:var(--dim);margin-top:4px">
+          <div style="font-size:14px;color:var(--dim);margin-top:4px">
             Dois anos sem entregar. A partir de agora você segue sem o apoio do programa.</div>
         </div>` : ''}
       ${UI.goalVerdict()}
@@ -14540,7 +14568,7 @@ UI.goalVerdict = function(){
       <span class="lbl" style="display:block;margin-bottom:6px">Objetivo do cenário</span>
       <div style="font-size:15px;font-weight:900;color:${cor}">
         ${st.done ? (ico('certo')+' CUMPRIDO') : (ico('errado')+' NÃO DESTA VEZ')} — ${esc(S.goal.txt)}</div>
-      <div style="font-size:12.5px;color:var(--dim);margin-top:5px;line-height:1.5">
+      <div style="font-size:14px;color:var(--dim);margin-top:5px;line-height:1.5">
         ${st.done ? 'A história foi reescrita. Daqui em diante a carreira segue normalmente — e o resto é seu.'
                   : 'O roteiro original resistiu. A carreira continua, e ainda há muitos anos pela frente.'}
       </div>
@@ -14562,7 +14590,7 @@ UI.reviewBox = function(){
       background:var(--s2);border-left:3px solid ${cor}">
       <span class="lbl" style="display:block;margin-bottom:6px">Avaliação da equipe</span>
       <div style="font-size:13.5px;font-weight:700;color:${cor}">${txt}</div>
-      <div style="font-size:12.5px;color:var(--dim);margin-top:5px;line-height:1.5">
+      <div style="font-size:14px;color:var(--dim);margin-top:5px;line-height:1.5">
         ${rv.rank ? `Você tinha o ${ord(rv.rank)} melhor carro do grid — a expectativa era terminar por volta de ${ord(rv.expected)}.` : ''}
         ${rv.h2h!==undefined ? ` No confronto direto com o companheiro, você levou a melhor em ${h2h}% das corridas.` : ''}
       </div>
@@ -14627,7 +14655,7 @@ UI.financas = function(){
         ${b.salario ? UI.linhaCaixa('Salário — ' + esc(S.team ? S.team.name : ''), b.salario) : ''}
         ${b.patros ? UI.linhaCaixa('Patrocínios', b.patros) : ''}
         ${familia ? UI.linhaCaixa('Apoio da família', familia) : ''}
-        <div style="border-top:2px solid var(--bg);margin-top:6px;padding-top:6px">
+        <div style="border-top:2px solid var(--s1);margin-top:6px;padding-top:6px">
           ${UI.linhaCaixa('Resultado do ano', b.liquido + familia)}
         </div>
       </div>
@@ -14637,7 +14665,7 @@ UI.financas = function(){
         <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:var(--s2);
              border-radius:var(--r-sm);margin-bottom:6px">
           <span style="flex:1;font-size:13.5px;font-weight:700">${esc(p.n)}</span>
-          <span style="font-size:11.5px;color:var(--dim2)">${p.anos} ${p.anos===1?'ano':'anos'}</span>
+          <span style="font-size:13px;color:var(--dim2)">${p.anos} ${p.anos===1?'ano':'anos'}</span>
           <b style="font-size:13px;color:var(--green)">${fmtD(p.valor)}</b>
         </div>`).join('') : '<div class="empty" style="padding:10px">Nenhum patrocinador ainda. Apareça na pista.</div>'}
       ${ofertas.length ? `<span class="lbl" style="display:block;margin:12px 0 6px">Propostas na mesa</span>` +
@@ -14705,7 +14733,7 @@ UI.rotaModal = function(rotas, ofertas){
       </div>
       ${ofertas && ofertas.length ? `<span class="lbl" style="display:block;margin-bottom:6px">O que estava na mesa</span>
         <div style="background:var(--s2);border-radius:var(--r-sm);padding:9px 12px;margin-bottom:14px">
-          ${ofertas.slice(0,3).map(o=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0">
+          ${ofertas.slice(0,3).map(o=>`<div style="display:flex;justify-content:space-between;font-size:14px;padding:3px 0">
             <span style="color:var(--dim)">${esc(o.cat)}${o.team?' · '+esc(o.team.name):''}</span>
             <b style="color:var(--red2)">${fmtD(o.paga)}</b></div>`).join('')}
         </div>` : ''}
@@ -14735,7 +14763,7 @@ UI.empresarios = function(){
   const lista = empresariosDe(S.year, S.driver.fame, S.driver.ovr);
   const fora = EMPRESARIOS.filter(e => S.year >= e.de && S.year <= e.ate && lista.indexOf(e) < 0);
   const barrinha = (rot, v) => `
-    <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+    <div style="display:flex;align-items:center;gap:6px;font-size:13px">
       <span style="color:var(--dim2);min-width:56px">${rot}</span>
       <span class="bar" style="flex:1;height:5px"><i style="width:${v*10}%"></i></span>
       <b style="min-width:14px;text-align:right">${v}</b></div>`;
@@ -14748,11 +14776,11 @@ UI.empresarios = function(){
         <span class="oc">${Math.round(e.taxa*100)}% do que você ganha</span>
       </div>
       <div class="od">${esc(e.ds)}</div>
-      <div style="font-size:11px;color:var(--dim2);margin:5px 0 6px">Já cuidou de: ${esc(e.not)}</div>
+      <div style="font-size:13px;color:var(--dim2);margin:5px 0 6px">Já cuidou de: ${esc(e.not)}</div>
       <div style="display:grid;gap:3px">
         ${barrinha('Mercado', e.mercado)}${barrinha('Dinheiro', e.dinheiro)}${barrinha('Portas', e.porta)}
       </div>
-      ${!podeContratar && (e.exige.fama || e.exige.ovr) ? `<div style="font-size:11px;color:var(--red2);
+      ${!podeContratar && (e.exige.fama || e.exige.ovr) ? `<div style="font-size:13px;color:var(--red2);
          font-weight:800;margin-top:6px">Só assina com ${e.exige.fama?'fama '+e.exige.fama:''}${
          e.exige.fama&&e.exige.ovr?' e ':''}${e.exige.ovr?'geral '+e.exige.ovr:''}</div>` : ''}
     </div>`;
@@ -14764,7 +14792,7 @@ UI.empresarios = function(){
              <span class="flag" style="font-size:20px">${flag(meu.cc)}</span>
              <div style="flex:1">
                <div style="font-size:15px;font-weight:900">${esc(meu.n)}</div>
-               <div style="font-size:11.5px;color:var(--dim)">com você desde ${S.empresario.desde} · fica com ${Math.round(meu.taxa*100)}%</div>
+               <div style="font-size:13px;color:var(--dim)">com você desde ${S.empresario.desde} · fica com ${Math.round(meu.taxa*100)}%</div>
              </div>
              <button class="btn btn-sm btn-ghost" onclick="Game.demitirEmpresario()">Dispensar</button>
            </div>
@@ -14791,7 +14819,7 @@ UI.eventoModal = function(ev){
   UI.modal(UI.head(ev.t, `${ico(ev.ic)} ${S.year} · ${esc(S.season ? S.season.cat : '')}`, false) +
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">${esc(ev.d)}</div>
-      ${ev.ops[0] && (ev.ops[0].otimo || ev.ops[0].bom) ? `<p class="mut" style="font-size:12px;margin:0 0 10px">
+      ${ev.ops[0] && (ev.ops[0].otimo || ev.ops[0].bom) ? `<p class="mut" style="font-size:14px;margin:0 0 10px">
         Nenhuma destas escolhas tem resultado garantido.</p>` : ''}
       ${ev.ops.map((o,i)=>`<button class="dil" onclick="Game.escolherEvento(${i})">
         <b>${esc(o.t)}</b><span>${esc(o.d || Engine.tomLabel(o.tom) || '')}</span></button>`).join('')}
@@ -14808,7 +14836,7 @@ UI.promessasModal = function(notas){
       ${notas.map(x => `<div style="padding:11px 13px;border-radius:var(--r-sm);background:var(--panel2);
          background:var(--s2);border-left:3px solid ${x.ok ? 'var(--green)' : 'var(--red2)'};
          margin-bottom:10px;font-size:13px">${esc(x.t)}</div>`).join('')}
-      <div style="font-size:12px;color:var(--dim2)">
+      <div style="font-size:14px;color:var(--dim2)">
         Fica anotado quem te contou. Na próxima vez que essa fonte falar, você vai lembrar.
       </div>
     </div>
@@ -14824,14 +14852,14 @@ UI.eventoResultado = function(ev, op, texto, nivel, notas){
             : nivel === 'morno' ? 'Ficou no meio do caminho' : 'Deu errado';
   UI.modal(UI.head(ev.t, (ev.ic ? ico(ev.ic) + ' ' : '') + S.year, false) +
     `<div class="mbd">
-      <div style="font-size:12px;color:var(--dim2);margin-bottom:9px">Você escolheu: ${esc(op.t)}</div>
+      <div style="font-size:14px;color:var(--dim2);margin-bottom:9px">Você escolheu: ${esc(op.t)}</div>
       <div style="padding:12px 14px;border-radius:var(--r-sm);background:var(--panel2);
            background:var(--s2);border-left:3px solid ${cor};margin-bottom:12px">
         <span class="lbl" style="display:block;margin-bottom:5px;color:${cor}">${cap}</span>
         <div style="font-size:13.5px;line-height:1.6">${esc(texto)}</div>
       </div>
-      ${(notas && notas.length) ? `<div style="font-size:12px;color:var(--dim)">${esc(notas.join(' · '))}</div>` : ''}
-      <p class="mut" style="font-size:12px;margin:12px 0 0">
+      ${(notas && notas.length) ? `<div style="font-size:14px;color:var(--dim)">${esc(notas.join(' · '))}</div>` : ''}
+      <p class="mut" style="font-size:14px;margin:12px 0 0">
         Ninguém te disse a chance disso. Nem antes, nem agora.
       </p>
     </div>
@@ -14845,7 +14873,7 @@ UI.sementeModal = function(sem){
   UI._sem = sem;
   UI.modal(UI.head(def.t, `${ico(def.ic)} vem de ${sem.plantada} · ${S.year}`, false) +
     `<div class="mbd">
-      <div style="font-size:11.5px;color:var(--gold);font-weight:800;margin-bottom:7px">
+      <div style="font-size:13px;color:var(--gold);font-weight:800;margin-bottom:7px">
         ${ico('ampulheta')} ISSO COMEÇOU EM ${sem.plantada}</div>
       <div class="res-nar" style="margin-top:0">${esc(def.d)}</div>
       ${def.ops.map((o, i) => `<button class="dil" onclick="Game.escolherSemente(${i})">
@@ -14877,7 +14905,7 @@ UI.paralelaModal = function(){
           <span>${esc(c.d)} ${c.provas === 1 ? 'Uma prova.' : c.provas + ' provas.'}
           Você chega cru: quanto menos conhece a categoria, mais difícil.</span></button>`;
       }).join('')}
-      <p class="mut" style="font-size:12px;margin:8px 0 0">
+      <p class="mut" style="font-size:14px;margin:8px 0 0">
         Correr fora rende fama, dinheiro e adaptação naquela categoria — e cobra em cansaço
         no resto da temporada, com risco de acidente num carro que você não conhece.
       </p>
@@ -14903,7 +14931,7 @@ UI.paralelaResultado = function(r){
         : r.pos <= 3 ? 'Pódio fora de casa. O paddock inteiro reparou.'
         : r.pos <= 10 ? 'Chegou inteiro e aprendeu muito. É o que dava para pedir.'
         : 'Foi difícil do começo ao fim. A categoria cobrou o que você não sabia.')}</div>
-      <div style="font-size:12px;color:var(--dim2)">
+      <div style="font-size:14px;color:var(--dim2)">
         Você volta com mais estrada naquela categoria — e com o corpo mais cansado do que estava.
       </div>
     </div>
@@ -14946,7 +14974,7 @@ UI.ladoModal = function(forcado){
       <div class="res-nar" style="margin-top:0">${esc(org.d)}</div>
       <span class="lbl" style="display:block;margin:14px 0 7px">Onde você vai correr</span>
       ${opc('cart')}${opc('irl')}
-      <p class="mut" style="font-size:12px;margin:10px 0 0">
+      <p class="mut" style="font-size:14px;margin:10px 0 0">
         Dá para trocar de lado no mercado de fim de temporada. As 500 Milhas são da IRL —
         de fora, elas só aparecem como inscrição isolada.
       </p>
@@ -14972,14 +15000,14 @@ UI.playoffModal = function(){
          margin-bottom:4px;border-left:4px solid ${cor};
          background:${eu ? 'color-mix(in srgb,var(--gold) 15%,transparent)' : 'var(--panel2)'};
          opacity:${estado === 'fora' ? .5 : 1}">
-      <span style="font-size:10px;color:var(--dim2);min-width:18px">#${sd.seed || '—'}</span>
-      <span class="flag" style="font-size:11px">${flag(sd.cc)}</span>
-      <span style="flex:1;min-width:0;font-size:11.5px;font-weight:${eu?900:600};
+      <span style="font-size:13px;color:var(--dim2);min-width:18px">#${sd.seed || '—'}</span>
+      <span class="flag" style="font-size:13px">${flag(sd.cc)}</span>
+      <span style="flex:1;min-width:0;font-size:13px;font-weight:${eu?900:600};
             white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(Engine.sobrenome(sd.name||id))}</span>
-      ${estado === 'garantido' ? '<span style="font-size:9px;color:var(--green);font-weight:900">VENCEU</span>'
-        : estado === 'campeao' ? '<span style="font-size:9px;color:var(--gold);font-weight:900">CAMPEÃO</span>'
-        : estado === 'fora' ? '<span style="font-size:9px;color:var(--red2);font-weight:900">FORA</span>'
-        : `<b style="font-size:11px">${Engine.ptsDe(sea, id)}</b>`}
+      ${estado === 'garantido' ? '<span style="font-size:13px;color:var(--green);font-weight:900">VENCEU</span>'
+        : estado === 'campeao' ? '<span style="font-size:13px;color:var(--gold);font-weight:900">CAMPEÃO</span>'
+        : estado === 'fora' ? '<span style="font-size:13px;color:var(--red2);font-weight:900">FORA</span>'
+        : `<b style="font-size:13px">${Engine.ptsDe(sea, id)}</b>`}
     </div>`;
   };
 
@@ -15001,7 +15029,7 @@ UI.playoffModal = function(){
            color:${f.atual ? 'var(--gold)' : 'var(--dim2)'};margin-bottom:6px;
            padding-bottom:4px;border-bottom:3px solid ${f.atual ? 'var(--accent)' : 'var(--s3)'}">
         ${esc(f.n)}
-        <span style="display:block;font-size:9px;font-weight:600;letter-spacing:0;text-transform:none;
+        <span style="display:block;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;
               color:var(--dim2)">${f.provas} ${f.provas === 1 ? 'prova' : 'provas'} · ficam ${f.sobram}</span>
       </div>
       ${f.membros.map(id => chip(id,
@@ -15014,7 +15042,7 @@ UI.playoffModal = function(){
     `<div class="mbd">
       <div class="res-nar" style="margin-top:0">${esc(p.desc)}</div>
       ${p.rodadas ? `
-        <div style="font-size:12px;color:var(--dim2);margin:12px 0 8px">
+        <div style="font-size:14px;color:var(--dim2);margin:12px 0 8px">
           ${ico('bandeira')} Vencer uma corrida dentro da rodada garante a vaga na rodada seguinte,
           independentemente de pontos. Quem não vence, entra por pontuação.
         </div>
@@ -15029,7 +15057,7 @@ UI.playoffModal = function(){
          border-left:4px solid var(--accent);background:color-mix(in srgb,var(--gold) 10%,transparent)">
          <span class="lbl" style="display:block;color:var(--gold)">Campeão da temporada</span>
          <b style="font-size:15px">${esc(seed(p.campeao).name || '')}</b>
-         <div style="font-size:12px;color:var(--dim);margin-top:3px">${esc(
+         <div style="font-size:14px;color:var(--dim);margin-top:3px">${esc(
            p.rodadas ? 'Melhor colocado entre os quatro finalistas na última corrida do ano.'
                      : 'Somou mais pontos nas corridas decisivas.')}</div>
        </div>` : ''}
@@ -15058,7 +15086,7 @@ UI.pessoas = function(){
     const obj = (OBJETIVOS[p.papel] || {})[p.obj];
     const conv = Engine.conversasDe(p);
     const mems = (p.mem || []).slice(0, 2);
-    const linha = (k) => `<div style="font-size:12px;color:var(--dim);padding:2px 0">
+    const linha = (k) => `<div style="font-size:14px;color:var(--dim);padding:2px 0">
         <span style="color:var(--dim2)">${Engine.DIM_NOME[k]}</span> — ${esc(Engine.dimTxt(k, p.rel[k]))}</div>`;
     return `<div style="background:var(--s2);border-radius:var(--r-sm);padding:12px 13px;
          margin-bottom:11px;background:var(--panel2)">
@@ -15066,35 +15094,35 @@ UI.pessoas = function(){
         <span class="flag" style="font-size:18px">${flag(p.cc)}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:900">${esc(p.n)}</div>
-          <div style="font-size:11px;color:var(--dim2)">${esc(PAPEL_NOME[p.papel] || p.papel)}${
+          <div style="font-size:13px;color:var(--dim2)">${esc(PAPEL_NOME[p.papel] || p.papel)}${
             p.time ? ' · ' + esc(p.time) : ''} · desde ${p.desde}</div>
         </div>
         <span class="pill">${ico(per.ic)} ${esc(per.n)}</span>
       </div>
-      <div style="font-size:12px;color:var(--dim);margin-bottom:7px;font-style:italic">${esc(per.d)}</div>
+      <div style="font-size:14px;color:var(--dim);margin-bottom:7px;font-style:italic">${esc(per.d)}</div>
       ${linha('conf')}${linha('resp')}${linha('afeto')}
       ${p.rel.tens >= 22 ? linha('tens') : ''}
       ${p.papel === 'jornalista' ? `<div style="margin-top:8px;padding-top:7px;
-           border-top:2px solid var(--bg)">
+           border-top:2px solid var(--s1)">
         <span class="lbl" style="display:block;margin-bottom:3px">Como ele escreve sobre você</span>
-        <div style="font-size:12px;color:var(--dim)">${esc(Engine.opiniaoJornal(p))}${
+        <div style="font-size:14px;color:var(--dim)">${esc(Engine.opiniaoJornal(p))}${
           p.ds ? ' · ' + esc(p.ds) : ''}</div>
       </div>` : ''}
-      <div style="margin-top:8px;padding-top:7px;border-top:2px solid var(--bg)">
+      <div style="margin-top:8px;padding-top:7px;border-top:2px solid var(--s1)">
         <span class="lbl" style="display:block;margin-bottom:3px">${p.papel === 'jornalista' ? 'O que ele procura' : 'O que ele quer'}</span>
-        <div style="font-size:12px;color:${p.objSabido ? 'var(--gold)' : 'var(--dim2)'}">${
+        <div style="font-size:14px;color:${p.objSabido ? 'var(--gold)' : 'var(--dim2)'}">${
           p.objSabido && obj ? esc(obj.t) + ' — ' + esc(obj.d)
                              : 'Você ainda não sabe. Descobre conversando, ou tarde demais.'}</div>
       </div>
-      ${p.marcas && p.marcas.odeia ? `<div style="font-size:11.5px;color:var(--red2);margin-top:6px">
+      ${p.marcas && p.marcas.odeia ? `<div style="font-size:13px;color:var(--red2);margin-top:6px">
          ${ico('alerta')} Você já viu: ${esc(TOM_TXT[p.marcas.odeia] || p.marcas.odeia)} não funciona com ele.</div>` : ''}
-      ${p.marcas && p.marcas.gosta ? `<div style="font-size:11.5px;color:var(--green);margin-top:4px">
+      ${p.marcas && p.marcas.gosta ? `<div style="font-size:13px;color:var(--green);margin-top:4px">
          ${ico('certo')} Você já viu: ${esc(TOM_TXT[p.marcas.gosta] || p.marcas.gosta)} funciona com ele.</div>` : ''}
-      ${p.duelos ? `<div style="font-size:11.5px;color:var(--dim);margin-top:6px">
+      ${p.duelos ? `<div style="font-size:13px;color:var(--dim);margin-top:6px">
          ${ico('duelo')} duelos: ${p.duelos.v || 0} seus, ${p.duelos.p || 0} dele</div>` : ''}
       ${mems.length ? `<div style="margin-top:7px">
          <span class="lbl" style="display:block;margin-bottom:3px">Ele lembra</span>
-         ${mems.map(m => `<div style="font-size:11.5px;color:${m.p < 0 ? 'var(--red2)' : 'var(--dim)'}">
+         ${mems.map(m => `<div style="font-size:13px;color:${m.p < 0 ? 'var(--red2)' : 'var(--dim)'}">
             ${m.a} · ${esc(m.t)}</div>`).join('')}</div>` : ''}
       <div style="margin-top:9px">
         ${conv.length ? `<button class="btn btn-sm btn-gold" onclick="UI.conversa('${p.id}')">
@@ -15142,7 +15170,7 @@ UI.resultadoFala = function(p, c, op, res, nivel){
         <span class="lbl" style="display:block;margin-bottom:4px;color:${cor}">${cap}</span>
         <div style="font-size:13.5px;line-height:1.55">${esc(res.t)}</div>
       </div>
-      <div style="font-size:12px;color:var(--dim2)">
+      <div style="font-size:14px;color:var(--dim2)">
         Você falou ${esc(Engine.tomLabel(op.tom))}.
         ${p.marcas && p.marcas.odeia === op.tom ? 'Anotado: com ele, isso não funciona.'
         : p.marcas && p.marcas.gosta === op.tom ? 'Anotado: com ele, isso funciona.'
@@ -15184,7 +15212,7 @@ UI.falar = function(pid, cid){
       <div class="res-nar" style="margin-top:0">${esc(abre)}</div>
       ${c.ops.map((o, i) => `<button class="dil" onclick="Game.escolherFala(${i})">
         <b>${esc(o.t)}</b><span>${esc(Engine.tomLabel(o.tom))}</span></button>`).join('')}
-      <p class="mut" style="font-size:12px;margin:10px 0 0">
+      <p class="mut" style="font-size:14px;margin:10px 0 0">
         Não existe resposta certa. Existe resposta certa para esta pessoa.
       </p>
     </div>`);
@@ -15227,7 +15255,7 @@ UI.patroModal = function(){
         (S.money.patros||[]).map(p=>`<div style="display:flex;gap:9px;padding:6px 11px;background:var(--s2);
           border-radius:var(--r-sm);margin-bottom:5px;font-size:13px">
           <span style="flex:1;font-weight:700">${esc(p.n)}</span>
-          <span style="color:var(--dim2);font-size:11.5px">${p.anos} ${p.anos===1?'ano':'anos'}</span>
+          <span style="color:var(--dim2);font-size:13px">${p.anos} ${p.anos===1?'ano':'anos'}</span>
           <b style="color:var(--green)">${fmtD(p.valor)}</b></div>`).join('') : ''}
     </div>
     <div class="mft"><span class="sp"></span>
@@ -15238,15 +15266,15 @@ UI.patroModal = function(){
 UI.lendasLinha = function(x, tab){
   const medalha = x.pos === 1 ? 'var(--gold)' : x.pos <= 3 ? 'var(--gold)' : x.pos <= 10 ? 'var(--dim)' : 'var(--dim2)';
   return `<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;
-       border-bottom:2px solid var(--bg);
+       border-bottom:2px solid var(--s1);
        ${x.eu ? 'background:color-mix(in srgb,var(--gold) 14%,transparent)' : ''}">
-    <span style="width:26px;text-align:center;font-weight:900;font-size:12.5px;color:${medalha}">${x.pos}</span>
+    <span style="width:26px;text-align:center;font-weight:900;font-size:14px;color:${medalha}">${x.pos}</span>
     <span class="flag" style="font-size:15px">${flag(x.cc)}</span>
     <span style="flex:1;min-width:0;font-size:13.5px;${x.eu?'font-weight:900':''};
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.nome)}${x.eu?' — você':''}</span>
     <span class="posbox ${x.t>=3?'p1':x.t>=1?'p2':''}" style="min-width:26px">${x.t}</span>
-    <span style="min-width:34px;text-align:right;font-size:12.5px;color:var(--dim)">${x.v}</span>
-    <span style="min-width:44px;text-align:right;font-weight:900;font-size:12.5px">${x.p}</span>
+    <span style="min-width:34px;text-align:right;font-size:14px;color:var(--dim)">${x.v}</span>
+    <span style="min-width:44px;text-align:right;font-weight:900;font-size:14px">${x.p}</span>
   </div>`;
 };
 
@@ -15282,10 +15310,10 @@ UI.lendas = function(sk, rec){
       </div>
       <div style="background:var(--s2);border-radius:var(--r-sm);overflow:hidden">
         ${topo.map(x=>UI.lendasLinha(x, r.tab)).join('')}
-        ${perto.length ? `<div style="padding:5px 11px;font-size:11px;color:var(--dim2);
+        ${perto.length ? `<div style="padding:5px 11px;font-size:13px;color:var(--dim2);
              background:var(--panel2);text-align:center">· · ·</div>` + perto.map(x=>UI.lendasLinha(x, r.tab)).join('') : ''}
       </div>
-      <p class="mut" style="font-size:12.5px;margin:12px 0 0">
+      <p class="mut" style="font-size:14px;margin:12px 0 0">
         A conta é a mesma para todo mundo: cada ${esc(r.tab.colT.toLowerCase().replace(/s$/,''))}
         vale 100 pontos e cada vitória vale 8. Os números dos pilotos reais são os de carreira.
       </p>
@@ -15326,7 +15354,7 @@ UI.careerEnd = function(rec, reason){
       ${rec.base && (rec.base.gps || rec.jrTitles) ? `<div style="padding:10px 13px;border-radius:var(--r-sm);
          background:var(--panel2);background:var(--s2);margin-bottom:14px">
          <span class="lbl" style="display:block;margin-bottom:5px">Antes disso, nas categorias de acesso</span>
-         <div style="font-size:12.5px;color:var(--dim)">
+         <div style="font-size:14px;color:var(--dim)">
            ${rec.base.gps} provas · ${rec.base.wins} vitórias · ${rec.base.podiums} pódios ·
            ${rec.base.poles} poles${rec.jrTitles ? ' · ' + rec.jrTitles + (rec.jrTitles===1?' título':' títulos') : ''}
          </div></div>` : ''}
@@ -15339,7 +15367,7 @@ UI.careerEnd = function(rec, reason){
             <span class="lbl" style="display:block;margin-bottom:5px">Entre os maiores da ${esc(r.tab.rot)}</span>
             <div style="font-size:15px;font-weight:900;margin-bottom:6px">
               ${ord(r.pos)} de ${r.total} na história</div>
-            <div style="font-size:12.5px;color:var(--dim);line-height:1.6">
+            <div style="font-size:14px;color:var(--dim);line-height:1.6">
               ${acima ? `logo acima: ${esc(acima.nome)} (${acima.t}·${acima.v})<br>` : 'ninguém à sua frente.<br>'}
               ${abaixo ? `logo abaixo: ${esc(abaixo.nome)} (${abaixo.t}·${abaixo.v})` : 'e ninguém atrás.'}
             </div>
@@ -15378,11 +15406,11 @@ UI.archiveSeason = function(i, fromModal){
         <span class="lbl" style="display:block;margin-bottom:7px">Classificação final do campeonato</span>
         <div style="background:var(--s2);border-radius:var(--r-sm);overflow:hidden">
           ${a.standings.map((d,k)=>`
-            <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;border-bottom:2px solid var(--bg);${d.me?'background:color-mix(in srgb,var(--gold) 12%,transparent);font-weight:800':''}">
-              <span style="width:20px;text-align:center;font-weight:900;font-size:12px;color:${k<3?'var(--gold)':'var(--dim2)'}">${k+1}</span>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;border-bottom:2px solid var(--s1);${d.me?'background:color-mix(in srgb,var(--gold) 12%,transparent);font-weight:800':''}">
+              <span style="width:20px;text-align:center;font-weight:900;font-size:14px;color:${k<3?'var(--gold)':'var(--dim2)'}">${k+1}</span>
               <span class="flag" style="font-size:15px">${flag(d.cc)}</span>
               <span style="flex:1;font-size:13.5px">${esc(d.n)}</span>
-              <span style="font-size:11.5px;color:var(--dim)"><span class="stripe" style="background:${d.tc}"></span>${esc(d.t)}</span>
+              <span style="font-size:13px;color:var(--dim)"><span class="stripe" style="background:${d.tc}"></span>${esc(d.t)}</span>
               <span style="font-weight:900;font-size:13px;min-width:34px;text-align:right">${d.p}</span>
             </div>`).join('')}
         </div>
@@ -15425,12 +15453,12 @@ UI.hall = function(){
         <div class="oh">
           <span style="font-weight:900;color:var(--gold);width:22px">${i+1}</span>
           <span class="flag" style="font-size:18px">${flag(r.cc)}</span>
-          <span class="on">${esc(r.name)} <span style="font-size:11px;color:var(--dim);font-weight:700">#${r.num}</span></span>
+          <span class="on">${esc(r.name)} <span style="font-size:13px;color:var(--dim);font-weight:700">#${r.num}</span></span>
           <span class="oc">${r.from}–${r.to}</span>
         </div>
         <div class="od">${r.titles} ${r.titles===1?'título':'títulos'} · ${r.wins} vitórias · ${r.podiums} pódios ·
           ${r.poles} poles · ${r.gps} provas · ${r.seasons} temporadas</div>
-        ${r.base && r.base.gps ? `<div style="font-size:11px;color:var(--dim2);margin-top:3px">
+        ${r.base && r.base.gps ? `<div style="font-size:13px;color:var(--dim2);margin-top:3px">
           na base: ${r.base.wins} vitórias em ${r.base.gps} provas${r.jrTitles?' · '+r.jrTitles+' títulos':''}</div>` : ''}
       </div>`).join('') : '<div class="empty">Nenhuma carreira encerrada ainda.</div>' }</div>
     <div class="mft">
@@ -15464,7 +15492,7 @@ UI.records = function(){
       ${(function(){
         const b = c.base || Engine.cartelVazio();
         const linha = (rot, a, d) => `<div style="display:flex;justify-content:space-between;gap:10px;
-             padding:5px 0;font-size:13px;border-bottom:2px solid var(--bg)">
+             padding:5px 0;font-size:13px;border-bottom:2px solid var(--s1)">
              <span style="color:var(--dim)">${rot}</span>
              <span><b style="min-width:34px;display:inline-block;text-align:right">${a}</b>
              <b style="min-width:44px;display:inline-block;text-align:right;color:var(--dim2)">${d}</b></span></div>`;
@@ -15534,56 +15562,67 @@ UI.toYear = 1994;
 UI.takeOver = function(){
   const sr = SERIES[UI.toSerie];
   if(UI.toYear < sr.from) UI.toYear = sr.from;
-  const era = eraOfSeries(UI.toYear, UI.toSerie);
+  UI.modal(UI.head('Assumir um piloto real', 'Escolha a categoria, o ano e o piloto. A carreira continua a partir dali.') +
+    `<div class="mbd">
+      <span class="lbl" style="display:block;margin-bottom:8px">Categoria</span>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+        ${SERIES_KEYS.map(k=>`<button class="yr-b ${k===UI.toSerie?'sel':''}" onclick="UI.toCategoria('${k}')">
+            ${ico(SERIES[k].ic)} ${esc(SERIES[k].short)}</button>`).join('')}
+      </div>
+      <span class="lbl" id="toEraT" style="display:block;margin-bottom:8px"></span>
+      <div class="to-ano">
+        <button class="btn btn-sm btn-ghost" onclick="UI.toAno(UI.toYear-1)" aria-label="Ano anterior">−</button>
+        <input type="range" id="toAno" min="${sr.from}" max="2026" step="1" value="${UI.toYear}" aria-label="Ano" oninput="UI.toAno(+this.value, true)">
+        <b id="toAnoV">${UI.toYear}</b>
+        <button class="btn btn-sm btn-ghost" onclick="UI.toAno(UI.toYear+1)" aria-label="Próximo ano">+</button>
+      </div>
+      <span class="lbl" id="toQtd" style="display:block;margin-bottom:8px"></span>
+      <div class="to-lista" id="toLista"></div>
+    </div>
+    <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`, true);
+  UI.toAno(UI.toYear);
+};
+UI.toCategoria = function(k){
+  UI.toSerie = k;
+  UI.toYear = Math.max(UI.toYear, SERIES[k].from);
+  UI.takeOver();
+};
+/* o ano muda só o número e a lista: o controle continua o mesmo enquanto é arrastado */
+UI.toAno = function(y, arrastando){
+  const sr = SERIES[UI.toSerie];
+  y = clamp(Math.round(y), sr.from, 2026);
+  UI.toYear = y;
+  const r = el('toAno');
+  if(r){ if(+r.value !== y) r.value = y; r.style.setProperty('--pct', ((y - r.min) / (r.max - r.min) * 100) + '%'); }
+  if(el('toAnoV')) el('toAnoV').textContent = y;
+  clearTimeout(UI._tv);
+  if(arrastando) UI._tv = setTimeout(UI.toListar, 90); else UI.toListar();
+};
+UI.toListar = function(){
+  const y = UI.toYear, sk = UI.toSerie;
+  const era = eraOfSeries(y, sk);
   /* só quem estava correndo naquele ano */
-  const ativos = era.pilots.filter(p => (!p[3] || UI.toYear >= p[3]) && (!p[4] || UI.toYear <= p[4]));
-  const escala = lineupOf(UI.toSerie, UI.toYear) || {};
+  const ativos = era.pilots.filter(p => (!p[3] || y >= p[3]) && (!p[4] || y <= p[4]));
+  const escala = lineupOf(sk, y) || {};
   const vistos = new Set();
   const pilots = (ativos.length ? ativos : era.pilots)
     .filter(p => vistos.has(p[0]) ? false : (vistos.add(p[0]), true))
-    .map(p => { p = p.slice(); p._hab = skillEm(UI.toSerie, p[0], UI.toYear, p[2]);
-                p._id = idadeEm(UI.toSerie, p[0], UI.toYear, p);
+    .map(p => { p = p.slice(); p._hab = skillEm(sk, p[0], y, p[2]);
+                p._id = idadeEm(sk, p[0], y, p);
                 p._eq = escala[p[0]] || ''; return p; })
     .sort((a,b)=>b._hab-a._hab);
   /* a lista fica guardada: o clique manda o índice, nunca o nome —
      nomes com apóstrofo ou acento quebravam o atributo do botão */
   UI._toList = pilots;
-  UI.modal(UI.head('Assumir um piloto real', 'Escolha a categoria, o ano e o piloto. A carreira continua a partir dali.') +
-    `<div class="mbd">
-      <span class="lbl" style="display:block;margin-bottom:7px">Categoria</span>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${SERIES_KEYS.map(k=>`<button class="yr-b ${k===UI.toSerie?'sel':''}"
-            onclick="UI.toSerie='${k}';UI.toYear=Math.max(UI.toYear,SERIES['${k}'].from);UI.takeOver()">
-            ${ico(SERIES[k].ic)} ${esc(SERIES[k].short)}</button>`).join('')}
-      </div>
-      <span class="lbl" style="display:block;margin-bottom:7px">Ano — ${era.name}, ${esc(era.tag)}</span>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-        <button class="btn btn-sm btn-ghost" onclick="UI.toYear=Math.max(SERIES[UI.toSerie].from,UI.toYear-1);UI.takeOver()">−</button>
-        <input type="range" min="${sr.from}" max="2026" value="${UI.toYear}"
-          style="flex:1;appearance:none;height:6px;border-radius:99px;padding:0;border:0"
-          oninput="UI.toYear=parseInt(this.value,10);clearTimeout(UI._tv);UI._tv=setTimeout(UI.takeOver,180)">
-        <b style="font-family:var(--fd);font-size:28px;min-width:62px;text-align:center;font-variant-numeric:tabular-nums">${UI.toYear}</b>
-        <button class="btn btn-sm btn-ghost" onclick="UI.toYear=Math.min(2026,UI.toYear+1);UI.takeOver()">+</button>
-      </div>
-      <span class="lbl" style="display:block;margin-bottom:7px">Piloto — ${pilots.length} no grid de ${UI.toYear}</span>
-      <div style="background:var(--s2);border-radius:var(--r-sm);overflow:hidden;max-height:330px;overflow-y:auto">
-        ${pilots.map((p,i)=>`
-          <button style="display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;text-align:left;
-                  border-bottom:2px solid var(--bg)"
-                  onmouseover="this.style.background='var(--panel2)'" onmouseout="this.style.background=''"
-                  onclick="UI.pickTakeOver(${i})">
-            <span class="flag" style="font-size:16px">${flag(p[1])}</span>
-            <span style="flex:1;min-width:0">
-              <span style="display:block;font-size:14px;font-weight:700">${esc(p[0])}</span>
-              <span style="display:block;font-size:11px;color:var(--dim2);font-weight:600;
-                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                ${p._id} anos${p._eq ? ' · ' + esc(p._eq) : ''}</span>
-            </span>
-            <span class="posbox ${p._hab>=93?'p1':p._hab>=88?'p2':''}" style="min-width:30px">${p._hab}</span>
-          </button>`).join('')}
-      </div>
-    </div>
-    <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`, true);
+  if(el('toEraT')) el('toEraT').textContent = `Ano: ${era.name}, ${era.tag}`;
+  if(el('toQtd')) el('toQtd').textContent = `Piloto: ${pilots.length} no grid de ${y}`;
+  if(!el('toLista')) return;
+  el('toLista').innerHTML = pilots.map((p,i)=>`
+    <button class="to-pil" onclick="UI.pickTakeOver(${i})">
+      <span class="flag">${flag(p[1])}</span>
+      <span class="tx"><b>${esc(p[0])}</b><span>${p._id} anos${p._eq ? ' · ' + esc(p._eq) : ''}</span></span>
+      <span class="posbox ${p._hab>=93?'p1':p._hab>=88?'p2':''}">${p._hab}</span>
+    </button>`).join('');
 };
 
 /* ═══ CONVITE DE ACADEMIA ═══ */
@@ -15645,7 +15684,7 @@ UI.seriesInfo = function(){
           </div>
         </div>`;
       }).join('')}
-      <p class="mut" style="font-size:12.5px;margin-bottom:0">
+      <p class="mut" style="font-size:14px;margin-bottom:0">
         O calendário da Fórmula 1 é o calendário real de cada ano, prova por prova, de 1950 em diante.
         Nas outras três, os circuitos, o número de etapas e o regulamento são os da época — o sorteio de
         cada temporada é fixo, então 1987 é sempre 1987.
@@ -18416,7 +18455,7 @@ const UIC = {
       if(!n.cat || esc0.indexOf(n.cat) < 0) n.cat = esc0[0];
       cat = `<div class="field" style="margin:16px 0 0"><span class="lbl">Categoria de estreia</span>
         <div class="ch-opts" style="margin-top:8px">${esc0.map(c => `<button class="ch-opt ${n.cat === c ? 'sel' : ''}" onclick="UIC.set('cat','${esc(c).replace(/'/g, "\\'")}')">${esc(c)}</button>`).join('')}</div>
-        <p class="mut" style="font-size:12.5px;margin:8px 0 0">Quanto mais baixo, mais barato — e mais longe da Fórmula 1.</p></div>`;
+        <p class="mut" style="font-size:14px;margin:8px 0 0">Quanto mais baixo, mais barato — e mais longe da Fórmula 1.</p></div>`;
     }
     const fin = Chefe.FIN[n.fin] || Chefe.FIN.investidor;
     const capital = n.modo === 'criar'
@@ -18428,7 +18467,7 @@ const UIC = {
     box.innerHTML = `
       <div class="row c3" style="margin-bottom:14px">
         <div class="field" style="margin:0"><span class="lbl">Nome da equipe</span>
-          <input type="text" id="chnNome" maxlength="22" placeholder="Ex.: Fernandes Racing" value="${esc(n.nome)}" oninput="UIC.n.nome=this.value" autocomplete="off"></div>
+          <input type="text" id="chnNome" maxlength="22" placeholder="Ex.: Fittipaldi Racing" value="${esc(n.nome)}" oninput="UIC.n.nome=this.value" autocomplete="off"></div>
         <div class="field" style="margin:0"><span class="lbl">País</span>
           <select id="chnPais" class="ch-sel" onchange="UIC.set('cc',this.value)">${COUNTRIES.map(c => `<option value="${c.cc}" ${c.cc === n.cc ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
       </div>
@@ -18642,7 +18681,7 @@ const UIC = {
       </div>
       <div class="act">
         <button class="btn btn-primary" onclick="UIC.comecar()" ${falta.length ? 'disabled' : ''}>Começar a temporada ${C.ano}</button>
-        ${falta.length ? `<span class="mut" style="font-size:12.5px">Falta: ${esc(falta.join(' e '))}</span>` : ''}
+        ${falta.length ? `<span class="mut" style="font-size:14px">Falta: ${esc(falta.join(' e '))}</span>` : ''}
         <span class="sp"></span>
         <button class="btn btn-ghost btn-sm" onclick="UIC.sair()">Sair</button>
       </div>`;
@@ -18663,8 +18702,8 @@ const UIC = {
     return `<div class="tbl-scroll"><table class="st"><thead><tr><th class="p">#</th><th>Piloto</th><th>Equipe</th><th class="pt">Pts</th></tr></thead><tbody>
       ${tab.map((x, i) => { const t = sea.teams.find(tt => tt.id === x.f.teamId) || {};
         return `<tr class="${x.f.teamId === 'EU' ? 'me' : 'clica'}" onclick="UIC.ficha(${i})"><td class="p">${i + 1}</td><td class="dn">${fg(x.f.cc)}${esc(x.f.name)}</td>
-          <td class="tm"><span class="stripe" style="background:${t.color}"></span>${esc(t.name || '')}</td><td class="pt">${x.pts}${x.brutos !== x.pts ? `<small style="display:block;font-size:10.5px;color:var(--dim2);font-weight:600">${x.brutos} no total</small>` : ''}</td></tr>`; }).join('')}
-    </tbody></table></div>${sea.pts.melhores ? `<p class="mut" style="font-size:12px;padding:8px 12px;margin:0">Em ${sea.ano} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato.</p>` : ''}`;
+          <td class="tm"><span class="stripe" style="background:${t.color}"></span>${esc(t.name || '')}</td><td class="pt">${x.pts}${x.brutos !== x.pts ? `<small style="display:block;font-size:13px;color:var(--dim2);font-weight:600">${x.brutos} no total</small>` : ''}</td></tr>`; }).join('')}
+    </tbody></table></div>${sea.pts.melhores ? `<p class="mut" style="font-size:14px;padding:8px 12px;margin:0">Em ${sea.ano} só os ${sea.pts.melhores} melhores resultados de cada piloto contam para o campeonato.</p>` : ''}`;
   },
   ficha(i){
     const sea = C.temporada; if(!sea) return;
@@ -18725,13 +18764,13 @@ const UIC = {
       const tv = Chefe.M1(t), g = C.temporada.gastoTeto;
       teto = `<span class="lbl" style="display:block;margin-top:18px">Teto de gastos</span>
         ${UIC.barra('Usado', Math.min(100, g / tv * 100), g > tv ? 'var(--red)' : 'var(--gold)')}
-        <p class="mut" style="font-size:12.5px;margin:4px 0 0">${fmtD(g)} de ${fmtD(tv)}. Salário de piloto e motor ficam fora da conta.</p>`;
+        <p class="mut" style="font-size:14px;margin:4px 0 0">${fmtD(g)} de ${fmtD(tv)}. Salário de piloto e motor ficam fora da conta.</p>`;
     }
     if(C.fase === 'inverno'){
       const pr = Chefe.projecao();
       const liv = {}; Object.keys(pr.r).forEach(k => liv[k] = pr.r[k]); Object.keys(pr.c).forEach(k => liv[k] = -pr.c[k]);
       return `<div class="pad"><span class="lbl">Previsão para ${C.ano}</span>${UIC.tabelaLivro(liv)}
-        <p class="mut" style="font-size:12.5px;margin:10px 0 0">O prêmio de construtores é estimado pelo resultado do ano passado. O resto sai dos contratos que existem hoje.</p></div>`;
+        <p class="mut" style="font-size:14px;margin:10px 0 0">O prêmio de construtores é estimado pelo resultado do ano passado. O resto sai dos contratos que existem hoje.</p></div>`;
     }
     return `<div class="pad"><span class="lbl">${C.ano} até aqui</span>${UIC.tabelaLivro(C.livro)}${teto}</div>`;
   },
@@ -18774,7 +18813,7 @@ const UIC = {
         <div class="ch-opts">${op('ordem', '', [['livre','Corrida livre'],['n1','Favorecer o nº 1']], d.ordem)}</div>
         ${d.ordem === 'n1' ? `<div class="ch-opts" style="margin-top:8px">${tit.map(p =>
           `<button class="ch-opt ${C.n1 === p.id ? 'sel' : ''}" onclick="UIC.dec('n1','','${p.id}')">Nº 1: ${esc(Engine.sobrenome(p.nome))}</button>`).join('')}</div>` : ''}
-        <p class="mut" style="font-size:12.5px;margin:14px 0 0">Atacar ganha posição e bate mais. Potência máxima quebra mais. A ordem de equipe só age quando o segundo piloto está logo à frente do primeiro — e ele não vai gostar.</p>
+        <p class="mut" style="font-size:14px;margin:14px 0 0">Atacar ganha posição e bate mais. Potência máxima quebra mais. A ordem de equipe só age quando o segundo piloto está logo à frente do primeiro — e ele não vai gostar.</p>
       </div>
       <div class="mft"><button class="btn btn-ghost" onclick="UI.close()">Voltar</button><span class="sp"></span>
         <button class="btn btn-primary" onclick="UIC.largar()">Largar</button></div>`);
@@ -18790,7 +18829,7 @@ const UIC = {
       <div class="ch-opts">${op('nao', 'Os titulares', !atual)}${carros.map(f => cands.map(p =>
         op(f.carro + ':' + p.id, esc(Engine.sobrenome(p.nome)) + ' no carro de ' + esc(Engine.sobrenome(f.name)),
            atual && atual.carro === f.carro && atual.pid === p.id)).join('')).join('')}</div>
-      <p class="mut" style="font-size:12px;margin:6px 0 0">Quem roda o treino ganha quilometragem e experiência. O titular que cede o carro chega ao sábado com menos acerto.</p>`;
+      <p class="mut" style="font-size:14px;margin:6px 0 0">Quem roda o treino ganha quilometragem e experiência. O titular que cede o carro chega ao sábado com menos acerto.</p>`;
   },
   dec(g, k, v){
     if(g === 'tl1'){ C.decisao.tl1 = v === 'nao' ? null : { carro: +v.split(':')[0], pid: v.split(':')[1] }; return UIC.preCorrida(); }
@@ -18880,7 +18919,7 @@ const UIC = {
         <div class="ch-opts" style="margin:8px 0 14px">${areas.map(a => `<button class="ch-opt ${UIC._pa === a ? 'sel' : ''}" onclick="UIC._pa='${a}';UIC.pacote()">${ico(Chefe.AREAS[a].ic)} ${Chefe.AREAS[a].n}</button>`).join('')}</div>
         <span class="lbl">Tamanho</span>
         <div class="ch-opts" style="margin:8px 0 14px">${[1, 2, 3].map(n => `<button class="ch-opt ${UIC._pn === n ? 'sel' : ''}" onclick="UIC._pn=${n};UIC.pacote()">${['','Ajuste','Pacote','Carro novo'][n]} · ${fmtD(Chefe.M(Chefe.PACOTE_CUSTO[n]))}</button>`).join('')}</div>
-        <p class="mut" style="font-size:12.5px;margin:0">O que funciona no túnel nem sempre funciona na pista. Um pacote pode render mais do que o prometido, pode não mudar nada — ou pode deixar o carro pior.${C.plano.futuro ? ' Parte da fábrica está no carro do ano que vem: isso pesa aqui.' : ''}</p>
+        <p class="mut" style="font-size:14px;margin:0">O que funciona no túnel nem sempre funciona na pista. Um pacote pode render mais do que o prometido, pode não mudar nada — ou pode deixar o carro pior.${C.plano.futuro ? ' Parte da fábrica está no carro do ano que vem: isso pesa aqui.' : ''}</p>
       </div>
       <div class="mft"><button class="btn btn-ghost" onclick="UI.close()">Agora não</button><span class="sp"></span>
         <button class="btn btn-gold" onclick="UIC.levarPacote()">Levar para a pista</button></div>`);
@@ -19164,7 +19203,7 @@ const UIC = {
         <span class="lbl">No mercado</span>
         ${ABAS.length > 1 ? `<div class="ch-opts" style="margin:8px 0 4px">${ABAS.filter(a => conta(a[0])).map(a =>
           `<button class="ch-opt ${aba === a[0] ? 'sel' : ''}" onclick="UIC.abaMerc='${a[0]}';UIC.mercado()">${a[1]} · ${conta(a[0])}</button>`).join('')}</div>` : ''}
-        <p class="mut" style="font-size:12.5px;margin:6px 0 10px">${f1 ? nota[aba] : 'Na base quase todo mundo paga para correr. O garoto rápido nem sempre é o que traz dinheiro.'}</p>
+        <p class="mut" style="font-size:14px;margin:6px 0 10px">${f1 ? nota[aba] : 'Na base quase todo mundo paga para correr. O garoto rápido nem sempre é o que traz dinheiro.'}</p>
         ${visiveis.map(([p, i]) => cand(p, i)).join('')}
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
@@ -19173,7 +19212,7 @@ const UIC = {
     const ops = Chefe.emprestimos();
     UI.modal(UI.head('Banco', 'Dinheiro agora, conta depois') +
       `<div class="mbd">${C.divida && C.divida.restam ? `<div class="res-nar" style="margin-top:0">Você já deve: faltam ${C.divida.restam} parcela(s) de ${fmtD(C.divida.parcela)}. O banco não empresta de novo antes de quitar.</div>`
-        : `<p class="mut" style="font-size:12.5px;margin:0 0 10px">Três parcelas anuais, juros de 9% ao ano. A primeira vence no começo da próxima temporada.${C.dir ? ' A diretoria não gosta de dívida.' : ''}</p>` +
+        : `<p class="mut" style="font-size:14px;margin:0 0 10px">Três parcelas anuais, juros de 9% ao ano. A primeira vence no começo da próxima temporada.${C.dir ? ' A diretoria não gosta de dívida.' : ''}</p>` +
         ops.map((o, i) => `<button class="offer" onclick="UIC.pegarEmprestimo(${i})"><div class="oh"><span class="on">${fmtD(o.valor)}</span><span class="oc">3 × ${fmtD(o.parcela)}</span></div>
           <div class="od">${esc(o.d)}</div></button>`).join('')}</div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);
@@ -19204,7 +19243,7 @@ const UIC = {
           <div><b>${p.olho.min}–${p.olho.max}</b><span>Leitura na F1</span></div>
           <div><b>${de && ate >= de ? ate - de + 1 : '—'}</b><span>Temporadas</span></div>
         </div>
-        <p class="mut" style="font-size:12.5px;margin:0">A conversão usa quem correu nas duas categorias na mesma época, pelo lado
+        <p class="mut" style="font-size:14px;margin:0">A conversão usa quem correu nas duas categorias na mesma época, pelo lado
           conservador: um piloto ${esc(daSerie)} vale uns ${-Chefe.ajusteSerie(sk, C.ano)} pontos a menos na Fórmula 1.</p>
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.mercado()">Voltar ao mercado</button></div>`;
@@ -19244,7 +19283,7 @@ const UIC = {
         <span class="lbl">Contrato</span>
         <div class="ch-opts" style="margin:8px 0 12px">${op('anos', 1, '1 ano')}${op('anos', 2, '2 anos')}${f1 ? op('anos', 3, '3 anos') : ''}</div>
         ${f1 && of.papel === 'titular' ? `<span class="lbl">Status</span><div class="ch-opts" style="margin:8px 0 0">${op('n1', false, 'Igual ao companheiro')}${op('n1', true, 'Piloto nº 1')}</div>` : ''}
-        <p class="mut" style="font-size:12.5px;margin:12px 0 0">Ninguém diz sim antes de ouvir a proposta. E um não, às vezes, vira manchete.</p>
+        <p class="mut" style="font-size:14px;margin:12px 0 0">Ninguém diz sim antes de ouvir a proposta. E um não, às vezes, vira manchete.</p>
       </div>
       <div class="mft"><button class="btn btn-ghost" onclick="UIC.mercado()">Voltar</button><span class="sp"></span>
         <button class="btn btn-primary" onclick="UIC.proposta()" ${(!vagaTit && of.papel === 'titular') || (temTeste && of.papel === 'teste') ? 'disabled' : ''}>Fazer a proposta</button></div>`);
@@ -19317,7 +19356,7 @@ const UIC = {
       `<div class="mbd">
         <span class="lbl">Duração do contrato</span>
         <div class="ch-opts" style="margin:8px 0 14px">${[1, 2, 3].map(a => `<button class="ch-opt ${UIC.mAnos === a ? 'sel' : ''}" onclick="UIC.mAnos=${a};UIC.motores()">${a} ano${a > 1 ? 's' : ''}</button>`).join('')}</div>
-        ${multa ? `<p class="mut" style="font-size:12.5px;margin:0 0 10px">Trocar agora custa ${fmtD(multa)} de rescisão com a ${esc(atual.nome)}.</p>` : ''}
+        ${multa ? `<p class="mut" style="font-size:14px;margin:0 0 10px">Trocar agora custa ${fmtD(multa)} de rescisão com a ${esc(atual.nome)}.</p>` : ''}
         ${lista.map(card).join('')}
         <button class="offer ${atual.proprio ? 'sel' : ''}" onclick="UIC.escolherMotor('__proprio')" ${atual.proprio ? 'disabled' : ''}>
           <div class="oh"><span class="on">Motor próprio</span><span class="oc">${fmtD(Chefe.custoMotorProprio())} / ano</span></div>
@@ -19354,7 +19393,7 @@ const UIC = {
     };
     UI.modal(UI.head('Desenvolvimento do carro', 'Para onde vai o dinheiro da fábrica em ' + C.ano) +
       `<div class="mbd">
-        <p class="mut" style="font-size:12.5px;margin:0 0 12px">O dinheiro define até onde cada área pode chegar; a engenharia e as instalações decidem quanto disso vira ritmo. Nada chega de uma vez, e quem para de gastar fica para trás devagar.${areas.indexOf('futuro') >= 0 ? ' Dinheiro no carro do ano que vem sai deste ano — e vale o dobro quando o regulamento mudar.' : ''}</p>
+        <p class="mut" style="font-size:14px;margin:0 0 12px">O dinheiro define até onde cada área pode chegar; a engenharia e as instalações decidem quanto disso vira ritmo. Nada chega de uma vez, e quem para de gastar fica para trás devagar.${areas.indexOf('futuro') >= 0 ? ' Dinheiro no carro do ano que vem sai deste ano — e vale o dobro quando o regulamento mudar.' : ''}</p>
         ${areas.map(linha).join('')}
         <div class="ch-linha" style="margin-top:12px"><span>Total: <b>${fmtD(Chefe.custoPlano())}</b></span>
           ${teto ? `<span>Teto de gastos de ${C.ano}: <b>${fmtD(Chefe.M1(teto))}</b></span>` : ''}</div>
@@ -19372,7 +19411,7 @@ const UIC = {
         ${s ? `<span class="oc">${Chefe.nivelStaff(s)}</span>` : ''}</div>
         <div class="od">${s ? `${fg(s.cc)} ${esc(s.nome)} · ${fmtD(s.sal)} por ano · ${s.venceu ? '<b style="color:var(--orange)">contrato acabou</b>' : 'até ' + s.ate}` : 'Vago'}</div>
         ${s && s.venceu ? `<div class="ch-opts" style="margin-top:8px"><button class="ch-opt" onclick="UIC.renovarStaff('${k}')">Renovar por ${fmtD(Chefe.salarioStaff(Chefe.nivelStaff(s)) * 1.1)}</button></div>` : ''}
-        <div class="od" style="margin-top:4px;font-size:12px">${esc(CH_FUNCOES[k].d)}</div></div>`;
+        <div class="od" style="margin-top:4px;font-size:14px">${esc(CH_FUNCOES[k].d)}</div></div>`;
     }).join('');
     const cand = (s, i) => `<div class="ch-card">
       <div class="oh"><span class="on">${fg(s.cc)} ${esc(s.nome)}</span><span class="oc">${esc(CH_FUNCOES[s.funcao].n)} · ${Chefe.nivelStaff(s)}</span></div>
@@ -19409,12 +19448,12 @@ const UIC = {
       return `<div class="ch-card"><div class="oh"><span class="on">${ico(info.ic)} ${esc(Chefe.nomeInstal(k))}</span>
         <span class="ch-pips">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= nv ? 'on' : obra && i <= obra.nivel ? 'obra' : ''}"></i>`).join('')}</span></div>
         <div class="od">${esc(info.d)}</div>
-        <div class="ch-opts" style="margin-top:8px">${!disp ? `<span class="mut" style="font-size:12.5px">Não existe antes de ${info.de}.</span>`
-          : prox > 5 ? '<span class="mut" style="font-size:12.5px">No máximo.</span>'
+        <div class="ch-opts" style="margin-top:8px">${!disp ? `<span class="mut" style="font-size:14px">Não existe antes de ${info.de}.</span>`
+          : prox > 5 ? '<span class="mut" style="font-size:14px">No máximo.</span>'
           : `<button class="ch-opt" ${C.caixa < custo ? 'disabled' : ''} onclick="UIC.construir('${k}')">Construir nível ${prox} · ${fmtD(custo)} · pronto em ${C.ano + 1}</button>`}</div></div>`;
     };
     UI.modal(UI.head('Instalações', 'Manutenção de ' + fmtD(Chefe.manutencao()) + ' por ano') +
-      `<div class="mbd"><p class="mut" style="font-size:12.5px;margin:0 0 12px">Obra leva um ano. O que você constrói agora aparece no carro do ano que vem — e a conta de manutenção sobe para sempre.</p>${ks.map(card).join('')}</div>
+      `<div class="mbd"><p class="mut" style="font-size:14px;margin:0 0 12px">Obra leva um ano. O que você constrói agora aparece no carro do ano que vem — e a conta de manutenção sobe para sempre.</p>${ks.map(card).join('')}</div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);
   },
   construir(k){ Chefe.construir(k); UIC.salvar(); UIC.render(); UIC.instalacoes(); },
@@ -19431,7 +19470,7 @@ const UIC = {
         ${s.negociado ? '' : `<button class="ch-opt" onclick="UIC.pedirPatro(${i})">Pedir mais</button>`}</div>` : ''}</div>`;
     UI.modal(UI.head('Patrocínio', `Principal ${nP}/${v.principal} · secundários ${nS}/${v.sec}`) +
       `<div class="mbd">
-        ${C.ano < 1968 ? '<p class="mut" style="font-size:12.5px;margin:0 0 10px">Até 1968 o regulamento não deixa pintar o carro com marca. Só fornecedores de combustível, pneu e peças pagam alguma coisa.</p>' : ''}
+        ${C.ano < 1968 ? '<p class="mut" style="font-size:14px;margin:0 0 10px">Até 1968 o regulamento não deixa pintar o carro com marca. Só fornecedores de combustível, pneu e peças pagam alguma coisa.</p>' : ''}
         <span class="lbl">Contratos</span><div style="margin:8px 0 16px">${C.patro.map((s, i) => card(s, i, false)).join('') || '<div class="empty">Nenhum.</div>'}</div>
         <span class="lbl">Propostas</span><div style="margin-top:8px">${C.inv.patro.map((s, i) => card(s, i, true)).join('') || '<div class="empty">Ninguém bateu na porta.</div>'}</div>
       </div>
@@ -19471,7 +19510,7 @@ const UIC = {
       `<div class="mbd">
         <span class="lbl">Investimento</span>
         <div class="ch-opts" style="margin:8px 0 6px">${['Nenhum','Básico','Forte','Referência'].map((n, i) => `<button class="ch-opt ${(C.acad || 0) === i ? 'sel' : ''}" onclick="UIC.acadNivel(${i})">${n}${i ? ' · ' + fmtD(Chefe.M1(1.5e6) * i) : ''}</button>`).join('')}</div>
-        <p class="mut" style="font-size:12.5px;margin:0 0 14px">Mais investimento abre vagas (3, 4, 6 ou 8 garotos), faz os garotos evoluírem mais rápido e deixa os olheiros mais certeiros.${f1 ? ' Os melhores da F2 e da F3 com até 21 anos também podem vir direto do mercado de pilotos.' : ''}</p>
+        <p class="mut" style="font-size:14px;margin:0 0 14px">Mais investimento abre vagas (3, 4, 6 ou 8 garotos), faz os garotos evoluírem mais rápido e deixa os olheiros mais certeiros.${f1 ? ' Os melhores da F2 e da F3 com até 21 anos também podem vir direto do mercado de pilotos.' : ''}</p>
         <span class="lbl">Na academia</span><div style="margin:8px 0 16px">${ac.concat(emp).map(card).join('') || '<div class="empty">Ninguém ainda.</div>'}</div>
         <span class="lbl">Observados pelos olheiros</span><div style="margin-top:8px">${C.inv.olheiros.map(olh).join('')}</div>
       </div>
@@ -19523,7 +19562,7 @@ const UIC = {
       `<div class="mbd">${C.inv.investidores.map((o, i) => `<button class="offer" onclick="UIC.investir(${i})">
         <div class="oh"><span class="on">${esc(o.nome)}</span><span class="oc">${o.pct}%</span></div>
         <div class="od">Entra com ${fmtD(o.valor)} em troca de ${o.pct}% da equipe.${C.part - o.pct < 50 && C.part >= 50 ? ' <b style="color:var(--orange)">Você perde a maioria.</b>' : ''}</div></button>`).join('') || '<div class="empty">Nenhuma proposta.</div>'}
-        <p class="mut" style="font-size:12.5px;margin:10px 0 0">Com menos de 50%, você passa a responder a um conselho — que pode te tirar do cargo.</p></div>
+        <p class="mut" style="font-size:14px;margin:10px 0 0">Com menos de 50%, você passa a responder a um conselho — que pode te tirar do cargo.</p></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);
   },
   investir(i){
@@ -19583,9 +19622,9 @@ UI.ofertasModal = function(){
       quebrar o contrato: ${multa ? 'a multa é de <b>' + fmtD(multa) + '</b>, ' : ''}a sua fama sofre e a ${esc(S.team.name)} não volta a te chamar tão cedo.</div>` : '';
   const mot = (S.mercadoMotivos || []);
   const motivosTxt = mot.length ? `<span class="lbl" style="display:block;margin:16px 0 8px">Quem não ligou</span>
-    ${mot.map(m => `<div style="display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:2px solid var(--bg)">
+    ${mot.map(m => `<div style="display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:2px solid var(--s1)">
       <span class="stripe" style="background:${m.c};height:16px;width:4px;margin-top:2px"></span>
-      <div style="font-size:12.5px"><b>${esc(m.n)}</b> <span style="color:var(--dim)">— ${esc(m.m)}</span></div></div>`).join('')}` : '';
+      <div style="font-size:14px"><b>${esc(m.n)}</b> <span style="color:var(--dim)">— ${esc(m.m)}</span></div></div>`).join('')}` : '';
   const canRetire = S.driver.age >= 30 || S.career.titles > 0;
   UI.modal(UI.head(`Mercado de ${S.year+1}`, 'Escolha onde você vai correr no ano que vem.', false) +
     `<div class="mbd">
@@ -19618,13 +19657,13 @@ UI.ofertasModal = function(){
           ${mudouCat ? `<div style="font-size:14px;font-weight:500;
                color:${sr?sr.color:'var(--gold)'};margin-top:6px">${esc(o.cat)}</div>` : ''}
           <div class="od">${esc(o.note)}${o.n1 ? ' <b style="color:var(--gold)">Primeiro piloto.</b>' : ''}</div>
-          ${(function(){ const it = Engine.interesseOferta(o); return it ? `<div style="margin-top:6px;font-size:11.5px;font-weight:800;color:${it[1]}">${it[0]}</div>` : ''; })()}
+          ${(function(){ const it = Engine.interesseOferta(o); return it ? `<div style="margin-top:6px;font-size:13px;font-weight:800;color:${it[1]}">${it[0]}</div>` : ''; })()}
           ${o.custo != null && o.custo > 0 ? `<div style="display:flex;align-items:center;gap:7px;margin-top:7px;
-               font-size:11.5px;font-weight:800">
+               font-size:13px;font-weight:800">
              <span style="color:${o.podeP===false?'var(--red2)':'var(--gold)'}">${ico('dinheiro')} ${fmtD(o.paga)} do seu bolso</span>
              ${o.apoio ? `<span style="color:var(--dim2);font-weight:600">a academia banca ${fmtD(o.apoio)}</span>` : ''}
              ${o.podeP===false ? `<span style="color:var(--red2);font-weight:600">— fora do orçamento</span>` : ''}
-           </div>` : (o.custo === 0 && Engine.ehRealista() ? `<div style="margin-top:7px;font-size:11.5px;
+           </div>` : (o.custo === 0 && Engine.ehRealista() ? `<div style="margin-top:7px;font-size:13px;
                font-weight:800;color:var(--green)">${ico('dinheiro')} aqui a equipe paga você</div>` : '')}
           ${(function(){
             /* Ninguém te entrega a força do carro do ano que vem em número
@@ -19643,18 +19682,18 @@ UI.ofertasModal = function(){
                          padrao:[(ico('papel')+' Contrato padrão'),'var(--dim2)','Provas avulsas de endurance liberadas.'],
                          livre:[(ico('aberto')+' Contrato livre'),'var(--green)','Você pode correr em paralelo onde quiser.'] };
             const c = CL[o.clausula || 'padrao'];
-            return `<div style="margin-top:6px;font-size:11px;font-weight:800;color:${c[1]}">
+            return `<div style="margin-top:6px;font-size:13px;font-weight:800;color:${c[1]}">
               ${c[0]} <span style="font-weight:600;color:var(--dim2)">— ${esc(c[2])}</span></div>`;
           })()}
           ${(o.promessas || []).length ? `<div style="margin-top:7px;padding-top:6px;
-               border-top:2px solid var(--bg)">
-            ${o.promessas.map(p => `<div style="font-size:11.5px;color:var(--dim);padding:2px 0">
+               border-top:2px solid var(--s1)">
+            ${o.promessas.map(p => `<div style="font-size:13px;color:var(--dim);padding:2px 0">
               <span style="color:var(--gold)">“</span>${esc(p.t)}<span style="color:var(--gold)">”</span>
               <span style="color:var(--dim2)"> — diz ${esc(Engine.FONTES[p.fonte].n)}${
                 Engine.histFonte(p.fonte) ? ', que ' + esc(Engine.histFonte(p.fonte)) : ''}</span>
             </div>`).join('')}
            </div>` : ''}
-        </button>${o.gap != null && !o.negociou ? `<div style="margin:-2px 0 10px;text-align:right"><button class="btn btn-ghost btn-sm" onclick="Game.negociarOferta(${i})">Negociar com a ${esc(o.team.name)}</button></div>` : o.negociou ? '<div style="margin:-2px 0 10px;text-align:right;font-size:11.5px;color:var(--dim2)">Já negociado</div>' : ''}`;
+        </button>${o.gap != null && !o.negociou ? `<div style="margin:-2px 0 10px;text-align:right"><button class="btn btn-ghost btn-sm" onclick="Game.negociarOferta(${i})">Negociar com a ${esc(o.team.name)}</button></div>` : o.negociou ? '<div style="margin:-2px 0 10px;text-align:right;font-size:13px;color:var(--dim2)">Já negociado</div>' : ''}`;
       }).join('')}
       ${motivosTxt}
       ${canRetire ? `<button class="dil" style="margin-top:6px" onclick="Game.endCareer('escolha')">
@@ -19721,7 +19760,7 @@ const Abertura = {
 
   cenarios(){
     const lista = SCENARIOS.slice().sort((a, b) => a.year - b.year);
-    el('abCenarios').innerHTML = lista.map((s, i) => `<button class="ini-cen" data-rv style="--d:${i % 3}" onclick="UI.startScenario('${s.id}')" title="${esc(s.sub || '')}">
+    el('abCenarios').innerHTML = lista.map((s, i) => `<button class="ini-cen" data-rv style="--d:${i % 3}" onclick="Game.startScenario('${s.id}')" title="${esc(s.sub || '')}">
       <em>${s.year}</em><b>${esc(s.title)}</b><span>${esc(s.tag)}</span><span class="seta" aria-hidden="true">→</span></button>`).join('');
   },
   mais(){

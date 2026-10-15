@@ -21,9 +21,9 @@ arquivo, lendas, recordes e como funciona.
 
 As cores são as da primeira versão — preto carbono, vermelho para agir,
 dourado para vitória e título — com cantos redondos, botões em pílula e
-títulos condensados em maiúsculas. As animações seguem a preferência do
-sistema (movimento reduzido desliga tudo) e podem ser ligadas ou desligadas no
-botão ao lado do tema; a escolha fica guardada no aparelho.
+títulos condensados em maiúsculas. As animações vêm ligadas; quem preferir
+desliga no botão ao lado do tema (ou no rodapé), e a escolha fica guardada no
+aparelho.
 
 ## O que tem dentro
 

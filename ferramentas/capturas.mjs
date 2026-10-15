@@ -17,7 +17,7 @@ const CENAS = {
   ficha: `Abertura.ano = 1988; Abertura.comecar();`,
   hub: `S = null; UI.eraSel = ERAS.reduce((k,e,i)=>e.y<=2024?i:k,0); UI.year = 2024; UI.serie = 'f1'; UI.country = 'BR';
         UI.style = 'equilibrado'; UI.modo = 'classico'; UI.origem = 'media';
-        el('inName').value = 'Fernandes'; el('inNum').value = '7'; el('inAge').value = '29'; el('chkFast').checked = true;
+        el('inName').value = 'Senna'; el('inNum').value = '7'; el('inAge').value = '29'; el('chkFast').checked = true;
         Game.start(); UI.limparFila(); UI.close();
         for(let k = 0; k < 6; k++){ const r = Engine.runRace(S.season); Game.tally ? Game.tally(r) : 0; }
         UI.render(); UI.close();`,
@@ -29,7 +29,7 @@ const CENAS = {
   corrida: `Central.t = Central.P.t * .42; Central.alternar(); Central.painel();`,
   bandeirada: `Central.alternar(); Central.t = Central.P.t; Central.alternar();`,
   resultadoTempos: `Central.pular();`,
-  chefe: `Chefe.novo({ modo:'assumir', ano:2024, idx: eraOfSeries(2024,'f1').teams.findIndex((t,i)=>{ const r = Engine.resolveTeam(t,i,2024,'f1'); return r && r.name === 'Alpine'; }), chefe:{ nome:'Valdir', cc:'BR' } });
+  chefe: `Chefe.novo({ modo:'assumir', ano:2024, idx: eraOfSeries(2024,'f1').teams.findIndex((t,i)=>{ const r = Engine.resolveTeam(t,i,2024,'f1'); return r && r.name === 'Alpine'; }), chefe:{ nome:'Toto Wolff', cc:'AT' } });
           UI.show('chefe'); UIC.render(); UI.close();`,
   chefeLargada: `UI.close(); if(C.fase !== 'temporada') Chefe.comecarTemporada(); const rec = Chefe.correr(); UIC.render();
                  UI.centralCorrida(rec, () => { UIC.salvar(); UIC.resultado(rec); }, { chefe: true });`,

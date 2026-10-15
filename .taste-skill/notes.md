@@ -93,3 +93,5 @@ no Windows.
 Primeiro quadro (1440x900 sem rolar): nome, Iniciar carreira / Chefe de equipe, 7 logos (cada uma abre a ficha naquela
 categoria), 3 cartões com foto (Piloto, Chefe, Cenário). Embaixo: 8 décadas com foto, cenários, mais caminhos, rodapé.
 Inspector (movimento emulado): 0 FAIL, 0 WARN. Lint: 0 FAIL (avisos: travessões do texto do jogo).
+
+Correções (2026-10-15): animações ligadas por padrão (pedido do dono; botão para desligar); modo cenário chamava UI.startScenario (o certo é Game.startScenario); a barra de ano do "assumir piloto" redesenhava a janela no meio do arraste; exemplos com pilotos reais; tamanhos de fonte < 13px dos estilos do JS subiram para 13-14px; botões do modo chefe arredondados.
