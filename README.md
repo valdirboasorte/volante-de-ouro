@@ -1,7 +1,29 @@
 # 🏁 Volante de Ouro
 
 Um simulador de carreira no automobilismo que roda inteiro em um arquivo HTML.
-Sem servidor, sem build, sem dependência: abrir o `index.html` já é o jogo.
+Sem servidor, sem build, sem dependência: abra o `index.html` com a pasta
+`assets` ao lado, onde ficam as fotografias.
+
+A interface usa fotografias reais de corridas, nenhuma gerada por IA. Autor,
+licença e página de cada uma estão em `assets/credits.json`, no fim deste
+arquivo e nos créditos dentro do jogo.
+
+## A tela de abertura
+
+Uma tela só, sem rolar. A temporada escolhida vira a frase da tela —
+*Fórmula 1 em 1988* — com uma foto daquela época no lugar de uma palavra. Atrás,
+o Grande Prêmio de Singapura à noite; na frente, um console de vidro com o ano,
+o número de corridas e o calendário, o campeonato e o lado do muro (piloto ou
+chefe de equipe). Abaixo da frase, uma fita de épocas (o filme do primeiro
+Grand Prix, 1968, 1990, 2004 e 2024) leva direto a cada uma. O resto fica
+atrás das abas do console: o grid real do ano, uma prévia da primeira corrida
+contada pelo motor, a escada do kart ao topo, os cenários históricos e os
+outros caminhos (assumir um piloto real, arquivo, lendas, recordes).
+
+O jogo inteiro usa o mesmo vidro sobre a mesma noite, desfocada. No tema claro,
+o fundo é Zandvoort de dia. As animações seguem a preferência do sistema
+(movimento reduzido desliga tudo) e podem ser ligadas ou desligadas na aba
+**Mais**; a escolha fica guardada no aparelho.
 
 Você começa no kart, sobe pelas categorias de base e briga por um lugar no grid
 da **Fórmula 1**, **IndyCar**, **NASCAR**, **Endurance**, **Stock Car**, **DTM**
@@ -406,7 +428,7 @@ o `index.html` na raiz é detectado sozinho.
 
 ```
 index.html      o jogo inteiro — HTML, CSS, dados e motor de simulação
-assets/         fotos de arquivo e o filme de 1906 da abertura, com credits.json
+assets/         as fotografias, o filme de 1906 e credits.json; assets/tira tem as miniaturas
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
 testes/         verificações que rodam no Node, sem navegador (não vão para o site)
@@ -469,14 +491,23 @@ com a cópia da licença em `ferramentas/terceiros/f1c`. A escala é ajustada ao
 comprimento oficial e o sentido de corrida foi conferido. Circuito ou ano sem
 traçado confiável corre num traçado esquemático, e o jogo diz por quê.
 
-**Fotos e filme da abertura** (`assets/credits.json` tem título, autor,
-licença e página de cada um):
+**Fotos e filme** (`assets/credits.json` tem título, autor, licença e página
+de cada um; `assets/tira` guarda miniaturas das mesmas fotos):
 
+- Grande Prêmio de Singapura, 2012 (fundo) — chensiyuan, CC BY-SA 4.0, via Wikimedia Commons
+- Carlos Sainz em Zandvoort, 2024 (fundo do tema claro) — Steffen Prößdorf, CC BY-SA 4.0, via Wikimedia Commons
+- Michael Schumacher em Silverstone, 2004 — Martin Lee, CC BY-SA 2.0, via Wikimedia Commons
+- Alain Prost em Phoenix, 1990 — Stuart Seeger, CC BY 2.0, via Wikimedia Commons
+- Le Mans, 2011 — Alessandro Prada, CC BY-SA 2.0, via Wikimedia Commons
 - Jackie Stewart na chuva, Zandvoort 1968 — Joost Evers / Anefo, CC0, via Wikimedia Commons
-- Jackie Stewart, Zandvoort 1968 — Joost Evers / Anefo, CC0, via Wikimedia Commons
-- O circuito de Zandvoort, 1962 — Joop van Bilsen / Anefo, CC0, via Wikimedia Commons
 - Jack Brabham no treino de Zandvoort, 1966 — Eric Koch / Anefo, CC0, via Wikimedia Commons
+- O circuito de Zandvoort, 1962 — Joop van Bilsen / Anefo, CC0, via Wikimedia Commons
 - Grande Prêmio da França de 1906 — Shell Video Library, domínio público, via Wikimedia Commons
+
+As fotos mostram o mundo real das corridas e não indicam apoio de pilotos,
+equipes ou fotógrafos ao jogo.
+
+**Tipografia:** Archivo, de Omnibus-Type, licença SIL Open Font.
 
 ## Modo realista — como o dinheiro funciona
 

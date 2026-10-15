@@ -44,3 +44,39 @@ e o botão "Começar em 1988" já leva para a ficha com esse ano e essa categori
 - Paleta: proporções da ficha (preto + tinta clara + um acento); o acento vem do assunto: o dourado do nome, no lugar do carmim.
   O carmim fica para o que a cronometragem pinta de vermelho (abandono, bandeira vermelha).
 - Tipo: Albert Sans 400/500/600 (Google Fonts); fallback system-ui.
+
+## Redesign 2 — tela única de vidro (2026-10-15)
+
+Pedido: abertura moderna em vidro, cheia de animação, no espírito da floria-landing-page; uma tela só, sem rolar,
+com tudo à vista e botões para as outras opções (como a versão publicada); logo antiga (bandeira quadriculada);
+o site inteiro no mesmo sistema; não parecer feito por IA.
+
+Direção: sentence-as-layout, seed 1441220769 (sheet em direction.json).
+- Paleta: a ficha deu "navy on white", que contradiz o pedido escuro. Mantidas as proporções (um fundo, uma tinta,
+  um destaque), cores tiradas do assunto: o preto da corrida noturna e o dourado da logo antiga.
+- Tipo: General Sans sem algarismos tabulares (medido: "1" 122px x "0" 233px em 10 dígitos) — a cronometragem precisa.
+  Redraw 1: Newsreader (serifa de livro, contra o pedido moderno). Redraw 2: Libre Franklin (sem tabulares).
+  Escolhida à mão: Archivo, uma família só, larga (wdth ~112-125) no título como grafismo de corrida, normal no texto.
+- Vidro e pílulas: proibidos pelas regras da casa, usados porque o usuário pediu explicitamente. --allow no inspector.
+
+Inventário: o nome (volante de ouro, o dourado); a bandeira quadriculada 4x4 da logo; 1950–2026; sete campeonatos;
+o muro dos boxes (piloto ou chefe); grids reais por ano (Senna e Prost na McLaren em 1988); a escada do kart ao topo;
+os cenários (Fittipaldi 1976, Hamilton 2021); a cronometragem; o save que fica no aparelho.
+
+Ideia: a temporada escolhida vira a frase da tela — "Fórmula 1 [foto da época] em 1988" — e a foto dentro da frase é
+uma janela para o ano: troca com a época e o campeonato. Corrida noturna ao fundo, painéis de vidro como os monitores
+do muro dos boxes.
+Peça viva: ano, campeonato e lado do muro mudam a frase, a foto da época, o número de corridas, o grid real, a prévia,
+a escada.
+
+Copy: título dinâmico (2 linhas); apoio = frase() existente; ação "Começar em 1988" / "Assumir uma equipe em 1988";
+painel: Ano, número de corridas com o calendário, Campeonato, Lado do muro; abas Grid, Prévia, Escada, Cenários, Mais.
+
+Verificação (2026-10-15): inspector com movimento emulado (.taste-skill/inspect-motion.mjs, escrito pela outra sessão;
+o Windows daqui informa movimento reduzido) — 0 FAIL. Avisos defendidos: vidro, borda de 1px do vidro e pílula do topo
+(pedidos do dono); título sobre a foto (a página não rola; véu neutro sob o texto); "primeira ação" no tablet aparece
+só no meio da animação de entrada. Lint: 0 FAIL (bordas do vidro marcadas).
+Fotos novas: Singapura 2012 (chensiyuan, CC BY-SA 4.0), Le Mans 2011 (Alessandro Prada, CC BY-SA 2.0), Schumacher 2004
+(Martin Lee, CC BY-SA 2.0); Sainz 2024 e Prost 1990 copiadas de assets/editorial (outra sessão), com crédito.
+Crítica: a abertura lê "temporada + foto da época" em 1 segundo; o console carrega o resto sem rolagem. Falta: o vão
+no pé da aba Ano no tablet em pé; a lista do console corta a última linha (rola por dentro).
