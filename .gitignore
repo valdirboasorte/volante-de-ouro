@@ -14,3 +14,7 @@ desktop.ini
 .idea/
 *.swp
 .claude/
+
+# Capturas das ferramentas de design
+.taste-skill/inspect/
+.taste-skill/telas/
