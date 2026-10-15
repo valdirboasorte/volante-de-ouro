@@ -10,24 +10,20 @@ arquivo e nos créditos dentro do jogo.
 
 ## A tela de abertura
 
-Uma tela só, sem rolar. A temporada escolhida vira a frase da tela —
-*Fórmula 1 em 1988* — com uma foto daquela época no lugar de uma palavra. Atrás,
-o Grande Prêmio de Singapura à noite; na frente, um console de vidro com o ano,
-o número de corridas e o calendário, o campeonato e o lado do muro (piloto ou
-chefe de equipe). Abaixo da frase, uma fita de épocas (o filme do primeiro
-Grand Prix, 1968, 1990, 2004 e 2024) leva direto a cada uma. O resto fica
-atrás das abas do console: o grid real do ano, uma prévia da primeira corrida
-contada pelo motor, a escada do kart ao topo, os cenários históricos e os
-outros caminhos (assumir um piloto real, arquivo, lendas, recordes).
+O primeiro quadro tem tudo para começar: o nome, **Iniciar carreira** e
+**Chefe de equipe**, as logos das sete categorias (cada uma abre a ficha já
+naquela categoria) e três cartões com foto — **Piloto**, **Chefe de equipe** e
+**Modo cenário**. Embaixo, as oito décadas, cada uma com uma foto real daquela
+época (Ascari em 1953, Stewart em 1968, Lauda em 1975, Senna em 1985, Prost em
+1990, Schumacher em 2004, Hamilton em 2016, Verstappen em 2023), os cenários
+históricos e os outros caminhos: assumir um piloto real, as sete carreiras,
+arquivo, lendas, recordes e como funciona.
 
-O jogo inteiro usa o mesmo vidro sobre a mesma noite, desfocada. No tema claro,
-o fundo é Zandvoort de dia. As animações seguem a preferência do sistema
-(movimento reduzido desliga tudo) e podem ser ligadas ou desligadas na aba
-**Mais**; a escolha fica guardada no aparelho.
-
-Você começa no kart, sobe pelas categorias de base e briga por um lugar no grid
-da **Fórmula 1**, **IndyCar**, **NASCAR**, **Endurance**, **Stock Car**, **DTM**
-ou **Fórmula E** — em qualquer ano entre 1950 e 2026.
+As cores são as da primeira versão — preto carbono, vermelho para agir,
+dourado para vitória e título — com cantos redondos, botões em pílula e
+títulos condensados em maiúsculas. As animações seguem a preferência do
+sistema (movimento reduzido desliga tudo) e podem ser ligadas ou desligadas no
+botão ao lado do tema; a escolha fica guardada no aparelho.
 
 ## O que tem dentro
 
@@ -428,7 +424,7 @@ o `index.html` na raiz é detectado sozinho.
 
 ```
 index.html      o jogo inteiro — HTML, CSS, dados e motor de simulação
-assets/         as fotografias, o filme de 1906 e credits.json; assets/tira tem as miniaturas
+assets/         fotografias, filme de 1906, logos das categorias e credits.json
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
 testes/         verificações que rodam no Node, sem navegador (não vão para o site)
@@ -492,20 +488,28 @@ comprimento oficial e o sentido de corrida foi conferido. Circuito ou ano sem
 traçado confiável corre num traçado esquemático, e o jogo diz por quê.
 
 **Fotos e filme** (`assets/credits.json` tem título, autor, licença e página
-de cada um; `assets/tira` guarda miniaturas das mesmas fotos):
+de cada um; `assets/eras` e `assets/cartoes` guardam versões reduzidas):
 
-- Grande Prêmio de Singapura, 2012 (fundo) — chensiyuan, CC BY-SA 4.0, via Wikimedia Commons
-- Carlos Sainz em Zandvoort, 2024 (fundo do tema claro) — Steffen Prößdorf, CC BY-SA 4.0, via Wikimedia Commons
-- Michael Schumacher em Silverstone, 2004 — Martin Lee, CC BY-SA 2.0, via Wikimedia Commons
-- Alain Prost em Phoenix, 1990 — Stuart Seeger, CC BY 2.0, via Wikimedia Commons
-- Le Mans, 2011 — Alessandro Prada, CC BY-SA 2.0, via Wikimedia Commons
+- Carlos Sainz em Zandvoort, 2024 (foto do alto) — Steffen Prößdorf, CC BY-SA 4.0, via Wikimedia Commons
+- Alberto Ascari em Zandvoort, 1953 — Harry Pot / Anefo, CC0, via Wikimedia Commons
 - Jackie Stewart na chuva, Zandvoort 1968 — Joost Evers / Anefo, CC0, via Wikimedia Commons
-- Jack Brabham no treino de Zandvoort, 1966 — Eric Koch / Anefo, CC0, via Wikimedia Commons
-- O circuito de Zandvoort, 1962 — Joop van Bilsen / Anefo, CC0, via Wikimedia Commons
-- Grande Prêmio da França de 1906 — Shell Video Library, domínio público, via Wikimedia Commons
+- Niki Lauda e Jean-Pierre Jarier em Zandvoort, 1975 — Rob Croes / Anefo, CC0, via Wikimedia Commons
+- Ayrton Senna no Lotus 97T, 1985 — Dima Moroz, CC BY 2.0, via Wikimedia Commons
+- Alain Prost em Phoenix, 1990 — Stuart Seeger, CC BY 2.0, via Wikimedia Commons
+- Michael Schumacher em Silverstone, 2004 — Martin Lee, CC BY-SA 2.0, via Wikimedia Commons
+- Lewis Hamilton em Silverstone, 2016 — Andrew e Alan Frost, CC BY 2.0, via Wikimedia Commons
+- Max Verstappen no Red Bull Ring, 2023 — Lukas Raich, CC BY-SA 4.0, via Wikimedia Commons
+- Capacete no cockpit — Carl Gelin, licença Unsplash
+- Pit stop da Emil Frey Racing — Paul Krüger, licença Unsplash
+- Grande Prêmio da França de 1906 (filme) — Shell Video Library, domínio público, via Wikimedia Commons
 
 As fotos mostram o mundo real das corridas e não indicam apoio de pilotos,
 equipes ou fotógrafos ao jogo.
+
+**Logos das categorias** (`assets/logos`): Fórmula 1, IndyCar, NASCAR, FIA
+WEC, Stock Car, DTM e Fórmula E, via Wikimedia Commons, em domínio público por
+serem logos de texto. São marcas registradas dos seus titulares e aparecem só
+para identificar cada campeonato.
 
 **Tipografia:** Archivo, de Omnibus-Type, licença SIL Open Font.
 

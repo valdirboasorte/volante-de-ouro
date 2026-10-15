@@ -80,3 +80,16 @@ Fotos novas: Singapura 2012 (chensiyuan, CC BY-SA 4.0), Le Mans 2011 (Alessandro
 (Martin Lee, CC BY-SA 2.0); Sainz 2024 e Prost 1990 copiadas de assets/editorial (outra sessão), com crédito.
 Crítica: a abertura lê "temporada + foto da época" em 1 segundo; o console carrega o resto sem rolagem. Falta: o vão
 no pé da aba Ano no tablet em pé; a lista do console corta a última linha (rola por dentro).
+
+## Redesign 3 — a versão publicada, moderna (2026-10-15)
+
+Pedido: o vidro de tela única ficou "esquisito"; voltar ao layout e à arte da versão publicada (carbono, vermelho,
+dourado, DIN condensada, tudo à vista com botões), sem quadradão: cantos redondos, fotos reais, logos das categorias,
+uma foto por época; referência visual: um mock feito por IA (só a composição; nenhuma imagem gerada).
+Composição seguida: a do mock e da versão publicada (pedido explícito), não um novo sorteio. Paleta e tipo mantidos da
+marca (equivalente a --keep palette,type): carbono #0b0c0e, vermelho #e2231a (ação), dourado #f0c12e (vitória/título,
+e a palavra "Ouro" do nome — a palavra é a cor); Archivo condensada (wdth 72) no lugar da Bahnschrift, que só existe
+no Windows.
+Primeiro quadro (1440x900 sem rolar): nome, Iniciar carreira / Chefe de equipe, 7 logos (cada uma abre a ficha naquela
+categoria), 3 cartões com foto (Piloto, Chefe, Cenário). Embaixo: 8 décadas com foto, cenários, mais caminhos, rodapé.
+Inspector (movimento emulado): 0 FAIL, 0 WARN. Lint: 0 FAIL (avisos: travessões do texto do jogo).
