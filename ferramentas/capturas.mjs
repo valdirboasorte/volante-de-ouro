@@ -23,12 +23,23 @@ const CENAS = {
         UI.render(); UI.close();`,
   classif: `UI.tab('drv');`,
   resultado: `UI.raceResult(S.season.results[S.season.results.length - 1]);`,
+  /* a corrida ao vivo: larga, espera o cálculo, e para no meio da prova */
+  largada: `UI.close(); S.opts.fast = false; const rec = Engine.runRace(S.season); Game.tally(rec); UI.render();
+            window.__rec = rec; UI.centralCorrida(rec, () => UI.raceResult(rec));`,
+  corrida: `Central.t = Central.P.t * .42; Central.alternar(); Central.painel();`,
+  bandeirada: `Central.alternar(); Central.t = Central.P.t; Central.alternar();`,
+  resultadoTempos: `Central.pular();`,
   chefe: `Chefe.novo({ modo:'assumir', ano:2024, idx: eraOfSeries(2024,'f1').teams.findIndex((t,i)=>{ const r = Engine.resolveTeam(t,i,2024,'f1'); return r && r.name === 'Alpine'; }), chefe:{ nome:'Valdir', cc:'BR' } });
           UI.show('chefe'); UIC.render(); UI.close();`,
-  mercado: `UIC.mercado();`,
+  chefeLargada: `UI.close(); if(C.fase !== 'temporada') Chefe.comecarTemporada(); const rec = Chefe.correr(); UIC.render();
+                 UI.centralCorrida(rec, () => { UIC.salvar(); UIC.resultado(rec); }, { chefe: true });`,
+  chefeCorrida: `Central.t = Central.P.t * .6; Central.alternar(); Central.painel();`,
+  chefeResultado: `Central.pular();`,
+  mercado: `UI.close(); UIC.mercado();`,
   chefeNovo: `UI.close(); UIC.abrir();`
 };
-const ORDEM = ['ficha', 'hub', 'classif', 'resultado', 'chefe', 'mercado', 'chefeNovo'];
+const ORDEM = ['ficha', 'hub', 'classif', 'resultado', 'largada', 'corrida', 'bandeirada', 'resultadoTempos', 'chefe', 'mercado', 'chefeLargada', 'chefeCorrida', 'chefeResultado', 'chefeNovo'];
+const ESPERA = { largada: 2600, bandeirada: 900, chefeLargada: 2600 };
 
 const b = await Browser.launch();
 for(const [nome, w, h, mobile] of [['desktop', 1440, 900, false], ['celular', 390, 844, true]]){
@@ -36,7 +47,7 @@ for(const [nome, w, h, mobile] of [['desktop', 1440, 900, false], ['celular', 39
   await p.goto(URL0, { settleMs: 1800 });
   for(const cena of ORDEM){
     try{ await p.eval(`(()=>{ ${CENAS[cena]} })()`); }catch(e){ console.log('  !', cena, e.message.slice(0, 200)); }
-    await sleep(700);
+    await sleep(ESPERA[cena] || 700);
     if(so && !so.has(cena)) continue;
     const arq = join(SAIDA, `${nome}-${cena}.jpg`);
     await p.screenshot({ path: arq, quality: 70 });

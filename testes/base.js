@@ -38,8 +38,8 @@ function carregar(opts){
   };
   ctx.window = ctx; ctx.self = ctx;
   vm.createContext(ctx);
-  vm.runInContext(blocos[0], ctx, { filename:'bloco0.js' });
-  vm.runInContext(blocos[1], ctx, { filename:'bloco1.js' });
+  /* todos os blocos de script sem atributo, na ordem da página */
+  blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
   const run = c => vm.runInContext(c, ctx);
   const E = id => document.getElementById(id);
   return { ctx, run, E, store };

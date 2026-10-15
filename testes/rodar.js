@@ -11,6 +11,7 @@ const testes = [
   ['modo chefe (carreiras aleatórias)', 'chefe.js', ['30']],
   ['modo chefe (decisões)', 'chefe-decisoes.js'],
   ['mercado do chefe', 'mercado-chefe.js'],
+  ['corrida volta a volta', 'prova.js'],
   ['clique duplo', 'clique-duplo.js'],
   ['save antigo abre na versão nova', 'migracao.js'],
   ['tamanho do save', 'save.js']

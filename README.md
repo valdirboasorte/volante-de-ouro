@@ -204,13 +204,29 @@ Fórmula E. Onde o regulamento permite, você decide quando entrar na pista —
 pista limpa e sem borracha, o fim da sessão com a pista no ponto e o risco de
 não completar a volta, vácuo na reta, ou espaço para andar sozinho.
 
-E o domingo acontece na tela como num telão de autódromo: a tabela da corrida
-volta a volta, com o grid inteiro, quem subiu e quem caiu, quem está nos
-boxes, quem abandonou e por quê, a bandeira amarela e a narração do que está
-acontecendo. O safety car não é enfeite: quando entra, junta o pelotão e come
-a vantagem de quem estava na frente, e é o mesmo que aparece na tabela. Quebra,
-acidente e erro de pilotagem são coisas diferentes, e a equipe desconta as
-quebras ao avaliar o seu ano.
+E o domingo acontece na tela como a cronometragem de uma transmissão: a tabela
+da corrida com o grid inteiro, diferença para o líder, intervalo para o carro
+da frente, última e melhor volta, paradas nos boxes, quantas posições cada um
+ganhou ou perdeu desde a largada, quem abandonou e por quê, a bandeira (verde,
+safety car, bandeirada) e uma faixa contando o lance da volta. A melhor volta
+da prova fica em roxo, o melhor pessoal em verde, e a volta feita no vácuo de
+uma ultrapassagem ou atrás do safety car aparece apagada, porque não vale como
+volta mais rápida. Seus carros ficam em destaque e a sua posição fica no alto.
+Você escolhe quanto a corrida dura na tela (2 min, 1 min, 30 s ou 10 s), pausa
+na barra de espaço e pula para o resultado com Esc.
+
+Os tempos não são sorteados para a tela. Depois que o motor decide o
+resultado, a corrida é contada metro a metro no traçado real do circuito
+(veja *Créditos*): cada carro freia, acelera, pega vácuo, ultrapassa só onde
+dá para frear mais tarde, para nos boxes conforme a estratégia da época e
+toma volta do líder. A física é calibrada pelo tempo de volta real de cada
+época da F1 e ajustada para cada categoria e nível. O motor manda no fim: a
+bandeirada termina exatamente na classificação do resultado, com a volta mais
+rápida de quem o motor disse, e o resultado guarda o tempo de prova do
+vencedor e a diferença de cada um. O safety car não é enfeite: quando entra,
+junta o pelotão e come a vantagem de quem estava na frente. Quebra, acidente
+e erro de pilotagem são coisas diferentes, e a equipe desconta as quebras ao
+avaliar o seu ano.
 
 ## Campeonatos com regulamento de verdade
 
@@ -318,7 +334,7 @@ contrata quem pilota, paga a conta e responde por ela.
   a academia. A temporada de cada garoto entra na trajetória dele, com
   promoção a titular ou reserva e empréstimo para outra equipe.
 - **Fim de semana**: estratégia por carro, modo de motor e ordem de equipe, a
-  mesma tabela ao vivo do modo piloto com os dois carros em destaque, e pacotes
+  mesma cronometragem ao vivo do modo piloto com os dois carros em destaque, e pacotes
   de atualização que podem render mais do que o túnel prometia ou deixar o
   carro pior.
 - **Acontecimentos**: espionagem, brecha no regulamento, patrocinador na
@@ -390,9 +406,11 @@ o `index.html` na raiz é detectado sozinho.
 
 ```
 index.html      o jogo inteiro — HTML, CSS, dados e motor de simulação
+assets/         fotos de arquivo e o filme de 1906 da abertura, com credits.json
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
 testes/         verificações que rodam no Node, sem navegador (não vão para o site)
+ferramentas/    geração dos traçados reais e capturas de tela (não vão para o site)
 ```
 
 ## Testes
@@ -410,8 +428,20 @@ ausência de duplicados no mundo de pilotos ano a ano, carreiras jogadas além d
 2026 nos dois modos, o mercado e a negociação, as decisões do modo chefe, o
 mercado do chefe (de onde vem cada candidato, nada de regen antes de 2027,
 academia cheia recusando garoto, uma temporada jogada com um piloto da
-IndyCar e um da F2), o clique duplo nos botões que avançam o jogo, um save feito pela versão anterior
-abrindo na atual e o tamanho do save em carreiras de 25 anos.
+IndyCar e um da F2), a corrida contada volta a volta (de 1975 a 2024, do kart
+à F1: termina na ordem do resultado, volta mais rápida certa, todo abandono
+acontece na pista, a tabela da bandeirada é a classificação final, ninguém fica
+trocando de posição com o mesmo carro volta sim, volta não), o clique duplo nos
+botões que avançam o jogo, um save feito pela versão anterior abrindo na atual e
+o tamanho do save em carreiras de 25 anos.
+
+Para refazer os traçados reais a partir dos arquivos de origem, e as capturas
+das telas internas (precisa do Chrome e da skill de design instalada):
+
+```bash
+node ferramentas/pistas-gerar.js
+node ferramentas/capturas.mjs
+```
 
 Para medir o equilíbrio da simulação em temporadas repetidas, e a dificuldade
 de carreira por idade de estreia:
@@ -431,6 +461,22 @@ são geradas pelo jogo e **não são declarações reais dessas pessoas ou veíc
 
 Se você é dono de alguma dessas imagens ou perfis e quer que seja retirado,
 abra uma issue — sai na hora.
+
+**Traçados.** Os 40 traçados reais usados na corrida (50 circuitos do jogo,
+cada versão com o ano em que entrou em uso) vêm do
+[bacinger/f1-circuits](https://github.com/bacinger/f1-circuits), licença MIT,
+com a cópia da licença em `ferramentas/terceiros/f1c`. A escala é ajustada ao
+comprimento oficial e o sentido de corrida foi conferido. Circuito ou ano sem
+traçado confiável corre num traçado esquemático, e o jogo diz por quê.
+
+**Fotos e filme da abertura** (`assets/credits.json` tem título, autor,
+licença e página de cada um):
+
+- Jackie Stewart na chuva, Zandvoort 1968 — Joost Evers / Anefo, CC0, via Wikimedia Commons
+- Jackie Stewart, Zandvoort 1968 — Joost Evers / Anefo, CC0, via Wikimedia Commons
+- O circuito de Zandvoort, 1962 — Joop van Bilsen / Anefo, CC0, via Wikimedia Commons
+- Jack Brabham no treino de Zandvoort, 1966 — Eric Koch / Anefo, CC0, via Wikimedia Commons
+- Grande Prêmio da França de 1906 — Shell Video Library, domínio público, via Wikimedia Commons
 
 ## Modo realista — como o dinheiro funciona
 
