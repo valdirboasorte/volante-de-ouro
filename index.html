@@ -5995,6 +5995,13 @@ const CAT_HIST = {
   'DTM':                  [[1984, 2100, 'dtm']],
   'Fórmula E':            [[2014, 2100, 'fe']]
 };
+/* o contrário: o nome de categoria do jogo para um campeonato real naquele ano */
+function nomeDoJogo(id, ano){
+  /* "Fórmula Ford Britânica" e "Fórmula Ford" são o mesmo campeonato: vale o nome mais específico */
+  let melhor = null;
+  for(const nome in CAT_HIST) if(CAT_HIST[nome].some(f => f[2] === id && ano >= f[0] && ano <= f[1]) && (!melhor || nome.length > melhor.length)) melhor = nome;
+  return melhor;
+}
 /* o campeonato real de uma categoria naquele ano (ou o que o jogador escolheu) */
 function campDaCat(cat, ano){
   if(!cat) return null;
@@ -6611,7 +6618,8 @@ function resolveLadder(raw, cc, year, escolhas){
     let n = resolveRung(t, cc, year);
     if(n && escolhas && escolhas[t]){
       const c = Hist.camp(escolhas[t]);
-      if(Hist.existe(c, year)) n = Hist.nomeOficial(c, year);
+      /* o nome que o jogo já usa para esse campeonato (F4 Italiana); senão, o oficial do ano */
+      if(Hist.existe(c, year)) n = nomeDoJogo(c.id, year) || Hist.nomeOficial(c, year);
     }
     if(n && out.indexOf(n) < 0) out.push(n);
   });
@@ -6850,23 +6858,11 @@ const Engine = {
       /* o degrau que você assinou tem nome, e é o nome que manda */
       const alvo = S.catAlvo || S.ladder[S.catIdx];
       if(nova.length && nova.join('|') !== S.ladder.join('|')){
-        let i = nova.indexOf(alvo);
-        if(i < 0 && S.catAlvo) i = nova.indexOf(S.ladder[S.catIdx]);
-        if(i < 0){
-          const rel = S.ladder.length > 1 ? S.catIdx / (S.ladder.length - 1) : 0;
-          i = clamp(Math.round(rel * (nova.length - 1)), 0, nova.length - 1);
-          /* o nome sumiu da escada: o que não pode sumir é o sentido do
-             movimento. Quem subiu tem de acordar acima de onde estava. */
-          const antes = S.catAnterior ? nova.indexOf(S.catAnterior) : -1;
-          if(antes >= 0){
-            if(S.catSubiu && i <= antes) i = Math.min(antes + 1, nova.length - 1);
-            else if(!S.catSubiu && i > antes) i = antes;
-          }
-        }
-        S.catIdx = i;
+        S.catIdx = Engine.degrauNaEscada(S.ladder, S.catIdx, nova, alvo, S.catAnterior, S.catSubiu, S.year);
         S.ladder = nova;
       } else if(S.catAlvo){
-        const i = S.ladder.indexOf(S.catAlvo);
+        let i = S.ladder.indexOf(S.catAlvo);
+        if(i < 0){ const id = campDaCat(S.catAlvo, S.year); if(id) i = S.ladder.findIndex(n => campDaCat(n, S.year) === id); }
         if(i >= 0) S.catIdx = i;
       }
     }
@@ -7549,6 +7545,75 @@ const Engine = {
     S.campEscolhido = S.campEscolhido || {};
     const e = S.campEscolhido[sk] = (S.campEscolhido[sk] && typeof S.campEscolhido[sk] === 'object') ? S.campEscolhido[sk] : {};
     if(id) e[tok] = id; else delete e[tok];
+  },
+  /* Onde um degrau da escada deste ano cai na escada de outro ano. O nome
+     manda; sumindo o nome, a posição relativa — sem inverter o sentido do
+     movimento: quem subiu tem de acordar acima de onde estava. */
+  degrauNaEscada(velha, idx, nova, alvo, anterior, subiu, ano){
+    let i = nova.indexOf(alvo);
+    if(i < 0 && alvo !== velha[idx]) i = nova.indexOf(velha[idx]);
+    /* o mesmo campeonato com outro nome na escada nova */
+    if(i < 0 && ano){
+      const id = campDaCat(alvo, ano);
+      if(id) i = nova.findIndex(n => campDaCat(n, ano) === id);
+    }
+    if(i < 0){
+      const rel = velha.length > 1 ? idx / (velha.length - 1) : 0;
+      i = clamp(Math.round(rel * (nova.length - 1)), 0, nova.length - 1);
+      const antes = anterior ? nova.indexOf(anterior) : -1;
+      if(antes >= 0){
+        if(subiu && i <= antes) i = Math.min(antes + 1, nova.length - 1);
+        else if(!subiu && i > antes) i = antes;
+      }
+    }
+    return i;
+  },
+  /* A proposta fala do ano que vem. Se o campeonato dela acaba, ou o degrau
+     some da escada, a vaga é no que fica no lugar — e é esse o nome que a
+     proposta mostra, com uma equipe de lá. */
+  ofertaNoAnoQueVem(o){
+    if(!o || !o.cat || o.escada || (o.sk && o.sk !== S.series) || !S.driver) return o;
+    const ano = S.year + 1, era = eraOfSeries(ano, S.series);
+    if(!era) return o;
+    const nova = resolveLadder(era.ladder, S.driver.cc, ano, Engine.escolhas(S.series));
+    if(nova.indexOf(o.cat) >= 0) return o;
+    /* o campeonato segue existindo e cabe na escada: vale ele (vira a escolha do degrau ao assinar) */
+    const id = campDaCat(o.cat, ano), c = id && typeof Hist !== 'undefined' && Hist.ok() && Hist.camp(id);
+    if(c && Hist.existe(c, ano)){
+      const h = Engine.hospedeiro(c, ano, S.driver.cc, S.series);
+      if(h && h.sk === S.series && campDaCat(h.cat, ano) === id) return o;
+    }
+    const i0 = S.ladder.indexOf(o.cat);
+    const i = Engine.degrauNaEscada(S.ladder, i0 >= 0 ? i0 : S.catIdx, nova, o.cat, S.season && S.season.cat, !!(o.up || o.pulo), ano);
+    const novo = nova[i];
+    if(!novo || novo === o.cat) return o;
+    /* a equipe: uma de lá, na mesma faixa de força da que tinha ligado */
+    const velhos = Engine.teamsFor(o.cat, ano, S.series, i0 >= 0 ? i0 : S.catIdx, S.ladder.length) || [];
+    const novos = Engine.teamsFor(novo, ano, S.series, i, nova.length) || [];
+    if(o.team && novos.length){
+      const k = Math.max(0, velhos.findIndex(t => t.name === o.team.name));
+      o.team = novos[clamp(Math.round(k / Math.max(1, velhos.length - 1) * (novos.length - 1)), 0, novos.length - 1)];
+    }
+    o.note = (o.note ? o.note + ' ' : '') + `A ${o.cat} não estará na sua escada em ${ano}: a vaga é na ${novo}.`;
+    o.catAntes = o.cat;
+    o.cat = novo;
+    return o;
+  },
+  /* A proposta diz um campeonato, e é nele que você corre. A escada do ano que
+     vem pode pôr outro campeonato naquele degrau (a F4 Brasil nasce em 2022 e
+     toma o lugar da F4 Italiana na escada de um brasileiro): aí o campeonato da
+     proposta vira a escolha do degrau, como num convite. */
+  garantirCampDaOferta(cat, sk, ano){
+    if(!cat || !S || !S.driver || typeof Hist === 'undefined' || !Hist.ok()) return false;
+    const era = eraOfSeries(ano, sk); if(!era) return false;
+    const prox = resolveLadder(era.ladder, S.driver.cc, ano, Engine.escolhas(sk));
+    if(prox.indexOf(cat) >= 0) return false;
+    const id = campDaCat(cat, ano), c = id && Hist.camp(id);
+    if(!c) return false;
+    const h = Engine.hospedeiro(c, ano, S.driver.cc, sk);
+    if(!h || h.sk !== sk || !h.tok || campDaCat(h.cat, ano) !== id) return false;
+    Engine.escolher(sk, h.tok, id);
+    return true;
   },
   /* A idade mínima de cada degrau. Ninguém sai do kart para um carro aos
      dez anos: o kart vai dos 8 aos 14, o Mundial de Kart a partir dos 12, a
@@ -15850,6 +15915,9 @@ const Game = {
   showOffers(sum){
     if(S.retired) return;
     let offers = Engine.offers(sum);
+    /* cada proposta com o nome do campeonato que vai existir no ano dela */
+    offers = offers.map(o => Engine.ofertaNoAnoQueVem(o))
+      .filter((o, i, a) => a.findIndex(x => x.cat === o.cat && (x.team && x.team.name) === (o.team && o.team.name)) === i);
     /* contrato em vigor garante a vaga atual */
     if(S.season.isTop && S.contract.years > 1 && !offers.some(o=>o.team && o.team.name===S.team.name)){
       offers.unshift({ type:'f1', cat:Engine.topCat(), team:{...S.team}, years:S.contract.years-1,
@@ -16067,6 +16135,8 @@ const Game = {
     } else {
       S.team = null; S.contract = { years:1 };
     }
+    /* o campeonato escrito na proposta continua sendo ele no ano que vem */
+    if(o.cat) Engine.garantirCampDaOferta(o.cat, S.series, S.year + 1);
     /* guarda o degrau pelo nome, de onde você saiu e se era promoção: a
        escada do ano que vem pode ter outra forma, e o sentido tem de valer */
     S.catAnterior = (S.season && S.season.cat) || S.lastCat || null;

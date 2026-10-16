@@ -14,6 +14,7 @@ const testes = [
   ['corrida volta a volta', 'prova.js'],
   ['corrida ao vivo e fim de semana', 'gp.js'],
   ['piloto machucado', 'lesao.js'],
+  ['proposta é o campeonato corrido', 'oferta.js'],
   ['clique duplo', 'clique-duplo.js'],
   ['save antigo abre na versão nova', 'migracao.js'],
   ['banco histórico (escadas e grids reais)', 'historico.js'],
