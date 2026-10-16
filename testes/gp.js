@@ -10,6 +10,19 @@ let falhas = 0;
 const ok = (c, m) => { if(!c){ falhas++; console.log('  ✗ ' + m); } else console.log('  ✓ ' + m); };
 const gridValido = g => { const v = Object.values(g).sort((a, b) => a - b); return v.every((x, k) => x === k + 1); };
 
+/* a tela da corrida cobre a página inteira: a classe dela não pode ser a de mais
+   ninguém (".av" era o valor dos atributos do piloto e virou tela preta no celular) */
+{
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'index.html'), 'utf8');
+  const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n');
+  const tela = [...css.matchAll(/(^|\})\s*([^{}@]+)\{[^}]*position:\s*fixed;[^}]*inset:\s*0/g)].map(m => m[2].trim());
+  const classes = tela.flatMap(sel => [...sel.matchAll(/\.([\w-]+)/g)].map(m => m[1]));
+  /* a classe de uma tela cheia aparece num elemento só */
+  const usadas = classes.filter(c => (html.match(new RegExp('class="(?:[^"]*\\s)?' + c + '(?:\\s[^"]*)?"', 'g')) || []).length > 1);
+  ok(!/(^|[},])\s*\.av\s*\{/m.test(css), 'a tela da corrida não usa a classe .av dos atributos');
+  ok(classes.length > 0 && usadas.length === 0, `telas cheias (${classes.join(', ')}) com classe exclusiva${usadas.length ? ' — repetida: ' + usadas.join(', ') : ''}`);
+}
+
 const J = H.carregar({ silencioso: true });
 H.novaCarreira(J, { era: 7, ano: 2023, idade: 24, rapido: false });
 

@@ -1009,7 +1009,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .creditos{margin:0 0 14px; padding-left:18px; display:grid; gap:6px; font-size:15px; line-height:1.45}
 
 /* ═══ A CORRIDA AO VIVO, NO MURO ═══ (sempre escura, como a transmissão) */
-.av{position:fixed; inset:0; z-index:300; display:grid; grid-template-columns:290px minmax(0,1fr) 270px; grid-template-rows:minmax(0,1fr) auto;
+.av-tela{position:fixed; inset:0; z-index:300; display:grid; grid-template-columns:290px minmax(0,1fr) 270px; grid-template-rows:minmax(0,1fr) auto;
   gap:10px; padding:10px; background:#0a1013; color:#e9eff1}
 .av-carregando{grid-column:1/-1; grid-row:1/-1; display:grid; place-content:center; gap:6px; text-align:center}
 .av-carregando b{font-size:22px; text-transform:uppercase} .av-carregando span{color:#8fa3ab}
@@ -1130,7 +1130,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .av-so{color:#8fa3ab; margin:0}
 .av-radio[hidden],.av-fim[hidden]{display:none}
 @media (max-width:980px){
-  .av{display:flex; flex-direction:column; overflow-y:auto}
+  .av-tela{display:flex; flex-direction:column; overflow-y:auto}
   .av-mapa{order:1; height:46vh; min-height:280px; flex:none}
   .av-baixo{order:2; grid-template-columns:minmax(0,1fr)}
   .av-torre{order:3; flex:none} .av-linhas{overflow:visible}
@@ -22136,7 +22136,7 @@ const AoVivo = {
     AoVivo.opc = opc || {}; AoVivo.aoFim = aoFim; AoVivo.pausa = false; AoVivo.acabou = false;
     try{ const v = +Store.get('vdo_velcorrida'); if(AoVivo.VELS.indexOf(v) >= 0) AoVivo.vel = v; }catch(e){}
     const ov = document.createElement('div');
-    ov.id = 'aovivo'; ov.className = 'av';
+    ov.id = 'aovivo'; ov.className = 'av-tela';
     ov.innerHTML = '<div class="av-carregando"><b>Grid formado</b><span>os carros saem para a volta de apresentação</span></div>';
     document.body.appendChild(ov);
     document.body.classList.add('em-corrida');
