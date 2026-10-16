@@ -1008,6 +1008,137 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .mclose{background:var(--s2)}
 .creditos{margin:0 0 14px; padding-left:18px; display:grid; gap:6px; font-size:15px; line-height:1.45}
 
+/* ═══ A CORRIDA AO VIVO, NO MURO ═══ (sempre escura, como a transmissão) */
+.av{position:fixed; inset:0; z-index:300; display:grid; grid-template-columns:290px minmax(0,1fr) 270px; grid-template-rows:minmax(0,1fr) auto;
+  gap:10px; padding:10px; background:#0a1013; color:#e9eff1}
+.av-carregando{grid-column:1/-1; grid-row:1/-1; display:grid; place-content:center; gap:6px; text-align:center}
+.av-carregando b{font-size:22px; text-transform:uppercase} .av-carregando span{color:#8fa3ab}
+.av-torre,.av-info,.av-mapa{background:#111a1e; border:1px solid #1c2a30; border-radius:16px; min-height:0}
+.av-torre{display:flex; flex-direction:column; overflow:hidden}
+.av-torre header{display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:12px 14px 8px}
+.av-torre header b{font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:#8fa3ab}
+.av-torre header span{font-size:15px; font-weight:800; font-variant-numeric:tabular-nums}
+.av-torre-modo{display:flex; gap:4px; padding:0 10px 8px}
+.av-torre-modo button{flex:1; height:30px; border-radius:999px; background:#18242a; color:#a9b8be; font-size:12.5px; font-weight:600; transition:background .15s,color .15s}
+.av-torre-modo button:hover{color:#fff}
+.av-torre-modo button.on{background:#e2231a; color:#fff}
+.av-linhas{overflow-y:auto; padding:0 6px 8px}
+.av-l{display:grid; grid-template-columns:22px 4px 40px 30px minmax(0,1fr) 24px; align-items:center; gap:6px; height:30px; padding:0 6px;
+  border-radius:8px; font-size:14px; cursor:pointer; transition:background .15s}
+.av-l:hover{background:#18242a}
+.av-l.meu{background:#2a1416; box-shadow:inset 3px 0 0 #e2231a}
+.av-l.sel{box-shadow:inset 0 0 0 1px #8fa3ab}
+.av-l.fora{opacity:.45}
+.av-l b{font-variant-numeric:tabular-nums; text-align:right}
+.av-l s{width:4px; height:18px; border-radius:2px}
+.av-l .n{font-weight:800; letter-spacing:.03em}
+.av-l .g{font-style:normal; font-size:11px; font-weight:800}
+.av-l .g.sobe{color:#34c759} .av-l .g.cai{color:#ff6b6b}
+.av-l .d{text-align:right; font-variant-numeric:tabular-nums; color:#cfd9dc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.av-pn{display:inline-grid; place-items:center; width:22px; height:22px; border-radius:50%; border:3px solid; font-size:10px; font-weight:800;
+  background:#0a1013; color:#fff; line-height:1}
+.av-pn.S{border-color:#ff3b30} .av-pn.M{border-color:#ffd60a} .av-pn.H{border-color:#f2f2f2} .av-pn.I{border-color:#34c759} .av-pn.W{border-color:#0a84ff}
+.av-mapa{position:relative; overflow:hidden; display:grid}
+.av-gp{position:absolute; top:12px; left:16px; display:grid; gap:2px; z-index:2; pointer-events:none}
+.av-gp b{font-size:20px; font-weight:800; text-transform:uppercase}
+.av-gp span{font-size:13px; color:#8fa3ab}
+.av-fonte{position:absolute; left:16px; bottom:8px; z-index:2; margin:0; font-size:11px; color:#6f838b; pointer-events:auto}
+.av-mapa svg{width:100%; height:100%; display:block}
+.av-asfalto{fill:none; stroke:#22343b; stroke-linejoin:round}
+.av-brilho{fill:none; stroke:#ff2d2d; opacity:.5; stroke-linejoin:round}
+.av-linha{fill:none; stroke:#ff6b6b; stroke-linejoin:round}
+.av-chegada{stroke:#fff}
+.av-carro circle{stroke:#0a1013}
+.av-carro.meu circle{stroke:#fff}
+.av-carro .av-rot{display:none}
+.av-carro.rotulo .av-rot{display:inline}
+.av-rot rect{fill:#0a1013; opacity:.88}
+.av-rot text{fill:#fff; font-weight:800; font-family:inherit}
+.av-carro.meu .av-rot rect{fill:#e2231a; opacity:1}
+.av-carro.fora{opacity:.3}
+.av-carro.sel circle{stroke:#ffd60a}
+.av-info{display:flex; flex-direction:column; gap:10px; padding:12px; overflow:hidden}
+.av-relogio{display:flex; justify-content:space-between; align-items:baseline}
+.av-relogio span{font-size:13px; color:#8fa3ab}
+.av-relogio b{font-size:20px; font-variant-numeric:tabular-nums}
+.av-bandeira{padding:8px 12px; border-radius:10px; font-weight:800; text-transform:uppercase; font-size:13px; letter-spacing:.04em; text-align:center}
+.av-bandeira.verde{background:#103b22; color:#5ce08a}
+.av-bandeira.amarela{background:#4a3b05; color:#ffd60a}
+.av-bandeira.xadrez{background:#eef0f2; color:#0a1013}
+.av-clima{background:#0d1518; border-radius:12px; padding:10px 12px}
+.av-ceu{display:flex; align-items:center; gap:8px; font-size:15px}
+.av-ceu .ico{width:22px; height:22px}
+.av-clima dl{display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; margin:10px 0 6px}
+.av-clima dt{font-size:12px; color:#8fa3ab} .av-clima dd{font-size:15px; font-weight:700; margin:0}
+.av-prev{font-size:13px; color:#cfd9dc; margin:0}
+.av-feed{flex:1; overflow-y:auto; display:grid; align-content:start; gap:0}
+.av-feed .ev{display:flex; gap:8px; font-size:13px; line-height:1.35; margin:0; padding:6px 0; border-top:1px solid #1c2a30}
+.av-feed .ev span{color:#8fa3ab; min-width:30px; font-variant-numeric:tabular-nums}
+.av-feed .ev.sc,.av-feed .ev.vsc{color:#ffd60a} .av-feed .ev.batida,.av-feed .ev.quebra,.av-feed .ev.punicao{color:#ff6b6b} .av-feed .ev.chuva{color:#64b5ff}
+.av-baixo{grid-column:1/-1; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:end}
+.av-cartoes{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:10px}
+.av-cartao{background:#111a1e; border:1px solid #1c2a30; border-radius:16px; padding:12px 14px; display:grid; gap:8px}
+.av-cartao header{display:flex; align-items:center; gap:8px}
+.av-cartao header s{width:5px; height:20px; border-radius:3px}
+.av-cartao header b{flex:1; font-size:16px}
+.av-cartao header em{font-style:normal; font-size:20px; font-weight:800}
+.av-pneu{display:flex; align-items:center; gap:8px; font-size:14px; color:#cfd9dc}
+.av-barra{flex:1; height:8px; border-radius:4px; background:#22343b; overflow:hidden; min-width:60px}
+.av-barra i{display:block; height:100%; background:#34c759; transition:width .25s}
+.av-barra.meio i{background:#ffd60a} .av-barra.ruim i{background:#ff453a}
+.av-pneu em{font-style:normal; font-variant-numeric:tabular-nums; min-width:38px; text-align:right}
+.av-comb{display:inline-flex; align-items:center; gap:3px}
+.av-comb .ico{width:14px; height:14px}
+.av-viz{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; color:#8fa3ab; min-height:18px}
+.av-viz b{color:#e9eff1} .av-viz .pen{color:#ff6b6b}
+.av-modos,.av-box{display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+.av-modos button{flex:1; height:34px; border-radius:999px; background:#18242a; color:#cfd9dc; font-size:13px; font-weight:700; transition:background .15s,transform .15s}
+.av-modos button:active,.av-vel button:active,.av-box button:active{transform:scale(.96)}
+.av-modos button.on{background:#e2231a; color:#fff}
+.av-box span{font-size:13px; color:#8fa3ab}
+.av-box .av-pn{width:32px; height:32px; font-size:12px; cursor:pointer; transition:box-shadow .15s,transform .15s}
+.av-box .av-pn.on{box-shadow:0 0 0 3px #fff}
+.av-box button:disabled{opacity:.35; cursor:not-allowed}
+.av-cancela{height:30px; padding:0 12px; border-radius:999px; background:#18242a; color:#cfd9dc; font-size:12.5px}
+.av-plano{font-size:13px; color:#cfd9dc; margin:0}
+.av-ordem:empty{display:none}
+.av-ceder{width:100%; height:34px; border-radius:999px; background:#4a3b05; color:#ffd60a; font-size:13px; font-weight:700}
+.av-ctrl{display:flex; align-items:center; gap:8px; background:#111a1e; border:1px solid #1c2a30; border-radius:16px; padding:10px}
+.av-play{width:40px; height:40px; border-radius:50%; background:#e2231a; color:#fff; display:grid; place-items:center; transition:transform .15s}
+.av-play:hover{transform:scale(1.06)}
+.av-play .ico{width:18px; height:18px}
+.av-vel{display:flex; flex-wrap:wrap; gap:4px}
+.av-sug{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 8px; padding:9px 11px; border-radius:10px; border-left:3px solid #f5c518; background:#1a252b; color:#eef0f2; font-size:14px; line-height:1.4}
+.av-sug svg{width:16px; height:16px; flex:none}
+.av-sug > span{flex:1 1 160px}
+.av-sug button{height:34px; padding:0 14px; border-radius:999px; background:#e10600; color:#fff; font-size:14px; font-weight:700}
+.av-sug button:active{transform:scale(.96)}
+.av-vel button{height:34px; padding:0 10px; border-radius:999px; background:#18242a; color:#cfd9dc; font-size:13px; font-weight:700}
+.av-vel button.on{background:#eef0f2; color:#0a1013}
+.av-radio{position:absolute; left:50%; bottom:20px; transform:translateX(-50%); width:min(520px,92%); background:#0d1518; border:1px solid #e2231a;
+  border-radius:16px; padding:14px 16px; z-index:3; display:grid; gap:8px}
+.av-radio p{margin:0; font-size:15px}
+.av-radio .av-radio-tit{display:flex; align-items:center; gap:6px; font-size:12px; text-transform:uppercase; color:#ff6b6b; font-weight:800}
+.av-radio-tit .ico{width:16px; height:16px}
+.av-radio div{display:grid; gap:6px}
+.av-radio button{display:grid; gap:2px; text-align:left; padding:10px 12px; border-radius:12px; background:#18242a; color:#e9eff1; transition:background .15s}
+.av-radio button:hover{background:#22343b}
+.av-radio button span{font-size:13px; color:#8fa3ab}
+.av-fim{position:absolute; left:20px; right:20px; bottom:20px; background:#0d1518; border:1px solid #2a3a40; border-radius:16px; padding:16px; z-index:4; display:grid; gap:6px}
+.av-fim p{margin:0} .av-fim .av-fim-tit{font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#ffd60a}
+.av-fim .btn{justify-self:start; margin-top:6px}
+.av-so{color:#8fa3ab; margin:0}
+.av-radio[hidden],.av-fim[hidden]{display:none}
+@media (max-width:980px){
+  .av{display:flex; flex-direction:column; overflow-y:auto}
+  .av-mapa{order:1; height:46vh; min-height:280px; flex:none}
+  .av-baixo{order:2; grid-template-columns:minmax(0,1fr)}
+  .av-torre{order:3; flex:none} .av-linhas{overflow:visible}
+  .av-info{order:4; flex:none}
+  .av-cartoes{grid-template-columns:minmax(0,1fr)}
+  .av-ctrl{flex-wrap:wrap}
+}
+
 /* o campeonato de estreia, no formulário de carreira */
 .est-camp{display:grid; gap:6px; margin-top:12px; font-size:14px; color:var(--soft)}
 .est-camp select{height:44px; max-width:100%; padding:0 12px; border-radius:12px; background:var(--s2); color:var(--ink); border:1px solid var(--rule); font:inherit; font-size:15px}
@@ -1448,6 +1579,8 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 
 <!-- o banco histórico (campeonatos, temporadas, grids reais e fontes), gerado por ferramentas/historico -->
 <script src="dados/historico.js" defer></script>
+<!-- os traçados que vieram do OpenStreetMap, gerados por ferramentas/pistas-osm.mjs -->
+<script src="dados/tracados.js" defer></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
    VOLANTE DE OURO — simulador de carreira no automobilismo
@@ -9219,6 +9352,8 @@ const Engine = {
     }
     /* o trabalho de sexta paga aqui */
     bonus += Engine.ganhoTreino('quali');
+    /* e o imprevisto do fim de semana também */
+    bonus += Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoQ');
 
     const qual = sea.field.map(f => {
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
@@ -9267,6 +9402,126 @@ const Engine = {
     if(year <= 2020) return 3;
     return 2;
   },
+  /* ═══ O QUE ACONTECE NO FIM DE SEMANA ═══
+     No máximo uma coisa por fim de semana, sorteada para sexta, sábado ou
+     a hora da largada — e sempre com uma escolha. O efeito é guardado no
+     fim de semana (sea.fds.efeitos) e cobrado onde ele age: no grid, no
+     ritmo, na confiabilidade, no pneu e no clima. */
+  EVENTOS_FDS: [
+    { k:'motor', quando:['quali','corrida'], se: sea => sea.isTop && sea.year >= 2004, ic:'alerta',
+      t:'O motor mostrou uma leitura estranha',
+      d: sea => 'A telemetria de sexta não gostou da pressão de óleo. O motor ainda funciona — por quanto tempo, ninguém sabe.',
+      o: sea => [
+        { k:'trocar', n:'Trocar o motor', d:`Motor novo e tranquilo, mas você larga ${sea.year >= 2014 ? 10 : 5} posições atrás.`, ef:{ grid: sea.year >= 2014 ? 10 : 5, confia:.03 } },
+        { k:'arriscar', n:'Correr com ele', d:'Sem punição. Mais chance de quebrar no domingo.', ef:{ confia:-.08 } } ] },
+    { k:'pacote', quando:['treino','quali'], ic:'fabrica',
+      t:'A peça nova chegou antes',
+      d: () => 'A fábrica adiantou o assoalho novo. Os números do túnel de vento são bons; ninguém testou na pista ainda.',
+      o: () => [
+        { k:'usar', n:'Usar já', d:'Mais rápido, se funcionar como no túnel. Peça nova também quebra mais.', ef:{ ritmo:1.2, confia:-.02 } },
+        { k:'esperar', n:'Esperar a próxima corrida', d:'Nada muda neste fim de semana.', ef:{} } ] },
+    { k:'batida', quando:['treino'], ic:'alerta',
+      t:'Você bateu no treino',
+      d: () => 'Saída de curva, roda traseira na grama e a barreira chegou rápido. O carro volta, mas não inteiro.',
+      o: () => [
+        { k:'remendar', n:'Remendar com o que tem', d:'O carro sai com peças velhas: um pouco mais lento.', ef:{ ritmo:-.7 } },
+        { k:'refazer', n:'Montar tudo de novo', d:'Carro igual ao de antes, mas você perde o próximo treino e a equipe fica a noite inteira trabalhando.', ef:{ sessao:-1, rel:-3 } } ] },
+    { k:'frente', quando:['quali','corrida'], se: sea => !Engine.climaDe(sea, sea.round), ic:'chuva',
+      t:'O radar mudou: frente fria chegando',
+      d: () => 'A meteorologia dá sete em dez de chuva para a corrida. O acerto tem que ser escolhido agora.',
+      o: () => [
+        { k:'chuva', n:'Acerto para chuva', d:'Asa alta e carro macio. Ótimo se chover, ruim se não chover.', ef:{ acerto:'chuva', frente:1 } },
+        { k:'seco', n:'Manter o acerto de seco', d:'Bom no seco, sofrido no molhado.', ef:{ acerto:'seco', frente:1 } } ] },
+    { k:'calor', quando:['corrida'], se: sea => !Engine.climaDe(sea, sea.round), ic:'sol',
+      t:'Calor de 38 graus',
+      d: () => 'O asfalto passa dos 55 °C. O pneu vai sofrer mais do que em qualquer corrida do ano.',
+      o: () => [
+        { k:'poupar', n:'Largar poupando pneu', d:'Ritmo mais lento no começo e menos paradas.', ef:{ calor:10, modo:'poupar' } },
+        { k:'normal', n:'Largar no ritmo normal', d:'A equipe ajusta a estratégia durante a corrida.', ef:{ calor:10 } } ] },
+    { k:'comissarios', quando:['quali','corrida'], ic:'alerta',
+      t:'Os comissários te chamaram',
+      d: () => 'Dizem que você atrapalhou um rival numa volta rápida. A decisão sai antes da largada.',
+      o: () => [
+        { k:'aceitar', n:'Aceitar a punição', d:'Três posições a menos no grid.', ef:{ grid:3 } },
+        { k:'recorrer', n:'Contestar', d:'Metade das vezes passa em branco; na outra, a punição dobra e a equipe não gosta.', ef:{ sorte:'recurso' } } ] },
+    { k:'patro', quando:['treino'], ic:'maleta',
+      t:'O patrocinador quer você num evento',
+      d: () => 'Duas horas de fotos e conversa com clientes, bem no meio da tarde de treinos.',
+      o: () => [
+        { k:'ir', n:'Ir ao evento', d:'O patrocinador fica feliz e o seu nome aparece. Um treino a menos.', ef:{ sessao:-1, fama:3 } },
+        { k:'recusar', n:'Ficar na garagem', d:'Você treina tudo. O patrocinador reclama com a equipe.', ef:{ rel:-4 } } ] },
+    { k:'febre', quando:['treino','quali'], ic:'alerta',
+      t:'Você acordou com febre',
+      d: () => 'Trinta e oito e meio. O médico da categoria libera, mas avisa que o corpo não vai responder igual.',
+      o: () => [
+        { k:'assim', n:'Correr assim', d:'Mais lento e mais sujeito a erro.', ef:{ ritmo:-1, cons:-6 } },
+        { k:'remedio', n:'Remédio forte e cama', d:'Melhora bastante, mas você chega abatido.', ef:{ ritmo:-.35, moral:-4 } } ] },
+    { k:'cambio', quando:['corrida'], se: sea => sea.year >= 1980, ic:'chave',
+      t:'Vazamento no câmbio',
+      d: () => 'Uma gota de óleo na garagem depois da classificação. Trocar o câmbio custa posições no grid.',
+      o: sea => [
+        { k:'trocar', n:'Trocar o câmbio', d:`Você larga ${sea.isTop && sea.year >= 2004 ? 5 : 3} posições atrás, sem risco.`, ef:{ grid: sea.isTop && sea.year >= 2004 ? 5 : 3 } },
+        { k:'selar', n:'Selar e torcer', d:'Sem punição. Pode parar na pista.', ef:{ confia:-.06 } } ] },
+    { k:'pneus', quando:['quali'], se: sea => sea.year >= 1990, ic:'pneu',
+      t:'Sobrou um jogo de pneus novos',
+      d: () => 'A equipe tem um jogo novo a mais. Ou vai para a classificação, ou fica guardado para a corrida.',
+      o: () => [
+        { k:'quali', n:'Usar na classificação', d:'Mais rápido no sábado; no domingo você larga com pneu já usado.', ef:{ ritmoQ:1, pneuUsado:.22 } },
+        { k:'corrida', n:'Guardar para domingo', d:'Classificação normal, pneu novo na largada e um pouco mais de ritmo na corrida.', ef:{ ritmoR:.4 } } ] },
+    { k:'radical', quando:['treino'], ic:'engrenagem',
+      t:'O engenheiro quer um acerto radical',
+      d: () => 'Ele acha que achou alguma coisa no simulador. Pode ser a melhor ideia do ano ou uma tarde perdida.',
+      o: () => [
+        { k:'topar', n:'Topar', d:'Metade das vezes o carro melhora bastante; na outra, piora.', ef:{ sorte:'radical' } },
+        { k:'nao', n:'Ficar no que funciona', d:'Nada muda. O engenheiro fica um pouco chateado.', ef:{ rel:-1 } } ] }
+  ],
+  /* sorteia (uma vez por fim de semana) se e quando acontece alguma coisa */
+  eventoDoFds(sea, etapa){
+    const fds = Engine.garantirFds(sea, sea.round);
+    /* uma escolha deixada sem resposta volta a aparecer */
+    if(fds.evento) return !fds.evento.escolha && fds.evento.etapa === etapa ? Engine.EVENTOS_FDS.find(x => x.k === fds.evento.k) || null : null;
+    if(fds.sorteio == null) fds.sorteio = R.chance(.5) ? R.pick(['treino', 'quali', 'corrida']) : 'nenhum';
+    /* na sexta, só com mais de uma sessão: o evento cai entre elas */
+    if(fds.sorteio === 'treino' && fds.sessoes < 2) fds.sorteio = 'quali';
+    if(fds.sorteio !== etapa) return null;
+    const cands = Engine.EVENTOS_FDS.filter(e => e.quando.indexOf(etapa) >= 0 && (!e.se || e.se(sea)));
+    fds.sorteio = 'feito';
+    if(!cands.length) return null;
+    const e = R.pick(cands);
+    fds.evento = { k: e.k, etapa, escolha: null };
+    return e;
+  },
+  escolherEventoFds(sea, k){
+    const fds = sea.fds; if(!fds || !fds.evento || fds.evento.escolha) return null;
+    const e = Engine.EVENTOS_FDS.find(x => x.k === fds.evento.k); if(!e) return null;
+    const o = e.o(sea).find(x => x.k === k) || e.o(sea)[0];
+    fds.evento.escolha = o.k;
+    const ef = Object.assign({}, o.ef);
+    let nota = null;
+    /* o acaso de algumas escolhas se resolve agora */
+    if(ef.sorte === 'recurso'){ if(R.chance(.5)) nota = 'Os comissários aceitaram a explicação. Nenhuma punição.'; else { ef.grid = 6; ef.rel = -2; nota = 'Recurso negado, e a punição dobrou: seis posições.'; } }
+    if(ef.sorte === 'radical'){ if(R.chance(.5)){ ef.ritmo = 1.4; nota = 'Deu certo: o carro ganhou quase um segundo no setor travado.'; } else { ef.ritmo = -.8; nota = 'Não funcionou. O carro ficou nervoso e não deu tempo de voltar tudo.'; } }
+    if(ef.frente) sea.clima[sea.round] = R.chance(.7);
+    if(ef.sessao) fds.sessoes = Math.max((fds.treinos || []).length, fds.sessoes + ef.sessao);
+    if(ef.fama) S.driver.fame = clamp(S.driver.fame + ef.fama, 0, 100);
+    if(ef.moral) S.driver.morale = clamp(S.driver.morale + ef.moral, 5, 100);
+    if(ef.rel) S.teamRel = clamp((S.teamRel || 50) + ef.rel, 0, 100);
+    fds.efeitos = Object.assign(fds.efeitos || {}, ef);
+    return { e, o, nota };
+  },
+  /* quanto o fim de semana mexe em alguma coisa (0 se nada aconteceu) */
+  efeitoFds(sea, k){
+    const f = sea && sea.fds && sea.fds.rd === sea.round && sea.fds.efeitos;
+    if(!f) return 0;
+    if(k === 'ritmo'){
+      /* o acerto da frente fria: bom se o tempo acertou, ruim se errou */
+      let r = f.ritmo || 0;
+      if(f.acerto){ const wet = Engine.climaDe(sea, sea.round); r += f.acerto === 'chuva' ? (wet ? 1 : -.8) : (wet ? -1 : .3); }
+      return r;
+    }
+    return f[k] || 0;
+  },
+
   garantirFds(sea, rd){
     if(!sea.fds || sea.fds.rd !== rd){
       sea.fds = { rd, etapa:'treino', treinos:[], quali:null,
@@ -9703,8 +9958,15 @@ const Engine = {
   },
 
   /* ══ SIMULA UMA CORRIDA ══ */
-  runRace(sea){
+  /* ═══ A CORRIDA EM DUAS PARTES ═══
+     montarCorrida: o grid, o ritmo de cada carro e os azares do dia (quebra,
+     batida, erro), sem tocar no campeonato. runRace fecha: a ordem vem da
+     conta de sempre (modo rápido, temporada simulada) ou da corrida
+     comandada ao vivo, que entrega a chegada pronta. */
+  montarCorrida(sea, semMim){
     const rd = sea.round;
+    /* machucado, você não larga: o resto do grid corre do mesmo jeito */
+    const campo = semMim ? sea.field.filter(f => !f.isMe) : sea.field;
     const trk = sea.calendar[rd];
     const era = Engine.eraOf(sea.year);
     /* o tempo é sorteado quando você monta o carro, não depois: senão
@@ -9758,11 +10020,12 @@ const Engine = {
     /* Se o sábado foi disputado na mão, o grid é o do sábado. Só quando a
        classificação não acontece — modo rápido, temporada simulada, piloto
        machucado — é que ela é resolvida aqui de uma vez. */
+    const notas = [];
     let grid;
-    if(sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid){
+    if(!semMim && sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid){
       grid = sea.fds.quali.grid;
     } else {
-      const qual = sea.field.map(f=>{
+      const qual = campo.map(f=>{
         const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
         const bruto = f.isMe
           ? Engine.meSkill(wet).q + tr.q + meuFator.total + (sea.minhaForma || 0)
@@ -9773,6 +10036,15 @@ const Engine = {
       }).sort((a,b)=>b.v-a.v);
       grid = {}; qual.forEach((q,i)=>grid[q.f.id]=i+1);
     }
+    /* punição de grid do fim de semana (motor, câmbio, comissários) */
+    const punGrid = Math.round(Engine.efeitoFds(sea, 'grid'));
+    if(punGrid > 0 && grid.ME){
+      const de = grid.ME, para = Math.min(sea.field.length, de + punGrid);
+      grid = Object.assign({}, grid);
+      Object.keys(grid).forEach(id => { if(grid[id] > de && grid[id] <= para) grid[id]--; });
+      grid.ME = para;
+      if(para > de) notas.push('punicaoGrid');
+    }
 
     /* ── corrida ── */
     let passW = trk.type==='street' ? .62 : trk.type==='fast' ? .20 : .36;
@@ -9780,12 +10052,11 @@ const Engine = {
     passW /= 1 + (Math.max(caos, sea.isTop ? perf.variancia : 1) - 1) * .5;
     const out = [];
     const running = [];
-    const notas = [];
 
-    sea.field.forEach(f => {
+    campo.forEach(f => {
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR + clima.car : 0);
       const bruto = f.isMe
-        ? Engine.meSkill(wet).r + tr.r + meuFator.total + (sea.minhaForma || 0)
+        ? Engine.meSkill(wet).r + tr.r + meuFator.total + (sea.minhaForma || 0) + Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoR')
         : f.skill + f.rb + (f.esp ? (f.esp[trk.type] || 0) * .7 : 0) + (f.formAno || 0);
       const sk = Engine.compSkill(bruto, sea) + (f.isMe ? Engine.ganhoTreino('corrida') : 0);
       const g = grid[f.id];
@@ -9801,13 +10072,14 @@ const Engine = {
       const teto = clamp(.975 - (perf.confia - 1) * .35, .90, .978);
       /* quem poupou o carro na sexta chega no domingo com menos quilometragem */
       if(f.isMe && sea.fds && sea.fds.rd === rd && sea.fds.poupou) relBase += .022;
+      if(f.isMe) relBase += Engine.efeitoFds(sea, 'confia');
       const mech = !R.chance(clamp(relBase, .35, teto));
 
       /* ── erro do piloto ──
          Não é batida: é a curva perdida, o pneu bloqueado, o giro na saída
          dos boxes. Custa posições e às vezes custa a corrida. */
       const consF = f.isMe
-        ? clamp(S.driver.attr.cons + (S.driver.morale - 60) * .12 - (S.cansaco || 0) * .35, 10, 99)
+        ? clamp(S.driver.attr.cons + (S.driver.morale - 60) * .12 - (S.cansaco || 0) * .35 + Engine.efeitoFds(sea, 'cons'), 10, 99)
         : (f.cons != null ? f.cons : 55);
       const errou = R.chance(Engine.chanceErro(consF, S.series, wet, aperto && (f.isMe || (f.fome||0) > .6)));
       /* quem tem fome de campeonato arrisca menos e some menos */
@@ -9833,25 +10105,37 @@ const Engine = {
         const custoErro = errou ? (3.2 + R.f() * 4.5) * seguro : 0;
         if(errou && f.isMe) notas.push('escorregao');
         const v = W.car*car + W.skill*sk + R.gauss()*noise*1.15 - (g-1)*passW - custoErro;
-        running.push({ f, grid:g, v });
+        /* para a corrida ao vivo: o ritmo puro (a posição de largada e o erro
+           acontecem na pista) e a constância de cada um */
+        running.push({ f, grid:g, v, vr: W.car*car + W.skill*sk + R.gauss()*noise*.45, errou, cons: consF });
       }
     });
 
-    const houveSC = Engine.aplicarSC(running, out, trk, perf, wet);
-    running.sort((a,b)=>b.v-a.v);
-    /* ordem final: quem terminou, depois os abandonos — quem foi mais longe na frente */
-    out.sort((a,b)=>b.fracFora-a.fracFora);
-    const finish = running.map((x,i)=>({ ...x, pos:i+1 }))
-      .concat(out.map((x,i)=>({ ...x, pos:running.length+i+1, out:true })));
-
-    /* volta mais rápida: entre os 6 primeiros, favorecendo o carro melhor */
-    let flId = null;
-    const flPool = running.slice(0, Math.min(6, running.length));
-    if(flPool.length){
-      const w = flPool.map(x=>Math.exp((x.v - flPool[0].v)/2.4));
-      let t = w.reduce((a,b)=>a+b,0)*Math.random(), k=0;
-      while(k<w.length-1 && t>w[k]){ t-=w[k]; k++; }
-      flId = flPool[k].f.id;
+    return { rd, trk, era, wet, ajuste, grid, running, out, notas, perf };
+  },
+  runRace(sea, vivo, semMim){
+    const M = (vivo && vivo.montagem) || Engine.montarCorrida(sea, semMim);
+    const { rd, trk, era, wet, ajuste, grid, running, out, notas, perf } = M;
+    let finish, flId = null, houveSC;
+    if(vivo){
+      /* a chegada que a pista deu */
+      finish = vivo.finish; flId = vivo.flId; houveSC = vivo.sc;
+      (vivo.notas || []).forEach(x => { if(notas.indexOf(x) < 0) notas.push(x); });
+    } else {
+      houveSC = Engine.aplicarSC(running, out, trk, perf, wet);
+      running.sort((a,b)=>b.v-a.v);
+      /* ordem final: quem terminou, depois os abandonos — quem foi mais longe na frente */
+      out.sort((a,b)=>b.fracFora-a.fracFora);
+      finish = running.map((x,i)=>({ ...x, pos:i+1 }))
+        .concat(out.map((x,i)=>({ ...x, pos:running.length+i+1, out:true })));
+      /* volta mais rápida: entre os 6 primeiros, favorecendo o carro melhor */
+      const flPool = running.slice(0, Math.min(6, running.length));
+      if(flPool.length){
+        const w = flPool.map(x=>Math.exp((x.v - flPool[0].v)/2.4));
+        let t = w.reduce((a,b)=>a+b,0)*Math.random(), k=0;
+        while(k<w.length-1 && t>w[k]){ t-=w[k]; k++; }
+        flId = flPool[k].f.id;
+      }
     }
 
     /* pontos — Indianápolis e Le Mans valem o dobro no regulamento das suas categorias */
@@ -9882,13 +10166,14 @@ const Engine = {
       }
     });
 
-    const mine = finish.find(x=>x.f.isMe);
+    /* machucado, você não está na chegada */
+    const mine = finish.find(x=>x.f.isMe) || null;
     const tmId = sea.teammateId;
     const tm = tmId ? finish.find(x=>x.f.id===tmId) : null;
 
     /* ferimento / acidente grave */
     let injury = null;
-    if(mine.out && mine.dnf==='ACID' && S.opts.risk){
+    if(mine && mine.out && mine.dnf==='ACID' && S.opts.risk){
       /* O risco da época é o risco da categoria principal. Kart e divisões de
          acesso correm em pistas curtas e carros lentos — um garoto de 14 anos
          não enfrenta o perigo de um Nürburgring de 1963. */
@@ -9905,11 +10190,11 @@ const Engine = {
 
     const rec = {
       r: rd+1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet, dbl:!!trk.dbl,
-      setup: sea.setup ? { asa:sea.setup.asa, susp:sea.setup.susp, motor:sea.setup.motor,
+      setup: mine && sea.setup ? { asa:sea.setup.asa, susp:sea.setup.susp, motor:sea.setup.motor,
                            erro: ajuste.erro, auto: !!sea.setup.auto, filo: ajuste.filo,
                            rev: Engine.setupRevisao(sea, rd, sea.setup.resp) } : null,
-      grid: mine.grid, pos: mine.out ? null : mine.pos, dnf: mine.out ? mine.dnf : null,
-      pts: mine.pts, fl: flId==='ME',
+      grid: mine ? mine.grid : null, pos: !mine || mine.out ? null : mine.pos, dnf: !mine ? 'LES' : mine.out ? mine.dnf : null,
+      pts: mine ? mine.pts : 0, fl: !!mine && flId==='ME',
       tmGrid: tm ? tm.grid : null, tmPos: tm ? (tm.out?null:tm.pos) : null,
       top: finish.slice(0,10).map(x=>({ n:x.f.name, cc:x.f.cc, t:sea.teams.find(t=>t.id===x.f.teamId).name,
                                         me:!!x.f.isMe, pos:x.out?null:x.pos, dnf:x.out?x.dnf:null })),
@@ -9922,7 +10207,8 @@ const Engine = {
 
     /* a corrida contada metro a metro é calculada quando alguém vai assistir:
        aqui fica só a descrição dela, fora do save */
-    if(!(S.opts && S.opts.fast))
+    if(vivo && vivo.crono) rec.crono = vivo.crono;
+    if(!vivo && mine && !(S.opts && S.opts.fast))
       Object.defineProperty(rec, 'provaEnt', { value: Engine.descreverProva(sea, rd, finish, flId, wet, houveSC, S.series), enumerable: false, configurable: true });
 
     /* playoff: primeiro anda a rodada, depois se abre a fase seguinte */
@@ -9933,9 +10219,11 @@ const Engine = {
     }
 
     /* o que a corrida mostrou sobre esta pista fica guardado para a próxima vez */
-    Engine.gravarPista(trk.id, Engine.setores(sea, rd), sea.year);
-    /* e o que ela ensinou sobre este tipo de traçado fica com o piloto */
-    if(sea.isTop) Engine.aprenderPista(rec);
+    if(mine){
+      Engine.gravarPista(trk.id, Engine.setores(sea, rd), sea.year);
+      /* e o que ela ensinou sobre este tipo de traçado fica com o piloto */
+      if(sea.isTop) Engine.aprenderPista(rec);
+    }
 
     sea.results.push(rec);
     sea.round++;
@@ -11667,11 +11955,18 @@ const Pista = {
     const trk = TRACKS[trkId] || { id: trkId, type: 'mixed', circ: trkId, gp: trkId };
     const ref = typeof PISTAS_REAIS !== 'undefined' ? PISTAS_REAIS[trkId] : null;
     const reg = ref ? PISTAS_REAIS['#' + ref] : null;
+    /* o mesmo circuito com outro nome no jogo (o Brands Hatch do DTM é o Brands Hatch) */
+    const osm = typeof PISTAS_OSM !== 'undefined' ? PISTAS_OSM[trkId] : null;
+    if(!reg && osm && osm.alias && osm.alias !== trkId) return Pista.de(osm.alias, ano);
     let g;
     if(reg && ano >= reg.de && (!reg.ate || ano <= reg.ate)) g = Pista.real(trk, reg);
-    else g = Pista.esquema(trk, reg
-      ? `O jogo tem o traçado de ${reg.de}${reg.ate ? ' a ' + reg.ate : ' em diante'} deste circuito; a configuração de ${ano} era outra e não está modelada.`
-      : 'Este circuito ainda não tem traçado real no jogo.');
+    else if(reg){
+      /* o traçado real é de outra época: melhor ele, avisado, do que um desenho genérico */
+      g = Pista.real(trk, reg);
+      g.aprox.unshift(`configuração de ${reg.de}${reg.ate ? ' a ' + reg.ate : ' em diante'}; a de ${ano} era outra`);
+    }
+    else if(osm && osm.pts) g = Pista.osm(trk, osm, ano);
+    else g = Pista.esquema(trk, 'Este circuito ainda não tem traçado real no jogo.');
     Pista._cache.push({ k, g });
     if(Pista._cache.length > 4) Pista._cache.shift();
     return g;
@@ -11689,6 +11984,26 @@ const Pista = {
       fonte: 'bacinger/f1-circuits · licença MIT', arquivo: reg.f, desde: reg.de, ate: reg.ate || null,
       escala: reg.esc, nota: reg.nota || null, aprox, alt: reg.alt,
       ladoBox: reg.pit === 'esq' ? 1 : reg.pit === 'dir' ? -1 : g.dentro
+    });
+  },
+
+  /* um traçado do OpenStreetMap: o anel das vias de corrida, com o sentido da
+     mão única (quando o mapa diz) e a linha de chegada na reta mais longa */
+  osm(trk, reg, ano){
+    const v = reg.pts.split(',').map(Number), pts = [];
+    let x = 0, y = 0;
+    for(let i = 0; i < v.length; i += 2){ x += v[i]; y += v[i + 1]; pts.push([x / 10, y / 10]); }
+    let g = Pista.construir(pts, reg.comp);
+    /* sentido suposto: oval anti-horário, o resto horário (área negativa = horário) */
+    if(reg.sentido === 'hor' && !g.horario || reg.sentido === 'anti' && g.horario) g = Pista.construir(pts.slice().reverse(), reg.comp);
+    Pista.chegadaNaReta(g);
+    const aprox = ['linha de chegada na reta mais longa (posição aproximada)', 'boxes e pit lane (posição aproximada)', 'largura e altimetria (padrão)'];
+    if(reg.sentido !== 'osm') aprox.unshift('sentido de corrida suposto (o mapa não indica mão única)');
+    aprox.unshift(`traçado atual do circuito; a configuração de ${ano} pode ter sido outra`);
+    return Object.assign(g, {
+      real: true, id: trk.id, tipo: trk.type, nome: reg.nome || trk.circ, circ: trk.circ,
+      fonte: '© colaboradores do OpenStreetMap · ODbL', arquivo: 'osm', desde: null, ate: null, escala: 1, nota: reg.conf || null,
+      aprox, ladoBox: g.dentro
     });
   },
 
@@ -12272,6 +12587,727 @@ const Prova = {
     if(k === 0) return Prova.fmtProva(cr.tv);
     if(typeof d === 'string'){ const v = +d.slice(1); return '+' + v + (v > 1 ? ' voltas' : ' volta'); }
     return '+' + d.toFixed(1) + 's';
+  }
+};
+</script>
+
+<!-- ═══ A CORRIDA COMANDADA ═══ -->
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   A CORRIDA COMANDADA
+   Aqui a corrida não é contada: ela acontece. O motor (Engine.montarCorrida
+   e Chefe.montar) entrega o grid, o ritmo de cada carro e os azares que o
+   dia guardava; daqui para frente quem decide a ordem é a pista — pneu,
+   combustível, chuva, safety car, ar sujo, erro — e quem está no muro:
+   quando parar, que pneu pôr, quanto forçar. A física é a da Prova: o
+   traçado real, a volta de referência, as zonas de frenagem onde se passa.
+   ═══════════════════════════════════════════════════════════════ */
+const Gp = {
+  DT: .25, CARRO: 5, K: 32,
+  COMP: {
+    S: { c:'S', n:'Macio',          cor:'#ff3b30', ritmo:-.0052, km:88, deg:1.4 },
+    M: { c:'M', n:'Médio',          cor:'#ffd60a', ritmo:0,      km:135, deg:1 },
+    H: { c:'H', n:'Duro',           cor:'#f2f2f2', ritmo:.0042,  km:215, deg:.8 },
+    I: { c:'I', n:'Intermediário',  cor:'#34c759', ritmo:0,      km:150, chuva:1 },
+    W: { c:'W', n:'Chuva',          cor:'#0a84ff', ritmo:0,      km:175, chuva:2 }
+  },
+  MODOS: {
+    atacar: { n:'Atacar',  m:.9955, gasto:1.35, erro:1.7 },
+    normal: { n:'Normal',  m:1,     gasto:1,    erro:1 },
+    poupar: { n:'Poupar',  m:1.0075, gasto:.66, erro:.55 }
+  },
+
+  /* o regulamento e o material da época e da categoria */
+  regras(sk, ano, nivel, kart, oval, est, N){
+    const r = { secos:['S', 'M', 'H'], chuva:['I', 'W'], doisCompostos:false, reabastece:false, tanque:Infinity,
+                parado: est.parado, limite: est.limite, gasto:1, drs:false, scProb:.55, vscProb:0 };
+    if(kart){ r.secos = ['M']; r.chuva = ['W']; r.gasto = .3; r.scProb = 0; }
+    else if(sk === 'f1' && nivel === 0){
+      r.doisCompostos = ano >= 2007;
+      r.reabastece = ano >= 1994 && ano <= 2009;
+      r.drs = ano >= 2011;
+      r.gasto = ano < 1982 ? .32 : ano < 1994 ? .55 : ano < 2011 ? .78 : 1;
+      r.vscProb = ano >= 2015 ? .45 : 0;
+      /* antes de 1993 não havia safety car: a pista seguia com bandeira amarela */
+      r.scProb = ano >= 1993 ? .6 : 0;
+    }
+    else if(nivel >= 2){ r.secos = ['M']; r.chuva = ['W']; r.gasto = .55; }
+    else if(nivel === 1){ r.secos = ['S', 'H']; r.gasto = .85; r.drs = ano >= 2015 && sk === 'f1'; }
+    else if(sk === 'fe'){ r.secos = ['M']; r.chuva = []; r.gasto = .22; r.reabastece = ano <= 2017; }
+    else if(sk === 'nascar'){ r.secos = ['M']; r.chuva = oval ? [] : ['W']; r.gasto = .9; r.reabastece = true; r.scProb = .9; }
+    else if(sk === 'indy'){ r.secos = oval ? ['M'] : ['M', 'S']; r.chuva = oval ? [] : ['W']; r.gasto = .62; r.reabastece = true; r.scProb = .8; }
+    else if(sk === 'wec'){ r.secos = ['M', 'H']; r.gasto = .5; r.reabastece = true; r.scProb = .7; r.vscProb = .3; }
+    else if(sk === 'stock' || sk === 'dtm'){ r.secos = ['M']; r.chuva = ['W']; r.gasto = .7; r.reabastece = sk === 'stock'; r.scProb = .6; }
+    if(oval) r.chuva = [];
+    if(r.reabastece && est.paradas > 0) r.tanque = Math.ceil(N / (est.paradas + 1) * 1.12) + 1;
+    return r;
+  },
+
+  /* o tempo do dia: chuva que chega, chuva que para, e a pista que molha e seca devagar */
+  clima(ent, trk, T, N, oval){
+    const rnd = rngDe(((ent.seed || 1) ^ 0x51ed) >>> 0);
+    const dur = N * T * 1.05;
+    const fases = [];
+    if(oval) fases.push([0, 0]);
+    else if(ent.wet){
+      const r0 = .55 + rnd() * .4;
+      fases.push([0, r0]);
+      if(rnd() < .45){ const ate = dur * (.35 + rnd() * .4); fases.push([ate, 0]); }
+    } else {
+      fases.push([0, 0]);
+      if(rnd() < (trk.rainP || .2) * .32){
+        const ini = dur * (.18 + rnd() * .55), r = .3 + rnd() * .55;
+        fases.push([ini, r]); fases.push([ini + dur * (.12 + rnd() * .3), 0]);
+      }
+    }
+    /* a onda de calor do fim de semana esquenta o ar e, mais ainda, o asfalto */
+    const q = ent.wet ? 0 : (ent.calor || 0);
+    const base = ent.wet ? 11 + rnd() * 8 : 16 + rnd() * 15, sobe = ent.wet ? 2 + rnd() * 3 : 8 + rnd() * 16;
+    /* onda de calor: 34 a 39 °C no ar e asfalto perto dos 55 */
+    const ar = Math.round(q ? 34 + (base - 16) / 3 : base);
+    return { fases, ar, pista: Math.round(ar + (q ? 14 + (sobe - 8) / 2 : sobe)), w0: fases[0][1] };
+  },
+  chuvaEm(R, t){ let r = 0; for(const f of R.clima.fases) if(t >= f[0]) r = f[1]; return r; },
+  /* o que chega nos próximos minutos, como o radar da equipe vê */
+  previsao(R){
+    const prox = R.clima.fases.find(f => f[0] > R.t);
+    if(!prox) return null;
+    const min = (prox[0] - R.t) / 60;
+    if(min > 25) return null;
+    return { min, chuva: prox[1] };
+  },
+
+  /* quanto o pneu perde com o uso: pouco no começo, muito no fim da vida */
+  degr(w){ return .0105 * w + (w > .7 ? .55 * (w - .7) * (w - .7) : 0) + (w > 1 ? .05 : 0); },
+  /* pneu de pista seca no molhado, e o contrário */
+  desencaixe(c, w){
+    const C = Gp.COMP[c];
+    if(!C.chuva) return 1 + .36 * Math.pow(w, 1.5);
+    if(C.chuva === 1) return w < .15 ? 1.05 - w * .15 : 1.022 + .13 * Math.max(0, w - .66);
+    return w < .5 ? 1.03 + .09 * (.5 - w) / .5 + (w < .15 ? .03 : 0) : 1.03;
+  },
+  gastoVolta(R, c, w){
+    const C = Gp.COMP[c];
+    let km = C.km;
+    if(C.chuva && w < .2) km /= 3.2;          /* pneu de chuva em pista seca derrete */
+    const tipo = { street:.82, tech:1, mixed:1.05, fast:1.12, oval:1.08 }[R.trk.type] || 1;
+    const calor = 1 + Math.max(0, R.clima.pista - 32) * .012;
+    return (R.g.L / 1000) / km * R.regras.gasto * tipo * calor;
+  },
+
+  /* ── a estratégia: a sequência de pneus que dá menos tempo até o fim ── */
+  planejar(R, s, desde){
+    const reg = R.regras, resta = R.N - desde;
+    if(resta <= 2) return [];
+    const w = R.w;
+    const molhado = w > .38;
+    const opcoes = molhado ? (w > .72 && reg.chuva.indexOf('W') >= 0 ? ['W'] : reg.chuva.length ? [reg.chuva[0]] : reg.secos) : reg.secos;
+    const g0 = s.pneu.gasto, c0 = s.pneu.c;
+    const precisaDois = reg.doisCompostos && !R.choveu && !molhado && new Set([...s.usados].filter(c => !Gp.COMP[c].chuva)).size < 2;
+    const minParadas = reg.tanque < Infinity ? Math.max(0, Math.ceil((resta - Math.max(0, reg.tanque - s.desdeBox)) / reg.tanque)) : 0;
+    let melhor = null;
+    const avalia = stints => {
+      let t = 0, ok = true;
+      const usados = new Set(s.usados);
+      stints.forEach((st, k) => {
+        const gv = Gp.gastoVolta(R, st.c, w);
+        const gi = k === 0 && st.c === c0 && st.continua ? g0 : 0;
+        if(gi + gv * st.v > 1.0) ok = false;
+        if(reg.tanque < Infinity && st.v > reg.tanque) ok = false;
+        for(let v = 0; v < st.v; v += 2) t += (Gp.COMP[st.c].ritmo + Gp.degr(gi + gv * v) * (Gp.COMP[st.c].deg || 1)) * R.T * 2;
+        /* parar custa o tempo dos boxes e a posição no tráfego */
+        if(k > 0 || !st.continua) t += R.perdaBox + 3;
+        usados.add(st.c);
+      });
+      if(precisaDois && new Set([...usados].filter(c => !Gp.COMP[c].chuva)).size < 2) ok = false;
+      return ok ? t : Infinity;
+    };
+    for(let paradas = minParadas; paradas <= minParadas + 2 && paradas <= Math.max(minParadas, 3); paradas++){
+      /* primeiro trecho: continuar com o pneu atual ou trocar já (se este não serve) */
+      const seqs = [];
+      const n = paradas + 1;
+      const rec = (pre) => { if(pre.length === n){ seqs.push(pre); return; } opcoes.forEach(c => rec(pre.concat(c))); };
+      rec([]);
+      for(const seq of seqs){
+        const continua = seq[0] === c0 && opcoes.indexOf(c0) >= 0;
+        if(!continua && paradas === 0) continue;
+        /* divide as voltas pela vida de cada pneu */
+        const vidas = seq.map((c, k) => (k === 0 && continua ? Math.max(.05, 1 - g0) : 1) / Gp.gastoVolta(R, c, w));
+        const soma = vidas.reduce((a, b) => a + b, 0);
+        let alocado = 0;
+        const stints = seq.map((c, k) => {
+          const v = k === n - 1 ? resta - alocado : Math.max(1, Math.round(resta * vidas[k] / soma));
+          alocado += v;
+          return { c, v, continua: k === 0 && continua };
+        });
+        if(stints.some(st => st.v < 1)) continue;
+        /* cada muro tem o seu jeito: uns preferem parar menos, outros pneu mais macio */
+        const vies = s.vies ? (s.vies.paradas * paradas + seq.reduce((a, c) => a + (s.vies[c] || 0), 0)) * R.T * .06 : 0;
+        const t = avalia(stints) + vies;
+        if(!melhor || t < melhor.t) melhor = { t, stints };
+      }
+    }
+    if(!melhor){
+      /* nada fecha: troca pelo mais duro e segue */
+      const c = opcoes[opcoes.length - 1];
+      return [{ c, ate: R.N }];
+    }
+    /* o plano: em que volta parar e o que pôr */
+    const plano = [];
+    let volta = desde;
+    melhor.stints.forEach((st, k) => {
+      if(k === 0 && st.continua){ volta += st.v; return; }
+      plano.push({ volta: Math.max(desde + 1, Math.min(R.N - 1, volta)), c: st.c });
+      volta += st.v;
+    });
+    return plano;
+  },
+
+  /* ═══ montar a corrida ═══
+     ent: { trkId, ano, sk, nivel, wet, seed, gp, circ,
+            carros: [{ id, nome, cc, cor, eq, me, nosso, ctrl, grid, ritmo, cons,
+                       fora:'ACID'|'MEC'|null, fracFora, erro }] } */
+  criar(ent){
+    const g = Pista.de(ent.trkId, ent.ano);
+    const trk = TRACKS[ent.trkId] || { id: ent.trkId, type: g.tipo || 'mixed', rainP: .2 };
+    const kart = /^(kt_|kb_|kr_)/.test(ent.trkId) || ent.nivel >= 4;
+    const oval = trk.type === 'oval';
+    Prova._oval = oval;
+    const fis = Prova.fisica(ent.sk, ent.ano, ent.nivel, kart);
+    Prova._oval = false;
+    const seco = Prova.perfil(g, fis, false, oval), molhado = Prova.perfil(g, fis, true, oval);
+    const { N, condensada, km } = Prova.voltas(ent.sk, ent.nivel, ent.ano, trk, g.L, seco.T);
+    const est = Prova.estrategia(ent.sk, ent.ano, ent.nivel, N, km, false, kart);
+    const regras = Gp.regras(ent.sk, ent.ano, ent.nivel, kart, oval, est, N);
+    const rnd = rngDe((ent.seed || 7) >>> 0);
+    const R = { ent, g, trk, fis, seco, molhado, N, condensada, km, regras, rnd, T: seco.T,
+                t: 0, w: 0, choveu: false, sc: null, eventos: [], bandeira: null, fim: false,
+                fl: { t: Infinity, i: null, volta: null }, pergunta: null, kart, oval };
+    R.clima = Gp.clima(ent, trk, seco.T, N, oval);
+    R.w = R.clima.w0; R.choveu = R.w > .3;
+    /* o que se perde nos boxes: a pit lane em velocidade limitada mais a parada */
+    const L = g.L;
+    R.boxIni = L - 330; R.boxFim = 230;
+    const vMed = L / seco.T;
+    R.perdaBox = 560 / regras.limite - 560 / vMed + regras.parado;
+    if(!(R.perdaBox > 5)) R.perdaBox = regras.parado + 14;
+    /* ritmo: a nota do motor vira diferença de tempo por volta */
+    const cs = ent.carros, vTop = Math.max(...cs.map(c => c.ritmo));
+    const spp = Prova.segPorPonto(ent.sk, ent.ano, ent.nivel);
+    const nCp = (N + 4) * Gp.K;
+    const pneuIni = R.w > .38 ? (R.w > .72 && regras.chuva.indexOf('W') >= 0 ? 'W' : regras.chuva[0] || regras.secos[0]) : null;
+    R.carros = cs.map((c, i) => {
+      const delta = spp * (vTop - c.ritmo) / N;
+      const s = { i, c, s: -(c.grid - 1) * 8 - 6, v: 0, lado: 0, ladoAlvo: 0, m0: 1 + delta / R.T, m: 1,
+        estado: 0, voltas: 0, cruz: [], valida: [], melhor: Infinity, ultima: null, fim: null, voltaSuja: false,
+        pneu: { c: 'M', gasto: 0, voltas: 0 }, usados: new Set(), desdeBox: 0, comb: 1,
+        modo: Gp.MODOS[c.modo] ? c.modo : 'normal', plano: [], parar: null, paradas: 0, frio: 0, ruido: 1, erroAte: 0, dano: 0, furo: false,
+        avisos: 0, penal: 0, passe: null, boost: 1, azulPor: null, ultimaZona: -1, trocou: null, trocouV: 0,
+        boxAlvo: null, boxAte: 0, decidiu: -1, foraEm: null, foraLado: 0, fora: null,
+        cp: new Float32Array(nCp).fill(-1), cpUlt: -1, boxes: [] };
+      /* o azar que o dia guardava: a volta em que quebra ou bate */
+      if(c.fora){
+        const v = Math.max(1, Math.min(N - 1, Math.ceil((c.fracFora != null ? c.fracFora : rnd()) * N)));
+        s.fora = { tipo: c.fora, volta: v, onde: c.fora === 'ACID' && seco.zonas.length ? seco.zonas[Math.floor(rnd() * seco.zonas.length)].fim * g.ds : rnd() * L };
+      }
+      if(c.erro) s.erroVolta = 2 + Math.floor(rnd() * Math.max(1, N - 4));
+      s.vies = { paradas: (rnd() - .5) * 2.2, S: (rnd() - .5) * 1.2, M: (rnd() - .5) * 1.2, H: (rnd() - .5) * 1.2 };
+      return s;
+    });
+    /* o pneu de largada: o primeiro trecho do plano de cada um */
+    R.carros.forEach(s => {
+      /* pneu que já rodou no sábado */
+      if(s.c.pneu0) s.pneu.gasto = s.c.pneu0;
+      if(pneuIni) s.pneu.c = pneuIni;
+      else {
+        const opc = regras.secos;
+        /* começa pelo pneu que o plano de largada pede: testa cada um */
+        let melhor = null;
+        opc.forEach(c => { s.pneu.c = c; s.usados = new Set([c]); const p = Gp.planejar(R, s, 0); const custo = Gp.custoPlano(R, s, p) + (s.vies[c] || 0) * R.T * .35;
+          if(!melhor || custo < melhor.custo) melhor = { c, custo }; });
+        s.pneu.c = melhor ? melhor.c : opc[0];
+      }
+      s.usados = new Set([s.pneu.c]);
+      s.plano = Gp.planejar(R, s, 0);
+    });
+    R.ordem = R.carros.slice();
+    R.zonaDe = new Int16Array(g.n).fill(-1);
+    seco.zonas.forEach((z, k) => { for(let p = 0; p < 40; p++) R.zonaDe[(z.i - 25 + p + g.n) % g.n] = k; });
+    R.tipoMult = { street: .5, tech: .8, mixed: 1, fast: 1.2, oval: 1.5 }[trk.type] || 1;
+    R.frente = new Array(cs.length).fill(null);
+    R.pista = R.carros.slice();
+    R.evento = (tipo, a, b, extra) => R.eventos.push(Object.assign({ t: Math.round(R.t * 10) / 10, tipo, a, b: b == null ? null : b, volta: (R.lider ? R.lider.voltas : 0) + 1 }, extra || {}));
+    return R;
+  },
+  custoPlano(R, s, plano){
+    let t = plano.length * R.perdaBox, volta = 0, c = s.pneu.c;
+    const etapas = plano.concat([{ volta: R.N, c: null }]);
+    etapas.forEach(p => { const gv = Gp.gastoVolta(R, c, R.w); for(let v = 0; v < p.volta - volta; v += 2) t += (Gp.COMP[c].ritmo + Gp.degr(gv * v) * (Gp.COMP[c].deg || 1)) * R.T * 2; volta = p.volta; c = p.c; });
+    return t;
+  },
+
+  /* ── comandos de quem está no muro ── */
+  comandar(R, i, cmd){
+    const s = R.carros[i]; if(!s || s.estado === 3 || s.estado === 4) return;
+    if(cmd.modo && Gp.MODOS[cmd.modo]) s.modo = cmd.modo;
+    if(cmd.parar !== undefined){
+      s.parar = cmd.parar || null;
+      if(cmd.parar) R.evento('chamado', i, null, { c: cmd.parar });
+    }
+    /* ordem de equipe: este carro abre passagem para o companheiro logo atrás */
+    if(cmd.ceder != null){
+      const j = R.carros[cmd.ceder], L = R.g.L;
+      const perto = j && ((s.s - j.s) % L + L) % L < j.v * 1.2 + 12;
+      if(!j || j.estado !== 0 || s.estado !== 0 || R.frente[j.i] !== s || !perto) return 'longe';
+      j.passe = { alvo: s, ate: R.t + 35, lado: 1, ordem: true }; j.ladoAlvo = 3.4; s.ladoAlvo = -1.4;
+      R.ordemEquipe = { pelo: j.c.id, cedeu: s.c.id };
+      R.evento('ordem', i, j.i);
+    }
+  },
+  /* quem pode receber a ordem agora: o companheiro colado atrás */
+  podeCeder(R, i){
+    const s = R.carros[i], L = R.g.L;
+    if(!s || s.estado !== 0) return null;
+    return R.carros.find(j => j !== s && j.c.ctrl && j.estado === 0 && R.frente[j.i] === s && ((s.s - j.s) % L + L) % L < j.v * 1.2 + 12) || null;
+  },
+  responder(R, k){
+    const q = R.pergunta; if(!q) return;
+    const o = q.opcoes.find(x => x.k === k) || q.opcoes[0];
+    o.efeito(R.carros[q.i]);
+    R.evento('radio', q.i, null, { txt: o.n });
+    R.pergunta = null;
+  },
+
+  /* ── a corrida anda até o instante ate (segundos de prova) ── */
+  avancar(R, ate){
+    let guarda = 0;
+    while(R.t < ate && !R.fim && !R.pergunta && guarda++ < 200000) Gp.passo(R);
+  },
+  terminar(R){
+    /* simular até o fim: o muro assume as paradas dos seus carros */
+    R.equipeDecide = true;
+    let guarda = 0;
+    while(!R.fim && guarda++ < 400000){
+      if(R.pergunta) Gp.responder(R, R.pergunta.padrao);
+      Gp.passo(R);
+    }
+  },
+
+  passo(R){
+    const g = R.g, L = g.L, n = g.n, DT = Gp.DT, st = R.carros, nc = st.length, rnd = R.rnd, reg = R.regras;
+    const pos = x => ((x % L) + L) % L;
+    /* a pista molha depressa e seca devagar */
+    const chuva = Gp.chuvaEm(R, R.t);
+    R.w += (chuva - R.w) * DT / (chuva > R.w ? 150 : 520);
+    if(R.w > .3 && !R.choveu){ R.choveu = true; }
+    if(chuva > 0 && !R._chovendo){ R._chovendo = true; if(R.t > 5) R.evento('chuva'); }
+    if(chuva === 0 && R._chovendo){ R._chovendo = false; R.evento('parou'); }
+    /* a ordem na pista */
+    const P = new Float64Array(nc);
+    for(let k = 0; k < nc; k++) P[k] = pos(st[k].s);
+    const pista = R.pista;
+    for(let a = 1; a < nc; a++){ const x = pista[a]; let b = a - 1; while(b >= 0 && P[pista[b].i] < P[x.i]){ pista[b + 1] = pista[b]; b--; } pista[b + 1] = x; }
+    let ultimo = null, primeiro = null;
+    for(let k = 0; k < nc; k++){ const s = pista[k]; if(s.estado !== 0) continue; if(!primeiro) primeiro = s; R.frente[s.i] = ultimo; ultimo = s; }
+    if(primeiro && ultimo && primeiro !== ultimo) R.frente[primeiro.i] = ultimo; else if(primeiro) R.frente[primeiro.i] = null;
+    let lider = null; for(const s of st) if(s.estado !== 3 && (!lider || s.s > lider.s)) lider = s;
+    R.lider = lider;
+    /* safety car e safety car virtual */
+    if(R.sc && !R.sc.fim && lider && lider.voltas >= R.sc.ateVolta){ R.sc.fim = true; R.sc.ate = R.t; R.evento('verde'); }
+    const emSC = R.sc && !R.sc.fim && R.sc.tipo === 'SC', emVSC = R.sc && !R.sc.fim && R.sc.tipo === 'VSC';
+    const comecaNeutro = (por, motivo) => {
+      if(R.bandeira || (R.sc && !R.sc.fim) || !lider || lider.voltas >= R.N - 2) return;
+      const u = rnd();
+      if(u < reg.scProb) R.sc = { tipo: 'SC', desde: R.t, ateVolta: lider.voltas + 2 + Math.floor(rnd() * 3), fim: false };
+      else if(u < reg.scProb + reg.vscProb) R.sc = { tipo: 'VSC', desde: R.t, ateVolta: lider.voltas + 1 + Math.floor(rnd() * 2), fim: false };
+      else return;
+      R.evento(R.sc.tipo === 'SC' ? 'sc' : 'vsc', por, null, { motivo });
+      /* a equipe avisa na hora se vale aproveitar a neutralização */
+      if(!R.equipeDecide) st.forEach(s => { if(s.c.ctrl && s.estado === 0 && !s.parar) Gp.sugerir(R, s, Gp.quererParar(R, s, true)); });
+    };
+    /* um acontecimento por volta do líder, no máximo */
+    if(lider && lider.voltas !== R._evVolta && lider.voltas >= 1 && !R.bandeira){
+      R._evVolta = lider.voltas;
+      Gp.acaso(R, comecaNeutro);
+    }
+
+    for(const s of st){
+      if(s.estado === 3){ if(s.v > 0){ s.v = Math.max(0, s.v - 8 * DT); s.s += s.v * DT; } s.lado += (s.foraLado - s.lado) * .06; continue; }
+      if(s.estado === 4){ s.v = Math.max(0, Math.min(s.v, 30)); s.s += s.v * DT; continue; }
+      const p = P[s.i], idx = Math.floor(p / g.ds) % n;
+      /* o azar do dia: quebra ou batida na volta marcada */
+      if(s.fora && s.estado === 0 && (s.voltas + 1 >= s.fora.volta) && (Math.abs(p - s.fora.onde) < s.v * DT + 3 || s.voltas + 1 > s.fora.volta)){
+        Gp.abandonar(R, s, s.fora.tipo, idx);
+        if(s.fora.tipo === 'ACID') comecaNeutro(s.i, 'batida');
+        continue;
+      }
+      /* o ritmo deste instante */
+      const C = Gp.COMP[s.pneu.c], M = Gp.MODOS[s.modo] || Gp.MODOS.normal;
+      const combF = 1 + (reg.reabastece ? .024 * s.comb : .03 * (1 - Math.min(1, s.voltas / R.N)));
+      const pneuF = (1 + (R.w < .3 ? C.ritmo : 0) + Gp.degr(s.pneu.gasto) * (C.deg || 1)) * Gp.desencaixe(s.pneu.c, R.w) * (s.frio > 0 ? 1.012 : 1);
+      s.m = s.m0 * pneuF * combF * M.m * s.ruido * (1 + s.dano) * (s.furo ? 1.3 : 1) * (R.t < s.erroAte ? 1.6 : 1);
+      const vRef = R.seco.v[idx] * (1 - R.w) + R.molhado.v[idx] * R.w;
+      let vd = vRef * s.boost / s.m;
+      if(s.azulPor){ if(R.frente[s.azulPor.i] === s && s.azulPor.estado === 0) vd *= .9; else { s.azulPor = null; if(!s.passe) s.ladoAlvo = 0; } }
+      if(emSC && s.estado === 0) vd = Math.min(vd, vRef * .62, 42);
+      if(emVSC && s.estado === 0) vd = Math.min(vd, vRef * .7);
+      /* boxes */
+      if(s.estado === 1 || s.estado === 2 || s.estado === 5){
+        vd = reg.limite;
+        if(s.estado === 1 && Math.abs(p - s.boxAlvo) < s.v * DT + 2){
+          s.estado = 2; s.v = 0;
+          const lento = rnd() < (R.ent.ano >= 2005 ? .05 : .08) ? 2 + rnd() * 7 : 0;
+          s.boxAte = R.t + reg.parado * (.92 + rnd() * .18) + lento + (s.dano ? 6 : 0);
+          if(lento) R.evento('lenta', s.i, null, { seg: Math.round(lento) });
+        }
+        if(s.estado === 2){ vd = 0; s.v = 0;
+          if(R.t >= s.boxAte){
+            s.estado = 5;
+            const novo = s.boxPneu || s.pneu.c;
+            s.pneu = { c: novo, gasto: 0, voltas: 0 }; s.usados.add(novo); s.frio = L * .7;
+            s.comb = 1; s.desdeBox = 0; s.dano = 0; s.furo = false; s.paradas++; s.boxPneu = null;
+            s.boxes.push(R.t);
+            R.evento('boxes', s.i, null, { c: novo });
+            s.plano = Gp.planejar(R, s, s.voltas);
+          }
+        }
+        if(s.estado === 5 && p > R.boxFim && p < R.boxFim + 300){ s.estado = 0; s.ladoAlvo = 0; s.boxAlvo = null; }
+      }
+      /* tráfego e ultrapassagem */
+      const a = s.estado === 0 ? R.frente[s.i] : null;
+      let seguindo = false;
+      if(a){
+        const gap = pos(a.s - s.s) - Gp.CARRO;
+        const hw = emSC ? .7 * s.v + 10 : .32 * s.v + 6;
+        const lapando = s.s - a.s > L * .5, sendoLapado = a.s - s.s > L * .5;
+        let livre = s.passe && s.passe.alvo === a;
+        if(!livre && lapando && !emSC && gap < 120){
+          livre = true;
+          if(a.azulPor !== s){ a.azulPor = s; a.ladoAlvo = -g.dentro * 2.8; s.ladoAlvo = g.dentro * 2.4; }
+        } else if(!lapando && !s.passe && s.ladoAlvo !== 0 && !s.azulPor && s.estado === 0) s.ladoAlvo = 0;
+        seguindo = !lapando && gap < 40;
+        const zona = R.zonaDe[idx];
+        if(!livre && !emSC && !emVSC && !sendoLapado && !lapando && zona >= 0 && s.ultimaZona !== zona + 1000 * s.voltas && a.estado === 0 && gap < s.v * .55 + 4){
+          s.ultimaZona = zona + 1000 * s.voltas;
+          const z = R.seco.zonas[zona];
+          const vantagem = Math.max(0, a.m - s.m);
+          let pr = z.q * R.tipoMult * (.08 + 30 * vantagem) * (reg.drs && R.w < .3 && s.voltas >= 2 ? 1.45 : 1);
+          /* quem acabou de perder a posição devolve o golpe com menos facilidade */
+          if(s.trocou === a.i && s.voltas - s.trocouV < 3) pr *= .4;
+          pr = Math.max(0, Math.min(.95, pr));
+          if(rnd() < pr){
+            const ladoP = g.k[z.fim] >= 0 ? 1 : -1;
+            s.passe = { alvo: a, ate: R.t + 12, lado: ladoP };
+            s.ladoAlvo = ladoP * 3.4; a.ladoAlvo = -ladoP * 1.4;
+            livre = true;
+            /* disputa dura: às vezes encosta */
+            if(rnd() < .035 * M.erro * (R.w > .3 ? 1.8 : 1)) Gp.toque(R, s, a);
+          }
+        }
+        if(!livre && gap < hw + 12 && vd > a.v - .5) vd = Math.min(vd, Math.max(0, a.v + (gap - hw) * .8));
+      }
+      if(s.passe){
+        const alvo = s.passe.alvo;
+        /* na ordem de equipe quem está na frente tira o pé de verdade até o outro passar */
+        s.boost = s.passe.ordem ? 1.03 : 1.075; alvo.boost = s.passe.ordem ? .92 : .985; s.voltaSuja = alvo.voltaSuja = true;
+        if(s.s > alvo.s + Gp.CARRO + 2 || alvo.estado === 3 || alvo.estado === 1){
+          if(alvo.estado === 0) R.evento('ultrapassagem', s.i, alvo.i);
+          alvo.trocou = s.i; alvo.trocouV = s.voltas;
+          s.passe = null; s.boost = 1; alvo.boost = 1; s.ladoAlvo = 0; alvo.ladoAlvo = 0;
+        } else if(R.t > s.passe.ate){ s.passe = null; s.boost = 1; alvo.boost = 1; s.ladoAlvo = 0; alvo.ladoAlvo = 0; }
+      }
+      /* aceleração dentro do que o carro tem */
+      const fis = R.fis;
+      const accMax = Math.max(.5, Math.min(9.81 * fis.mu, fis.pm / Math.max(s.v, 4)) - fis.drag * s.v * s.v) * s.boost / s.m;
+      const brkMax = 9.81 * (fis.b0 + fis.aero * 1.1 * s.v * s.v) * 1.25;
+      if(vd > s.v) s.v = Math.min(vd, s.v + accMax * DT); else s.v = Math.max(vd, s.v - brkMax * DT);
+      const antes = s.s;
+      s.s += s.v * DT;
+      const andou = s.s - antes;
+      s.lado += (s.ladoAlvo - s.lado) * Math.min(1, DT * 1.6);
+      /* o pneu gasta e o tanque esvazia com a distância */
+      if(andou > 0 && s.s > 0){
+        s.pneu.gasto += Gp.gastoVolta(R, s.pneu.c, R.w) * (andou / L) * M.gasto * (seguindo ? 1.06 : 1) * (emSC || emVSC ? .35 : 1);
+        if(s.frio > 0) s.frio -= andou;
+        if(reg.tanque < Infinity) s.comb = Math.max(0, s.comb - andou / (L * reg.tanque));
+      }
+      /* marcas de tempo ao longo da volta: a base das diferenças na torre */
+      if(s.s >= 0){
+        const ci = Math.floor(s.s / (L / Gp.K));
+        if(ci > s.cpUlt){ for(let k = Math.max(0, s.cpUlt + 1); k <= ci && k < s.cp.length; k++) s.cp[k] = R.t; s.cpUlt = ci; }
+      }
+      /* a decisão de parar: antes da entrada dos boxes */
+      const pDec = pos(R.boxIni - 250);
+      if(s.estado === 0 && !R.bandeira && s.decidiu !== s.voltas && pos(antes) < pDec && pos(s.s) >= pDec && s.s > 0){
+        s.decidiu = s.voltas;
+        s.boxPneu = Gp.decidir(R, s, emSC || emVSC);
+      }
+      /* entrada dos boxes */
+      if(s.estado === 0 && !R.bandeira && (s.boxPneu || s.parar) && pos(antes) < R.boxIni && pos(s.s) >= R.boxIni && s.s > 0){
+        if(!s.boxPneu) s.boxPneu = s.parar;
+        s.estado = 1; s.boxAlvo = pos(L - 210 + (s.i % 10) * 15); s.ladoAlvo = g.ladoBox * 14; s.parar = null; s.sugestao = null;
+        if(s.passe){ s.passe.alvo.ladoAlvo = 0; s.passe.alvo.boost = 1; s.passe = null; s.boost = 1; }
+      }
+      /* cruzou a linha */
+      const v0 = Math.floor(antes / L), v1 = Math.floor(s.s / L);
+      if(v1 > v0 && s.s >= 0){
+        const tc = R.t + DT * ((v1 * L - antes) / Math.max(1e-6, s.s - antes));
+        s.cruz.push(tc);
+        if(s.cruz.length >= 2){
+          const tv = tc - s.cruz[s.cruz.length - 2];
+          s.ultima = tv;
+          if(tv < s.melhor) s.melhor = tv;
+          const voltaSC = R.sc && (!R.sc.fim || tc - tv < (R.sc.ate || 0));
+          if(tv < R.fl.t && !voltaSC && !s.voltaSuja && s.estado === 0){ R.fl.t = tv; R.fl.i = s.i; R.fl.volta = s.voltas + 1; }
+          s.valida.push(!voltaSC && !s.voltaSuja);
+          s.voltaSuja = !!s.passe;
+        }
+        s.voltas = v1; s.pneu.voltas++; s.desdeBox++;
+        /* cada volta é diferente: o ritmo oscila com a constância do piloto */
+        s.ruido = 1 + (rnd() - .5) * .006 * (1.35 - (s.c.cons || 60) / 100);
+        Gp.porVolta(R, s, emSC || emVSC);
+        /* o rádio fala no começo da volta: dá tempo de decidir antes da entrada dos boxes */
+        if(s.c.ctrl && !R.equipeDecide && s.estado === 0 && !R.bandeira && !s.parar) Gp.sugerir(R, s, Gp.quererParar(R, s, emSC || emVSC));
+        if(s.estado === 0 || s.estado === 5){
+          if(R.bandeira){ s.estado = 4; s.fim = tc; }
+          else if(s.voltas >= R.N){ R.bandeira = { t: tc }; s.estado = 4; s.fim = tc; R.evento('bandeira', s.i); }
+        }
+      }
+    }
+    R.t += DT;
+    if(R.bandeira){
+      let resta = false; for(const s of st) if(s.estado !== 3 && s.estado !== 4){ resta = true; break; }
+      if((!resta && R.t > R.bandeira.t + 5) || R.t > R.bandeira.t + R.T * 1.8){
+        st.forEach(s => { if(s.estado !== 3 && s.estado !== 4){ s.estado = 4; s.fim = R.t; } });
+        /* quem terminou no seco sem usar dois compostos leva a punição dos comissários */
+        if(reg.doisCompostos && !R.choveu) st.forEach(s => { if(s.estado === 4 && new Set([...s.usados].filter(c => !Gp.COMP[c].chuva)).size < 2){ s.penal += 30; R.evento('punicao', s.i, null, { seg: 30, motivo: 'não usar dois compostos' }); } });
+        R.fim = true;
+      }
+    }
+  },
+
+  /* uma volta completa: desgaste extremo, erro, combustível, regra dos compostos */
+  porVolta(R, s, neutro){
+    const rnd = R.rnd, M = Gp.MODOS[s.modo] || Gp.MODOS.normal, eu = s.c.ctrl;
+    /* pneu acabado fura */
+    if(!s.furo && s.pneu.gasto > 1 && rnd() < .12 * (s.pneu.gasto - .95) * 4){
+      s.furo = true; R.evento('furo', s.i);
+      if(!eu) s.parar = s.parar || Gp.melhorPneuAgora(R, s);
+    }
+    /* erro de pilotagem: o planejado pelo motor e o que o modo e a pista provocam */
+    const errBase = (.004 + (R.w > .3 && !Gp.COMP[s.pneu.c].chuva ? .03 * R.w : 0) + (s.pneu.gasto > .95 ? .01 : 0)) * M.erro * (1.3 - (s.c.cons || 60) / 100);
+    if(!neutro && (s.erroVolta === s.voltas || rnd() < errBase)){
+      s.erroVolta = null;
+      /* às vezes o erro termina no muro */
+      const grave = R.w > .3 && !Gp.COMP[s.pneu.c].chuva ? .22 : .06;
+      if(rnd() < grave * M.erro && !s.fora){ s.fora = { tipo: 'ACID', volta: s.voltas + 1, onde: rnd() * R.g.L }; }
+      else { s.erroAte = R.t + 2 + rnd() * 3; R.evento('erro', s.i); }
+    }
+    /* limites de pista: três avisos e vem a punição */
+    if(!neutro && rnd() < .006 * M.erro){
+      s.avisos++;
+      if(s.avisos === 3){ s.penal += 5; R.evento('punicao', s.i, null, { seg: 5, motivo: 'limites de pista' }); }
+    }
+    /* sem combustível */
+    if(R.regras.tanque < Infinity && s.comb <= 0 && s.estado === 0){ Gp.abandonar(R, s, 'MEC', 0, 'sem combustível'); }
+  },
+  /* o acaso de cada volta: detrito, falha, chuva que ninguém previu */
+  acaso(R, neutro){
+    const rnd = R.rnd, st = R.carros;
+    if(rnd() < .012) neutro(null, 'detrito');
+    /* uma falha num carro que está correndo */
+    if(rnd() < .02){
+      const vivos = st.filter(s => s.estado === 0 && !s.fora);
+      const s = vivos[Math.floor(rnd() * vivos.length)];
+      if(s){
+        if(s.c.ctrl && !R.pergunta){
+          R.pergunta = { i: s.i, padrao: 'poupar', txt: `${Engine.sobrenome(s.c.nome)}: "Estou perdendo potência. O motor está estranho."`,
+            opcoes: [
+              { k: 'poupar', n: 'Poupar o motor até o fim', d: 'Uns décimos por volta, e o carro provavelmente chega.', efeito: x => { x.dano += .006; if(rnd() < .15) x.fora = x.fora || { tipo: 'MEC', volta: x.voltas + 2 + Math.floor(rnd() * 10), onde: rnd() * R.g.L }; } },
+              { k: 'seguir', n: 'Seguir no ritmo', d: 'Nada muda na pista. Pode quebrar.', efeito: x => { if(rnd() < .45) x.fora = x.fora || { tipo: 'MEC', volta: x.voltas + 1 + Math.floor(rnd() * 8), onde: rnd() * R.g.L }; } }
+            ] };
+          R.evento('falha', s.i);
+        } else { s.dano += .005; if(rnd() < .3 && !s.fora) s.fora = { tipo: 'MEC', volta: s.voltas + 2 + Math.floor(rnd() * 8), onde: rnd() * R.g.L }; }
+      }
+    }
+  },
+  toque(R, s, a){
+    const rnd = R.rnd;
+    const vit = rnd() < .5 ? s : a;
+    if(rnd() < .35){ vit.furo = true; R.evento('toque', s.i, a.i, { furo: vit.i }); }
+    else { vit.dano += .012; R.evento('toque', s.i, a.i, { asa: vit.i }); }
+    if(vit.c.ctrl && !R.pergunta){
+      R.pergunta = { i: vit.i, padrao: 'parar', txt: `${Engine.sobrenome(vit.c.nome)}: "Bateram em mim! ${vit.furo ? 'O pneu está furado.' : 'A asa da frente está quebrada.'}"`,
+        opcoes: [
+          { k: 'parar', n: 'Parar nesta volta', d: vit.furo ? 'Troca o pneu e volta para a pista.' : 'Troca a asa: alguns segundos a mais no box.', efeito: x => { x.parar = Gp.melhorPneuAgora(R, x); } },
+          { k: 'seguir', n: 'Seguir assim', d: vit.furo ? 'Muito lento, e a roda pode se soltar.' : 'Perde tempo em toda curva até a próxima parada.', efeito: () => {} }
+        ] };
+    } else if(!vit.c.ctrl) vit.parar = vit.parar || Gp.melhorPneuAgora(R, vit);
+  },
+  abandonar(R, s, tipo, idx, motivo){
+    s.estado = 3; s.foraEm = R.t; s.foraTipo = tipo; s.foraVolta = s.voltas + 1;
+    s.foraLado = (R.g.k[idx] >= 0 ? -1 : 1) * (tipo === 'ACID' ? 15 : 10);
+    if(s.passe){ s.passe.alvo.ladoAlvo = 0; s.passe = null; }
+    R.evento(tipo === 'ACID' ? 'batida' : 'quebra', s.i, null, { motivo: motivo || null });
+  },
+  /* o pneu certo para a pista de agora */
+  melhorPneuAgora(R, s){
+    const reg = R.regras;
+    if(R.w > .72 && reg.chuva.indexOf('W') >= 0) return 'W';
+    if(R.w > .38 && reg.chuva.length) return reg.chuva[0];
+    const resta = R.N - s.voltas;
+    const ok = reg.secos.filter(c => Gp.gastoVolta(R, c, R.w) * resta <= .95);
+    const pref = ok.length ? ok[0] : reg.secos[reg.secos.length - 1];
+    if(reg.doisCompostos && !R.choveu && new Set([...s.usados].filter(c => !Gp.COMP[c].chuva)).size < 2){
+      const outro = (ok.length ? ok : reg.secos).find(c => !s.usados.has(c));
+      if(outro) return outro;
+    }
+    return pref;
+  },
+  /* o que a equipe faria nesta volta, e por quê: { c, por } ou null */
+  quererParar(R, s, neutro){
+    const reg = R.regras;
+    const C = Gp.COMP[s.pneu.c];
+    const quer = Gp.melhorPneuAgora(R, s);
+    /* a pista mudou: pneu de chuva ou de volta ao seco */
+    if(!C.chuva && R.w > .42) return { c: quer, por: 'chuva' };
+    if(C.chuva && R.w < .25) return { c: quer, por: 'seco' };
+    if(C.chuva === 1 && R.w > .8 && reg.chuva.indexOf('W') >= 0) return { c: quer, por: 'chuva' };
+    if(s.furo) return { c: quer, por: 'furo' };
+    /* combustível no fim */
+    if(reg.tanque < Infinity && s.desdeBox >= reg.tanque - 1 && R.N - s.voltas > 1) return { c: Gp.proximoDoPlano(R, s) || quer, por: 'comb' };
+    /* pneu no limite */
+    if(s.pneu.gasto > .97 && R.N - s.voltas > 2) return { c: Gp.proximoDoPlano(R, s) || quer, por: 'pneu' };
+    /* regra dos dois compostos: falta pouco e só usou um */
+    if(reg.doisCompostos && !R.choveu && new Set([...s.usados].filter(c => !Gp.COMP[c].chuva)).size < 2 && R.N - s.voltas <= 3) return { c: quer, por: 'regra' };
+    const prox = s.plano[0];
+    if(!prox) return null;
+    /* com safety car na pista, parar custa a metade: quem está perto da janela antecipa */
+    if(neutro && prox.volta - (s.voltas + 1) <= Math.max(4, R.N * .14)) return { c: prox.c, por: 'sc' };
+    if(s.voltas + 1 >= prox.volta) return { c: prox.c, por: 'plano' };
+    return null;
+  },
+  /* a equipe decide se para nesta volta (ou obedece o pedido de quem manda) */
+  decidir(R, s, neutro){
+    if(s.parar) return s.parar;
+    const q = Gp.quererParar(R, s, neutro);
+    /* o seu carro não para sozinho: a equipe chama no rádio e quem decide é você.
+       Só quando você manda simular até o fim o muro assume as paradas. */
+    if(s.c.ctrl && !R.equipeDecide){ Gp.sugerir(R, s, q); return null; }
+    if(!q) return null;
+    /* trocar para chuva ou para seco: cada equipe reage com o seu atraso */
+    if((q.por === 'chuva' || q.por === 'seco') && R.rnd() >= (s.c.ctrl ? .8 : .55)) return null;
+    return q.c;
+  },
+  /* o rádio da equipe para o seu carro: fala quando a recomendação muda */
+  sugerir(R, s, q){
+    if(!q || s.estado !== 0){ s.sugestao = null; return; }
+    const ant = s.sugestao, igual = ant && ant.c === q.c && ant.por === q.por;
+    s.sugestao = { c: q.c, por: q.por, volta: s.voltas + 1, desde: igual ? ant.desde : s.voltas };
+    if(!igual) R.evento('sugestao', s.i, null, { c: q.c, por: q.por });
+    /* a janela passou e você seguiu na pista: a equipe refaz as contas a partir de agora */
+    if(q.por === 'plano' && s.voltas - s.sugestao.desde >= 3){ s.plano = Gp.planejar(R, s, s.voltas); s.sugestao = null; }
+  },
+  proximoDoPlano(R, s){ return s.plano[0] ? s.plano[0].c : null; },
+
+  /* ── leituras para a tela ── */
+  /* a ordem da corrida: quem chegou, depois quem roda (pela distância), depois quem abandonou */
+  ordem(R){
+    return R.carros.slice().sort((a, b) =>
+      ((a.estado === 3) - (b.estado === 3)) || ((b.estado === 4) - (a.estado === 4))
+      || (a.estado === 4 && b.estado === 4 ? (b.cruz.length - a.cruz.length) || ((a.fim + a.penal) - (b.fim + b.penal)) : 0)
+      || (a.estado === 3 && b.estado === 3 ? b.s - a.s : b.s - a.s));
+  },
+  /* diferença para o líder e para quem está à frente, pelas marcas da volta */
+  torre(R){
+    const ord = Gp.ordem(R), L = R.g.L;
+    const lider = ord[0];
+    return ord.map((s, k) => {
+      const linha = { s, pos: k + 1, dif: '', int: '', voltasAtras: 0 };
+      if(s.estado === 3){ linha.dif = 'ABD'; return linha; }
+      if(k === 0){ linha.dif = 'Líder'; return linha; }
+      const ci = s.cpUlt;
+      const atras = Math.floor((lider.s - s.s) / L);
+      if(atras >= 1 && s.estado !== 4){ linha.voltasAtras = atras; linha.dif = '+' + atras + (atras > 1 ? ' voltas' : ' volta'); }
+      else if(ci >= 0 && lider.cp[ci] >= 0){ linha.gap = Math.max(0, s.cp[ci] - lider.cp[ci]); linha.dif = '+' + linha.gap.toFixed(1); }
+      const fr = ord[k - 1];
+      if(fr && fr.estado !== 3 && ci >= 0 && fr.cp[ci] >= 0 && !linha.voltasAtras) linha.int = '+' + Math.max(0, s.cp[ci] - fr.cp[ci]).toFixed(1);
+      if(s.estado === 4 && lider.estado === 4){
+        const vd = lider.cruz.length - s.cruz.length;
+        linha.dif = vd >= 1 ? '+' + vd + (vd > 1 ? ' voltas' : ' volta') : '+' + Math.max(0, (s.fim + s.penal) - (lider.fim + lider.penal)).toFixed(1);
+      }
+      return linha;
+    });
+  },
+
+  /* ── do motor para a pista e de volta ──
+     A montagem (Engine.montarCorrida ou Chefe.montar) vira a entrada da
+     corrida; a chegada volta no formato que o campeonato espera. */
+  entrada(sea, M, sk, ano, controla){
+    const time = id => sea.teams.find(t => t.id === id) || {};
+    const porGrid = M.running.slice().sort((a, b) => a.grid - b.grid);
+    const ritmoDe = x => x.vr != null ? x.vr : x.v;
+    const carro = (x, fora) => {
+      const tm = time(x.f.teamId);
+      let ritmo = fora ? null : ritmoDe(x);
+      /* quem vai abandonar corre, até lá, no ritmo de quem larga ao lado */
+      if(ritmo == null){ const viz = porGrid[Math.max(0, Math.min(porGrid.length - 1, x.grid - 1))]; ritmo = viz ? ritmoDe(viz) - 1 : 60; }
+      const c = { id: x.f.id, nome: x.f.name, cc: x.f.cc, cor: tm.color || '#888', eq: tm.name || '', me: !!x.f.isMe,
+        nosso: x.f.teamId === 'EU', ctrl: !!controla(x.f), grid: x.grid, ritmo, cons: x.cons || x.f.cons || 60,
+        erro: !!x.errou, fora: fora ? x.dnf : null, fracFora: fora ? x.fracFora : null };
+      /* o que o fim de semana deixou no seu carro: pneu usado na largada, o modo combinado */
+      if(x.f.isMe && typeof Engine !== 'undefined'){
+        const pu = Engine.efeitoFds(sea, 'pneuUsado'), md = Engine.efeitoFds(sea, 'modo');
+        if(pu) c.pneu0 = pu;
+        if(md) c.modo = md;
+      }
+      return c;
+    };
+    const carros = M.running.map(x => carro(x, false)).concat(M.out.map(x => carro(x, true))).sort((a, b) => a.grid - b.grid);
+    const calor = typeof Engine !== 'undefined' ? Engine.efeitoFds(sea, 'calor') : 0;
+    return { trkId: M.trk.id, ano, sk, nivel: Prova.nivelDe(sea), wet: !!M.wet, seed: Math.floor(R.f() * 1e9),
+             gp: M.trk.gp, circ: M.trk.circ, r: M.rd + 1, carros, calor: calor || 0 };
+  },
+  chegada(M, res){
+    const porId = {};
+    M.running.concat(M.out).forEach(x => porId[x.f.id] = x);
+    return res.ordem.map((o, k) => Object.assign({}, porId[o.id], { pos: k + 1, out: !!o.fora, dnf: o.fora || null,
+      fracFora: o.fora ? o.fracFora : null }));
+  },
+  cronoDe(res){
+    const v = res.ordem[0];
+    const dif = res.ordem.slice(0, 10).map((o, k) => {
+      if(o.fora || o.fim == null) return null;
+      const dv = v.voltas - o.voltas;
+      return k === 0 ? 0 : dv >= 1 ? 'V' + dv : +Math.max(0, o.fim - v.fim).toFixed(1);
+    });
+    return { n: res.N, c: res.condensada ? 1 : 0, tv: +res.tv.toFixed(1), dif,
+             vmr: res.fl ? [res.fl.nome, +res.fl.t.toFixed(3), res.fl.volta] : null };
+  },
+  /* o que a corrida do seu carro teve, nas palavras do resumo */
+  notasDe(R, id){
+    const s = R.carros.find(x => x.c.id === id); if(!s) return [];
+    const ev = R.eventos.filter(e => e.a === s.i || e.b === s.i);
+    const out = [];
+    if(ev.some(e => e.tipo === 'erro')) out.push('escorregao');
+    if(s.estado === 3) out.push(s.foraTipo === 'ACID' ? 'erro' : 'mecanica');
+    return out;
+  },
+
+  /* ── o resultado, no formato que o motor espera ── */
+  resultado(R){
+    const ord = Gp.ordem(R);
+    const lider = ord[0];
+    const fl = R.fl.i != null ? R.carros[R.fl.i] : null;
+    return {
+      ordem: ord.map(s => ({ id: s.c.id, fora: s.estado === 3 ? (s.foraTipo || 'MEC') : null, voltas: s.cruz.length - 1,
+        fim: s.fim != null ? s.fim + s.penal : null, paradas: s.paradas, penal: s.penal, melhor: isFinite(s.melhor) ? s.melhor : null,
+        pneus: [...s.usados], fracFora: s.estado === 3 ? Math.min(.99, (s.foraVolta || 1) / R.N) : null })),
+      flId: fl ? fl.c.id : null, fl: fl ? { nome: fl.c.nome, t: R.fl.t, volta: R.fl.volta } : null,
+      sc: !!R.sc || R.eventos.some(e => e.tipo === 'sc' || e.tipo === 'vsc'),
+      N: R.N, condensada: R.condensada, tv: lider && lider.fim != null ? lider.fim + lider.penal : R.t,
+      eventos: R.eventos.slice(), choveu: R.choveu, ordemEquipe: R.ordemEquipe || null
+    };
   }
 };
 </script>
@@ -13384,7 +14420,27 @@ UI.qualiResultado = function(q){
       </div>`).join('')}
     </div>
     <div class="mft"><span class="sp"></span>
-      <button class="btn btn-primary" onclick="UI.close();Game.correr()">Domingo →</button></div>`);
+      <button class="btn btn-primary" onclick="UI.close();Game.nextRace()">Domingo →</button></div>`);
+};
+
+/* ═══ O IMPREVISTO DO FIM DE SEMANA ═══ */
+UI.eventoFds = function(e){
+  const sea = S.season, trk = sea.calendar[sea.round];
+  const quando = { treino:'Sexta-feira', quali:'Sábado', corrida:'Domingo de manhã' }[sea.fds.evento.etapa] || '';
+  UI.modal(UI.head(esc(e.t), `${quando} · ${esc(trk.gp)}`, false) +
+    `<div class="mbd">
+      <div class="res-nar" style="margin-top:0">${ico(e.ic)} ${esc(e.d(sea))}</div>
+      <span class="lbl" style="display:block;margin:14px 0 7px">O que você faz</span>
+      ${e.o(sea).map(o => `<button class="dil" onclick="Game.eventoFds('${o.k}')">
+        <b>${esc(o.n)}</b><span>${esc(o.d)}</span></button>`).join('')}
+    </div>
+    <div class="mft"><span class="sp"></span></div>`);
+};
+UI.eventoFdsNota = function(r){
+  UI.modal(UI.head(esc(r.o.n), esc(r.e.t), false) +
+    `<div class="mbd"><div class="res-nar" style="margin-top:0">${esc(r.nota)}</div></div>
+    <div class="mft"><span class="sp"></span>
+      <button class="btn btn-primary" onclick="UI.close();Game.nextRace()">Continuar →</button></div>`);
 };
 
 /* ═══ ACERTO DO CARRO ═══
@@ -13834,6 +14890,9 @@ const Game = {
   startSeason(){
     UI.limparFila();
     const catAnterior = S.lastCatMidia;
+    /* lesão da reta final do ano passado: as férias curam. A do inverno é aplicada depois. */
+    const curou = S.driver && S.driver.injured > 0 && S.season && S.season.year < S.year;
+    if(curou) S.driver.injured = 0;
     S.season = Engine.buildSeason();
     S.season.dilemmaAt = R.int(2, Math.max(3, S.season.calendar.length-3));
     /* rodadas em que algo acontece fora da pista */
@@ -13859,6 +14918,7 @@ const Game = {
     Engine.garantirJornalistas();
     Engine.espelharRel();
     if(cobrancas.length) setTimeout(()=>UI.toast(cobrancas[0]), 1400);
+    if(curou) setTimeout(()=>UI.toast('As férias curaram a lesão do fim do ano: você larga na primeira corrida.'), 900);
     /* conta antiga que venceu no inverno bate à porta antes da primeira corrida */
     /* dois campeonatos americanos: é preciso escolher um */
     if(S.series === 'indy' && Engine.cisaoAtiva(S.year) && !S.ladoIndy)
@@ -14119,8 +15179,12 @@ const Game = {
     if(!sea.calendar[sea.round]) return;
     if(S.driver.injured > 0 || S.opts.fast) return Game.correr();
     const fds = Engine.garantirFds(sea, sea.round);
+    /* o imprevisto do fim de semana, quando é a hora dele */
+    const ev = k => { const e = Engine.eventoDoFds(sea, k); if(e) UI.eventoFds(e); return !!e; };
     if(fds.etapa === 'treino'){
-      if((fds.treinos || []).length >= fds.sessoes){ fds.etapa = 'acerto'; return Game.nextRace(); }
+      const n = (fds.treinos || []).length;
+      if(n >= 1 && n < fds.sessoes && ev('treino')) return;
+      if(n >= fds.sessoes){ fds.etapa = 'acerto'; return Game.nextRace(); }
       return UI.treinoModal();
     }
     if(fds.etapa === 'acerto'){
@@ -14129,9 +15193,19 @@ const Game = {
     }
     if(fds.etapa === 'quali'){
       if(fds.quali){ fds.etapa = 'corrida'; return Game.nextRace(); }
+      if(ev('quali')) return;
       return UI.qualiModal();
     }
+    if(ev('corrida')) return;
     Game.correr();
+  },
+  /* a resposta ao imprevisto; o acaso de algumas respostas aparece na hora */
+  eventoFds(k){
+    const sea = S.season;
+    const r = Engine.escolherEventoFds(sea, k);
+    Game.save(); UI.render();
+    if(r && r.nota) return UI.eventoFdsNota(r);
+    UI.close(); Game.nextRace();
   },
 
   /* uma sessão de treino */
@@ -14210,30 +15284,41 @@ const Game = {
 
     /* lesionado: não larga */
     if(S.driver.injured > 0){
-      const trk = sea.calendar[sea.round];
-      const rec = { r:trk.r, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet:false,
-        grid:null, pos:null, dnf:'LES', pts:0, fl:false, tmGrid:null, tmPos:null,
-        top:[], champ:0, injury:null };
-      sea.results.push(rec); sea.round++;
-      rec.champ = Engine.champPos(sea,'ME');
+      /* a corrida acontece sem você: os outros pontuam, o campeonato anda */
+      const rec = Engine.runRace(sea, null, true);
       S.driver.injured--;
       UI.render(); Game.save();
-      UI.toast(`Você não largou em ${rec.gp}. Faltam ${S.driver.injured} corrida(s) de recuperação.`);
+      const v = rec.top[0];
+      UI.toast(`Você não largou em ${rec.gp}${v ? ' — vitória de ' + v.n : ''}. ` + (S.driver.injured ? `Faltam ${S.driver.injured} corrida(s) de recuperação.` : 'Você volta na próxima.'));
       return;
     }
 
-    const rec = Engine.runRace(sea);
+    /* No modo completo a corrida é comandada ao vivo: a pista decide a
+       chegada, e você decide do muro. No modo rápido, a conta de sempre. */
+    if(!S.opts.fast && typeof AoVivo !== 'undefined'){
+      const M = Engine.montarCorrida(sea);
+      const ent = Gp.entrada(sea, M, S.series, sea.year, f => !!f.isMe);
+      const serie = sea.isTop ? Engine.serie().short : sea.cat;
+      AoVivo.abrir(ent, { serie }, (res, notasDe) => {
+        const vivo = res ? { montagem: M, finish: Gp.chegada(M, res), flId: res.flId, sc: res.sc, crono: Gp.cronoDe(res), notas: notasDe('ME') } : { montagem: M };
+        Game.fecharCorrida(Engine.runRace(sea, res ? vivo : null), sea, false);
+      });
+      return;
+    }
+    Game.fecharCorrida(Engine.runRace(sea), sea, !S.opts.fast);
+  },
+  /* depois da bandeirada: números, lesão e a tela do resultado */
+  fecharCorrida(rec, sea, replay){
     Game.tally(rec);
     UI.render();
     Game.save();
-
     if(rec.injury && rec.injury.fatal){ Game.endCareer('acidente'); return; }
     if(rec.injury){
       S.driver.injured = rec.injury.races;
       S.driver.morale = clamp(S.driver.morale - 14, 5, 100);
     }
-    /* a corrida acontece antes de virar número */
-    if(rec.provaEnt && !S.opts.fast){
+    /* a corrida contada (quando não foi comandada) acontece antes de virar número */
+    if(replay && rec.provaEnt){
       UI.centralCorrida(rec, () => { Game.save(); UI.raceResult(rec); Game.posCorrida(rec, sea); });
       return;
     }
@@ -14283,10 +15368,7 @@ const Game = {
     let guard = 0;
     while(sea.calendar[sea.round] && !sea.fired && guard++ < 40){
       if(S.driver.injured > 0){
-        const trk = sea.calendar[sea.round];
-        const rec = { r:trk.r, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet:false,
-          grid:null, pos:null, dnf:'LES', pts:0, fl:false, tmGrid:null, tmPos:null, top:[], champ:0, injury:null };
-        sea.results.push(rec); sea.round++; rec.champ = Engine.champPos(sea,'ME');
+        Engine.runRace(sea, null, true);
         S.driver.injured--; continue;
       }
       const rec = Engine.runRace(sea);
@@ -17437,13 +18519,111 @@ const Chefe = {
   /* ═══ UMA CORRIDA ═══
      Mesma conta do modo piloto, dos dois lados do box: o carro que você
      construiu, a mão de quem você contratou e as decisões do domingo. */
-  correr(){
+  /* a corrida do chefe em duas partes, como a do piloto: montar (grid,
+     ritmo, azares) e fechar (pontos, dinheiro, moral, imprensa) */
+  /* ═══ O IMPREVISTO DO FIM DE SEMANA ═══
+     Metade dos fins de semana traz alguma coisa para o muro resolver antes
+     da largada. A escolha fica em sea.fds (o mesmo formato da carreira) e
+     pesa no grid, no ritmo e na confiabilidade de um carro ou dos dois. */
+  FDS: [
+    { k:'motor', carro:true, se: sea => sea.ano >= 2004,
+      t: n => `O motor de ${n} acusou um problema`,
+      d: () => 'A pressão de óleo oscilou no fim do treino. O motor ainda gira, mas os engenheiros não confiam nele.',
+      o: sea => [
+        { k:'trocar', n:'Trocar o motor', d:`Motor novo e ${sea.ano >= 2014 ? 10 : 5} posições a menos no grid para ele.`, ef:{ grid: sea.ano >= 2014 ? 10 : 5, confia:.03 } },
+        { k:'arriscar', n:'Correr com ele', d:'Sem punição. Mais chance de quebrar no domingo.', ef:{ confia:-.08 } } ] },
+    { k:'pacote', carro:false,
+      t: () => 'A peça nova chegou antes',
+      d: () => 'A fábrica adiantou o pacote aerodinâmico. Funciona no túnel; ninguém sabe se funciona na pista.',
+      o: () => [
+        { k:'usar', n:'Usar nos dois carros', d:'Mais rápido, se funcionar. Peça nova também quebra mais.', ef:{ ritmo:1.1, confia:-.02 } },
+        { k:'esperar', n:'Esperar a próxima corrida', d:'Nada muda neste fim de semana.', ef:{} } ] },
+    { k:'frente', carro:false, se: (sea, trk) => (trk.rainP || .2) < .5,
+      t: () => 'O radar mudou: frente fria chegando',
+      d: () => 'A meteorologia dá sete em dez de chuva para domingo. O acerto tem de ser fechado hoje.',
+      o: () => [
+        { k:'chuva', n:'Acerto para chuva', d:'Ótimo se chover, ruim se não chover.', ef:{ acerto:'chuva' } },
+        { k:'seco', n:'Manter o acerto de seco', d:'Bom no seco, sofrido no molhado.', ef:{ acerto:'seco' } } ] },
+    { k:'calor', carro:false,
+      t: () => 'Calor de 38 graus',
+      d: () => 'O asfalto passa dos 55 °C. Os pneus vão sofrer como em nenhuma outra corrida do ano.',
+      o: () => [
+        { k:'poupar', n:'Largar os dois poupando pneu', d:'Ritmo menor no começo e menos paradas.', ef:{ calor:10, modo:'poupar' } },
+        { k:'normal', n:'Largar no ritmo normal', d:'O muro ajusta durante a corrida.', ef:{ calor:10 } } ] },
+    { k:'comissarios', carro:true,
+      t: n => `Os comissários chamaram ${n}`,
+      d: () => 'Dizem que ele atrapalhou um rival numa volta rápida. A decisão sai antes da largada.',
+      o: () => [
+        { k:'aceitar', n:'Aceitar a punição', d:'Três posições a menos no grid.', ef:{ grid:3 } },
+        { k:'recorrer', n:'Contestar', d:'Metade das vezes passa em branco; na outra, a punição dobra.', ef:{ sorte:'recurso' } } ] },
+    { k:'patro', carro:true,
+      t: n => `O patrocinador quer ${n} num evento`,
+      d: () => 'Duas horas de fotos com clientes, bem no meio da tarde de treinos.',
+      o: sea => [
+        { k:'ir', n:'Mandar o piloto', d:`Entram ${fmtD(Chefe.M(350e3, sea.ano))} no caixa. Ele perde um treino e chega ao sábado com menos acerto.`, ef:{ ritmo:-.5, dinheiro: Chefe.M(350e3, sea.ano) } },
+        { k:'recusar', n:'Ficar na garagem', d:'O piloto treina tudo. O dinheiro fica para outra vez.', ef:{} } ] },
+    { k:'febre', carro:true,
+      t: n => `${n} acordou com febre`,
+      d: () => 'Trinta e oito e meio. O médico da categoria libera, mas avisa que o corpo não vai responder igual.',
+      o: () => [
+        { k:'assim', n:'Correr assim', d:'Mais lento e mais sujeito a erro.', ef:{ ritmo:-1, cons:-8 } },
+        { k:'remedio', n:'Remédio forte e cama', d:'Melhora bastante, mas ele chega abatido.', ef:{ ritmo:-.35, moral:-4 } } ] }
+  ],
+  /* sorteia, uma vez por rodada, o imprevisto do fim de semana */
+  fdsDe(sea){
+    const rd = sea.round, trk = sea.calendar[rd];
+    if(sea.fds && sea.fds.rd === rd) return sea.fds;
+    sea.fds = { rd, evento: null, efeitos: {} };
+    if(!trk || !R.chance(.5)) return sea.fds;
+    const carros = [0, 1].map(k => sea.field.find(f => f.teamId === 'EU' && f.ativo && f.carro === k)).filter(Boolean);
+    const cands = Chefe.FDS.filter(e => (!e.se || e.se(sea, trk)) && (!e.carro || carros.length));
+    if(!cands.length) return sea.fds;
+    const e = R.pick(cands);
+    const alvo = e.carro ? R.pick(carros) : null;
+    sea.fds.evento = { k: e.k, carro: alvo ? alvo.carro : null, nome: alvo ? alvo.name : null, escolha: e.o(sea)[0].k };
+    /* a frente fria decide o tempo agora: o acerto é que é a aposta */
+    if(e.k === 'frente') sea.fds.wet = R.chance(.7);
+    return sea.fds;
+  },
+  /* o que vale da escolha, resolvido na hora da largada */
+  fdsResolver(sea){
+    const f = sea.fds;
+    if(!f || f.rd !== sea.round || !f.evento || f.resolvido) return f;
+    const e = Chefe.FDS.find(x => x.k === f.evento.k); if(!e) return f;
+    const o = e.o(sea).find(x => x.k === f.evento.escolha) || e.o(sea)[0];
+    const ef = Object.assign({}, o.ef);
+    if(ef.sorte === 'recurso'){
+      if(R.chance(.5)) f.nota = 'Os comissários aceitaram a explicação: nenhuma punição.';
+      else { ef.grid = 6; f.nota = 'Recurso negado e a punição dobrou: seis posições no grid.'; }
+    }
+    if(ef.dinheiro) Chefe.lancar('patrocinio', ef.dinheiro);
+    if(ef.moral && f.evento.carro != null){
+      const fp = sea.field.find(x => x.teamId === 'EU' && x.ativo && x.carro === f.evento.carro);
+      const p = fp && fp.pid ? C.pilotos.find(x => x.id === fp.pid) : null;
+      if(p) p.moral = clamp(p.moral + ef.moral, 5, 100);
+    }
+    f.efeitos = ef; f.efeitos.carro = f.evento.carro;
+    f.resolvido = true;
+    return f;
+  },
+  /* quanto o imprevisto mexe no carro f (0 se nada) */
+  fdsEf(sea, f, k, wet){
+    const fd = sea.fds;
+    if(!fd || fd.rd !== sea.round || !fd.resolvido || f.teamId !== 'EU') return 0;
+    const ef = fd.efeitos;
+    if(ef.carro != null && ef.carro !== f.carro) return 0;
+    if(k === 'ritmo' && ef.acerto) return (ef.ritmo || 0) + (ef.acerto === 'chuva' ? (wet ? 1 : -.8) : (wet ? -1 : .3));
+    return ef[k] || 0;
+  },
+
+  montar(){
     const sea = C.temporada, rd = sea.round, trk = sea.calendar[rd];
     const era = eraOfSeries(sea.ano, 'f1');
     const dec = C.decisao || {};
     Chefe.escalar(sea);
+    const fds = Chefe.fdsResolver(sea);
     /* pacote novo chega nesta corrida */
-    const wet = R.chance(trk.rainP);
+    const wet = fds && fds.rd === rd && fds.wet != null ? fds.wet : R.chance(trk.rainP);
     const W = Chefe.pesosPista(trk.type, wet, sea.isTop);
     const varTrk = trk.type === 'street' ? 1.12 : trk.type === 'fast' ? .94 : 1;
     const noise = (wet ? 5.4 : 3.4) * varTrk * (sea.isTop ? 1 : 1.2);
@@ -17468,18 +18648,33 @@ const Chefe = {
       const car = carDe(f);
       const sk = f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0) + moralDe(f)
                + (wet ? R.gauss() * 3 : 0) + (estr(f) === 'ataque' ? .5 : 0)
-               - (dec.tl1 && f.teamId === 'EU' && f.carro === dec.tl1.carro ? .7 : 0);
+               - (dec.tl1 && f.teamId === 'EU' && f.carro === dec.tl1.carro ? .7 : 0)
+               + Chefe.fdsEf(sea, f, 'ritmo', wet);
       return { f, v: W.car * car + W.skill * sk + R.gauss() * noise };
     }).sort((a, b) => b.v - a.v);
     const grid = {}; qual.forEach((q, i) => grid[q.f.id] = i + 1);
+    /* punição de grid do fim de semana */
+    corre.forEach(f => {
+      const pen = Math.round(Chefe.fdsEf(sea, f, 'grid'));
+      if(pen <= 0) return;
+      const de = grid[f.id], para = Math.min(corre.length, de + pen);
+      Object.keys(grid).forEach(id => { if(grid[id] > de && grid[id] <= para) grid[id]--; });
+      grid[f.id] = para;
+    });
 
     /* domingo */
     let passW = trk.type === 'street' ? .62 : trk.type === 'fast' ? .20 : .36;
     const out = [], running = [], notas = [];
+    /* o imprevisto do fim de semana entra no resumo */
+    if(fds && fds.rd === rd && fds.evento){
+      const e = Chefe.FDS.find(x => x.k === fds.evento.k), o = e && e.o(sea).find(x => x.k === fds.evento.escolha);
+      if(e && o) notas.push(e.t(Engine.sobrenome(fds.evento.nome || '')) + ': ' + o.n.toLowerCase() + '.');
+      if(fds.nota) notas.push(fds.nota);
+    }
     corre.forEach(f => {
       const car = carDe(f);
       const e = estr(f);
-      const sk = f.skill + f.rb + (f.esp ? (f.esp[trk.type] || 0) * .7 : 0) + (f.formAno || 0) + moralDe(f);
+      const sk = f.skill + f.rb + (f.esp ? (f.esp[trk.type] || 0) * .7 : 0) + (f.formAno || 0) + moralDe(f) + Chefe.fdsEf(sea, f, 'ritmo', wet);
       const g = grid[f.id];
       let relBase;
       if(f.teamId === 'EU'){
@@ -17487,9 +18682,11 @@ const Chefe = {
                 + (modoMotor === 'max' ? -.025 : modoMotor === 'poupar' ? .02 : 0)
                 + (e === 'poupar' ? .012 : e === 'ataque' ? -.006 : 0);
       } else relBase = era.rel + (car - 70) / 380 + f.rel;
+      relBase += Chefe.fdsEf(sea, f, 'confia');
       if(!sea.isTop) relBase = Math.min(.95, relBase + .13);
       const mech = !R.chance(clamp(relBase, .35, .975));
-      const errou = R.chance(Engine.chanceErro(f.cons != null ? f.cons : 55, 'f1', wet, false));
+      const consF = (f.cons != null ? f.cons : 55) + Chefe.fdsEf(sea, f, 'cons');
+      const errou = R.chance(Engine.chanceErro(consF, 'f1', wet, false));
       let crashP = (sea.isTop ? .050 : .046) * (wet ? 1.9 : 1) * (1 - (f.skill - 70) / 230);
       if(e === 'ataque') crashP *= 1.35;
       if(e === 'poupar') crashP *= .72;
@@ -17501,34 +18698,48 @@ const Chefe = {
         const custoErro = errou ? 3.2 + R.f() * 4.5 : 0;
         const bonusE = e === 'ataque' ? .9 + R.gauss() * 1.4 : e === 'poupar' ? -.7 : 0;
         const v = W.car * car + W.skill * sk + R.gauss() * noise * 1.15 - (g - 1) * passW - custoErro + bonusE;
-        running.push({ f, grid:g, v, errou });
+        /* na corrida ao vivo o modo de cada carro é o muro que escolhe: o ritmo vai puro */
+        running.push({ f, grid:g, v, errou, vr: W.car * car + W.skill * sk + R.gauss() * noise * .45, cons: consF });
       }
     });
-    const houveSC = Engine.aplicarSC(running, out, trk, PERFIS.f1, wet);
-    running.sort((a, b) => b.v - a.v);
-
-    /* ordem de equipe: o segundo piloto abre caminho quando está logo à frente */
-    let ordemUsada = null;
-    if(dec.ordem === 'n1' && C.n1){
-      const iA = running.findIndex(x => x.f.pid === C.n1);
-      const iB = running.findIndex(x => x.f.teamId === 'EU' && x.f.pid !== C.n1);
-      if(iA > 0 && iB === iA - 1){
-        const tmp = running[iB]; running[iB] = running[iA]; running[iA] = tmp;
-        ordemUsada = { pelo: running[iB].f, cedeu: tmp.f, pos: iB + 1 };
+    return { sea, rd, trk, era, dec, wet, grid, running, out, notas, corre };
+  },
+  correr(vivo){
+    const M = (vivo && vivo.montagem) || Chefe.montar();
+    const { sea, rd, trk, era, dec, wet, grid, running, out, notas, corre } = M;
+    let finish, flId = null, houveSC, ordemUsada = null;
+    if(vivo){
+      /* a chegada que a pista deu, com a ordem de equipe que você deu (se deu) */
+      finish = vivo.finish; flId = vivo.flId; houveSC = vivo.sc;
+      if(vivo.ordem){
+        const pelo = finish.find(x => x.f.id === vivo.ordem.pelo), cedeu = finish.find(x => x.f.id === vivo.ordem.cedeu);
+        if(pelo && cedeu) ordemUsada = { pelo: pelo.f, cedeu: cedeu.f, pos: pelo.pos };
       }
-    }
+    } else {
+      houveSC = Engine.aplicarSC(running, out, trk, PERFIS.f1, wet);
+      running.sort((a, b) => b.v - a.v);
 
-    out.sort((a, b) => b.grid - a.grid);
-    const finish = running.map((x, i) => Object.assign({}, x, { pos:i + 1 }))
-      .concat(out.sort((a, b) => b.fracFora - a.fracFora).map((x, i) => Object.assign({}, x, { pos:running.length + i + 1, out:true })));
+      /* ordem de equipe: o segundo piloto abre caminho quando está logo à frente */
+      if(dec.ordem === 'n1' && C.n1){
+        const iA = running.findIndex(x => x.f.pid === C.n1);
+        const iB = running.findIndex(x => x.f.teamId === 'EU' && x.f.pid !== C.n1);
+        if(iA > 0 && iB === iA - 1){
+          const tmp = running[iB]; running[iB] = running[iA]; running[iA] = tmp;
+          ordemUsada = { pelo: running[iB].f, cedeu: tmp.f, pos: iB + 1 };
+        }
+      }
 
-    let flId = null;
-    const flPool = running.slice(0, Math.min(6, running.length));
-    if(flPool.length){
-      const w = flPool.map(x => Math.exp((x.v - flPool[0].v) / 2.4));
-      let t = w.reduce((a, b) => a + b, 0) * Math.random(), k = 0;
-      while(k < w.length - 1 && t > w[k]){ t -= w[k]; k++; }
-      flId = flPool[k].f.id;
+      out.sort((a, b) => b.grid - a.grid);
+      finish = running.map((x, i) => Object.assign({}, x, { pos:i + 1 }))
+        .concat(out.sort((a, b) => b.fracFora - a.fracFora).map((x, i) => Object.assign({}, x, { pos:running.length + i + 1, out:true })));
+
+      const flPool = running.slice(0, Math.min(6, running.length));
+      if(flPool.length){
+        const w = flPool.map(x => Math.exp((x.v - flPool[0].v) / 2.4));
+        let t = w.reduce((a, b) => a + b, 0) * Math.random(), k = 0;
+        while(k < w.length - 1 && t > w[k]){ t -= w[k]; k++; }
+        flId = flPool[k].f.id;
+      }
     }
     const P = sea.pts;
     finish.forEach(x => {
@@ -17605,8 +18816,8 @@ const Chefe = {
     const top = finish.slice(0, 10).map(x => ({ n:x.f.name, cc:x.f.cc,
       t:(sea.teams.find(t => t.id === x.f.teamId) || {}).name, me:x.f.teamId === 'EU',
       pos:x.out ? null : x.pos, dnf:x.out ? x.dnf : null }));
-    /* a corrida contada metro a metro: só a descrição, calculada quando for assistida */
-    const provaEnt = Engine.descreverProva(sea, rd, finish, flId, wet, houveSC, 'f1');
+    /* a corrida contada metro a metro (quando não foi comandada): só a descrição */
+    const provaEnt = vivo ? null : Engine.descreverProva(sea, rd, finish, flId, wet, houveSC, 'f1');
 
     const rec = {
       r: rd + 1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet,
@@ -17618,7 +18829,8 @@ const Chefe = {
       pole: (corre.find(f => grid[f.id] === 1) || {}).name || null,
       venc: finish[0] && !finish[0].out ? finish[0].f.name : null
     };
-    Object.defineProperty(rec, 'provaEnt', { value: provaEnt, enumerable: false, configurable: true });
+    if(provaEnt) Object.defineProperty(rec, 'provaEnt', { value: provaEnt, enumerable: false, configurable: true });
+    if(vivo && vivo.crono) rec.crono = vivo.crono;
     sea.results.push(rec);
     sea.round++;
     rec.champ = Chefe.posConstrutores(sea, 'EU');
@@ -19602,11 +20814,14 @@ const UIC = {
 
   /* ═══ O FIM DE SEMANA ═══ */
   preCorrida(){
+    /* a largada só vale a partir desta janela, uma vez por rodada */
+    if(C && C.temporada) UIC._pre = C.ano + ':' + C.temporada.round;
     const sea = C.temporada, trk = sea.calendar[sea.round];
     if(!trk) return;
     Chefe.escalar(sea);
     const d = C.decisao;
     const carros = [0, 1].map(k => sea.field.find(f => f.teamId === 'EU' && f.ativo && f.carro === k)).filter(Boolean);
+    const fds = Chefe.fdsDe(sea);
     const tipoN = { fast:'rápido', street:'de rua', tech:'técnico', mixed:'misto', oval:'oval' }[trk.type] || '';
     const chuva = trk.rainP >= .4 ? 'chuva provável' : trk.rainP >= .2 ? 'pode chover' : 'tempo firme';
     const op = (g, k, lista, atual) => lista.map(([v, n]) =>
@@ -19614,6 +20829,7 @@ const UIC = {
     const tit = Chefe.titulares();
     UI.modal(UI.head('GP ' + esc(trk.gp), `${esc(trk.circ)} · circuito ${tipoN} · ${chuva} · etapa ${sea.round + 1} de ${sea.calendar.length}`) +
       `<div class="mbd">
+        ${UIC.fdsHtml(sea, fds)}
         <span class="lbl">Estratégia de cada carro</span>
         ${carros.map(f => `<div class="ch-dec"><b>${fg(f.cc)} ${esc(f.name)}${f.aluguel ? ' <span class="ch-tag rd">substituto</span>' : ''}</b>
           <div class="ch-opts">${op('estr', f.carro, [['ataque','Atacar'],['normal','Normal'],['poupar','Poupar o carro']], d.estr[f.carro] || 'normal')}</div></div>`).join('')}
@@ -19642,7 +20858,20 @@ const UIC = {
            atual && atual.carro === f.carro && atual.pid === p.id)).join('')).join('')}</div>
       <p class="mut" style="font-size:14px;margin:6px 0 0">Quem roda o treino ganha quilometragem e experiência. O titular que cede o carro chega ao sábado com menos acerto.</p>`;
   },
+  /* o imprevisto, com as respostas possíveis */
+  fdsHtml(sea, fds){
+    if(!fds || !fds.evento) return '';
+    const e = Chefe.FDS.find(x => x.k === fds.evento.k); if(!e) return '';
+    const ops = e.o(sea), sel = ops.find(o => o.k === fds.evento.escolha) || ops[0];
+    return `<div class="res-nar" style="margin:0 0 14px">
+        <span class="lbl" style="display:block;margin-bottom:4px">${ico('alerta')} Imprevisto do fim de semana</span>
+        <b style="display:block;margin-bottom:3px">${esc(e.t(Engine.sobrenome(fds.evento.nome || '')))}</b>${esc(e.d(sea))}
+        <div class="ch-opts" style="margin-top:9px">${ops.map(o => `<button class="ch-opt ${o === sel ? 'sel' : ''}" onclick="UIC.dec('fds','','${o.k}')">${esc(o.n)}</button>`).join('')}</div>
+        <div style="font-size:14px;color:var(--dim);margin-top:6px">${esc(sel.d)}</div>
+      </div>`;
+  },
   dec(g, k, v){
+    if(g === 'fds'){ const f = C.temporada.fds; if(f && f.evento && !f.resolvido) f.evento.escolha = v; return UIC.preCorrida(); }
     if(g === 'tl1'){ C.decisao.tl1 = v === 'nao' ? null : { carro: +v.split(':')[0], pid: v.split(':')[1] }; return UIC.preCorrida(); }
     if(g === 'estr') C.decisao.estr[k] = v;
     else if(g === 'n1') C.n1 = v;
@@ -19652,15 +20881,27 @@ const UIC = {
   largar(){
     /* clique duplo não corre duas corridas */
     if(!UI.aberta() || !C || C.fase !== 'temporada' || C.temporada.round >= C.temporada.calendar.length) return;
-    const rec = Chefe.correr();
-    Chefe.sortearEvento(rec);
-    UIC.salvar();
+    /* a mesma rodada larga uma vez só, mesmo com o clique repetido */
+    if(UIC._pre !== C.ano + ':' + C.temporada.round) return;
+    UIC._pre = null;
     UI.close();
-    UIC.render();
-    setTimeout(() => {
-      if(rec.provaEnt) UI.centralCorrida(rec, () => { UIC.salvar(); UIC.resultado(rec); }, { chefe: true });
-      else UIC.resultado(rec);
-    }, 150);
+    /* a corrida ao vivo: os dois carros são seus, do pneu à ordem de equipe */
+    const M = Chefe.montar();
+    const sea = C.temporada;
+    const ent = Gp.entrada(sea, M, 'f1', sea.ano, f => f.teamId === 'EU');
+    const MODO = { ataque: 'atacar', poupar: 'poupar' };
+    const modoFds = sea.fds && sea.fds.rd === sea.round && sea.fds.efeitos && sea.fds.efeitos.modo;
+    ent.carros.forEach(c => { const f = sea.field.find(x => x.id === c.id); if(f && f.teamId === 'EU') c.modo = MODO[(M.dec.estr || {})[f.carro]] || modoFds || 'normal'; });
+    /* "favorecer o nº 1": a ordem sai sozinha quando o outro carro está colado à frente dele */
+    const n1f = M.dec.ordem === 'n1' && C.n1 ? sea.field.find(f => f.teamId === 'EU' && f.pid === C.n1) : null;
+    AoVivo.abrir(ent, { serie: C.cat || 'Corrida', chefe: true, n1: n1f ? n1f.id : null }, res => {
+      const vivo = res ? { montagem: M, finish: Gp.chegada(M, res), flId: res.flId, sc: res.sc, crono: Gp.cronoDe(res), ordem: res.ordemEquipe } : { montagem: M };
+      const rec = Chefe.correr(res ? vivo : null);
+      Chefe.sortearEvento(rec);
+      UIC.salvar();
+      UIC.render();
+      UIC.resultado(rec);
+    });
   },
   narrativa(rec){
     const ok = rec.nossos.filter(x => x.pos).sort((a, b) => a.pos - b.pos);
@@ -20871,6 +22112,317 @@ const Central = {
   }
 };
 UI.centralCorrida = (rec, aoFim, opc) => Central.abrir(rec, aoFim, opc);
+
+/* ═══════════════════════════════════════════════════════════════
+   A CORRIDA AO VIVO, NO MURO
+   O mapa do circuito com os carros andando no traçado real, a torre de
+   tempos com pneu e idade, o tempo e a pista, e os seus carros: quando
+   parar, que pneu pôr, quanto forçar. O relógio anda na velocidade que
+   você escolhe; a corrida só pausa quando você pede ou quando o rádio
+   chama — aí a decisão é sua.
+   ═══════════════════════════════════════════════════════════════ */
+const AoVivo = {
+  R: null, aoFim: null, opc: null, raf: 0, ult: 0, ultUI: 0, pausa: false, vel: 16, modoTorre: 'int', sel: null,
+  VELS: [1, 4, 8, 16, 32, 64],
+
+  abrir(ent, opc, aoFim){
+    /* sem tela (os testes rodam o jogo no Node): a mesma corrida, de uma vez até a bandeirada */
+    if(typeof requestAnimationFrame !== 'function'){
+      let R = null;
+      try { R = Gp.criar(ent); Gp.terminar(R); } catch(e){ R = null; }
+      return aoFim && aoFim(R ? Gp.resultado(R) : null, id => R ? Gp.notasDe(R, id) : [], R);
+    }
+    AoVivo.fechar();
+    AoVivo.opc = opc || {}; AoVivo.aoFim = aoFim; AoVivo.pausa = false; AoVivo.acabou = false;
+    try{ const v = +Store.get('vdo_velcorrida'); if(AoVivo.VELS.indexOf(v) >= 0) AoVivo.vel = v; }catch(e){}
+    const ov = document.createElement('div');
+    ov.id = 'aovivo'; ov.className = 'av';
+    ov.innerHTML = '<div class="av-carregando"><b>Grid formado</b><span>os carros saem para a volta de apresentação</span></div>';
+    document.body.appendChild(ov);
+    document.body.classList.add('em-corrida');
+    AoVivo._tecla = e => { if(!el('aovivo')) return; if(e.key === ' ' && !/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || '')){ e.preventDefault(); AoVivo.alternar(); } };
+    addEventListener('keydown', AoVivo._tecla);
+    setTimeout(() => {
+      if(!el('aovivo')) return;
+      try{ AoVivo.R = Gp.criar(ent); }
+      catch(e){ console.error(e); AoVivo.fechar(); return aoFim && aoFim(null); }
+      AoVivo.montar();
+    }, 40);
+  },
+
+  montar(){
+    const R = AoVivo.R, ov = el('aovivo'); if(!ov) return;
+    const g = R.g, ent = R.ent;
+    /* o mapa: o traçado em metros, com o norte para cima */
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for(let i = 0; i < g.n; i++){ x0 = Math.min(x0, g.x[i]); x1 = Math.max(x1, g.x[i]); y0 = Math.min(y0, -g.y[i]); y1 = Math.max(y1, -g.y[i]); }
+    const larg = x1 - x0, alt = y1 - y0, u = Math.max(larg, alt) / 100, pad = u * 9;
+    AoVivo.u = u;
+    let d = '';
+    for(let i = 0; i < g.n; i += 2) d += (i ? 'L' : 'M') + g.x[i].toFixed(1) + ' ' + (-g.y[i]).toFixed(1);
+    d += 'Z';
+    const ch = Pista.ponto(g, 0, 0), chN = Pista.ponto(g, 0, 9), chS = Pista.ponto(g, 0, -9);
+    const meus = R.carros.filter(s => s.c.ctrl);
+    const comp = R.regras.secos.concat(R.regras.chuva);
+    ov.innerHTML = `
+      <section class="av-torre" aria-label="Torre de tempos">
+        <header><b>${esc(AoVivo.opc.serie || 'Corrida')}</b><span id="avVolta">Volta 1/${R.N}</span></header>
+        <div class="av-torre-modo" role="group" aria-label="O que a torre mostra">
+          <button data-m="int" class="${AoVivo.modoTorre === 'int' ? 'on' : ''}">Intervalo</button>
+          <button data-m="lider" class="${AoVivo.modoTorre === 'lider' ? 'on' : ''}">Para o líder</button>
+          <button data-m="pneu" class="${AoVivo.modoTorre === 'pneu' ? 'on' : ''}">Pneus</button>
+        </div>
+        <div class="av-linhas" id="avLinhas"></div>
+      </section>
+      <section class="av-mapa" aria-label="Mapa do circuito">
+        <div class="av-gp"><b>GP ${esc(ent.gp || '')}</b><span>${esc(ent.circ || '')} · ${ent.ano}${R.g.real ? '' : ' · traçado esquemático'}</span></div>
+        ${R.g.fonte ? `<p class="av-fonte" title="${esc((R.g.aprox || []).join(' · '))}">Traçado: ${esc(R.g.fonte)}</p>` : ''}
+        <svg id="avSvg" viewBox="${(x0 - pad).toFixed(0)} ${(y0 - pad).toFixed(0)} ${(larg + 2 * pad).toFixed(0)} ${(alt + 2 * pad).toFixed(0)}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Traçado com a posição de cada carro">
+          <defs><filter id="avBrilho" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${(u * .9).toFixed(1)}"/></filter></defs>
+          <path d="${d}" class="av-asfalto" style="stroke-width:${(u * 2.6).toFixed(1)}"/>
+          <path d="${d}" class="av-brilho" style="stroke-width:${(u * 1.4).toFixed(1)}" filter="url(#avBrilho)"/>
+          <path d="${d}" class="av-linha" style="stroke-width:${(u * .45).toFixed(1)}"/>
+          <line x1="${chN.x.toFixed(1)}" y1="${(-chN.y).toFixed(1)}" x2="${chS.x.toFixed(1)}" y2="${(-chS.y).toFixed(1)}" class="av-chegada" style="stroke-width:${(u * .7).toFixed(1)}"/>
+          <g id="avCarros">${R.carros.map(s => `<g class="av-carro${s.c.ctrl ? ' meu' : ''}" data-i="${s.i}">
+            <circle r="${(u * (s.c.ctrl ? 1.5 : 1.15)).toFixed(1)}" fill="${esc(s.c.cor)}" stroke-width="${(u * .32).toFixed(1)}"/>
+            <g class="av-rot" transform="translate(${(u * 2).toFixed(1)} ${(-u * 2).toFixed(1)})">
+              <rect x="0" y="${(-u * 1.9).toFixed(1)}" width="${(u * 7.6).toFixed(1)}" height="${(u * 2.6).toFixed(1)}" rx="${(u * .5).toFixed(1)}"/>
+              <text x="${(u * .7).toFixed(1)}" y="${(-u * .1).toFixed(1)}" style="font-size:${(u * 1.9).toFixed(1)}px">${esc(Central.sigla(s.c.nome))}</text>
+            </g></g>`).join('')}</g>
+        </svg>
+        <div class="av-radio" id="avRadio" hidden></div>
+        <div class="av-fim" id="avFim" hidden></div>
+      </section>
+      <aside class="av-info">
+        <div class="av-relogio"><span>Tempo de prova</span><b id="avRelogio">0:00</b></div>
+        <div class="av-bandeira verde" id="avBand">Bandeira verde</div>
+        <div class="av-clima" id="avClima"></div>
+        <div class="av-feed" id="avFeed" aria-live="polite"></div>
+      </aside>
+      <footer class="av-baixo">
+        <div class="av-cartoes">${meus.map(s => `<div class="av-cartao" id="avC${s.i}" data-i="${s.i}">
+            <header><s style="background:${esc(s.c.cor)}"></s><b>${esc(s.c.nome)}</b><em id="avCP${s.i}"></em></header>
+            <div class="av-pneu" id="avCPn${s.i}"></div>
+            <div class="av-viz" id="avCV${s.i}"></div>
+            <div class="av-modos" role="group" aria-label="Ritmo de ${esc(s.c.nome)}">${Object.keys(Gp.MODOS).map(k => `<button data-modo="${k}" class="${s.modo === k ? 'on' : ''}">${Gp.MODOS[k].n}</button>`).join('')}</div>
+            <div class="av-box"><span>Box:</span>${comp.map(c => `<button data-pit="${c}" class="av-pn ${c}" title="Parar e pôr ${Gp.COMP[c].n}" aria-label="Parar e pôr ${Gp.COMP[c].n}">${c}</button>`).join('')}<button data-pit="" class="av-cancela">Cancelar</button></div>
+            <p class="av-plano" id="avCPl${s.i}"></p>
+            <div class="av-ordem" id="avCO${s.i}"></div>
+          </div>`).join('') || '<p class="av-so">Você assiste: nenhum carro seu está na pista.</p>'}</div>
+        <div class="av-ctrl">
+          <button class="av-play" id="avPlay" aria-label="Pausar">${ico('pausa')}</button>
+          <div class="av-vel" role="group" aria-label="Velocidade">${AoVivo.VELS.map(v => `<button data-v="${v}" class="${v === AoVivo.vel ? 'on' : ''}">${v}×</button>`).join('')}</div>
+          <button class="btn btn-ghost btn-sm" id="avPular" title="A equipe assume as paradas até a bandeirada">Simular até o fim</button>
+        </div>
+      </footer>`;
+    ov.querySelector('.av-torre-modo').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.modoTorre = b.dataset.m; ov.querySelectorAll('.av-torre-modo button').forEach(x => x.classList.toggle('on', x === b)); AoVivo.painel(); });
+    ov.querySelector('.av-vel').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.vel = +b.dataset.v; try{ Store.set('vdo_velcorrida', String(AoVivo.vel)); }catch(x){} ov.querySelectorAll('.av-vel button').forEach(x => x.classList.toggle('on', x === b)); });
+    el('avPlay').onclick = () => AoVivo.alternar();
+    el('avPular').onclick = () => AoVivo.simularFim();
+    ov.querySelectorAll('.av-cartao').forEach(c => c.addEventListener('click', e => {
+      const b = e.target.closest('button'); if(!b) return;
+      const i = +c.dataset.i;
+      if(b.dataset.modo) Gp.comandar(R, i, { modo: b.dataset.modo });
+      if(b.dataset.pit !== undefined) Gp.comandar(R, i, { parar: b.dataset.pit || null });
+      if(b.dataset.ceder !== undefined && Gp.comandar(R, i, { ceder: +b.dataset.ceder }) === 'longe') UI.toast('O companheiro precisa estar colado atrás para a ordem valer.');
+      AoVivo.cartoes();
+    }));
+    el('avLinhas').addEventListener('click', e => { const r = e.target.closest('[data-i]'); if(!r) return; AoVivo.sel = AoVivo.sel === +r.dataset.i ? null : +r.dataset.i; AoVivo.painel(); });
+    AoVivo.carrosEl = [...ov.querySelectorAll('.av-carro')];
+    AoVivo.ult = performance.now();
+    AoVivo.painel(); AoVivo.cartoes();
+    AoVivo.raf = requestAnimationFrame(AoVivo.quadro);
+    AoVivo._vis = () => { if(document.hidden && !AoVivo.pausa) AoVivo.alternar(); };
+    document.addEventListener('visibilitychange', AoVivo._vis);
+  },
+
+  quadro(ts){
+    const R = AoVivo.R; if(!R || !el('aovivo')) return;
+    const dt = Math.min(.1, (ts - AoVivo.ult) / 1000); AoVivo.ult = ts;
+    if(!AoVivo.pausa && !R.pergunta && !R.fim) Gp.avancar(R, R.t + dt * AoVivo.vel);
+    AoVivo.mover();
+    if(ts - AoVivo.ultUI > 250){ AoVivo.painel(); AoVivo.cartoes(); AoVivo.ultUI = ts; }
+    if(R.pergunta && !AoVivo._perguntando) AoVivo.radio();
+    if(R.fim && !AoVivo.acabou) AoVivo.bandeirada();
+    AoVivo.raf = requestAnimationFrame(AoVivo.quadro);
+  },
+  /* os carros no traçado */
+  mover(){
+    const R = AoVivo.R, g = R.g, u = AoVivo.u;
+    const top = new Set(Gp.ordem(R).slice(0, 3).map(s => s.i));
+    AoVivo.carrosEl.forEach(n => {
+      const s = R.carros[+n.dataset.i];
+      const p = Pista.ponto(g, s.s, s.lado * 1.6 + (s.estado === 1 || s.estado === 2 || s.estado === 5 ? g.ladoBox * u * 1.6 : 0));
+      n.setAttribute('transform', `translate(${p.x.toFixed(1)} ${(-p.y).toFixed(1)})`);
+      const mostra = s.c.ctrl || top.has(s.i) || AoVivo.sel === s.i;
+      n.classList.toggle('rotulo', mostra);
+      n.classList.toggle('fora', s.estado === 3);
+      n.classList.toggle('sel', AoVivo.sel === s.i);
+    });
+  },
+
+  /* a torre, o tempo e a bandeira */
+  painel(){
+    const R = AoVivo.R; if(!R) return;
+    const linhas = Gp.torre(R);
+    const lider = linhas[0] && linhas[0].s;
+    el('avVolta').textContent = R.fim ? `Bandeirada · ${R.N} voltas` : `Volta ${Math.min(R.N, (lider ? lider.voltas : 0) + 1)}/${R.N}`;
+    el('avLinhas').innerHTML = linhas.map(l => {
+      const s = l.s, C = Gp.COMP[s.pneu.c];
+      const box = s.estado === 1 || s.estado === 2 || s.estado === 5;
+      const valor = s.estado === 3 ? 'ABD' : box ? 'BOX' : AoVivo.modoTorre === 'pneu' ? `${s.pneu.voltas} v · ${Math.round(Math.min(1.2, s.pneu.gasto) * 100)}%`
+        : AoVivo.modoTorre === 'lider' ? (l.dif || '') : (l.pos === 1 ? 'Líder' : (l.voltasAtras ? l.dif : (l.int || l.dif || '')));
+      const ganho = s.estado === 3 ? 0 : s.c.grid - l.pos;
+      return `<div class="av-l${s.c.ctrl ? ' meu' : ''}${s.estado === 3 ? ' fora' : ''}${AoVivo.sel === s.i ? ' sel' : ''}" data-i="${s.i}">
+        <b>${s.estado === 3 ? '—' : l.pos}</b><s style="background:${esc(s.c.cor)}"></s>
+        <span class="n">${esc(Central.sigla(s.c.nome))}</span>
+        <i class="g ${ganho > 0 ? 'sobe' : ganho < 0 ? 'cai' : ''}">${ganho > 0 ? '▲' + ganho : ganho < 0 ? '▼' + (-ganho) : ''}</i>
+        <span class="d">${esc(valor)}</span>
+        <span class="av-pn ${s.pneu.c}" title="${esc(C.n)}, ${s.pneu.voltas} voltas">${s.pneu.c}</span>
+      </div>`;
+    }).join('');
+    /* relógio e bandeira */
+    el('avRelogio').textContent = Prova.fmtProva(R.t).replace(/\.\d$/, '');
+    const b = el('avBand');
+    const sc = R.sc && !R.sc.fim;
+    const ban = R.fim || R.bandeira ? ['Bandeirada', 'xadrez'] : sc ? (R.sc.tipo === 'SC' ? ['Safety car', 'amarela'] : ['Safety car virtual', 'amarela']) : ['Bandeira verde', 'verde'];
+    b.textContent = ban[0]; b.className = 'av-bandeira ' + ban[1];
+    /* o tempo e a pista */
+    const chuva = Gp.chuvaEm(R, R.t), pv = Gp.previsao(R);
+    const ader = R.w < .12 ? 'Seca' : R.w < .38 ? 'Úmida' : R.w < .72 ? 'Molhada' : 'Encharcada';
+    el('avClima').innerHTML = `
+      <div class="av-ceu">${ico(chuva > .05 ? 'chuva' : R.clima.fases.length > 1 ? 'nuvem' : 'sol')}<b>${chuva > .05 ? 'Chovendo' : 'Sem chuva'}</b></div>
+      <dl><div><dt>Ar</dt><dd>${R.clima.ar} °C</dd></div><div><dt>Pista</dt><dd>${Math.round(R.clima.pista - R.w * 9)} °C</dd></div>
+        <div><dt>Chuva</dt><dd>${Math.round(chuva * 100)}%</dd></div><div><dt>Pista</dt><dd>${ader}</dd></div></dl>
+      <p class="av-prev">${pv ? (pv.chuva > 0 ? `Radar: chuva em cerca de ${Math.max(1, Math.round(pv.min))} min` : `Radar: a chuva para em cerca de ${Math.max(1, Math.round(pv.min))} min`) : 'Radar: sem mudança à vista'}</p>`;
+    /* os acontecimentos */
+    const evs = R.eventos.filter(e => e.tipo !== 'chamado').slice(-7).reverse();
+    el('avFeed').innerHTML = evs.map(e => `<p class="ev ${e.tipo}"><span>V${e.volta || ''}</span>${esc(AoVivo.texto(e))}</p>`).join('') || '<p class="ev"><span></span>Luzes apagadas.</p>';
+  },
+  texto(e){
+    const R = AoVivo.R, N = k => k == null ? '' : Engine.sobrenome(R.carros[k].c.nome);
+    switch(e.tipo){
+      case 'ultrapassagem': return `${N(e.a)} passa ${N(e.b)}.`;
+      case 'boxes': return `${N(e.a)} para nos boxes: ${Gp.COMP[e.c] ? Gp.COMP[e.c].n.toLowerCase() : ''}.`;
+      case 'lenta': return `Parada lenta para ${N(e.a)}: ${e.seg} s perdidos.`;
+      case 'batida': return `${N(e.a)} bate e está fora.`;
+      case 'quebra': return `${N(e.a)} para${e.motivo ? ' ' + e.motivo : ' com problema mecânico'}.`;
+      case 'sc': return `Safety car na pista${e.motivo === 'detrito' ? ': detritos na pista' : ''}.`;
+      case 'vsc': return `Safety car virtual${e.motivo === 'detrito' ? ': detritos na pista' : ''}.`;
+      case 'verde': return 'Bandeira verde. Corrida liberada.';
+      case 'bandeira': return `Bandeirada para ${N(e.a)}.`;
+      case 'erro': return `${N(e.a)} erra e perde tempo.`;
+      case 'toque': return `Toque entre ${N(e.a)} e ${N(e.b)}${e.furo != null ? ': pneu furado' : ': asa danificada'}.`;
+      case 'furo': return `${N(e.a)} com pneu furado.`;
+      case 'punicao': return `${N(e.a)} punido: ${e.seg} s por ${e.motivo}.`;
+      case 'chuva': return 'Começou a chover.';
+      case 'parou': return 'A chuva parou. A pista vai secar.';
+      case 'falha': return `${N(e.a)} com problema no motor.`;
+      case 'radio': return `${N(e.a)}: ${e.txt}.`;
+      case 'ordem': return `Ordem de equipe: ${N(e.a)} abre passagem para ${N(e.b)}.`;
+      case 'sugestao': return `Rádio para ${N(e.a)}: ${AoVivo.fraseBox(e.por, e.c)}`;
+      default: return '';
+    }
+  },
+  /* o que a equipe diz no rádio quando acha que é hora de parar */
+  fraseBox(por, c){
+    const p = Gp.COMP[c] ? Gp.COMP[c].n.toLowerCase() : c;
+    return ({
+      plano: `box nesta volta para ${p}. É a nossa janela.`,
+      pneu:  `o pneu acabou. Box para ${p}.`,
+      furo:  `pneu furado! Box nesta volta para ${p}.`,
+      comb:  `o combustível está no fim. Box nesta volta (${p}).`,
+      chuva: `a chuva apertou: hora do ${p}.`,
+      seco:  `a pista está secando: hora do ${p}.`,
+      regra: `só usamos um composto. Se não pararmos para ${p}, vem punição.`,
+      sc:    `safety car! Parar agora custa menos: ${p}.`
+    })[por] || `box para ${p}.`;
+  },
+  /* os seus carros */
+  cartoes(){
+    const R = AoVivo.R; if(!R) return;
+    const torre = Gp.torre(R);
+    R.carros.filter(s => s.c.ctrl).forEach(s => {
+      const l = torre.find(x => x.s === s), k = torre.indexOf(l);
+      const C = Gp.COMP[s.pneu.c], gasto = Math.min(1.2, s.pneu.gasto);
+      const pe = el('avCP' + s.i); if(!pe) return;
+      /* 3 = abandonou, 4 = recebeu a bandeirada (5 é só a saída dos boxes) */
+      const fora = s.estado === 3 || s.estado === 4;
+      pe.textContent = s.estado === 3 ? 'Abandonou' : s.estado === 4 ? `Chegou em ${k + 1}º` : `${k + 1}º`;
+      el('avCPn' + s.i).innerHTML = `<span class="av-pn ${s.pneu.c}">${s.pneu.c}</span>
+        <span><b>${C.n}</b> · ${s.pneu.voltas} ${s.pneu.voltas === 1 ? 'volta' : 'voltas'}</span>
+        <span class="av-barra ${gasto > .85 ? 'ruim' : gasto > .65 ? 'meio' : ''}" title="Desgaste do pneu"><i style="width:${Math.round(Math.min(1, gasto) * 100)}%"></i></span><em>${Math.round(gasto * 100)}%</em>
+        ${R.regras.tanque < Infinity ? `<span class="av-comb" title="Combustível">${ico('raio')} ${Math.round(s.comb * 100)}%</span>` : ''}`;
+      const fr = torre[k - 1], tr = torre[k + 1];
+      const gapF = fr && l && l.int ? l.int : '', gapT = tr && tr.int ? tr.int.replace('+', '−') : '';
+      el('avCV' + s.i).innerHTML = fora ? '' : `${fr ? `<span>À frente: <b>${esc(Central.sigla(fr.s.c.nome))}</b> ${esc(gapF)}</span>` : '<span>Liderando</span>'}${tr && tr.s.estado !== 3 ? `<span>Atrás: <b>${esc(Central.sigla(tr.s.c.nome))}</b> ${esc(gapT)}</span>` : ''}${s.penal ? `<span class="pen">+${s.penal} s de punição</span>` : ''}`;
+      el('avC' + s.i).querySelectorAll('[data-modo]').forEach(b => b.classList.toggle('on', b.dataset.modo === s.modo));
+      el('avC' + s.i).querySelectorAll('[data-pit]').forEach(b => { b.classList.toggle('on', !!s.parar && b.dataset.pit === s.parar); b.disabled = fora || !!R.bandeira; });
+      const box = s.estado === 1 || s.estado === 2 || s.estado === 5;
+      const prox = s.plano[0];
+      const sg = s.sugestao && s.estado === 0 && !s.parar && !R.bandeira ? s.sugestao : null;
+      const plHtml = fora ? '' : box ? (s.estado === 1 ? 'Entrando nos boxes.' : s.estado === 2 ? 'Nos boxes: trocando os pneus.' : 'Saindo dos boxes.')
+        : s.parar ? `<b>Você chamou: box nesta volta</b> para pôr ${Gp.COMP[s.parar].n.toLowerCase()}.`
+        : (sg ? `<span class="av-sug">${ico('radio')} <span><b>Rádio:</b> ${esc(AoVivo.fraseBox(sg.por, sg.c))}</span><button data-pit="${sg.c}">Parar: ${Gp.COMP[sg.c].n}</button></span>` : '')
+          + (prox ? `Estratégia da equipe: parar na volta ${prox.volta} para pôr ${Gp.COMP[prox.c].n.toLowerCase()}. Quem chama é você.` : 'A equipe não planeja mais paradas.');
+      /* só reescreve quando muda, para o botão não sumir debaixo do dedo */
+      const plEl = el('avCPl' + s.i);
+      if(plEl._h !== plHtml){ plEl._h = plHtml; plEl.innerHTML = plHtml; }
+      const atras = Gp.podeCeder(R, s.i), ordemEl = el('avCO' + s.i);
+      if(atras && !R.ordemEquipe && AoVivo.opc.n1 != null && atras.c.id === AoVivo.opc.n1) Gp.comandar(R, s.i, { ceder: atras.i });
+      const oHtml = atras && !R.ordemEquipe ? `<button data-ceder="${atras.i}" class="av-ceder">Ordem de equipe: deixar ${esc(Engine.sobrenome(atras.c.nome))} passar</button>` : '';
+      if(ordemEl && ordemEl._h !== oHtml){ ordemEl._h = oHtml; ordemEl.innerHTML = oHtml; }
+    });
+  },
+  /* o rádio chamou: a decisão é sua */
+  radio(){
+    const R = AoVivo.R, q = R.pergunta, box = el('avRadio'); if(!q || !box) return;
+    AoVivo._perguntando = true;
+    box.hidden = false;
+    box.innerHTML = `<p class="av-radio-tit">${ico('radio')} Rádio</p><p>${esc(q.txt)}</p>
+      <div>${q.opcoes.map(o => `<button data-k="${o.k}"><b>${esc(o.n)}</b><span>${esc(o.d)}</span></button>`).join('')}</div>`;
+    box.onclick = e => { const b = e.target.closest('button'); if(!b) return;
+      Gp.responder(R, b.dataset.k); box.hidden = true; box.innerHTML = ''; AoVivo._perguntando = false; AoVivo.cartoes(); };
+  },
+  bandeirada(){
+    const R = AoVivo.R; AoVivo.acabou = true;
+    AoVivo.painel(); AoVivo.cartoes();
+    const ord = Gp.ordem(R), v = ord[0];
+    const meus = R.carros.filter(s => s.c.ctrl);
+    const box = el('avFim'); if(!box) return;
+    box.hidden = false;
+    box.innerHTML = `<p class="av-fim-tit">Bandeirada</p>
+      <p><b>${esc(Engine.sobrenome(v.c.nome))}</b> vence em ${Prova.fmtProva(v.fim + v.penal)}${R.fl.i != null ? ` · volta mais rápida de ${esc(Engine.sobrenome(R.carros[R.fl.i].c.nome))}, ${Prova.fmtTempo(R.fl.t)}` : ''}.</p>
+      ${meus.map(s => `<p>${esc(s.c.nome)}: ${s.estado === 3 ? 'abandonou' : (ord.indexOf(s) + 1) + 'º'} · ${s.paradas} ${s.paradas === 1 ? 'parada' : 'paradas'}</p>`).join('')}
+      <button class="btn btn-primary" id="avResultado">Ver o resultado</button>`;
+    el('avResultado').onclick = () => AoVivo.concluir();
+  },
+  simularFim(){
+    const R = AoVivo.R; if(!R) return;
+    if(R.pergunta) Gp.responder(R, R.pergunta.padrao);
+    const box = el('avRadio'); if(box){ box.hidden = true; box.innerHTML = ''; } AoVivo._perguntando = false;
+    Gp.terminar(R);
+  },
+  alternar(){
+    AoVivo.pausa = !AoVivo.pausa;
+    const b = el('avPlay'); if(b){ b.innerHTML = ico(AoVivo.pausa ? 'tocar' : 'pausa'); b.setAttribute('aria-label', AoVivo.pausa ? 'Continuar' : 'Pausar'); }
+  },
+  concluir(){
+    const R = AoVivo.R, f = AoVivo.aoFim; AoVivo.aoFim = null;
+    const res = R ? Gp.resultado(R) : null;
+    const notasDe = id => R ? Gp.notasDe(R, id) : [];
+    AoVivo.fechar();
+    if(f) f(res, notasDe, R);
+  },
+  fechar(){
+    cancelAnimationFrame(AoVivo.raf); AoVivo.raf = 0;
+    const ov = el('aovivo'); if(ov) ov.remove();
+    document.body.classList.remove('em-corrida');
+    if(AoVivo._tecla) removeEventListener('keydown', AoVivo._tecla);
+    if(AoVivo._vis) document.removeEventListener('visibilitychange', AoVivo._vis);
+    AoVivo.R = null; AoVivo._perguntando = false;
+  }
+};
 
 UI.menuTopo = function(abrir){
   const m = el('topMenu'), b = el('btnMenu'); if(!m || !b) return;

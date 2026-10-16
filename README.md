@@ -279,29 +279,42 @@ Fórmula E. Onde o regulamento permite, você decide quando entrar na pista —
 pista limpa e sem borracha, o fim da sessão com a pista no ponto e o risco de
 não completar a volta, vácuo na reta, ou espaço para andar sozinho.
 
-E o domingo acontece na tela como a cronometragem de uma transmissão: a tabela
-da corrida com o grid inteiro, diferença para o líder, intervalo para o carro
-da frente, última e melhor volta, paradas nos boxes, quantas posições cada um
-ganhou ou perdeu desde a largada, quem abandonou e por quê, a bandeira (verde,
-safety car, bandeirada) e uma faixa contando o lance da volta. A melhor volta
-da prova fica em roxo, o melhor pessoal em verde, e a volta feita no vácuo de
-uma ultrapassagem ou atrás do safety car aparece apagada, porque não vale como
-volta mais rápida. Seus carros ficam em destaque e a sua posição fica no alto.
-Você escolhe quanto a corrida dura na tela (2 min, 1 min, 30 s ou 10 s), pausa
-na barra de espaço e pula para o resultado com Esc.
+Metade dos fins de semana traz um imprevisto — na sexta, no sábado ou na
+manhã de domingo — e sempre com uma escolha: o motor com leitura estranha
+(trocar e perder posições no grid, ou arriscar), a peça nova que chegou antes,
+a batida no treino, a frente fria que obriga a fechar o acerto antes de saber
+se chove, a onda de calor que derrete o pneu, os comissários, o patrocinador
+que quer você num evento no meio do treino, a febre, o vazamento no câmbio, o
+jogo de pneus que sobrou, o acerto radical do engenheiro. O efeito vai para
+onde tem de ir: grid, ritmo, confiabilidade, pneu de largada, temperatura do
+asfalto. O chefe de equipe tem os seus, resolvidos na tela antes da largada.
 
-Os tempos não são sorteados para a tela. Depois que o motor decide o
-resultado, a corrida é contada metro a metro no traçado real do circuito
-(veja *Créditos*): cada carro freia, acelera, pega vácuo, ultrapassa só onde
-dá para frear mais tarde, para nos boxes conforme a estratégia da época e
-toma volta do líder. A física é calibrada pelo tempo de volta real de cada
-época da F1 e ajustada para cada categoria e nível. O motor manda no fim: a
-bandeirada termina exatamente na classificação do resultado, com a volta mais
-rápida de quem o motor disse, e o resultado guarda o tempo de prova do
-vencedor e a diferença de cada um. O safety car não é enfeite: quando entra,
-junta o pelotão e come a vantagem de quem estava na frente. Quebra, acidente
-e erro de pilotagem são coisas diferentes, e a equipe desconta as quebras ao
-avaliar o seu ano.
+No modo completo o domingo é comandado do muro. A tela mostra o mapa do
+circuito com os carros andando, a torre de cronometragem (intervalo, diferença
+para o líder ou o pneu de cada um), o tempo e o radar de chuva, os lances da
+corrida e um cartão para cada carro seu: posição, composto e desgaste do pneu,
+combustível nas épocas de reabastecimento, quem está à frente e atrás.
+
+**Quem chama o carro para os boxes é você.** A equipe faz a conta da
+estratégia e avisa no rádio quando acha que é hora — a janela do plano, o pneu
+no fim, o furo, o combustível acabando, a chuva apertando ou a pista secando, o
+safety car que barateia a parada, a regra dos dois compostos — e o botão de
+parar fica no cartão, com o composto. Se você passa da janela, a equipe refaz
+as contas. O carro nunca para sozinho; só em *Simular até o fim* o muro assume
+as paradas até a bandeirada. Você escolhe também o ritmo de cada carro
+(atacar, normal, poupar) e, no modo chefe, a ordem de equipe quando um carro
+seu está colado atrás do outro.
+
+A corrida não tem resultado marcado: o que acontece na pista é o resultado.
+Cada carro freia, acelera, gasta pneu por quilômetro (o macio anda mais e dura
+menos, o duro o contrário, e todo pneu despenca no fim da vida), pega vácuo e
+ar sujo, ultrapassa onde dá para frear mais tarde, erra, fura pneu, quebra e
+toma volta. O tempo muda durante a prova, a pista molha depressa e seca
+devagar, e safety car e safety car virtual só entram nas épocas em que
+existiam. A física é calibrada pelo tempo de volta real de cada época da F1 e
+ajustada para cada categoria e nível, e o regulamento de pneus e de
+reabastecimento é o daquele ano. A transmissão vai de 1× a 64×. No modo
+rápido a corrida continua sendo calculada direto, sem tela.
 
 ## Campeonatos com regulamento de verdade
 
@@ -559,8 +572,21 @@ Campeonatos do jogo leva direto a ela.
 cada versão com o ano em que entrou em uso) vêm do
 [bacinger/f1-circuits](https://github.com/bacinger/f1-circuits), licença MIT,
 com a cópia da licença em `ferramentas/terceiros/f1c`. A escala é ajustada ao
-comprimento oficial e o sentido de corrida foi conferido. Circuito ou ano sem
-traçado confiável corre num traçado esquemático, e o jogo diz por quê.
+comprimento oficial e o sentido de corrida foi conferido.
+
+Outros 127 traçados (149 circuitos do jogo, contando os que aparecem com outro
+nome) vêm do **OpenStreetMap — © colaboradores do OpenStreetMap, dados sob a
+licença ODbL** ([openstreetmap.org/copyright](https://www.openstreetmap.org/copyright)).
+`ferramentas/pistas-osm.mjs` localiza cada circuito pela Wikipedia, baixa as
+vias de corrida pela API Overpass (pedidos em lote, com pausa e cache), monta o
+anel e só aceita o que confere com o comprimento oficial; o resultado fica em
+`dados/tracados.js` e o que deu certo ou não, em
+`ferramentas/pistas-osm/RELATORIO.md`. O mapa mostra a fonte e o que é
+aproximado (linha de chegada, boxes, sentido quando a via não indica mão única).
+
+Os 98 circuitos que ainda não têm traçado real — ruas montadas para uma corrida,
+circuitos de estrada antigos e os kartódromos genéricos do jogo — correm num
+traçado esquemático, e o jogo diz por quê.
 
 **Fotos e filme** (`assets/credits.json` tem título, autor, licença e página
 de cada um; `assets/eras` e `assets/cartoes` guardam versões reduzidas):

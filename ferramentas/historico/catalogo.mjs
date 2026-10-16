@@ -229,7 +229,7 @@ export const CATALOGO = [
   { id:'super_gt', nome:'Super GT / JGTC', nomes:[[1993, 2004, 'JGTC'], [2005, 2026, 'Super GT']], de:1993, ate:null, pais:'JP', regiao:'Ásia', nivel:5, tipo:'gt',
     artigo:'Super_GT' },
   { id:'fia_gt', nome:'FIA GT', nomes:[[1997, 2009, 'FIA GT Championship'], [2010, 2012, 'FIA GT1 World Championship']], de:1997, ate:2012, pais:'INT', regiao:'Mundo', nivel:4, tipo:'gt',
-    artigo:'FIA_GT_Championship' },
+    artigo:'FIA_GT_Championship', temporada:'{a} FIA GT Championship', temporadaDe:[[2010, '{a} FIA GT1 World Championship']] },
   { id:'gtwc_europe', nome:'GT World Challenge Europe', nomes:[[2011, 2018, 'Blancpain GT Series'], [2019, 2026, 'GT World Challenge Europe']], de:2011, ate:null, pais:'INT', regiao:'Europa', nivel:4, tipo:'gt',
     artigo:'GT_World_Challenge_Europe' },
   { id:'gtwc_america', nome:'GT World Challenge America', nomes:[[1990, 2026, 'GT World Challenge America']], de:1990, ate:null, pais:'US', regiao:'América do Norte', nivel:4, tipo:'gt',

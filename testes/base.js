@@ -42,6 +42,8 @@ function carregar(opts){
   /* o banco histórico, que a página carrega por <script src> antes do jogo */
   const HISTARQ = require('path').join(__dirname, '..', 'dados', 'historico.js');
   if(!opts.semHistorico && fs.existsSync(HISTARQ)) vm.runInContext(fs.readFileSync(HISTARQ, 'utf8'), ctx, { filename:'historico.js' });
+  const TRACARQ = require('path').join(__dirname, '..', 'dados', 'tracados.js');
+  if(!opts.semHistorico && fs.existsSync(TRACARQ)) vm.runInContext(fs.readFileSync(TRACARQ, 'utf8'), ctx, { filename:'tracados.js' });
   if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));

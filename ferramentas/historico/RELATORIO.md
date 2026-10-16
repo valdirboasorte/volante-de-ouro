@@ -1,6 +1,6 @@
 # Banco histórico — relatório
 
-Gerado em 2026-10-15 por `ferramentas/historico/gerar.mjs`.
+Gerado em 2026-10-16 por `ferramentas/historico/gerar.mjs`.
 
 ## O que estes números são
 
@@ -21,10 +21,10 @@ Gerado em 2026-10-15 por `ferramentas/historico/gerar.mjs`.
 | Temporadas com página mas sem tabela legível (pendente) | 151 |
 | Temporadas sem página própria (pendente) | 1017 |
 | Temporadas verificadas por duas fontes | 0 |
-| Pilotos reais distintos | 21044 (com nacionalidade lida: 16854) |
+| Pilotos reais distintos | 21050 (com nacionalidade lida: 16861) |
 | Pilotos ligados a um nome que o jogo já usava | 731 (escalação ano a ano: 324; listas de época: 328; grids de base do jogo: 79) |
-| Equipes (nomes de inscrição distintos) | 11607 |
-| Carros (chassi · motor distintos) | 6758 |
+| Equipes (nomes de inscrição distintos) | 11622 |
+| Carros (chassi · motor distintos) | 6764 |
 | Circuitos (nomes distintos nos calendários) | 1045 |
 
 ## Por campeonato

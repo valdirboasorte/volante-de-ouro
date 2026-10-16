@@ -227,7 +227,8 @@ function navboxAnos(html, formas){
   const genericas = /^(championship|series|the|of|and|fia|international|world|cup|trophy|season|seasons|de|da|do|wiki)$/;
   const NUM = { one:'1', two:'2', three:'3', four:'4', five:'5' };
   const pal = t => String(t).toLowerCase().replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9áéíóúâêôãõçüäöß]+/g, ' ').split(' ').filter(Boolean).map(w => NUM[w] || w);
-  const conjuntos = (Array.isArray(formas) ? formas : [formas]).map(f => pal(f).filter(w => !genericas.test(w))).filter(x => x.length);
+  const conjuntos = (Array.isArray(formas) ? formas : [formas]).map(f => { const todas = pal(f), fortes = todas.filter(w => !genericas.test(w));
+    return fortes.length >= 2 || fortes.some(w => w.length >= 4) ? fortes : todas; }).filter(x => x.length);
   const anos = {};
   doc.querySelectorAll('div.navbox a[href^="/wiki/"], table.navbox a[href^="/wiki/"]').forEach(a => {
     const t = a.textContent.trim();

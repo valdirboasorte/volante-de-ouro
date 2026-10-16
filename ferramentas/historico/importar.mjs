@@ -92,7 +92,10 @@ const palavras = t => String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/
   .replace(/[^a-z0-9]+/g, ' ').split(' ').filter(Boolean).map(w => NUM[w] || w);
 export function formasDe(c){
   return [c.artigo, ...(c.nomes || []).map(n => n[2]), ...(c.navbox || [])].filter(Boolean)
-    .map(f => palavras(f.replace(/_/g, ' ')).filter(w => !GENERICAS.test(w))).filter(x => x.length);
+    /* sem as palavras genéricas, sobrando só uma curta ("GT"), o nome inteiro é que vale:
+       "FIA GT Championship" não pode aceitar "British GT Championship" */
+    .map(f => { const todas = palavras(f.replace(/_/g, ' ')); const fortes = todas.filter(w => !GENERICAS.test(w));
+      return fortes.length >= 2 || fortes.some(w => w.length >= 4) ? fortes : todas; }).filter(x => x.length);
 }
 const doCampeonato = (c, titulo) => { const p = palavras(titulo); return formasDe(c).some(f => f.every(w => p.includes(w))); };
 const confere = (c, pg, a, pedido) => ehTemporada(pg, a) && (pg.final === pedido || doCampeonato(c, pg.final));

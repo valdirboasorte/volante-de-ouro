@@ -25,3 +25,7 @@ ferramentas/historico/*.log
 .taste-skill/telas/
 .taste-skill/versoes/
 .taste-skill/varredura/
+
+# Traçados do OpenStreetMap: respostas baixadas e registro das rodadas (o importador refaz)
+ferramentas/pistas-osm/cache/
+ferramentas/pistas-osm/*.log

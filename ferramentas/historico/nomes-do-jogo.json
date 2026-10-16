@@ -1781,7 +1781,7 @@
   "como": "escalacao",
   "cc": "FR",
   "anos": "2004–2026",
-  "camps": "f1 gp2 gp2_asia f3_euroseries f3_brit fr_eurocup indy imsa"
+  "camps": "f1 gp2 gp2_asia f3_euroseries f3_brit fr_eurocup indy fia_gt imsa"
  },
  {
   "nome": "Sébastien Buemi",
@@ -3372,8 +3372,8 @@
   "jogo": "Beche",
   "como": "base",
   "cc": "CH",
-  "anos": "2012–2026",
-  "camps": "super_gt gtwc_europe wec elms asian_lms imsa alms"
+  "anos": "2011–2026",
+  "camps": "super_gt fia_gt gtwc_europe wec elms asian_lms imsa alms"
  },
  {
   "nome": "Ryō Hirakawa",
@@ -3709,7 +3709,7 @@
   "como": "base",
   "cc": "BR",
   "anos": "2005–2026",
-  "camps": "fr_eurocup stock_car stock_light gtwc_europe gtwc_america gt_open wec elms asian_lms imsa"
+  "camps": "fr_eurocup stock_car stock_light fia_gt gtwc_europe gtwc_america gt_open wec elms asian_lms imsa"
  },
  {
   "nome": "Felipe Fraga",
@@ -3765,7 +3765,7 @@
   "como": "base",
   "cc": "BR",
   "anos": "2003–2023",
-  "camps": "gp2 a1gp euroformula fr_uk stock_car stock_light tcr_sa gtwc_america"
+  "camps": "gp2 a1gp euroformula fr_uk stock_car stock_light tcr_sa fia_gt gtwc_america"
  },
  {
   "nome": "Diego Nunes",
