@@ -619,6 +619,15 @@ versão 7.3.2, de Panayiotis Lipiridis, licença MIT (cópia em `assets/flags/LI
 Os arquivos ficam junto do jogo para funcionar sem conexão e sem depender de
 suporte a emojis de bandeiras no aparelho.
 
+**Kartódromos argentinos:** Zárate, Ciudad Evita, Colonia Caroya e Río Cuarto.
+Os nomes e locais foram conferidos na [Copa RF](https://rfmotores.wordpress.com/kartodromos/),
+na [CAFAEC](https://cafaec.com.ar/autodromos/), no
+[município de Colonia Caroya](https://www.cdcoloniacaroya.gob.ar/Ordenanza/Detalles/927)
+e no [município de Río Cuarto](https://transparencia.riocuarto.gov.ar/100-obras/obra.php?id=45).
+A presença de Zárate em 2005 consta na [revista oficial do ACA](https://www.autoclub.org.ar/digital/autoclub/AutoClub_186_Jul-Sep05.pdf).
+O ano da primeira evidência consultada limita o uso desses nomes no jogo;
+não é apresentado como data de inauguração. Os traçados são esquemáticos.
+
 ## Modo realista — como o dinheiro funciona
 
 Correr custa dinheiro, e quem paga é o piloto até chegar à categoria principal.
@@ -765,6 +774,20 @@ promessa, convite de outra categoria, mesa de patrocínio, pré-temporada: quem 
 e encontra a tela ocupada entra numa fila e espera a vez.
 
 ## As categorias nacionais são nacionais
+
+O Kart Regional corre apenas no país do piloto: um argentino começa na
+Argentina, um brasileiro no Brasil e assim por diante. O kart nacional
+também fica no país do campeonato escolhido; o Mundial continua viajando
+por diferentes países. Se faltarem kartódromos cadastrados naquele país ou
+ano, o calendário usa pistas locais esquemáticas, com o país correto, sem
+completar as rodadas com provas no exterior. Poucas pistas podem receber
+mais de uma etapa. Ao abrir um save antigo, só as etapas futuras são
+corrigidas; resultados e fins de semana já iniciados ficam preservados.
+
+A imprensa usa a nacionalidade e o gênero do seu piloto nas referências
+à sua origem, inclusive nas mensagens antigas que tinham texto fixo de
+piloto brasileiro. Os veículos e seus públicos continuam sendo os de cada
+época; isso não muda a nacionalidade de quem está correndo.
 
 A Fórmula 4 brasileira corre no Brasil, com grid 90% brasileiro. A italiana
 corre na Itália e é a mais internacional das F4 — 55% de italianos, o resto

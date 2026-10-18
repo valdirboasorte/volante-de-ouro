@@ -3785,7 +3785,7 @@ const CELEBRIDADES = [
           'Anota aí: {eu}, {equipe}, {ano}. Promete.',
           'O {eu} sobe de categoria. O caminho é longo, mas ele está no caminho.'],
   titulo:['CAMPEÃO! CAMPEÃO! O {eu} É CAMPEÃO DE {ano}! HAJA CORAÇÃO, MEU AMIGO!',
-          'O Brasil tem um campeão de novo! {eu}, {ano}! Que emoção, amigos!',
+          'Mais um título para {nacPais}! {eu}, {ano}! Que emoção, amigos!',
           'Chorei aqui, gente, não vou mentir. O {eu} campeão da {cat}!',
           'Guarda essa data. {ano}. O ano do {eu}. Valeu, campeão!'] },
 
@@ -3810,10 +3810,10 @@ const CELEBRIDADES = [
           'Contrato assinado! {eu} e {equipe}. Vai dar o que falar.',
           'O {eu} muda de casa e vai para a {equipe} em {ano}.',
           'Subiu de categoria o {eu}! Agora é outro nível.'],
-  titulo:['CAMPEÃO BRASILEIRO DE NOVO, MINHA GENTE! O {eu} é campeão de {ano}!',
+  titulo:['CAMPEÃO {nacMaiuscula} DE NOVO, MINHA GENTE! O {eu} é campeão de {ano}!',
           'Que ano, que temporada, que piloto! {eu}, campeão da {cat}!',
           'A Band tem o prazer de anunciar: o campeão de {ano} é o {eu}!',
-          'É título, é festa, é Brasil! Parabéns, {eu}!'] },
+          'É título, é festa, é {nacNomePais}! Parabéns, {eu}!'] },
 
 { n:'Faustão', h:'Domingão', foto:AVATARES['faustao'], ini:'F', cor:'#f5a623',
   de:1984, ate:2019, tipo:'tv',
@@ -3839,7 +3839,7 @@ const CELEBRIDADES = [
   titulo:['CAMPEÃO! O {eu} É CAMPEÃO, MINHA GENTE! Vem para o programa, campeão!',
           'Ô loco meu, campeão de {ano}! Que orgulho desse moço!',
           'Plateia de pé para o campeão da {cat}: o {eu}!',
-          'O Brasil tem campeão de novo, e o nome dele é {eu}!'] },
+          'Título para {nacPais}! Parabéns, {eu}!'] },
 
 { n:'Gugu Liberato', h:'TV', foto:AVATARES['gugu'], ini:'G', cor:'#00953b',
   de:1986, ate:2019, tipo:'tv',
@@ -3850,7 +3850,7 @@ const CELEBRIDADES = [
        'A família do {eu} deve estar em festa hoje. E o Brasil também!',
        'É disso que o país precisa: alegria. Obrigado, {eu}!',
        'Olha o {eu} em {gp}, gente. Talento e trabalho.',
-       'Domingo de vitória brasileira. {eu}, {pos} lugar!'],
+       'Domingo de vitória {nacVitoria}. {eu}, {pos} lugar!'],
   ruim:['Que pena para o {eu} em {gp}. Mas o importante é que está bem.',
         'Não deu hoje, mas o {eu} tem muita estrada pela frente.',
         'O Brasil está com você, {eu}. Cabeça erguida.',
@@ -3860,10 +3860,10 @@ const CELEBRIDADES = [
   neutro:['Boa notícia: o {eu} vai correr pela {equipe} em {ano}!',
           'O nosso {eu} está na {cat} agora. Que caminhada bonita.',
           'História de superação: {eu} assina com a {equipe}.',
-          'Mais um brasileiro subindo na vida. Parabéns, {eu}!',
+          'Mais {nacPiloto} subindo na vida. Parabéns, {eu}!',
           'O {eu} mudou de categoria e a gente vai acompanhar tudo.'],
   titulo:['CAMPEÃO! Que alegria, gente! O {eu} é campeão de {ano}!',
-          'O Brasil tem um novo campeão e ele se chama {eu}. Que emoção!',
+          'Um novo título para {nacPais}, com {eu}. Que emoção!',
           'De onde veio até onde chegou. Parabéns, {eu}, campeão da {cat}!',
           'Hoje o país inteiro comemora com o {eu}. Campeão de {ano}!'] },
 
@@ -3889,9 +3889,9 @@ const CELEBRIDADES = [
           'Contrato assinado com a {equipe}. Agora é rodar quilômetro.',
           'O talento está lá. Agora é sobre estrutura e paciência.'],
   titulo:['Campeão da {cat} em {ano}. O {eu} construiu isso corrida a corrida, e eu sei o preço disso.',
-          'Poucos brasileiros chegaram lá. O {eu} chegou. Parabéns de coração.',
+          '{nacPoucos} chegaram lá. O {eu} chegou. Parabéns de coração.',
           'Título merecido. O {eu} foi o mais consistente do ano, e é isso que ganha campeonato.',
-          'Que orgulho ver um brasileiro campeão de novo. Muito bem, {eu}.'] }
+          'Que orgulho ver {nacPiloto} campeão de novo. Muito bem, {eu}.'] }
 ];
 
 const LOGOS_VEICULO = { 'Globo':'globo', 'UOL Esporte':'uol', 'Globo Esporte':'ge', 'Band':'band' };
@@ -3941,6 +3941,72 @@ function semRepetir(lista){
   return esc;
 }
 
+/* Só as referências ao piloto acompanham sua nacionalidade. Brasil nas
+   chamadas dos narradores continua sendo o público da emissora brasileira. */
+const GENTILICOS = {
+  ZA:'sul-africano/sul-africana/a', DE:'alemão/alemã/a', AO:'angolano/angolana/', SA:'saudita/saudita/a',
+  AR:'argentino/argentina/a', AM:'armênio/armênia/a', AU:'australiano/australiana/a', AT:'austríaco/austríaca/a',
+  AZ:'azerbaijano/azerbaijana/o', BH:'bareinita/bareinita/o', BE:'belga/belga/a', BO:'boliviano/boliviana/a',
+  BR:'brasileiro/brasileira/o', BG:'búlgaro/búlgara/a', CV:'cabo-verdiano/cabo-verdiana/', CM:'camaronês/camaronesa/os',
+  CA:'canadense/canadense/o', KZ:'cazaque/cazaque/o', CL:'chileno/chilena/o', CN:'chinês/chinesa/a',
+  CY:'cipriota/cipriota/o', CO:'colombiano/colombiana/a', KR:'sul-coreano/sul-coreana/a', CR:'costarriquenho/costarriquenha/a',
+  HR:'croata/croata/a', CU:'cubano/cubana/', DK:'dinamarquês/dinamarquesa/a', EG:'egípcio/egípcia/o',
+  SV:'salvadorenho/salvadorenha/', AE:'emiradense/emiradense/os', EC:'equatoriano/equatoriana/o', SK:'eslovaco/eslovaca/a',
+  SI:'esloveno/eslovena/a', ES:'espanhol/espanhola/a', US:'estadunidense/estadunidense/os', EE:'estoniano/estoniana/a',
+  PH:'filipino/filipina/as', FI:'finlandês/finlandesa/a', FR:'francês/francesa/a', GH:'ganês/ganesa/',
+  GE:'georgiano/georgiana/a', GR:'grego/grega/a', GT:'guatemalteco/guatemalteca/a', NL:'holandês/holandesa/a',
+  HN:'hondurenho/hondurenha/', HK:'honconguês/honconguesa/', HU:'húngaro/húngara/a', IN:'indiano/indiana/a',
+  ID:'indonésio/indonésia/a', IE:'irlandês/irlandesa/a', IS:'islandês/islandesa/a', IL:'israelense/israelense/',
+  IT:'italiano/italiana/a', JM:'jamaicano/jamaicana/a', JP:'japonês/japonesa/o', LV:'letão/letã/a',
+  LB:'libanês/libanesa/o', LT:'lituano/lituana/a', LU:'luxemburguês/luxemburguesa/', MO:'macaense/macaense/',
+  MY:'malaio/malaia/a', MT:'maltês/maltesa/', MA:'marroquino/marroquina/o', MX:'mexicano/mexicana/o',
+  MZ:'moçambicano/moçambicana/', MC:'monegasco/monegasca/', NI:'nicaraguense/nicaraguense/a', NG:'nigeriano/nigeriana/a',
+  NO:'norueguês/norueguesa/a', NZ:'neozelandês/neozelandesa/a', PA:'panamenho/panamenha/o', PY:'paraguaio/paraguaia/o',
+  PE:'peruano/peruana/o', PL:'polonês/polonesa/a', PT:'português/portuguesa/', QA:'catariano/catariana/o',
+  KE:'queniano/queniana/o', GB:'britânico/britânica/o', DO:'dominicano/dominicana/a', RO:'romeno/romena/a',
+  RU:'russo/russa/a', RS:'sérvio/sérvia/a', SG:'singapurense/singapurense/', SE:'sueco/sueca/a',
+  CH:'suíço/suíça/a', TH:'tailandês/tailandesa/a', TW:'taiwanês/taiwanesa/', CZ:'tcheco/tcheca/a',
+  TT:'trinitário/trinitária/', TN:'tunisiano/tunisiana/a', TR:'turco/turca/a', UA:'ucraniano/ucraniana/a',
+  UY:'uruguaio/uruguaia/o', VE:'venezuelano/venezuelana/a', VN:'vietnamita/vietnamita/o', ZW:'zimbabuano/zimbabuana/o'
+};
+function nacionalidadePiloto(cc, genero){
+  const pais = COUNTRIES.find(c => c.cc === String(cc || '').toUpperCase());
+  const dados = (GENTILICOS[pais && pais.cc] || 'piloto/pilota/').split('/');
+  const fem = genero === 'f', gentil = dados[fem ? 1 : 0];
+  const plural = /ês$/.test(gentil) ? gentil.slice(0, -2) + 'eses'
+    : gentil === 'alemão' ? 'alemães' : gentil === 'letão' ? 'letões'
+    : gentil === 'espanhol' ? 'espanhóis' : gentil + 's';
+  const nome = pais ? pais.name : 'seu país';
+  return { nacPiloto:(fem ? 'uma ' : 'um ') + gentil,
+    nacPoucos:(fem ? 'Poucas ' : 'Poucos ') + plural, nacVitoria:dados[1],
+    nacMaiuscula:gentil.toUpperCase(), nacNomePais:nome,
+    nacPais:((dados[2] || '') + ' ' + nome).trim() };
+}
+
+/* Saves guardam o texto pronto. Corrige só as antigas falas nacionais de
+   cada autor, sem transformar o público brasileiro nem pessoas reais. */
+function textoImprensa(p){
+  const d = nacionalidadePiloto(S.driver.cc, S.driver.genero);
+  const campeao = S.driver.genero === 'f' ? 'campeã' : 'campeão';
+  let txt = p.txt;
+  if(p.autor === 'Emerson Fittipaldi') txt = txt
+    .replace(/^Poucos brasileiros chegaram lá\./, d.nacPoucos + ' chegaram lá.')
+    .replace(/^Que orgulho ver um brasileiro campe(?:ão|ã) de novo\./,
+      'Que orgulho ver ' + d.nacPiloto + ' ' + campeao + ' de novo.');
+  if(p.autor === 'Gugu Liberato') txt = txt
+    .replace(/^Domingo de vitória brasileira\./, 'Domingo de vitória ' + d.nacVitoria + '.')
+    .replace(/^Mais um brasileiro subindo na vida\./, 'Mais ' + d.nacPiloto + ' subindo na vida.')
+    .replace(/^O Brasil tem um novo campe(?:ão|ã) e ele se chama /, 'Um novo título para ' + d.nacPais + ', com ');
+  if(p.autor === 'Galvão Bueno') txt = txt
+    .replace(/^O Brasil tem um campe(?:ão|ã) de novo!/, 'Mais um título para ' + d.nacPais + '!');
+  if(p.autor === 'Faustão') txt = txt
+    .replace(/^O Brasil tem campe(?:ão|ã) de novo, e o nome dele é /, 'Título para ' + d.nacPais + '! Parabéns, ');
+  if(p.autor === 'Luciano do Valle') txt = txt
+    .replace(/^CAMPE(?:ÃO|Ã) BRASILEIRO DE NOVO/, campeao.toUpperCase() + ' ' + d.nacMaiuscula + ' DE NOVO')
+    .replace(/^É título, é festa, é Brasil!/, 'É título, é festa, é ' + d.nacNomePais + '!');
+  return txt;
+}
+
 /* troca os marcadores das mensagens pelos dados da corrida */
 /* pilota: o que as contas escrevem em volta do nome vai para o feminino */
 function feminino(txt){
@@ -3959,7 +4025,8 @@ function preencher(txt, d){
     .replace(/\{grid\}/g,   d.grid != null ? d.grid : '?')
     .replace(/\{equipe\}/g, d.equipe || '')
     .replace(/\{cat\}/g,    d.cat || '')
-    .replace(/\{ano\}/g,    d.ano || '');
+    .replace(/\{ano\}/g,    d.ano || '')
+    .replace(/\{(nac\w+)\}/g, (m, k) => d[k] || '');
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -6358,8 +6425,15 @@ const KART_IDS_BR  = ['kt_int','kt_gra','kt_ald','kt_bir','kt_lon','kt_alg','kt_
 ['kt_cam','Campillos','Campillos','ES','tech',15],      ['kt_rec','Recas','Recas','ES','tech',15],
 ['kt_chi2','Chiva','Chiva','ES','tech',18],
 ['kt_pit','Pittsburgh','Pittsburgh Kart','US','tech',30],['kt_nor','Norway','Norway','US','tech',30],
-['kt_dou','Dousman','Dousman','US','tech',30]
-].forEach(t=>TRACKS[t[0]]={id:t[0], gp:t[1], circ:t[2], cc:t[3], type:t[4], rainP:t[5]/100});
+['kt_dou','Dousman','Dousman','US','tech',30],
+/* Argentina: nomes confirmados nas fontes oficiais citadas no README.
+   anoFonte é a primeira evidência consultada, não uma data de inauguração. */
+['kt_ar_zar','Etapa de Zárate','Kartódromo Internacional Ciudad de Zárate','AR','tech',25,2005],
+['kt_ar_evi','Etapa de Ciudad Evita','Kartódromo de Ciudad Evita','AR','tech',25,2026],
+['kt_ar_car','Etapa de Colonia Caroya','Kartódromo de Colonia Caroya','AR','mixed',20,2024],
+['kt_ar_rio','Etapa de Río Cuarto','Kartódromo Parque Ciudad de Río Cuarto','AR','tech',20,2026]
+].forEach(t=>TRACKS[t[0]]={id:t[0], gp:t[1], circ:t[2], cc:t[3], type:t[4], rainP:t[5]/100,
+  ...(t[6] ? { anoFonte:t[6] } : {})});
 
 /* Os calendários que as categorias nacionais realmente usam hoje: circuito
    em atividade, no país da categoria. Sem isso a Fórmula 4 italiana ia
@@ -6394,6 +6468,44 @@ for(const _id in TRACKS){
   const _t = TRACKS[_id];
   if(/^(kt_|kb_|kr_)/.test(_id)) (KART_PAIS[_t.cc] = KART_PAIS[_t.cc] || []).push(_id);
   else (PISTAS_PAIS[_t.cc] = PISTAS_PAIS[_t.cc] || []).push(_id);
+}
+
+/* Onde faltam pistas cadastradas para o país/ano, a base corre em pistas
+   locais esquemáticas. Nunca completa um kart nacional com viagens ao exterior.
+   Os IDs existem desde o carregamento para também abrir saves dessas pistas. */
+const KART_LOCAL_PAIS = { BR:KART_REG_IDS };
+function kartLocalDoPais(cc){
+  cc = /^[A-Z]{2}$/.test(cc || '') ? cc : 'BR';
+  if(!KART_LOCAL_PAIS[cc]){
+    const nome = (COUNTRIES.find(c => c.cc === cc) || {}).name || cc;
+    KART_LOCAL_PAIS[cc] = KART_REG_IDS.map((base, i) => {
+      const id = 'kr_' + cc.toLowerCase() + '_' + i, t = TRACKS[base];
+      TRACKS[id] = { ...t, id, cc, gp:t.gp + ' · ' + nome, circ:t.circ + ' · ' + nome, generico:true };
+      return id;
+    });
+  }
+  return KART_LOCAL_PAIS[cc];
+}
+COUNTRIES.forEach(c => kartLocalDoPais(c.cc));
+function paisDoKart(cat, cc){
+  if(!/kart/i.test(cat || '')) return null;
+  if(/Kart Regional/.test(cat)) return cc || 'BR';
+  const nacional = paisDaCategoria(cat);
+  if(nacional) return nacional;
+  if(typeof Hist !== 'undefined'){
+    const c = Hist.porNome(cat);
+    if(c && c.p === 'INT') return null;
+  }
+  if(/Mundial|Internacional|Europeu|Europeia|World|International|European/i.test(cat)) return null;
+  return cc || 'BR';
+}
+function pistasKartDoPais(cc, year, regional){
+  const locais = (KART_PAIS[cc] || []).filter(id => {
+    const t = TRACKS[id];
+    return t && t.cc === cc && (!t.anoFonte || year >= t.anoFonte);
+  });
+  if(regional && cc === 'BR') return KART_REG_IDS;
+  return locais.length ? locais : kartLocalDoPais(cc);
 }
 
 /* a Fórmula Regional é europeia: roda pelo continente, não pelo mundo */
@@ -6519,22 +6631,17 @@ Hist.pistas = function(id, ano){
 };
 
 /* o calendário de uma categoria de acesso */
-function pistasDaCategoria(cat, sk, year){
+function pistasDaCategoria(cat, sk, year, cc){
   /* a temporada tem calendário na fonte: são essas as pistas, nessa ordem */
   if(typeof Hist !== 'undefined' && !Engine.ehKart(cat)){
     const cid = campDaCat(cat, year);
     const real = cid && Hist.pistas(cid, year);
     if(real) return real;
   }
-  if(/Kart Regional/.test(cat)) return KART_REG_IDS;
+  const paisKart = paisDoKart(cat, cc);
+  if(paisKart) return pistasKartDoPais(paisKart, year, /Kart Regional/.test(cat));
   if(/Mundial de Kart/.test(cat)) return KART_IDS;
-  const paisK = /de Kart|Kart Nacional/.test(cat) ? paisDaCategoria(cat) : null;
-  if(paisK){
-    const p = KART_PAIS[paisK];
-    if(p && p.length >= 2) return p;
-    return paisK === 'BR' ? KART_BR_IDS : paisK === 'US' ? KART_IDS_US : KART_IDS;
-  }
-  if(/^Kart/.test(cat)) return sk === 'indy' ? KART_IDS_US : sk === 'stock' ? KART_IDS_BR : KART_IDS;
+  if(Engine.ehKart(cat)) return sk === 'indy' ? KART_IDS_US : sk === 'stock' ? KART_IDS_BR : KART_IDS;
   if(/Regionais|Nacionais|Turismo|Bairro|de Terra/.test(cat)) return REGIONAL_IDS;
   if(/Midgets|Sprint Cars/.test(cat)) return DIRT_IDS;
   /* Fórmula 4, Fórmula Ford e Fórmula 3 nacionais correm no próprio país */
@@ -6656,8 +6763,8 @@ function calendarFor(year, sk){
   return era.pool.filter(id => keep.has(id));
 }
 /* onde as categorias de acesso correm */
-function juniorCalendar(cat, year, sk, n){
-  const pool = pistasDaCategoria(cat, sk, year);
+function juniorCalendar(cat, year, sk, n, cc){
+  const pool = pistasDaCategoria(cat, sk, year, cc);
   if(!pool || !pool.length) return calendarFor(year, sk).slice(0, n);
   /* calendário real: a ordem de verdade; temporada muito longa (as F3 dos
      anos 80 tinham vinte etapas) é encurtada mantendo as etapas espalhadas */
@@ -6839,6 +6946,30 @@ const Engine = {
     return clamp(r, 0, age >= 27 ? ladderLen - 1 : ladderLen - 2);
   },
 
+  /* Corrige a agenda de saves anteriores sem reescrever corridas disputadas
+     nem trocar a pista de um fim de semana que já começou. */
+  migrarKartLocal(){
+    if(!S || !S.driver || !S.season) return false;
+    const sea = S.season, pais = paisDoKart(sea.cat, S.driver.cc);
+    if(!pais || sea.isTop || !(sea.calendar || []).length) return false;
+    kartLocalDoPais(pais);
+    const ids = juniorCalendar(sea.cat, sea.year, S.series, sea.calendar.length, S.driver.cc);
+    const inicio = Math.max(sea.round || 0, (sea.results || []).length);
+    const era = Engine.eraOf(sea.year, S.series);
+    let mudou = false;
+    for(let i = inicio; i < sea.calendar.length; i++){
+      if(i === sea.round && sea.fds && sea.fds.rd === sea.round) continue;
+      const atual = sea.calendar[i], trk = TRACKS[atual.id];
+      if(atual.cc === pais && trk && trk.cc === pais) continue;
+      const t = TRACKS[ids[i % ids.length]];
+      if(!t) continue;
+      sea.calendar[i] = { ...atual, id:t.id, gp:t.gp, circ:t.circ, cc:t.cc, type:t.type,
+        rainP:clamp(t.rainP * era.rain, 0, .95) };
+      mudou = true;
+    }
+    return mudou;
+  },
+
   /* ---- monta a temporada ---- */
   buildSeason(){
     const era = Engine.eraOf(S.year, S.series);
@@ -6898,7 +7029,7 @@ const Engine = {
         ids = Engine.calendarioDoLado(ids, S.year, Engine.ladoAtual(S.year));
     } else {
       let n = info.races; if(S.opts.fast) n = Math.max(5, Math.round(n*.6));
-      ids = juniorCalendar(cat, S.year, S.series, n);
+      ids = juniorCalendar(cat, S.year, S.series, n, S.driver.cc);
       if(Engine.ehKart(cat)) pts = pontosKart(ids.length);
     }
     const calendar = ids.map((id,i)=>{
@@ -11098,7 +11229,8 @@ const Engine = {
       const grupo = (tipo === 'titulo' && c.titulo) ? c.titulo
                   : (tom === 'bom' ? c.bom : tom === 'ruim' ? c.ruim : c.neutro);
       if(!grupo || !grupo.length) return;
-      const d = { eu, gp:dados.gp, pos:dados.pos, grid:dados.grid,
+      const d = { ...nacionalidadePiloto(S.driver.cc, S.driver.genero),
+                  eu, gp:dados.gp, pos:dados.pos, grid:dados.grid,
                   equipe: dados.equipe || (S.team ? S.team.name : ''),
                   cat: dados.cat || cat, ano: S.year };
       txt = preencher(escolherTexto(grupo, d), d);
@@ -14336,7 +14468,7 @@ const UI = {
             <span class="pty">${p.info ? 'Informativo' : esc(p.rot)}</span>
             <span class="pyr">${p.ano}</span>
           </div>
-          <div class="ptx">${esc(p.txt)}</div>
+          <div class="ptx">${esc(textoImprensa(p))}</div>
         </div>`).join('')}
       </div>`
       : '<div class="empty">Ninguém escreveu sobre você ainda.<br>Vença, quebre ou apronte — a imprensa aparece.</div>';
@@ -14944,7 +15076,9 @@ const Game = {
       /* a escolha de campeonato real por degrau (banco histórico) */
       if(S) Engine.migrarHistorico();
       /* vínculo da academia: recupera saídas antigas na base e conclui no topo */
-      if(S && Engine.migrarAcademia()) Game.save();
+      const mudouAcademia = S && Engine.migrarAcademia();
+      const mudouKart = S && Engine.migrarKartLocal();
+      if(mudouAcademia || mudouKart) Game.save();
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },
@@ -18727,7 +18861,7 @@ const Chefe = {
       });
     } catch(e){}
     const pts = f1 ? pointsFor(ano, 'f1') : Chefe.pontosJunior(ano);
-    const ids = f1 ? calendarFor(ano, 'f1') : juniorCalendar(C.cat, ano, 'f1', Chefe.corridasJunior());
+    const ids = f1 ? calendarFor(ano, 'f1') : juniorCalendar(C.cat, ano, 'f1', Chefe.corridasJunior(), C.eq.cc || C.chefe.cc);
     const calendar = ids.map((id, i) => {
       const t = TRACKS[id] || TRACKS.it;
       return { r:i + 1, id, gp:t.gp, circ:t.circ, cc:t.cc, type:t.type,

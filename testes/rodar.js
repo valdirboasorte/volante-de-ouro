@@ -9,6 +9,8 @@ const testes = [
   ['carreiras jogadas além de 2026', 'carreiras.js', ['5', '2023', '16']],
   ['mercado do piloto', 'mercado.js'],
   ['academias até a categoria principal', 'academias.js'],
+  ['nacionalidade na imprensa', 'nacionalidade.js'],
+  ['kart regional e nacional no próprio país', 'kart-local.js'],
   ['modo chefe (carreiras aleatórias)', 'chefe.js', ['30']],
   ['modo chefe (decisões)', 'chefe-decisoes.js'],
   ['mercado do chefe', 'mercado-chefe.js'],
