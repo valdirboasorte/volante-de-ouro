@@ -653,14 +653,12 @@ tempo de pista e confiabilidade.
 Trocar de equipe troca engenheiro e chefe, e o antigo fica guardado com tudo
 que lembra. Se você voltar, ele ainda está lá.
 
-## Jornalistas
+## Imprensa
 
-Quem cobre a categoria não é um alto-falante neutro. Cada um tem um critério
-próprio do que é um bom piloto — o cronômetro, o pódio, a pessoa, a polêmica —
-e escreve a partir dele: o mesmo quarto lugar vira "sólido" para um e "mais do
-mesmo" para outro. Eles lembram como você os tratou, e o que escrevem chega ao
-mercado antes de você. Dá para conversar em off, cobrar uma matéria, ou perder
-um deles para sempre.
+Quem cobre a sua carreira são os veículos de cada época — rádio até 1989,
+TV nos anos 90, portais nos 2000 e 2010 — e, de 2020 em diante, as contas da
+F1 brasileira nas redes, cada uma reagindo do seu jeito ao seu domingo. Não há
+jornalistas inventados pelo jogo.
 
 ## A vida fora da pista
 

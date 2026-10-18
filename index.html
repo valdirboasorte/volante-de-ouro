@@ -1347,7 +1347,6 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <nav aria-label="Rodapé">
       <button onclick="Abertura.creditos()">Créditos das fotos</button>
       <button onclick="UI.alternarMovimento()" id="peMov">Animações</button>
-      <a href="https://github.com/valdirboasorte/volante-de-ouro" rel="noopener">Código</a>
     </nav>
   </footer>
 
@@ -5268,22 +5267,9 @@ const DIALOGOS = {
    mesmo" para outro. Eles se lembram de como você os tratou, e o
    que escrevem chega ao mercado antes de você.
    ═══════════════════════════════════════════════════════════════ */
-const JORNALISTAS = [
-  { n:'Vera Antunes',     cc:'BR', pers:'frio',      vies:'tecnica',
-    ds:'Cobre o esporte há vinte anos e desconfia de qualquer coisa que não esteja no cronômetro.' },
-  { n:'Duarte Salgado',   cc:'PT', pers:'politico',  vies:'polemica',
-    ds:'Escreve o que dá manchete. Nunca inventou nada, e nunca deixou uma boa história esfriar.' },
-  { n:'Helena Prado',     cc:'BR', pers:'leal',      vies:'pessoa',
-    ds:'Escreve sobre gente. Se ela gostar de você, o país inteiro vai gostar junto.' },
-  { n:'Renaud Vasseur',   cc:'FR', pers:'orgulhoso', vies:'resultado',
-    ds:'Só existe pódio. O resto é matéria de segunda-feira.' },
-  { n:'Ian Prescott',     cc:'GB', pers:'cansado',   vies:'tecnica',
-    ds:'Já viu trinta talentos gerados e vinte e nove sumirem. Não se empolga com ninguém.' },
-  { n:'Nora Bellini',     cc:'IT', pers:'ambicioso', vies:'polemica',
-    ds:'Constrói e destrói reputação na mesma semana, e vive disso.' },
-  { n:'Gustavo Meireles', cc:'BR', pers:'inseguro',  vies:'pessoa',
-    ds:'Quer ser amigo dos pilotos, e por isso escreve macio até se sentir traído.' }
-];
+/* sem jornalistas inventados: quem cobre a carreira são os veículos (VEICULOS)
+   e as contas das redes (REDES) */
+const JORNALISTAS = [];
 
 /* como cada um lê o mesmo domingo */
 const LEITURAS = {
@@ -8006,6 +7992,11 @@ const Engine = {
   PAPEL_JORNAL: 'jornalista',
   garantirJornalistas(){
     const g = Engine.gente();
+    /* os jornalistas inventados de saves antigos saem da sua lista de gente */
+    if(!JORNALISTAS.length){
+      for(let k = g.length - 1; k >= 0; k--) if(g[k].papel === 'jornalista') g.splice(k, 1);
+      return [];
+    }
     const ativos = g.filter(p => p.papel === 'jornalista' && !p.saiu);
     if(ativos.length >= 2) return ativos;
     /* prioriza quem é do seu país: é quem cobre a sua carreira de perto */
@@ -8421,6 +8412,8 @@ const Engine = {
     /* carreira nova começa com o paddock vazio e o povoa sozinha. Migrar as
        duas barras antigas é coisa de save velho, e roda só ao carregar. */
     if(!S.gente) S.gente = [];
+    /* jornalistas inventados de saves antigos não existem mais */
+    if(!JORNALISTAS.length && S.gente.some(p => p.papel === 'jornalista')) S.gente = S.gente.filter(p => p.papel !== 'jornalista');
     return S.gente;
   },
   pessoa(papel){ return Engine.gente().find(p => p.papel === papel && !p.saiu) || null; },

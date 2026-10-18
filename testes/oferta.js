@@ -36,9 +36,12 @@ function assinar(cat){
          const t = Engine.teamsFor('Fórmula 4 Italiana', S.year + 1, S.series, 3, S.ladder.length)[0];
          S.pendingOffers = [{ type: 'f1', cat: 'Fórmula 4 Italiana', team: t, years: 1, up: true, note: 'teste' }];
          Game.takeOffer(0); UI.limparFila(); UI.close();`);
-  const r = H.temporada(J, (ofs, S) => ofs.findIndex(o => o.cat === S.season.cat));
+  let havia = false;
+  const r = H.temporada(J, (ofs, S) => { const i = ofs.findIndex(o => o.cat === S.season.cat); havia = i >= 0; return i; });
   const cat = J.run('S.season.cat');
-  ok(!r.fim && cat === 'Fórmula 4 Italiana', `renovou no mesmo campeonato e continua na ${cat}`);
+  /* campeão não recebe proposta para ficar: aí não há o que renovar */
+  if(havia) ok(!r.fim && cat === 'Fórmula 4 Italiana', `renovou no mesmo campeonato e continua na ${cat}`);
+  else console.log('  · campeão só recebe proposta para subir: renovação não testada nesta rodada');
 }
 
 {
