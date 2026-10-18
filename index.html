@@ -779,7 +779,8 @@ table.ch-livro .pt{font-size:15px}
 .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
 .link-txt{font-size:16px; color:var(--ink); text-decoration:underline; text-underline-offset:.22em; text-decoration-thickness:1px; padding:6px 0}
 .link-txt:hover{color:var(--accent-txt)}
-.flag,.fg{display:inline-block; font-size:.74em; font-weight:500; color:var(--soft); letter-spacing:.05em; font-style:normal; min-width:2.5em}
+.flag,.fg{display:inline-block; font-size:inherit; font-style:normal; min-width:1.6em; line-height:1; vertical-align:middle}
+.country-flag{display:inline-block; width:1.45em; height:1.0875em; max-width:none; object-fit:contain; vertical-align:-.18em; flex-shrink:0; border-radius:2px}
 
 /* ══════════ A CORRIDA AO VIVO ══════════ */
 body.em-corrida{overflow:hidden}
@@ -985,7 +986,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .to-pil{display:flex; align-items:center; gap:12px; width:100%; padding:10px 14px; text-align:left; transition:background .15s}
 .to-pil + .to-pil{box-shadow:0 -1px 0 var(--rule)} /* separador da lista (taste-skill-ignore) */
 .to-pil:hover{background:var(--s3)}
-.to-pil .flag{font-size:13px; color:var(--soft); min-width:2.6em}
+.to-pil .flag{font-size:16px; min-width:1.6em}
 .to-pil .tx{flex:1; min-width:0}
 .to-pil .tx b{display:block; font-size:16px; font-weight:600}
 .to-pil .tx span{display:block; font-size:14px; color:var(--soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -1619,10 +1620,15 @@ const COUNTRIES = [
 ].map(c=>({name:c[0],cc:c[1],ab:c[2]}));
 
 const CC2AB = {}; COUNTRIES.forEach(c=>CC2AB[c.cc]=c.ab);
-/* no telão de cronometragem o país é a sigla: BRA, GBR, ITA */
+/* Imagens locais: bandeiras também no Windows e sem conexão. Inclui os
+   países do banco histórico que não aparecem na criação de piloto. */
+const FLAG_CODES = new Set('AD AE AL AM AO AR AT AU AW AZ BB BE BG BH BO BR BY CA CH CL CM CN CO CR CU CV CY CZ DE DK DO DZ EC EE EG ES FI FR GB GE GH GR GT HK HN HR HT HU ID IE IL IN IR IS IT JM JO JP KE KG KR KW KY KZ LB LI LK LT LU LV MA MC MK MO MT MX MY MZ NG NI NL NO NZ OM PA PE PH PK PL PR PT PY QA RO RS RU SA SE SG SI SK SM SV TH TN TR TT TW UA US UY UZ VE VN ZA ZW'.split(' '));
 function flag(cc){
-  if(!cc||cc.length!==2) return '';
-  return ab(cc);
+  cc = String(cc || '').toUpperCase();
+  if(!/^[A-Z]{2}$/.test(cc)) return '';
+  const nome = (COUNTRIES.find(c => c.cc === cc) || {}).name || cc;
+  const arquivo = FLAG_CODES.has(cc) ? cc.toLowerCase() : 'xx';
+  return `<img class="country-flag" src="assets/flags/${arquivo}.svg" alt="${nome}" title="${nome}" width="24" height="18" draggable="false">`;
 }
 function ab(cc){ return CC2AB[cc] || (cc||'').toUpperCase(); }
 
@@ -5526,8 +5532,8 @@ const EVENTOS_FUNDOS = [
   ] },
 
 { id:'oferta_academia', ic:'formatura', quando:'base', peso:3, uma:true,
-  t:'Um programa de formação quer você',
-  d:'Eles pagam a temporada, abrem portas e cobram tudo. Quem entra e não entrega em dois anos sai marcado — e quem entra e entrega às vezes fica preso quando o degrau seguinte aparece.',
+  t:'Uma bolsa para continuar na base',
+  d:'Um programa de bolsas oferece apoio financeiro pontual para custear a temporada. O dinheiro vem com contrapartidas: os termos e a cobrança futura dependem do que você negociar.',
   ops:[
     { t:'Assinar', tom:'alianca', base:.55, attr:'pace',
       otimo:{ t:'A conta da temporada deixou de ser sua, e o telefone deles abre porta que o seu não abre.',
@@ -5658,12 +5664,12 @@ const SEMENTES = {
       { t:'Trazer ele para o seu lado', tom:'alianca', e:{ amigo:1, teamRel:2 } },
       { t:'Ignorar', tom:'frieza', e:{ teamRel:-6, moral:-4 } }
     ] },
-  cobranca_academia: { ic:'formatura', t:'A academia quer resposta',
+  cobranca_academia: { ic:'formatura', t:'O programa de bolsas quer resposta',
     d:'Eles pagaram dois anos da sua carreira e agora querem saber por que você ainda não está onde eles esperavam.',
     ops:[
       { t:'Mostrar os números', tom:'tecnico', e:{ teamRel:4, resp:6 } },
       { t:'Pedir mais um ano', tom:'pessoal', e:{ moral:-4, semente:{ k:'cobranca_academia', anos:1 } } },
-      { t:'Sair do programa', tom:'direto', e:{ dinheiro:-400e3, moral:5, saiuAcademia:1 } }
+      { t:'Renegociar a cobrança e continuar', tom:'direto', e:{ dinheiro:-400e3, moral:5 } }
     ] },
   preso_academia: { ic:'elo', t:'A cláusula',
     d:'Apareceu uma vaga melhor. O programa lembrou, por escrito, que você tem mais um ano de contrato com eles.',
@@ -5715,12 +5721,12 @@ const SEMENTES = {
 /* ═══════════════════════════════════════════════════════════════
    ACADEMIAS DE PILOTOS
    Entrar numa abre portas, acelera a evolução e coloca seu nome na
-   fila de uma equipe grande. Mas a cobrança é imediata: quem não
-   entrega dois anos seguidos é dispensado do programa.
+   fila de uma equipe grande. Resultados e potencial atraem convites;
+   anos ruins podem encerrar o vínculo antes da categoria principal.
    ═══════════════════════════════════════════════════════════════ */
 const ACADEMIES = [
   { n:'Red Bull Junior Team',       t:'Red Bull',     from:2001, c:'#1e2a5a', peso:1.15,
-    ds:'O programa mais implacável do grid: promove cedo e dispensa mais cedo ainda.' },
+    ds:'Formação intensa e cobrança alta, com caminho para as equipes do grupo.' },
   { n:'Ferrari Driver Academy',     t:'Ferrari',      from:2009, c:'#d40000', peso:1.12,
     ds:'Estrutura completa em Maranello, com a pressão de vestir vermelho um dia.' },
   { n:'McLaren Young Driver',       t:'McLaren',      from:2002, c:'#ff8000', peso:1.10,
@@ -8127,47 +8133,49 @@ const Engine = {
     return col;
   },
 
-  /* ═══ ACADEMIA E LEALDADE ═══
-     Um piloto da academia da Ferrari pode correr pela Ferrari e pela Haas.
-     Se assinar com a Mercedes, sai do programa — e sair tem preço. */
-  ALIADOS: {
-    'Red Bull Junior Team': ['Red Bull','Toro Rosso','AlphaTauri','RB','Racing Bulls','Minardi'],
-    'Ferrari Driver Academy': ['Ferrari','Haas','Sauber','Alfa Romeo','Kick Sauber','Audi'],
-    'Mercedes Junior': ['Mercedes','Williams','Aston Martin','Racing Point','Force India','McLaren'],
-    'Alpine Academy': ['Alpine','Renault','Lotus'],
-    'Renault Sport Academy': ['Renault','Alpine','Lotus','McLaren'],
-    'McLaren Young Driver': ['McLaren'],
-    'Williams Driver Academy': ['Williams'],
-    'Sauber Junior Team': ['Sauber','Alfa Romeo','Kick Sauber','Audi'],
-    'Toyota Young Drivers': ['Toyota'],
-    'Honda Formula Dream': ['Honda','BAR','Toro Rosso','AlphaTauri','Red Bull','RB','Racing Bulls'],
-    'Nissan Driver Development': ['Nissan'],
-    'Porsche Junior': ['Porsche'],
-    'BMW Junior Team': ['BMW','Sauber','BMW Sauber'],
-    'Audi Sport Academy': ['Audi','Sauber']
-  },
-  academiaAceita(nomeEquipe){
-    if(!S.academy) return true;
-    const lista = Engine.ALIADOS[S.academy.n];
-    /* sem lista conhecida, vale a equipe-mãe do programa */
-    const alvo = lista || (S.academy.t ? [S.academy.t] : null);
-    if(!alvo) return true;
-    return alvo.some(x => (nomeEquipe || '').indexOf(x) >= 0 || x.indexOf(nomeEquipe || '§') >= 0);
-  },
-  /* sair do programa: perde apoio, perde porta, e a imprensa comenta */
-  sairDaAcademia(motivo, nomeEquipe){
+  /* ═══ FORMAÇÃO NA ACADEMIA ═══
+     A equipe da base não é a equipe-mãe do programa. Trocar de equipe ou
+     subir de categoria não desfaz o vínculo. A academia avalia o desempenho
+     no fim do ano; chegar ao topo conclui a formação. */
+  concluirAcademia(topo){
+    topo = topo || S.season;
     const a = S.academy;
-    if(!a) return null;
+    if(!a || !topo || !topo.isTop) return null;
     S.academy = null;
-    S.exAcademia = { n:a.n, ano:S.year, motivo };
-    S.driver.morale = clamp(S.driver.morale - 8, 5, 100);
-    S.driver.fame = clamp(S.driver.fame - 2, 0, 100);
-    if(S.marcas) S.marcas.porta = Math.max(0, (S.marcas.porta || 0) - 1);
-    /* quem te levou até ali não gosta de saber pela imprensa */
-    const men = Engine.genteAtiva ? Engine.genteAtiva().find(p => p.papel === 'mentor') : null;
-    if(men) Engine.mexerRel(men, { tens: 10, conf: -6 });
-    return { academia:a.n, equipe:nomeEquipe,
-             txt: 'Assinar com ' + (nomeEquipe || 'outra equipe') + ' encerrou o seu vínculo com o ' + a.n + '.' };
+    S.exAcademia = { n:a.n, desde:a.desde == null ? null : a.desde,
+      ano:topo.year, motivo:'formacao', cat:topo.cat };
+    S.academyOffers = null; S._acadList = null; S.academyDropped = null; S.academyAviso = null;
+    return { ...S.exAcademia,
+      txt:'Formação na ' + a.n + ' concluída: você chegou à ' + topo.cat + '.' };
+  },
+  /* saves antigos podem ter perdido o vínculo ao assinar com uma equipe da
+     base. Só restaura quando o save identifica qual era o programa. */
+  migrarAcademia(){
+    if(!S || !S.season) return false;
+    let mudou = false;
+    const topo = (S.history || []).concat(S.archive || [], [S.season])
+      .filter(x => x.isTop).sort((a,b) => a.year - b.year)[0];
+    const ex = S.exAcademia;
+    if(!S.academy && !(ex && ex.motivo === 'formacao')){
+      const nome = ex && ex.motivo === 'contrato' && !S.academyDropped ? ex.n : null;
+      const a = ACADEMIES.find(x => x.n === nome);
+      if(a){
+        S.academy = { n:a.n, t:a.t || null, c:a.c, peso:a.peso,
+          desde:ex.desde == null ? null : ex.desde, anosRuins:0 };
+        S.exAcademia = null;
+        mudou = true;
+      }
+    }
+    /* dispensa por desempenho é uma decisão válida, inclusive nos saves antigos */
+    if(!S.academy && typeof S.academyDropped === 'string'
+       && !(S.exAcademia && (S.exAcademia.motivo === 'formacao' || S.exAcademia.motivo === 'desempenho'))){
+      S.exAcademia = { n:S.academyDropped, desde:null, ano:S.year,
+        motivo:'desempenho', cat:S.season.cat };
+      mudou = true;
+    }
+    if(S.academy && !Number.isFinite(S.academy.anosRuins)){ S.academy.anosRuins = 0; mudou = true; }
+    if(topo && Engine.concluirAcademia(topo)) mudou = true;
+    return mudou;
   },
 
   /* ═══ MERCADO DE OUTRAS CATEGORIAS ═══
@@ -11179,34 +11187,74 @@ const Engine = {
   },
 
   /* ═══ ACADEMIAS ═══ */
+  /* Olheiros olham o campeonato disputado, o confronto no mesmo carro e o
+     teto oculto do piloto. O desempenho pesa mais que a promessa. */
+  academyPerfil(sum){
+    const sea = S.season, d = S.driver;
+    const n = Math.max(2, sea.field.length);
+    const resultado = clamp(1 - ((sum.pos || n) - 1) / (n - 1), 0, 1);
+    const duelo = sum.tmRaces >= 3 ? clamp(sum.tmWins / sum.tmRaces, 0, 1) : .5;
+    const potencial = clamp((Engine.ovr(d.pot || d.attr) - 68) / 28, 0, 1);
+    const ritmo = clamp(.5 + (d.ovr - (sea.mediaSkill || d.ovr)) / 24, 0, 1);
+    const quebras = (sea.results || []).filter(r => r.dnf === 'MEC').length;
+    const azar = Math.min(.12, quebras / Math.max(1, sum.races || 0) * .35);
+    const rendimento = clamp(resultado * .78 + duelo * .22 + azar, 0, 1);
+    const interesse = clamp(rendimento * .58 + potencial * .26 + ritmo * .12
+      + d.fame / 100 * .04 + (sum.champion ? .08 : 0), 0, 1);
+    return { resultado, rendimento, potencial, ritmo, duelo, interesse };
+  },
   academyOffers(sum){
     if(S.academy || S.season.isTop) return [];
+    if(S.exAcademia && S.exAcademia.motivo === 'formacao') return [];
     if(S.driver.age > 23) return [];
-    if(!(sum.champion || sum.pos <= 4)) return [];
+    if((sum.races || 0) < Math.min(3, S.season.calendar.length)) return [];
+    const perfil = Engine.academyPerfil(sum);
+    if(!sum.champion && perfil.resultado < .65
+       && !(perfil.potencial >= .8 && perfil.resultado >= .4 && perfil.duelo >= .5)) return [];
     const y = S.year + 1;
     const cands = ACADEMIES.filter(a =>
       y >= a.from && (!a.to || y <= a.to) &&
       (!a.cc || a.cc === S.driver.cc) &&
-      (!a.sk || a.sk === S.series));
+      (!a.sk || a.sk === S.series) &&
+      !(S.exAcademia && S.exAcademia.motivo === 'desempenho'
+        && S.exAcademia.n === a.n && y <= S.exAcademia.ano + 2));
     if(!cands.length) return [];
-    /* quanto melhor o ano, mais programas se interessam */
-    const forca = (sum.champion ? 40 : 0) + (10 - Math.min(sum.pos,10))*4 + S.driver.ovr*.5 + S.driver.fame*.4;
-    const p = clamp((forca - 34) / 70, .05, .8);
-    if(!R.chance(p)) return [];
-    return R.shuffle(cands).slice(0, R.int(1, Math.min(2, cands.length)));
+    if(!R.chance(clamp((perfil.interesse - .38) * 1.7, .02, .9))) return [];
+    /* programas com mais estrutura são mais seletivos, mas nenhum convite
+       é garantido e nenhuma equipe ou categoria tem uma sequência fixa */
+    const interessadas = cands.filter(a => {
+      const exigencia = .45 + (a.peso - 1) * 1.5;
+      return perfil.interesse >= exigencia &&
+        R.chance(clamp(.2 + (perfil.interesse - exigencia) * 1.6, .08, .85));
+    });
+    if(!interessadas.length) return [];
+    return R.shuffle(interessadas).slice(0, R.int(1, Math.min(2, interessadas.length)));
   },
-  /* revisão anual do programa */
+  /* Um ano fraco pode render outra chance. Reincidência aumenta o risco;
+     potencial e adaptação dão paciência, sem tornar ninguém intocável. */
   academyReview(sum){
-    if(!S.academy) return null;
-    if(S.season.isTop){ S.academy.anosRuins = 0; return null; }
-    const ruim = sum.pos > 8 && !sum.champion;
-    S.academy.anosRuins = ruim ? (S.academy.anosRuins||0) + 1 : 0;
-    if(S.academy.anosRuins >= 2){
-      const nome = S.academy.n;
-      S.academy = null;
-      return nome;
+    const a = S.academy, sea = S.season;
+    if(!a || sea.isTop || a.revisaoAno === sea.year) return null;
+    if((sum.races || 0) < Math.min(3, sea.calendar.length)) return null;
+    a.revisaoAno = sea.year;
+    const perfil = Engine.academyPerfil(sum);
+    const ruim = !sum.champion && sum.pos > 3 && perfil.rendimento < .52;
+    a.anosRuins = ruim ? (a.anosRuins || 0) + 1 : 0;
+    S.academyAviso = null;
+    if(!ruim) return null;
+    const rigor = clamp(((a.peso || 1.1) - 1) * 1.4, .05, .22);
+    const risco = clamp(.10 + (.52 - perfil.rendimento) * .7 + (a.anosRuins - 1) * .22
+      + rigor - perfil.potencial * .15 - perfil.ritmo * .06 - ((S.yearsInCat || 1) <= 1 ? .08 : 0), .03, .92);
+    if(!R.chance(risco)){
+      S.academyAviso = 'A ' + a.n + ' manteve seu vínculo, mas cobra uma melhora nos resultados.';
+      return null;
     }
-    return null;
+    S.academy = null;
+    S.exAcademia = { n:a.n, desde:a.desde == null ? null : a.desde,
+      ano:sea.year, motivo:'desempenho', cat:sea.cat };
+    S._acadList = null;
+    return { ...S.exAcademia,
+      txt:'A ' + a.n + ' encerrou seu contrato de formação após resultados abaixo da expectativa. Você segue sem o apoio do programa.' };
   },
 
   /* estado do objetivo do cenário */
@@ -13902,7 +13950,15 @@ const UI = {
           <span style="font-size:17px">${ico('formatura')}</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:13.5px;font-weight:800;line-height:1.2">${esc(S.academy.n)}</div>
-            <div style="font-size:13px;color:var(--dim)">desde ${S.academy.desde}${S.academy.t?` · ligado à ${esc(S.academy.t)}`:''}</div>
+            <div style="font-size:13px;color:var(--dim)">Formação ativa${S.academy.desde != null ? ` desde ${S.academy.desde}` : ''}${S.academy.t?` · ligado à ${esc(S.academy.t)}`:''}</div>
+          </div>
+        </div>` : S.exAcademia && (S.exAcademia.motivo === 'formacao' || S.exAcademia.motivo === 'desempenho') ? `<div class="pad-sm" style="border-top:2px solid var(--s1);display:flex;align-items:center;gap:9px">
+          <span style="font-size:17px">${ico('formatura')}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13.5px;font-weight:800;line-height:1.2">${esc(S.exAcademia.n)}</div>
+            <div style="font-size:13px;color:var(--dim)">${S.exAcademia.motivo === 'formacao'
+              ? `Formação concluída em ${S.exAcademia.ano} · ${esc(S.exAcademia.cat)}`
+              : `Vínculo encerrado em ${S.exAcademia.ano} por desempenho.`}</div>
           </div>
         </div>` : ''}
       <div class="trophies">
@@ -14887,6 +14943,8 @@ const Game = {
       if(S && S.season && !S.season.isTop && S.season.playoff) delete S.season.playoff;
       /* a escolha de campeonato real por degrau (banco histórico) */
       if(S) Engine.migrarHistorico();
+      /* vínculo da academia: recupera saídas antigas na base e conclui no topo */
+      if(S && Engine.migrarAcademia()) Game.save();
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },
@@ -15077,7 +15135,10 @@ const Game = {
     /* lesão da reta final do ano passado: as férias curam. A do inverno é aplicada depois. */
     const curou = S.driver && S.driver.injured > 0 && S.season && S.season.year < S.year;
     if(curou) S.driver.injured = 0;
+    S.academyDropped = null; S.academyAviso = null;
     S.season = Engine.buildSeason();
+    const formacao = Engine.concluirAcademia();
+    if(formacao) setTimeout(()=>UI.toast(formacao.txt), 600);
     S.season.dilemmaAt = R.int(2, Math.max(3, S.season.calendar.length-3));
     /* rodadas em que algo acontece fora da pista */
     const nEv = Math.min(R.int(4, 6), Math.max(2, S.season.calendar.length - 3)), maxR = Math.max(2, S.season.calendar.length - 1);
@@ -15640,14 +15701,20 @@ const Game = {
   },
 
   joinAcademy(i){
-    const a = (S._acadList || [])[i];
+    const lista = S._acadList;
+    if(!lista || (i !== -1 && !lista[i])) return;
+    const a = lista[i];
+    if(a && (S.academy || S.season.isTop || (S.exAcademia && S.exAcademia.motivo === 'formacao'))) return;
     if(a){
-      S.academy = { n:a.n, t:a.t || null, c:a.c, peso:a.peso, desde:S.year, anosRuins:0 };
+      S.academy = { n:a.n, t:a.t || null, c:a.c, peso:a.peso, desde:S.year, anosRuins:0,
+        revisaoAno:S.season.round >= S.season.calendar.length ? S.season.year : null };
+      S.exAcademia = null; S.academyDropped = null; S.academyAviso = null;
       Engine.noticia("academia", {academia:a.n});
       S.driver.fame = clamp(S.driver.fame + 8, 0, 100);
       UI.toast(`Você entrou na ${a.n}.`);
     }
     S._acadList = null;
+    Game.save(); UI.render();
     UI.close();
     Game.afterSeason(S.lastSum);
   },
@@ -15742,7 +15809,6 @@ const Game = {
     if(e.porta)       S.marcas.porta = (S.marcas.porta || 0) + e.porta;
     if(e.igualdade)   S.marcas.igualdade = S.year;
     if(e.politicagem) S.marcas.politicagem = (S.marcas.politicagem || 0) + e.politicagem;
-    if(e.saiuAcademia){ S.academy = null; notas.push('fora do programa'); }
     /* o que volta anos depois */
     if(e.semente) Engine.plantar(e.semente.k, e.semente.anos);
     /* cobrança proporcional ao que foi emprestado, não a um número fixo */
@@ -16029,10 +16095,11 @@ const Game = {
     } catch(e){}
     S.ordemBase = null;
 
-    const saiuDaAcademia = Engine.academyReview(sum);
     const growth = Engine.progress(sum);
+    const corteAcademia = Engine.academyReview(sum);
+    if(corteAcademia) S.academyDropped = corteAcademia;
+    else if(S.academy) S.academyDropped = null;
     S.academyOffers = Engine.academyOffers(sum);
-    S.academyDropped = saiuDaAcademia;
     Game.save();
     UI.seasonEndModal(sum, growth);
   },
@@ -16208,26 +16275,20 @@ const Game = {
   takeOffer(i){
     if(S.retired || !S.pendingOffers) return;
     const o = S.pendingOffers[i];
-    /* clique duplo não assina duas vezes (nem pula um ano) */
-    if(o && o.podeP !== false && !o.retirada) S.pendingOffers = null;
-    /* o que te garantiram na hora de assinar fica anotado, e cobra em julho */
-    if(o){ S.promessasAtivas = (o.promessas || []).map(p => Object.assign({}, p));
-           S.bonusCarro = 0;
-           S.cansaco = 0; S.paralelaFeita = null;
-           /* a cláusula decide o que você pode fazer fora dali */
-           if(S.contract) S.contract.clausula = o.clausula || 'padrao';
-           /* trocar de lado na cisão americana */
-           if(o.ladoIndy) S.ladoIndy = o.ladoIndy;
-           S._clausulaNova = o.clausula || 'padrao';
-           /* academia: assinar com equipe incompatível encerra o vínculo */
-           if(o.team && !Engine.academiaAceita(o.team.name)){
-             const saida = Engine.sairDaAcademia('contrato', o.team.name);
-             if(saida) setTimeout(()=>UI.toast(saida.txt), 900);
-           } }
     if(!o) return;
     if(o.podeP === false) return UI.toast('Essa vaga está fora do seu orçamento: ' + fmtD(o.paga) + '.');
     if(o.retirada) return UI.toast('Essa proposta foi retirada.');
+    /* clique duplo não assina duas vezes (nem pula um ano) */
     S.pendingOffers = null;
+    /* o que te garantiram na hora de assinar fica anotado, e cobra em julho */
+    S.promessasAtivas = (o.promessas || []).map(p => Object.assign({}, p));
+    S.bonusCarro = 0;
+    S.cansaco = 0; S.paralelaFeita = null;
+    /* a cláusula decide o que você pode fazer fora dali */
+    if(S.contract) S.contract.clausula = o.clausula || 'padrao';
+    /* trocar de lado na cisão americana */
+    if(o.ladoIndy) S.ladoIndy = o.ladoIndy;
+    S._clausulaNova = o.clausula || 'padrao';
     /* sair no meio do contrato tem preço */
     const restanteC = S.season && S.season.isTop && S.contract && S.contract.years > 1 ? S.contract.years - 1 : 0;
     if(restanteC && S.team && (!o.team || o.team.name !== S.team.name || (o.sk && o.sk !== S.series))){
@@ -16435,14 +16496,14 @@ UI.seasonEndModal = function(sum, growth){
             </div>`).join('')}
         </div>
       </div>
-      ${S.academyDropped ? `<div style="margin-top:16px;padding:13px 15px;border-radius:var(--r-sm);
-          background:var(--panel2);background:var(--s2);border-left:3px solid var(--red2)">
-          <span class="lbl" style="display:block;margin-bottom:5px">Academia</span>
-          <div style="font-size:13.5px;font-weight:700;color:var(--red2)">
-            ${ico('formatura')} A ${esc(S.academyDropped)} encerrou seu contrato de formação.</div>
-          <div style="font-size:14px;color:var(--dim);margin-top:4px">
-            Dois anos sem entregar. A partir de agora você segue sem o apoio do programa.</div>
-        </div>` : ''}
+      ${S.academyDropped ? `<div style="margin-top:16px;padding:13px 15px;border-radius:var(--r-sm);background:var(--s2);border-left:3px solid var(--red2)">
+        <span class="lbl" style="display:block;margin-bottom:5px">Fim do vínculo com a academia</span>
+        <div style="font-size:14px;line-height:1.5">${esc(typeof S.academyDropped === 'string'
+          ? 'A ' + S.academyDropped + ' encerrou seu contrato de formação por desempenho.' : S.academyDropped.txt)}</div>
+      </div>` : S.academyAviso ? `<div style="margin-top:16px;padding:13px 15px;border-radius:var(--r-sm);background:var(--s2);border-left:3px solid var(--gold)">
+        <span class="lbl" style="display:block;margin-bottom:5px">Cobrança da academia</span>
+        <div style="font-size:14px;line-height:1.5">${esc(S.academyAviso)}</div>
+      </div>` : ''}
       ${UI.goalVerdict()}
       ${UI.reviewBox()}
     </div>
@@ -17740,7 +17801,9 @@ UI.academyModal = function(lista, sum){
       <div class="res-nar" style="margin-top:0">
         ${sum.champion ? 'O título chamou atenção.' : `O ${ord(sum.pos)} lugar não passou despercebido.`}
         Entrar num programa acelera sua evolução, abre portas no mercado e coloca seu nome na fila de uma
-        equipe grande — mas eles cobram resultado todo ano.
+        equipe grande. Trocar de equipe na base mantém o vínculo. A academia avalia seus resultados e seu
+        potencial a cada temporada e pode dispensar você se não corresponder. A formação termina ao
+        chegar à Fórmula 1 ou a outra categoria principal.
       </div>
       ${lista.map((a,i)=>`<button class="offer" onclick="Game.joinAcademy(${i})">
         <div class="oh">
@@ -17810,7 +17873,11 @@ UI.help = function(){
       F4 Italiana; quem não tem campeonato nacional próprio pega o equivalente internacional.</p>
       <p><b>Academias.</b> Uma boa temporada de base chama a atenção de um programa de formação — Red Bull Junior,
       Ferrari Driver Academy, Mercedes Junior, Programa Petrobras, Road to Indy. Entrar acelera sua evolução, pesa no
-      mercado e abre a porta da equipe-mãe. Mas dois anos ruins seguidos e você é dispensado do programa.</p>
+      mercado e abre a porta da equipe-mãe. Convites podem aparecer em diferentes categorias da base, conforme
+      seus resultados, seu nível e seu potencial, com programas diferentes e sem garantia. Trocar de equipe
+      não rompe o vínculo, mas a academia pode dispensar quem não corresponde. Anos ruins seguidos aumentam
+      o risco; potencial e adaptação contam para receber outra chance. Ao estrear na Fórmula 1 ou em outra
+      categoria principal, a formação é concluída sem penalidade.</p>
       <p><b>O mercado não vira de cabeça para baixo todo ano.</b> Cada piloto continua onde estava; por temporada mudam
       de casa umas quatro a sete pessoas. E as transferências que aconteceram de verdade acontecem no ano certo: Senna
       vai para a Williams em 1994, Schumacher para a Ferrari em 1996, Hamilton para a Ferrari em 2025.</p>
@@ -22244,7 +22311,7 @@ const Central = {
       return `<div class="cc-l${cls}" data-k="${c.i}">
         <b>${l.fora ? '—' : pos + 1}</b>
         <i class="g ${ganho > 0 ? 'sobe' : ganho < 0 ? 'cai' : ''}">${ganho > 0 ? '▲' + ganho : ganho < 0 ? '▼' + (-ganho) : ''}</i>
-        <span class="p"><s style="background:${c.cor}"></s><em>${esc(ab(c.cc))}</em>${esc(Engine.sobrenome(c.nome))}</span>
+        <span class="p"><s style="background:${c.cor}"></s><em>${flag(c.cc)}</em>${esc(Engine.sobrenome(c.nome))}</span>
         <span class="ce eq">${esc(c.eq)}</span>
         <span class="n">${l.fora ? 'Abandono' : noBox ? 'Boxes' : esc(l.dif)}</span>
         <span class="n ce">${intervalo}</span>

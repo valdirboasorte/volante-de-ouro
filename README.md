@@ -614,6 +614,11 @@ para identificar cada campeonato.
 
 **Tipografia:** Archivo, de Omnibus-Type, licença SIL Open Font.
 
+**Bandeiras** (`assets/flags`): SVGs do [flag-icons](https://github.com/lipis/flag-icons/tree/v7.3.2),
+versão 7.3.2, de Panayiotis Lipiridis, licença MIT (cópia em `assets/flags/LICENSE`).
+Os arquivos ficam junto do jogo para funcionar sem conexão e sem depender de
+suporte a emojis de bandeiras no aparelho.
+
 ## Modo realista — como o dinheiro funciona
 
 Correr custa dinheiro, e quem paga é o piloto até chegar à categoria principal.
@@ -716,12 +721,35 @@ consegue onde normalmente não se entra). Em troca fica com 10% a 22% de tudo
 que você ganha. Os melhores não assinam com qualquer um: exigem fama ou nível
 para atender.
 
-## Academias com lealdade
+## Academias até a categoria principal
 
-Quem está na Ferrari Driver Academy pode correr por Ferrari, Haas ou Sauber.
-Assinar com Mercedes, McLaren ou Williams encerra o vínculo na hora — com
-perda de apoio, de porta aberta, de moral e com o mentor cobrando explicação.
-Vale para os catorze programas, cada um com as suas equipes aliadas.
+Os convites são sorteados entre os programas disponíveis na época, no país e
+na carreira do piloto. Podem aparecer no kart, na F4, na Fórmula Regional,
+na F3, na F2 ou nas outras categorias de base. Resultados, confronto com o
+companheiro, nível atual e potencial oculto influenciam o interesse; programas
+com mais estrutura são mais seletivos. Um piloto excepcional costuma atrair
+mais interesse, mas nenhum convite ou programa é garantido.
+
+Aceitar uma academia salva o vínculo imediatamente. Renovar ou trocar de
+equipe na base não o desfaz. A academia avalia o desempenho ao fim de cada
+temporada: pode manter a aposta depois de um ano fraco ou dispensar o piloto.
+Anos ruins seguidos aumentam o risco, enquanto potencial e adaptação dão mais
+paciência. Pódios no campeonato e títulos protegem o vínculo. A avaliação
+considera o tamanho do grid, o companheiro e as quebras mecânicas, e fica salva
+para não mudar ao reabrir o jogo. Quem foi dispensado não recebe um novo
+convite do mesmo programa nas duas temporadas seguintes.
+
+A formação termina na estreia na Fórmula 1 ou em outra categoria principal,
+independentemente da equipe, sem multa ou perda de moral, fama ou relações
+por sair da academia. O painel mostra o programa ativo durante a base e a
+formação concluída depois de chegar ao topo. A escolha é salva assim que o
+convite é aceito. O balanço da temporada informa cobranças e dispensas.
+
+Saves antigos recuperam o vínculo perdido por incompatibilidade com uma
+equipe da base quando guardam o registro dessa saída. Dispensar por desempenho
+continua sendo uma decisão válida e não é revertido ao carregar o save. Se a
+data de entrada não foi preservada, ela não é inventada. Carreiras que já
+chegaram ao topo não voltam à formação.
 
 ## O kart é passagem, não carreira
 
