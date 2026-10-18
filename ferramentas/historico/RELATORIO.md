@@ -1,29 +1,29 @@
 # Banco histórico — relatório
 
-Gerado em 2026-10-16 por `ferramentas/historico/gerar.mjs`.
+Gerado em 2026-10-18 por `ferramentas/historico/gerar.mjs`.
 
 ## O que estes números são
 
 - **Fonte:** uma só, a Wikipedia em inglês, lida pela API pública do MediaWiki (uma requisição por vez, com pausa e identificação). Cada temporada guarda a página e o número da revisão lida.
 - **Nada aqui está "verificado".** Verificado exigiria uma segunda fonte independente concordando. As temporadas com lista de inscritos são **fonte única**; as que só têm a classificação final são **parciais** (quem não pontuou pode faltar); o resto está **pendente**.
-- **Cadastrado não é verificado:** o catálogo lista 122 campeonatos; ter um campeonato no catálogo não quer dizer que as temporadas dele foram importadas.
+- **Cadastrado não é verificado:** o catálogo lista 124 campeonatos; ter um campeonato no catálogo não quer dizer que as temporadas dele foram importadas.
 - Os dados de pilotos que o jogo já tinha à mão (escalações da F1 e da Indy, grids de F2/F3/F. Regional de 2017 em diante) continuam como estavam; o banco novo não os substitui, e a auditoria abaixo mostra onde eles discordam da fonte.
 
 ## Totais
 
 | | |
 |---|---|
-| Campeonatos no catálogo | 122 |
-| Campeonatos com ao menos uma temporada lida | 101 |
-| Temporadas cobertas pelo catálogo (campeonato × ano, até 2026) | 2752 |
-| Temporadas com lista de inscritos (fonte única) | 1386 |
+| Campeonatos no catálogo | 124 |
+| Campeonatos com ao menos uma temporada lida | 103 |
+| Temporadas cobertas pelo catálogo (campeonato × ano, até 2026) | 2759 |
+| Temporadas com lista de inscritos (fonte única) | 1393 |
 | Temporadas só com a classificação final (parcial) | 198 |
 | Temporadas com página mas sem tabela legível (pendente) | 151 |
 | Temporadas sem página própria (pendente) | 1017 |
 | Temporadas verificadas por duas fontes | 0 |
-| Pilotos reais distintos | 21050 (com nacionalidade lida: 16861) |
+| Pilotos reais distintos | 21061 (com nacionalidade lida: 16871) |
 | Pilotos ligados a um nome que o jogo já usava | 731 (escalação ano a ano: 324; listas de época: 328; grids de base do jogo: 79) |
-| Equipes (nomes de inscrição distintos) | 11622 |
+| Equipes (nomes de inscrição distintos) | 11637 |
 | Carros (chassi · motor distintos) | 6764 |
 | Circuitos (nomes distintos nos calendários) | 1045 |
 
@@ -91,6 +91,8 @@ L = lista de inscritos · C = só classificação · P = pendente (sem página o
 | F4 Indiana (`f4_india`) | entrada (F4, Ford, Vee) | 2023–hoje | 0 | 0 | 4 | — |
 | F4 do Sudeste Asiático (`f4_sea`) | entrada (F4, Ford, Vee) | 2016–2019 | 2 | 1 | 1 | 2017–2019 |
 | F4 Australiana (`f4_australia`) | entrada (F4, Ford, Vee) | 2015–hoje | 6 | 0 | 6 | 2015–2019, 2024 |
+| W Series (`w_series`) | regional | 2019–2022 | 3 | 0 | 0 | 2019, 2021–2022 |
+| F1 Academy (`f1_academy`) | entrada (F4, Ford, Vee) | 2023–hoje | 4 | 0 | 0 | 2023–2026 |
 | F4 Brasil (`f4_brasil`) | entrada (F4, Ford, Vee) | 2022–hoje | 5 | 0 | 0 | 2022–2026 |
 | F4 Dinamarquesa (`f4_danish`) | entrada (F4, Ford, Vee) | 2017–hoje | 9 | 0 | 1 | 2017–2025 |
 | F4 Holandesa / SMP F4 (`f4_neerlandesa`) | entrada (F4, Ford, Vee) | 2015–2018 | 4 | 0 | 0 | 2015–2018 |
@@ -573,6 +575,7 @@ O jogo põe o piloto na equipe da coluna "jogo"; a Wikipedia o lista inscrito pe
 - South Carolina: 2
 - Côte d'Ivoire: 2
 - Grenada: 2
+- Rwanda: 1
 - Wisconsin: 1
 - Louisiana: 1
 - West Virginia: 1

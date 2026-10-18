@@ -380,6 +380,9 @@ for(const c of CATALOGO){
 const C = CATALOGO.map(c => {
   const o = { id: c.id, n: c.nome, ns: c.nomes, de: c.de, ate: c.ate, p: c.pais, r: c.regiao, nv: c.nivel, t: c.tipo };
   if(c.sucessor) o.s = c.sucessor;
+  /* campeonato só de mulheres (F1 Academy, W Series) */
+  if(c.fem) o.fem = 1;
+  if(c.sem && c.sem.length) o.x = c.sem;
   if(c.jogo) o.j = c.jogo;
   if(c.artigo) o.a = c.artigo;
   return o;

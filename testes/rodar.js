@@ -16,6 +16,7 @@ const testes = [
   ['piloto machucado', 'lesao.js'],
   ['proposta é o campeonato corrido', 'oferta.js'],
   ['acontecimentos durante a temporada', 'eventos.js'],
+  ['pilota, F1 Academy e W Series', 'feminino.js'],
   ['clique duplo', 'clique-duplo.js'],
   ['save antigo abre na versão nova', 'migracao.js'],
   ['banco histórico (escadas e grids reais)', 'historico.js'],

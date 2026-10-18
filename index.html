@@ -1374,6 +1374,10 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
           <span class="lbl">Número (1–99)</span>
           <input type="text" id="inNum" placeholder="Nº" inputmode="numeric" maxlength="2" autocomplete="off">
         </div>
+        <div class="field" style="margin:0">
+          <span class="lbl">Gênero</span>
+          <div class="ch-opts" id="genGrid" role="group" aria-label="Gênero"></div>
+        </div>
       </div>
 
       <div class="field ctry-box">
@@ -3932,7 +3936,16 @@ function semRepetir(lista){
 }
 
 /* troca os marcadores das mensagens pelos dados da corrida */
+/* pilota: o que as contas escrevem em volta do nome vai para o feminino */
+function feminino(txt){
+  const art = { o:'a', O:'A', do:'da', Do:'Da', DO:'DA', ao:'à', Ao:'À', pelo:'pela', no:'na', No:'Na', esse:'essa', Esse:'Essa', nosso:'nossa', Nosso:'Nossa', NOSSO:'NOSSA', seu:'sua' };
+  return txt
+    .replace(/\b(o|O|do|Do|DO|ao|Ao|pelo|no|No|esse|Esse|nosso|Nosso|NOSSO|seu) \{eu\}/g, (m, a) => art[a] + ' {eu}')
+    .replace(/CAMPEÃO(O*)/g, (m, o) => 'CAMPEÃ' + 'Ã'.repeat(o.length))
+    .replace(/campeão/g, 'campeã').replace(/Campeão/g, 'Campeã');
+}
 function preencher(txt, d){
+  if(typeof S !== 'undefined' && S && S.driver && S.driver.genero === 'f') txt = feminino(txt);
   return txt
     .replace(/\{eu\}/g,     d.eu || '')
     .replace(/\{gp\}/g,     d.gp || 'na etapa')
@@ -5863,7 +5876,7 @@ const Hist = {
     return Hist._c[id] || null;
   },
   campeonatos(){ return Hist.ok() ? HIST.C : []; },
-  existe(c, ano){ return !!c && ano >= c.de && (c.ate == null || ano <= c.ate); },
+  existe(c, ano){ return !!c && ano >= c.de && (c.ate == null || ano <= c.ate) && !(c.x && c.x.indexOf(ano) >= 0); },
   /* o nome oficial que o campeonato tinha naquele ano: o título da página
      daquela temporada ("1985 World Endurance Championship"), sem o ano; na
      falta dela, o nome que o catálogo registra para o período */
@@ -7134,7 +7147,9 @@ const Engine = {
          de um ano para o outro. */
       var W = Engine.garantirMundo();
       const gJr = Mundo.degrauDe(S.series, S.year, cat, S.catIdx, S.ladder.length);
-      const recs = Mundo.gridDe(W, gJr, S.year, { n, cat, excluir: new Set([S.driver.name]) });
+      /* campeonato só de mulheres: o grid real e, completando, pilotas que seguem de um ano para o outro */
+      const cFem = (() => { const id = campDaCat(cat, S.year); const c = id && typeof Hist !== 'undefined' && Hist.ok() && Hist.camp(id); return c && c.fem ? c : null; })();
+      const recs = cFem ? Engine.gridFeminino(cFem, cat, n) : Mundo.gridDe(W, gJr, S.year, { n, cat, excluir: new Set([S.driver.name]) });
       const reaisAno = new Set((elencoReal(cat, S.year) || []).map(x => x.name));
       const equipeDe = {};
       const hsJr = recs.map(r => r.h);
@@ -7185,7 +7200,7 @@ const Engine = {
         sobra.forEach((f, i) => { f.teamId = livres[Math.min(i, livres.length - 1)] || f.teamId; });
       }
       /* a equipe de cada um fica registrada: no ano que vem ele tende a continuar nela */
-      Mundo.registrarGrid(W, S.year, gJr, field, teams, false);
+      if(!cFem) Mundo.registrarGrid(W, S.year, gJr, field, teams, false);
     }
     /* vieses individuais: quem classifica melhor do que corre, e vice-versa */
     field.forEach(f=>{ f.qb = R.gauss()*2.2; f.rb = R.gauss()*2.2; f.rel = R.range(-.03,.03); });
@@ -7589,6 +7604,9 @@ const Engine = {
      vem pode pôr outro campeonato naquele degrau (a F4 Brasil nasce em 2022 e
      toma o lugar da F4 Italiana na escada de um brasileiro): aí o campeonato da
      proposta vira a escolha do degrau, como num convite. */
+  /* campeonato só de mulheres: só para pilotas */
+  ehMulher(){ return !!(S && S.driver && S.driver.genero === 'f'); },
+  podeCamp(c, mulher){ return !!c && (!c.fem || (mulher != null ? mulher : Engine.ehMulher())); },
   garantirCampDaOferta(cat, sk, ano){
     if(!cat || !S || !S.driver || typeof Hist === 'undefined' || !Hist.ok()) return false;
     const era = eraOfSeries(ano, sk); if(!era) return false;
@@ -7699,18 +7717,21 @@ const Engine = {
     const base = (sum && sum.champion ? 1.6 : 0) + pc * 1.3 + fama * .6 + (sum && sum.wins ? Math.min(sum.wins, 5) * .12 : 0);
     let quantos = 0;
     for(let k = 0; k < 3; k++) if(R.chance(clamp(base / (2.2 + k * 1.4), .03, .85))) quantos++;
-    if(!quantos) return [];
+    if(!quantos && !Engine.ehMulher()) return [];
     /* níveis que podem ligar */
     const niveis = pc >= .8 ? [nvAqui, nvAqui + 1, nvAqui + 1] : pc >= .45 ? [nvAqui, nvAqui, nvAqui + 1] : [nvAqui, nvAqui - 1];
     const atual = campDaCat(cat, S.year);
     const jaKart = Engine.jaSaiuDoKart();
     const cands = Hist.doAno(ano).filter(c => c.id !== atual && niveis.indexOf(c.nv) >= 0
-      && !(jaKart && c.nv === 0) && S.driver.age >= Engine.idadeMinCamp(c, ano));
+      && !(jaKart && c.nv === 0) && S.driver.age >= Engine.idadeMinCamp(c, ano) && Engine.podeCamp(c));
     if(!cands.length) return [];
     /* o tipo de carro da carreira pesa: piloto de monoposto recebe mais
        convites de monoposto, mas um GT ou um turismo sempre pode ligar */
     const tipoAqui = (Hist.camp(atual) || {}).t || 'monoposto';
-    const peso = c => (c.t === tipoAqui ? 3 : 1) * (Hist.temGrid(c.id, Math.min(ano, 2026)) ? 2 : 1) * (c.nv > nvAqui ? 1.3 : 1);
+    const peso = c => (c.t === tipoAqui ? 3 : 1) * (Hist.temGrid(c.id, Math.min(ano, 2026)) ? 2 : 1) * (c.nv > nvAqui ? 1.3 : 1)
+      /* F1 Academy e W Series procuram pilotas: para elas, ligam quase sempre */
+      * (c.fem ? 8 : 1);
+    if(cands.some(c => c.fem) && !quantos) quantos = 1;
     const out = [], usados = new Set();
     for(let k = 0; k < quantos && cands.length; k++){
       const tot = cands.reduce((a, c) => a + (usados.has(c.id) ? 0 : peso(c)), 0);
@@ -7737,6 +7758,53 @@ const Engine = {
           + (Hist.temGrid(esc.id, Math.min(ano, 2026)) ? ' Grid real daquele ano.' : '') });
     }
     return out;
+  },
+  /* Os campeonatos só de mulheres (F1 Academy, W Series) estão sempre abertos
+     para a pilota do nível certo — eles existem para isso —, e não dependem do
+     sorteio dos convites. */
+  /* o grid de um campeonato só de mulheres. As inventadas ficam guardadas no
+     save e voltam no ano seguinte (algumas saem, outras chegam). */
+  nomeFeminino(cc, usados){
+    const prim = NOMES_PROPRIOS_F[cc] || NOMES_PROPRIOS_F.GB, sob = Mundo.sobrenomes(cc);
+    for(let k = 0; k < 120; k++){ const n = R.pick(prim) + ' ' + R.pick(sob); if(!usados.has(n)) return n; }
+    return R.pick(prim) + ' ' + R.pick(sob) + ' ' + R.pick(sob);
+  },
+  gridFeminino(c, cat, n){
+    const ano = S.year;
+    S.gridFem = S.gridFem || {};
+    const real = (elencoReal(cat, ano) || []).filter(x => x.name !== S.driver.name);
+    const out = real.slice(0, n).map((x, i) => ({ id: null, n: x.name, cc: x.cc, eq: x.eq || null, h: 1 - i / Math.max(1, real.length) }));
+    const usados = new Set(out.map(o => o.n).concat([S.driver.name]));
+    /* as inventadas do ano passado: sem grid real, uma em quatro não volta */
+    (S.gridFem[c.id] || []).forEach(p => { if(out.length < n && !usados.has(p.n) && (real.length || R.chance(.75))){ out.push({ id: null, n: p.n, cc: p.cc, h: p.h }); usados.add(p.n); } });
+    while(out.length < n){
+      const cc = R.pick(JR_CC), nome = Engine.nomeFeminino(cc, usados);
+      usados.add(nome); out.push({ id: null, n: nome, cc, h: R.f() * .8 });
+    }
+    /* quem correu este ano (real ou inventada) pode continuar no ano seguinte, quando acabar o grid real */
+    S.gridFem[c.id] = out.map(o => ({ n: o.n, cc: o.cc, h: clamp(o.h + R.range(-.08, .14), 0, 1) }));
+    return out;
+  },
+  ofertasFemininas(sum){
+    if(!Engine.ehMulher() || !Hist.ok() || !S.season || S.retired) return [];
+    const ano = S.year + 1, cat = S.season.cat;
+    const nvAqui = Engine.nivelDaCat(cat, S.year, S.catIdx, S.ladder.length);
+    const atual = campDaCat(cat, S.year);
+    const pos = sum && sum.pos ? sum.pos : 10, n = (S.season.field || []).length || 20;
+    const pc = clamp(1 - (pos - 1) / Math.max(1, n - 1), 0, 1);
+    return Hist.doAno(ano).filter(c => c.fem && c.id !== atual && c.nv >= nvAqui && c.nv <= Math.max(1, nvAqui + 1)
+        && S.driver.age >= Engine.idadeMinCamp(c, ano)).map(c => {
+      const h = Engine.hospedeiro(c, ano, S.driver.cc, S.series);
+      if(!h || h.top) return null;
+      const times = Engine.teamsFor(h.cat, ano, h.sk, h.idx, h.escada.length);
+      if(!times || !times.length) return null;
+      const alvo = times[clamp(Math.round((1 - pc) * (times.length - 1) * .8) + R.int(-1, 1), 0, times.length - 1)];
+      const nome = Hist.nomeOficial(c, ano);
+      return { type:'f1', cat: h.cat, team: alvo, years: 1, convite: true, fem: true, camp: c.id, tok: h.tok,
+        sk: h.sk !== S.series ? h.sk : undefined, escada: h.escada, catIdx: h.idx, up: c.nv > nvAqui,
+        note: `A ${alvo.name} quer você na ${nome}, o campeonato das pilotas: grid só de mulheres e um caminho de verdade para cima.`
+          + (Hist.temGrid(c.id, Math.min(ano, 2026)) ? ' Grid real daquele ano.' : '') };
+    }).filter(Boolean);
   },
   migrarCartel(){
     const c = S.career;
@@ -11307,6 +11375,34 @@ const NOMES_PROPRIOS = {
   NO:['Ola','Magnus','Henrik','Sindre','Eirik','Jonas','Dennis'],
   HU:['Bence','Máté','Levente','Ádám','Dániel','Gergő']
 };
+/* primeiros nomes das pilotas inventadas (campeonatos só de mulheres) */
+const NOMES_PROPRIOS_F = {
+  BR:['Ana','Beatriz','Carolina','Fernanda','Gabriela','Isabela','Júlia','Larissa','Luana','Mariana','Rafaela','Sofia','Valentina','Bruna'],
+  GB:['Amelia','Chloe','Ellie','Georgia','Hannah','Isla','Jessica','Lucy','Megan','Olivia','Sophie','Zoe'],
+  US:['Abby','Ava','Brooke','Emma','Hailey','Kayla','Madison','Paige','Riley','Taylor'],
+  ES:['Alba','Carla','Laura','Lucía','María','Nerea','Paula','Sara'],
+  IT:['Alessia','Chiara','Francesca','Giulia','Martina','Sara','Sofia','Vittoria'],
+  FR:['Camille','Chloé','Clara','Inès','Léa','Manon','Océane','Zoé'],
+  DE:['Anna','Emma','Hannah','Lea','Lena','Marie','Mia','Sophie'],
+  NL:['Anouk','Emma','Fleur','Julia','Lotte','Sanne','Tess'],
+  MX:['Andrea','Daniela','Fernanda','Mariana','Regina','Valeria','Ximena'],
+  AR:['Agustina','Camila','Florencia','Lucía','Martina','Milagros','Sofía'],
+  JP:['Aiko','Haruka','Mio','Rin','Sakura','Yui','Yuna'],
+  AU:['Chloe','Emily','Grace','Isabella','Jasmine','Matilda','Ruby'],
+  CA:['Charlotte','Emma','Léa','Maya','Olivia','Sarah'],
+  PT:['Beatriz','Carolina','Inês','Leonor','Matilde','Rita'],
+  CH:['Lara','Léna','Lina','Nina','Selina'],
+  BE:['Elise','Julie','Marie','Lotte','Noor'],
+  SE:['Alva','Ebba','Elsa','Maja','Wilma'],
+  FI:['Aino','Emma','Helmi','Iida','Venla'],
+  AT:['Anna','Laura','Lena','Sophie','Valentina'],
+  DK:['Emma','Ida','Freja','Sofie','Laura'],
+  PL:['Julia','Maja','Oliwia','Zuzanna','Hanna'],
+  CZ:['Eliška','Tereza','Anna','Adéla','Natálie'],
+  CO:['Valentina','Isabella','Mariana','Sara','Gabriela'],
+  NZ:['Isla','Charlotte','Ruby','Mia','Harper'],
+  ZA:['Lerato','Mia','Zoe','Ayanda','Chloe']
+};
 const SOBRENOMES_EXTRA = {
   CZ:['Novák','Svoboda','Dvořák','Černý','Procházka','Kučera','Veselý','Horák','Němec','Pokorný'],
   CO:['Restrepo','Gómez','Cárdenas','Mejía','Montoya','Salazar','Ospina','Rendón','Zuluaga'],
@@ -13516,7 +13612,7 @@ const UI = {
     document.documentElement.setAttribute('data-theme', t);
     UI.iconeTema(t);
     UI.decades('decGrid'); UI.decades('decGrid2'); UI.yearGrid(); UI.seriesGrid();
-    UI.styleGrid(); UI.countryBox(); UI.ageChanged();
+    UI.generoGrid(); UI.styleGrid(); UI.countryBox(); UI.ageChanged();
     UI.aplicarMovimento();
     try{ Abertura.iniciar(); }catch(e){ console.error(e); }
     addEventListener('scroll', ()=> el('topBar').classList.toggle('stuck', scrollY>6));
@@ -13642,7 +13738,7 @@ const UI = {
      você tem, e onde cada um se encaixa */
   estreiasPossiveis(yr, idade, sk){
     if(!Hist.ok()) return [];
-    return Hist.doAno(yr).filter(c => idade >= Engine.idadeMinCamp(c, yr))
+    return Hist.doAno(yr).filter(c => idade >= Engine.idadeMinCamp(c, yr) && Engine.podeCamp(c, UI.genero === 'f'))
       .map(c => ({ c, h: Engine.hospedeiro(c, yr, UI.country || 'BR', sk, {}) }))
       .filter(x => x.h && (!x.h.top || idade >= Engine.idadeMin(x.h.cat, yr, x.h.idx, x.h.escada.length)))
       .sort((a, b) => b.c.nv - a.c.nv || UIH.pais(a.c.p).localeCompare(UIH.pais(b.c.p)) || a.c.n.localeCompare(b.c.n));
@@ -13704,6 +13800,14 @@ const UI = {
       </button>`).join('');
   },
   pickStyle(k){ UI.style = k; UI.styleGrid(); },
+  /* gênero: abre os campeonatos só de mulheres (F1 Academy, W Series) */
+  genero: 'm',
+  generoGrid(){
+    const g = el('genGrid'); if(!g) return;
+    g.innerHTML = [['m', 'Masculino'], ['f', 'Feminino']].map(([k, n]) =>
+      `<button class="ch-opt ${UI.genero === k ? 'sel' : ''}" aria-pressed="${UI.genero === k}" onclick="UI.pickGenero('${k}')">${n}</button>`).join('');
+  },
+  pickGenero(k){ UI.genero = k; UI.generoGrid(); UI.ageChanged(); },
 
   countryBox(){
     const inp = el('inCountry'), list = el('ctryList');
@@ -14916,7 +15020,7 @@ const Game = {
     const escada = est ? est.h.escada : resolveLadder(era.ladder, UI.country, startY);
     S = {
       v: 2, series: sk,
-      driver: Engine.estreiaTardia(Engine.newDriver(name, num, UI.country, UI.style, idade)),
+      driver: Object.assign(Engine.estreiaTardia(Engine.newDriver(name, num, UI.country, UI.style, idade)), { genero: UI.genero === 'f' ? 'f' : 'm' }),
       opts: { risk: el('chkRisk').checked, fast: el('chkFast').checked },
       modo: UI.modo || 'classico', origem: UI.origem || 'media',
       money: { saldo: (ORIGENS[UI.origem || 'media'] || ORIGENS.media).saldo,
@@ -16012,6 +16116,8 @@ const Game = {
     }
     /* o telefone não toca só da sua categoria */
     Engine.ofertasDeFora(sum).forEach(o => offers.push(o));
+    /* a pilota: F1 Academy e W Series no nível dela */
+    Engine.ofertasFemininas(sum).forEach(o => { if(!offers.some(x => x.camp === o.camp || x.cat === o.cat)) offers.push(o); });
     /* nem só das sete carreiras: campeonatos reais de qualquer país ligam,
        conforme o ano que você fez (uma carreira de fora só uma vez) */
     Engine.convitesReais(sum).forEach(o => {
@@ -17360,6 +17466,7 @@ const UIH = {
       return `<div class="hc-aviso">Na sua carreira, este é o campeonato do degrau <b>${esc(resolveRung(hAgora.tok, S.driver.cc, S.year) || hAgora.tok)}</b>.
         <button class="hc-chip" style="margin-left:8px" onclick="UIH.escolher('${hAgora.tok}', null, '${c.id}')">Voltar ao de sempre</button></div>`;
     if(!Hist.existe(c, prox)) return '';
+    if(!Engine.podeCamp(c)) return `<div class="hc-aviso">Campeonato só para mulheres.</div>`;
     const h = Engine.hospedeiro(c, prox, S.driver.cc, S.series);
     if(!h) return '';
     if(h.top || h.sk !== S.series)
@@ -17373,6 +17480,7 @@ const UIH = {
   },
   escolher(tok, id, voltar){
     if(!S) return;
+    if(id && !Engine.podeCamp(Hist.camp(id))) return UI.toast('Campeonato só para mulheres.');
     Engine.escolher(S.series, tok, id);
     try { Game.save(); } catch(e){}
     const c = id && Hist.camp(id);

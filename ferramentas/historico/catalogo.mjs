@@ -138,6 +138,11 @@ export const CATALOGO = [
     artigo:'Formula_4_South_East_Asia_Championship' },
   { id:'f4_australia', navbox:['Australian Formula 4 Championship','CAMS Australian Formula 4 Championship'], nome:'F4 Australiana', nomes:[[2015, 2026, 'Australian Formula 4 Championship']], de:2015, ate:null, pais:'AU', regiao:'Oceania', nivel:1, tipo:'monoposto',
     artigo:'Australian_Formula_4_Championship', temporada:'{a} Australian Formula 4 Championship' },
+  /* ── só de mulheres ── */
+  { id:'w_series', nome:'W Series', nomes:[[2019, 2022, 'W Series']], de:2019, ate:2022, pais:'INT', regiao:'Europa', nivel:2, tipo:'monoposto', fem:true, sem:[2020],
+    artigo:'W_Series', temporada:'{a} W Series' },
+  { id:'f1_academy', nome:'F1 Academy', nomes:[[2023, 2026, 'F1 Academy']], de:2023, ate:null, pais:'INT', regiao:'Europa', nivel:1, tipo:'monoposto', fem:true,
+    artigo:'F1_Academy', temporada:'{a} F1 Academy season' },
   { id:'f4_brasil', nome:'F4 Brasil', nomes:[[2022, 2026, 'F4 Brazilian Championship']], de:2022, ate:null, pais:'BR', regiao:'América do Sul', nivel:1, tipo:'monoposto',
     artigo:'F4_Brazilian_Championship', temporada:'{a} F4 Brazilian Championship' },
   { id:'f4_danish', nome:'F4 Dinamarquesa', nomes:[[2017, 2026, 'F4 Danish Championship']], de:2017, ate:null, pais:'DK', regiao:'Europa', nivel:1, tipo:'monoposto',
@@ -281,6 +286,7 @@ export function tituloTemporada(c, a){
 }
 export function anosDe(c, ateMax = 2025){
   const fim = Math.min(c.ate == null ? ateMax : c.ate, ateMax), out = [];
-  for(let a = c.de; a <= fim; a++) out.push(a);
+  /* sem: anos em que o campeonato não aconteceu (W Series 2020, cancelada) */
+  for(let a = c.de; a <= fim; a++) if(!(c.sem || []).includes(a)) out.push(a);
   return out;
 }
