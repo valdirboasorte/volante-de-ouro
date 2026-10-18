@@ -9418,7 +9418,7 @@ const Engine = {
     /* o trabalho de sexta paga aqui */
     bonus += Engine.ganhoTreino('quali');
     /* e o imprevisto do fim de semana também */
-    bonus += Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoQ');
+    bonus += Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoQ') + Engine.embalo(sea);
 
     const qual = sea.field.map(f => {
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
@@ -9585,6 +9585,19 @@ const Engine = {
       return r;
     }
     return f[k] || 0;
+  },
+
+  /* o embalo do que aconteceu fora da pista: pesa nas três corridas seguintes */
+  marcarEmbalo(e){
+    const sea = S.season; if(!sea || !e) return null;
+    const v = clamp(((e.moral || 0) / 10) * .7 + ((e.pace || 0) + (e.race || 0) + (e.cons || 0)) * .45 - (e.lesao ? .6 : 0), -1.6, 1.6);
+    if(Math.abs(v) < .2) return null;
+    S.embalo = { v: Math.round(v * 100) / 100, ano: sea.year, ate: sea.round + 3 };
+    return v > 0 ? 'embalado nas próximas 3 corridas' : 'abalado nas próximas 3 corridas';
+  },
+  embalo(sea){
+    const b = S && S.embalo;
+    return b && sea && b.ano === sea.year && sea.round < b.ate ? b.v : 0;
   },
 
   garantirFds(sea, rd){
@@ -10121,7 +10134,7 @@ const Engine = {
     campo.forEach(f => {
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR + clima.car : 0);
       const bruto = f.isMe
-        ? Engine.meSkill(wet).r + tr.r + meuFator.total + (sea.minhaForma || 0) + Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoR')
+        ? Engine.meSkill(wet).r + tr.r + meuFator.total + (sea.minhaForma || 0) + Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoR') + Engine.embalo(sea)
         : f.skill + f.rb + (f.esp ? (f.esp[trk.type] || 0) * .7 : 0) + (f.formAno || 0);
       const sk = Engine.compSkill(bruto, sea) + (f.isMe ? Engine.ganhoTreino('corrida') : 0);
       const g = grid[f.id];
@@ -14080,7 +14093,7 @@ const UI = {
     }
     if(nx){
       h = `<button class="btn btn-primary" onclick="Game.nextRace()">${ico('bandeira')} Correr — ${esc(nx.gp)}</button>
-           <button class="btn btn-ghost" onclick="Game.simSeason()">${ico('pular')} Simular o resto do ano</button>`;
+           <button class="btn btn-ghost" onclick="Game.simSeason(true)">${ico('pular')} Simular o resto do ano</button>`;
     } else if(sea.fired && sea.results.length < sea.calendar.length){
       h = `<button class="btn btn-gold btn-lg" onclick="Game.endSeason()">Encerrar a temporada ${sea.year} →</button>
            <span class="pill rd" style="align-self:center">${ico('porta')} sem carro desde a ${ord(sea.firedAt+1)} etapa</span>`;
@@ -14203,9 +14216,13 @@ const UI = {
     else fn();
   },
   proxima(){
-    if(!UI._fila.length || UI.aberta()) return;
+    if(UI.aberta()) return;
+    /* acabou a fila: segue o que esperava por ela (a próxima corrida, a simulação do ano) */
+    if(!UI._fila.length){ const f = UI._aoEsvaziar; UI._aoEsvaziar = null; if(f) f(); return; }
     const fn = UI._fila.shift();
-    try { fn(); } catch(e){ UI.proxima(); }
+    try { fn(); } catch(e){}
+    /* o que estava na fila pode não ter aberto nada: passa para o próximo */
+    if(!UI.aberta()) UI.proxima();
   },
   limparFila(){ UI._fila = []; },
   close(){
@@ -14388,6 +14405,11 @@ UI.treinoModal = function(){
       <div class="res-nar" style="margin-top:0">
         <b style="display:block;margin-bottom:3px">${ico('nuvem')} O céu</b>${esc(prev.texto)}
       </div>
+      ${(() => { const v = Engine.embalo(sea); if(!v) return ''; const n = S.embalo.ate - sea.round;
+        return `<div class="res-nar" style="border-left-color:${v > 0 ? 'var(--green)' : 'var(--red2)'}">
+          <b style="display:block;margin-bottom:3px">${ico(v > 0 ? 'subida' : 'alerta')} A cabeça</b>${v > 0
+            ? 'O que aconteceu fora da pista te deixou embalado: você anda mais'
+            : 'O que aconteceu fora da pista ainda pesa: você anda menos'} — ${n === 1 ? 'nesta corrida' : 'por mais ' + n + ' corridas'}.</div>`; })()}
       ${feitas.length ? `<div style="margin:12px 0 4px">
         <span class="lbl" style="display:block;margin-bottom:5px">O que já foi feito</span>
         ${feitas.map(f => `<div style="font-size:14px;color:var(--dim);padding:2px 0">
@@ -14961,7 +14983,7 @@ const Game = {
     S.season = Engine.buildSeason();
     S.season.dilemmaAt = R.int(2, Math.max(3, S.season.calendar.length-3));
     /* rodadas em que algo acontece fora da pista */
-    const nEv = R.int(2, 4), maxR = Math.max(2, S.season.calendar.length - 1);
+    const nEv = Math.min(R.int(4, 6), Math.max(2, S.season.calendar.length - 3)), maxR = Math.max(2, S.season.calendar.length - 1);
     S.season.eventosAt = [];
     for(let i=0;i<nEv;i++){
       const r = R.int(1, maxR);
@@ -15240,6 +15262,8 @@ const Game = {
      rápido e com o piloto machucado a equipe resolve tudo sozinha. */
   nextRace(){
     if(S.retired) return UI.toast('Sua carreira acabou. Daqui em diante você só acompanha os números.');
+    /* o que aconteceu fora da pista depois da última corrida aparece antes do fim de semana */
+    if(UI._fila.length && !UI.aberta()){ UI._aoEsvaziar = () => Game.nextRace(); return UI.proxima(); }
     const sea = S.season;
     if(!sea.calendar[sea.round]) return;
     if(S.driver.injured > 0 || S.opts.fast) return Game.correr();
@@ -15395,8 +15419,12 @@ const Game = {
   posCorrida(rec, sea){
     if(rec.injury) setTimeout(()=>UI.toast(`Acidente grave: você fica fora de ${rec.injury.races} corrida(s).`), 700);
     else if(Engine.midReview(sea)){ Game.fire(true); return; }
+    else Game.foraDaPista(sea);
+  },
+  /* o que acontece fora da pista depois de uma corrida; devolve se algo entrou na fila */
+  foraDaPista(sea){
     /* convite para correr em paralelo — uma vez por temporada, no meio dela */
-    else if(sea.isTop && !S.paralelaFeita && sea.round === Math.round(sea.calendar.length * .35)
+    if(sea.isTop && !S.paralelaFeita && sea.round === Math.round(sea.calendar.length * .35)
             && Engine.convitesParalelos().length && R.chance(.6))
       UI.depois(()=>UI.paralelaModal());
     /* meio de temporada: o que te prometeram em novembro se confirma ou não */
@@ -15404,10 +15432,12 @@ const Game = {
       UI.depois(()=>{ const nt = Engine.conferirPromessas(); if(nt) UI.promessasModal(nt); });
     /* dilema do meio de temporada */
     else if(sea.round === sea.dilemmaAt && sea.calendar[sea.round]) UI.depois(()=>Game.dilemma());
-    /* a vida fora da pista: dois a quatro acontecimentos por temporada */
+    /* a vida fora da pista: quatro a seis acontecimentos por temporada */
     else if(sea.eventosAt && sea.eventosAt.indexOf(sea.round) >= 0 && sea.calendar[sea.round])
       /* às vezes o que acontece fora da pista é alguém querendo algo de você */
       UI.depois(()=>{ if(!(R.chance(.42) && Game.pedido())) Game.evento(); });
+    else return false;
+    return true;
   },
 
   /* ── demissão ── */
@@ -15427,7 +15457,7 @@ const Game = {
     UI.firedModal(rv, mid);
   },
 
-  simSeason(){
+  simSeason(pausar){
     if(S.retired) return UI.toast('Sua carreira acabou.');
     const sea = S.season;
     let guard = 0;
@@ -15441,6 +15471,14 @@ const Game = {
       if(rec.injury && rec.injury.fatal){ UI.render(); Game.endCareer('acidente'); return; }
       if(rec.injury) S.driver.injured = rec.injury.races;
       if(Engine.midReview(sea)){ Game.fire(true); return; }
+      /* o que acontece fora da pista não fica para trás: a simulação para, você
+         decide, e ela segue de onde parou */
+      if(pausar && sea.calendar[sea.round]){
+        UI.render(); Game.save();
+        UI._aoEsvaziar = () => Game.simSeason(true);
+        if(Game.foraDaPista(sea) && UI.aberta()) return;
+        UI._aoEsvaziar = null;
+      }
     }
     UI.render(); Game.save();
     UI.toast('Temporada simulada. Confira o retrospecto completo.');
@@ -15535,6 +15573,7 @@ const Game = {
     UI.toast('Você dispensou ' + (e ? e.n : 'seu empresário') + '. Agora negocia sozinho.');
   },
 
+  IMPACTO_EVENTO: 1.4,
   /* ── eventos de carreira ──
      Sorteados entre as corridas, sem repetir dentro da mesma temporada.
      Alguns só fazem sentido na base, outros só no topo. */
@@ -15580,12 +15619,17 @@ const Game = {
     UI._evNivel = nivel; UI._evNarra = narra;
     const a = S.driver.attr;
     let notas = [];
+    /* o que acontece fora da pista pesa na carreira: o efeito é maior do que o escrito na ficha */
+    const IMP = Game.IMPACTO_EVENTO;
     ['pace','race','cons','wet','dev'].forEach(k=>{
-      if(e[k]){ a[k] = clamp(Math.round((a[k] + e[k]) * 10) / 10, 20, 99); }
+      if(e[k]){ a[k] = clamp(Math.round((a[k] + e[k] * IMP) * 10) / 10, 20, 99); }
     });
-    if(e.moral) S.driver.morale = clamp(S.driver.morale + e.moral, 5, 100);
-    if(e.fama)  S.driver.fame   = clamp(S.driver.fame + e.fama, 0, 100);
-    if(e.teamRel) S.teamRel = clamp((S.teamRel || 50) + e.teamRel, 0, 100);
+    if(e.moral) S.driver.morale = clamp(S.driver.morale + Math.round(e.moral * IMP), 5, 100);
+    if(e.fama)  S.driver.fame   = clamp(S.driver.fame + Math.round(e.fama * IMP), 0, 100);
+    if(e.teamRel) S.teamRel = clamp((S.teamRel || 50) + Math.round(e.teamRel * IMP), 0, 100);
+    /* e aparece já nas próximas corridas: cabeça boa anda, cabeça ruim erra */
+    const emb = Engine.marcarEmbalo(e);
+    if(emb) notas.push(emb);
     if(!S.rel) S.rel = { eng:50, comp:50, amigos:[] };
     /* efeito sobre gente: número solto continua valendo, e objeto mexe nas
        quatro medidas da pessoa certa */
