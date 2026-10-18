@@ -38,7 +38,11 @@ for(const [sk, ano] of casos){
           const ult = rec.tl.voltas[rec.tl.voltas.length - 1].ordem;
           if(ult.indexOf('ME') + 1 !== rec.pos) out.erros.push('GP ' + rec.gp + ': ao vivo terminou ' + (ult.indexOf('ME') + 1) + 'º, resultado ' + rec.pos + 'º');
         }
-      } else if(rec.pts > 0 && rec.dnf) out.erros.push('GP ' + rec.gp + ': abandonou e pontuou ' + rec.pts);
+      } else if(rec.dnf){
+        /* quem abandona não pontua — a não ser o ponto da pole, onde o regulamento dá (IndyCar) */
+        const pole = P.pole && rec.grid === 1 ? (typeof P.pole === 'number' ? P.pole : 1) : 0;
+        if(rec.pts > pole) out.erros.push('GP ' + rec.gp + ': abandonou e pontuou ' + rec.pts);
+      }
       const top = rec.top.map(t => t.pos).filter(x => x != null);
       for(let i = 1; i < top.length; i++) if(top[i] !== top[i - 1] + 1) { out.erros.push('GP ' + rec.gp + ': posições do top 10 fora de ordem ' + top.join(',')); break; }
       if(rec.top.length && rec.top[0].pos !== 1 && rec.top[0].pos != null) out.erros.push('GP ' + rec.gp + ': ninguém em 1º');
