@@ -1246,7 +1246,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <div id="topBar">
   <button class="brand" onclick="Game.goHome()" aria-label="Volante de Ouro, início">
     <span class="cf" id="brandFlag"></span>
-    <span>Volante de <b>Ouro</b></span>
+    <span data-i18n-ignore>Volante de <b>Ouro</b></span>
   </button>
   <span class="sp"></span>
   <nav class="topnav" id="topMenu" aria-label="Seções">
@@ -1283,7 +1283,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <div class="ini-veu" aria-hidden="true"></div>
     <div class="ini-conteudo">
       <div class="ini-texto">
-        <h1 class="ini-titulo">
+        <h1 class="ini-titulo" data-i18n-ignore>
           <span class="l"><span class="lin" style="--i:0">Volante</span></span>
           <span class="l"><span class="lin" style="--i:1">de <span class="ouro">Ouro</span></span></span>
         </h1>
@@ -1370,7 +1370,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   </section>
 
   <footer class="ini-pe">
-    <span class="brand-pe"><span class="cf" id="peFlag"></span><span>Volante de <b>Ouro</b></span></span>
+    <span class="brand-pe"><span class="cf" id="peFlag"></span><span data-i18n-ignore>Volante de <b>Ouro</b></span></span>
     <p>Projeto de fã, sem vínculo com a Fórmula 1, a FIA, a IndyCar, a NASCAR, o WEC, a Stock Car, o DTM, a Fórmula E ou as equipes. Nomes, logos e marcas pertencem a seus titulares e aparecem só para identificar cada campeonato. Tudo roda no seu navegador; a carreira fica salva só no seu aparelho.</p>
     <nav aria-label="Rodapé">
       <button onclick="Abertura.creditos()">Créditos das fotos</button>
@@ -1627,6 +1627,10 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <script src="assets/i18n/ja-ui.js" defer></script>
 <script src="assets/i18n/ja-career.js" defer></script>
 <script src="assets/i18n/ja-media.js" defer></script>
+<script src="assets/i18n/complete-world.js" defer></script>
+<script src="assets/i18n/complete-driver.js" defer></script>
+<script src="assets/i18n/complete-chief.js" defer></script>
+<script src="assets/i18n/complete-common.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
@@ -17770,7 +17774,8 @@ const UIH = {
   },
   set(k, v){ UIH.f[k] = v; UIH.lista(); },
   filtrados(){
-    const f = UIH.f, q = f.busca.trim().toLowerCase();
+    const f = UIH.f, norm = s => window.VDO_I18N ? VDO_I18N.search(s) : String(s).toLowerCase();
+    const q = norm(f.busca.trim());
     return Hist.campeonatos().filter(c => {
       const existe = Hist.existe(c, f.ano);
       if(f.situ === 'ativos' && !existe) return false;
@@ -17780,7 +17785,8 @@ const UIH = {
       if(f.nivel >= 0 && c.nv !== f.nivel) return false;
       if(f.tipo && c.t !== f.tipo) return false;
       if(q){
-        const alvo = (c.n + ' ' + (c.ns || []).map(x => x[2]).join(' ') + ' ' + c.id + ' ' + UIH.pais(c.p)).toLowerCase();
+        const fontes = [c.n, ...(c.ns || []).map(x => x[2]), c.id, UIH.pais(c.p)];
+        const alvo = norm(fontes.map(text => text + ' ' + (window.VDO_I18N ? VDO_I18N.text(text) : text)).join(' '));
         if(!q.split(/\s+/).every(w => alvo.includes(w))) return false;
       }
       return true;
@@ -22462,10 +22468,11 @@ const Abertura = {
 };
 /* Nomes de pessoas e equipes são identidades, inclusive quando o jogador
    escolhe uma palavra que também é um rótulo traduzível. */
+window.VDO_LANGUAGE_TEAM_LABELS = new Set(Engine.KART_REG);
 window.VDO_LANGUAGE_NAMES = () => new Set([
-  ...(S ? [S.driver && S.driver.name, S.team && S.team.name,
+  ...(S ? [S.driver && S.driver.name, S.team && !VDO_LANGUAGE_TEAM_LABELS.has(S.team.name) && S.team.name,
     ...(S.season && S.season.field || []).map(f => f.name),
-    ...(S.season && S.season.teams || []).map(t => t.name)] : []),
+    ...(S.season && S.season.teams || []).map(t => t.name).filter(name => !VDO_LANGUAGE_TEAM_LABELS.has(name))] : []),
   ...(C ? [C.chefe && C.chefe.nome, C.eq && C.eq.nome, ...(C.pilotos || []).map(p => p.nome)] : [])
 ].filter(Boolean));
 addEventListener('vdo:languagechange', () => {

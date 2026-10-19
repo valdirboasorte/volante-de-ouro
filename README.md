@@ -819,15 +819,20 @@ e pode ser alterada durante o jogo. Os catálogos são arquivos locais em
 `assets/i18n/`, disponíveis também ao abrir `index.html` diretamente.
 
 A tradução cobre a abertura, criação de piloto/equipe, painéis, tabelas,
-contratos, formação, finanças, pré-temporada e decisões do catálogo. Nomes de
-pessoas/equipes, códigos de país, valores dos formulários e dados do save
-mantêm sua identidade original. A busca de países aceita o nome em português
+contratos, academias, finanças, pré-temporada, rádio, notícias, imprevistos e
+trocas de temporada dos modos piloto e chefe. Nomes reais e nomes escolhidos
+pelo jogador mantêm sua identidade; os nomes genéricos das equipes de kart
+são localizados apenas na apresentação. Códigos de país, valores dos
+formulários e dados do save permanecem originais. As buscas de países e
+campeonatos aceitam os nomes em português
 ou no idioma selecionado, com ou sem acento. Atributos acessíveis e mensagens
 criadas dinamicamente acompanham o idioma; retornar a PT recupera o texto
-original. Frases ainda sem entrada no catálogo aparecem em português.
+original. Novos textos precisam de entradas nos três catálogos para evitar
+o retorno ao texto original em português.
 
 O japonês inclui menus, carreira, decisões, conversas, imprensa e corrida ao
-vivo. Os arquivos `ja*.js` contêm pares português/japonês. A apresentação usa
+vivo. Os arquivos `ja*.js` contêm pares português/japonês; os arquivos
+`complete-*.js` reúnem as mensagens complementares dos três idiomas. A apresentação usa
 fontes japonesas do sistema e distingue idade (歳) de duração de contratos
 (年). A busca também aceita katakana de meia largura e letras de largura inteira.
 
@@ -835,5 +840,8 @@ Para ampliar a tradução, acrescente pares nos catálogos ou linhas
 `português|inglês|espanhol` nos arquivos compartilhados, incluindo o par
 correspondente nos catálogos japoneses. Marcadores como `{0}`
 e `{eu}` precisam ser preservados. `node testes/idiomas.js` verifica a troca
-de idioma, texto dinâmico, formulários, preservação do save e os marcadores;
+de idioma, texto dinâmico, formulários, preservação do save e os marcadores.
+`node testes/idiomas-cobertura.js` exercita mensagens realmente geradas em
+carreiras das sete séries, nos três modos de chefe, nos imprevistos e no rádio,
+além de regressões de pontuação, números, nomes e busca traduzida;
 `node testes/grid-kart.js` verifica os grids locais dos 96 países.

@@ -3,9 +3,9 @@ const fs = require('fs');
 const vm = require('vm');
 const ARQ = process.env.VDO_HTML || require('path').join(__dirname, '..', 'index.html');
 
-function fakeEl(){
+function fakeEl(onWrite, id){
   const cl = new Set();
-  return {
+  const element = {
     _v:'', innerHTML:'', textContent:'', innerText:'', checked:false, style:{ setProperty(){} }, dataset:{},
     options:[], min:13, max:30, children:[],
     classList:{ add:c => cl.add(c), remove:c => cl.delete(c),
@@ -13,9 +13,22 @@ function fakeEl(){
     get value(){ return this._v; }, set value(v){ this._v = String(v); },
     addEventListener(){}, appendChild(){}, focus(){}, scrollIntoView(){}, setAttribute(){}, getAttribute(){ return null; },
     play(){ return Promise.resolve(); }, pause(){}, load(){},
-    querySelector(){ return fakeEl(); }, querySelectorAll(){ return []; },
+    querySelector(){ return fakeEl(onWrite); }, querySelectorAll(){ return []; },
     getBoundingClientRect(){ return { top:0, left:0, width:0, height:0, right:0, bottom:0 }; }
   };
+  if(onWrite){
+    for(const property of ['innerHTML','textContent','innerText']){
+      let value = element[property];
+      Object.defineProperty(element, property, { get:() => value, set(next){
+        value = next; onWrite({ id:id || '', property, value:String(next == null ? '' : next) });
+      } });
+    }
+    element.setAttribute = (name, value) => {
+      if(['title','aria-label','placeholder','alt','label'].includes(name))
+        onWrite({ id:id || '', property:name, value:String(value) });
+    };
+  }
+  return element;
 }
 
 function carregar(opts){
@@ -24,9 +37,9 @@ function carregar(opts){
   const blocos = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
   const els = {};
   const document = {
-    getElementById: id => els[id] || (els[id] = fakeEl()),
-    querySelector: () => fakeEl(), querySelectorAll: () => [],
-    documentElement: fakeEl(), body: fakeEl(), createElement: () => fakeEl(), addEventListener(){}
+    getElementById: id => els[id] || (els[id] = fakeEl(opts.onWrite, id)),
+    querySelector: () => fakeEl(opts.onWrite), querySelectorAll: () => [],
+    documentElement: fakeEl(opts.onWrite), body: fakeEl(opts.onWrite), createElement: () => fakeEl(opts.onWrite), addEventListener(){}
   };
   const store = opts.store || {};
   const ctx = {
@@ -48,7 +61,7 @@ function carregar(opts){
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
   /* Os catálogos e a apresentação usam scripts locais defer, após o jogo. */
-  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'runtime.js']){
+  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'runtime.js']){
     const p = require('path').join(__dirname, '..', 'assets', 'i18n', arq);
     if(fs.existsSync(p)) vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename:'i18n/' + arq });
   }

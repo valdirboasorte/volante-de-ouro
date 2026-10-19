@@ -7,7 +7,7 @@ let checks = 0;
 function eq(a, b, message){ checks++; assert.equal(a, b, message); }
 function ok(value, message){ checks++; assert.ok(value, message); }
 const dir = path.join(__dirname, '..', 'assets', 'i18n');
-const scripts = ['en.js','es.js','common.js','career.js','events.js','nationalities.js','dialogues.js','race.js','advanced.js','media.js','interface.js','ja.js','ja-ui.js','ja-career.js','ja-media.js','runtime.js'];
+const scripts = ['en.js','es.js','common.js','career.js','events.js','nationalities.js','dialogues.js','race.js','advanced.js','media.js','interface.js','ja.js','ja-ui.js','ja-career.js','ja-media.js','complete-world.js','complete-driver.js','complete-chief.js','complete-common.js','runtime.js'];
 
 /* DOM mínimo com a semântica usada pelo runtime: mutações são entregues
    juntas, no fim da operação, e não durante a escrita de uma tradução. */
