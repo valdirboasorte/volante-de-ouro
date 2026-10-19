@@ -9,8 +9,9 @@
   const SKIP = 'script,style,noscript,textarea,code,pre,[data-i18n-ignore]';
   const normal = s => String(s).replace(/\s+/g, ' ').trim();
   const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const supported = lang => lang === 'pt' || (Object.prototype.hasOwnProperty.call(locales, lang) && Array.isArray(locales[lang].pairs));
   let language = 'pt', observer = null, started = false, names = new Set();
-  try{ const saved = global.localStorage.getItem(KEY); if(saved === 'en' || saved === 'es') language = saved; }catch(e){}
+  try{ const saved = global.localStorage.getItem(KEY); if(supported(saved)) language = saved; }catch(e){}
 
   function catalog(lang){
     if(compiled.has(lang)) return compiled.get(lang);
@@ -43,13 +44,21 @@
   }
 
   function formats(s, lang){
-    s = s.replace(/€\s*(\d+(?:,\d+)?)\s*(mi|mil)\b/g, (_, number, unit) =>
-      lang === 'en' ? '€ ' + number.replace(',', '.') + (unit === 'mi' ? 'm' : 'k')
-        : '€ ' + number + (unit === 'mi' ? ' M' : ' mil'));
+    s = s.replace(/€\s*(\d+(?:,\d+)?)\s*(mi|mil)\b/g, (_, number, unit) => {
+      if(lang === 'ja'){
+        const value = Number(number.replace(',', '.')) * (unit === 'mi' ? 1e6 : 1e3);
+        const magnitude = value >= 1e8 ? 1e8 : value >= 1e4 ? 1e4 : 1;
+        return '€' + new Intl.NumberFormat('ja-JP', { maximumFractionDigits:4 }).format(value / magnitude)
+          + (magnitude === 1e8 ? '億' : magnitude === 1e4 ? '万' : '');
+      }
+      return lang === 'en' ? '€ ' + number.replace(',', '.') + (unit === 'mi' ? 'm' : 'k')
+        : '€ ' + number + (unit === 'mi' ? ' M' : ' mil');
+    });
     if(lang === 'en') s = s.replace(/\b(\d+)º\b|\b(\d+)º(?=$|[\s.,;:)])/g, (_, a, b) => {
       const n = Number(a || b), mod = n % 100;
       return n + (mod >= 11 && mod <= 13 ? 'th' : ({1:'st',2:'nd',3:'rd'}[n % 10] || 'th'));
     });
+    if(lang === 'ja') s = s.replace(/(\d+)º/g, '$1位');
     return s;
   }
 
@@ -65,6 +74,9 @@
       if(p.prefix && !source.startsWith(p.prefix)) continue;
       if(source.length > 2400) continue;
       const match = p.rx.exec(source); if(!match) continue;
+      /* "para" também é preposição. Uma frase de contrato não é uma
+         parada na pista; o motivo da parada começa com "com" ou "sem". */
+      if(p.source === '{piloto} para {motivo}.' && !/^(?:com|sem) /u.test(match[2])) continue;
       if(p.numeric && match.slice(1).some(v => !/^[\d\s.,%+−–×ºª/€:()-]+$/.test(v)) &&
         !(p.source === '{0} até {1}' && /^\d{4}$/.test(match[2]))) continue;
       const values = {};
@@ -77,6 +89,7 @@
       return p.target.replace(/\{(\w+)\}/g, (_, key) => {
         const value = values[key];
         if(/^(eu|nome|piloto|rival|eq|equipe|team|jornalista)$/.test(key)) return value;
+        if(lang === 'ja') return core(normal(value), lang, depth + 1);
         return value.match(/^\s*/)[0] + core(normal(value), lang, depth + 1) + value.match(/\s*$/)[0];
       });
     }
@@ -98,7 +111,7 @@
     if(colon > 0 && data.exact.has(source.slice(0, colon)))
       return data.exact.get(source.slice(0, colon)) + ': ' + core(source.slice(colon + 2), lang, depth + 1);
     const count = source.match(/^(.+?)\s+(\d+(?:\/\d+)?|\d+\s+ano\(s\))$/u);
-    if(count && data.exact.has(count[1])) return data.exact.get(count[1]) + ' ' + count[2].replace('ano(s)', lang === 'en' ? 'year(s)' : 'año(s)');
+    if(count && data.exact.has(count[1])) return data.exact.get(count[1]) + ' ' + count[2].replace('ano(s)', lang === 'en' ? 'year(s)' : lang === 'ja' ? '年' : 'año(s)');
     /* Texto de botão/rótulo com seta, dois-pontos, aspas ou pontuação. */
     const edge = source.match(/^([←→—·•“”«»"'\s]*)(.*?)([←→—·•“”«»"':.!?\s]*)$/u);
     if(edge && edge[2] && edge[2] !== source){
@@ -145,7 +158,10 @@
     if(node.nodeType === 3){
       const current = node.nodeValue, old = originals.get(node);
       const source = old && old.rendered === current ? old.source : current;
-      const result = text(source);
+      /* Japonês distingue idade (歳) de duração (年). O texto português de
+         ambos é "2 anos"; os campos de contrato indicam esse contexto. */
+      const duration = language === 'ja' && node.parentElement.closest('[data-i18n-duration]') && normal(source).match(/^(\d+)\s+anos?$/u);
+      const result = duration ? source.replace(/\d+\s+anos?/, duration[1] + '年') : text(source);
       originals.set(node, { source, rendered:result });
       if(current !== result) node.nodeValue = result;
       return;
@@ -174,7 +190,7 @@
     refreshNames(); translateNode(root || doc.body); observe();
   }
   function setLanguage(lang){
-    if(!['pt','en','es'].includes(lang) || (lang !== 'pt' && !locales[lang])) return false;
+    if(!supported(lang)) return false;
     language = lang;
     try{ global.localStorage.setItem(KEY, lang); }catch(e){}
     if(doc){
@@ -209,6 +225,6 @@
     setLanguage(language);
   }
   global.VDO_I18N = { text, setLanguage, apply, init, get language(){ return language; },
-    search(value){ return normal(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(); } };
+    search(value){ return normal(value).normalize('NFKC').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(); } };
   if(doc){ if(doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', init); else init(); }
 })(window);

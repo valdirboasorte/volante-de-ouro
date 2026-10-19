@@ -882,6 +882,8 @@ html[data-theme="light"] #topBar{background:rgba(233,235,238,.92)}
 .language-select{flex-shrink:0; width:58px; height:36px; min-height:36px; padding:0 5px; border:0; border-radius:6px; background:transparent; color:var(--soft); font:600 12px var(--f); cursor:pointer; transition:color .15s}
 .language-select:hover{background:transparent; color:var(--ink)}
 .language-select option{background:#f4f6f9; color:#20262e}
+html[lang="ja"]{--f:'Archivo','Yu Gothic UI','Hiragino Sans','Noto Sans JP',Meiryo,system-ui,sans-serif; line-break:strict}
+html[lang="ja"] :is(h1,h2,h3,h4,.topnav button){font-stretch:normal; letter-spacing:normal; line-height:1.4}
 @media(max-width:380px){#topBar .iconbtn{width:32px;min-width:32px} #topBar .brand{font-size:17px;gap:6px} #topBar .brand .cf{display:none} .language-select{width:50px;padding:0 2px}}
 html[data-theme="light"] #topBar.stuck{background:rgba(233,235,238,.97)}
 body[data-tela="intro"] #topBar{position:fixed; left:0; right:0; top:0; z-index:60; background:transparent; border-bottom-color:transparent; --ink:#eef0f2; --soft:#c3c8cf; color:var(--ink)}
@@ -1243,6 +1245,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <option value="pt" lang="pt-BR" aria-label="Português">PT</option>
     <option value="en" lang="en" aria-label="English">EN</option>
     <option value="es" lang="es" aria-label="Español">ES</option>
+    <option value="ja" lang="ja" aria-label="日本語">JP</option>
   </select>
   <button class="iconbtn" id="btnMov" onclick="UI.alternarMovimento()" aria-pressed="true" title="Animações" aria-label="Animações">
     <svg viewBox="0 0 24 24"><path d="M3 7h11M7 12h14M3 17h9"/></svg></button>
@@ -1605,6 +1608,10 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <script src="assets/i18n/advanced.js" defer></script>
 <script src="assets/i18n/media.js" defer></script>
 <script src="assets/i18n/interface.js" defer></script>
+<script src="assets/i18n/ja.js" defer></script>
+<script src="assets/i18n/ja-ui.js" defer></script>
+<script src="assets/i18n/ja-career.js" defer></script>
+<script src="assets/i18n/ja-media.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
@@ -16889,7 +16896,7 @@ UI.financas = function(){
         <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:var(--s2);
              border-radius:var(--r-sm);margin-bottom:6px">
           <span style="flex:1;font-size:13.5px;font-weight:700">${esc(p.n)}</span>
-          <span style="font-size:13px;color:var(--dim2)">${p.anos} ${p.anos===1?'ano':'anos'}</span>
+          <span data-i18n-duration style="font-size:13px;color:var(--dim2)">${p.anos} ${p.anos===1?'ano':'anos'}</span>
           <b style="font-size:13px;color:var(--green)">${fmtD(p.valor)}</b>
         </div>`).join('') : '<div class="empty" style="padding:10px">Nenhum patrocinador ainda. Apareça na pista.</div>'}
       ${ofertas.length ? `<span class="lbl" style="display:block;margin:12px 0 6px">Propostas na mesa</span>` +
@@ -17479,7 +17486,7 @@ UI.patroModal = function(){
         (S.money.patros||[]).map(p=>`<div style="display:flex;gap:9px;padding:6px 11px;background:var(--s2);
           border-radius:var(--r-sm);margin-bottom:5px;font-size:13px">
           <span style="flex:1;font-weight:700">${esc(p.n)}</span>
-          <span style="color:var(--dim2);font-size:13px">${p.anos} ${p.anos===1?'ano':'anos'}</span>
+          <span data-i18n-duration style="color:var(--dim2);font-size:13px">${p.anos} ${p.anos===1?'ano':'anos'}</span>
           <b style="color:var(--green)">${fmtD(p.valor)}</b></div>`).join('') : ''}
     </div>
     <div class="mft"><span class="sp"></span>
@@ -21885,7 +21892,7 @@ const UIC = {
         ${base > 0 ? `<span class="lbl">Salário</span>
         <div class="ch-opts" style="margin:8px 0 12px">${op('sal', .85, 'Abaixo · ' + fmtD(base * .85))}${op('sal', 1, 'O pedido · ' + fmtD(base))}${op('sal', 1.3, 'Acima · ' + fmtD(base * 1.3))}</div>` : ''}
         <span class="lbl">Contrato</span>
-        <div class="ch-opts" style="margin:8px 0 12px">${op('anos', 1, '1 ano')}${op('anos', 2, '2 anos')}${f1 ? op('anos', 3, '3 anos') : ''}</div>
+        <div class="ch-opts" data-i18n-duration style="margin:8px 0 12px">${op('anos', 1, '1 ano')}${op('anos', 2, '2 anos')}${f1 ? op('anos', 3, '3 anos') : ''}</div>
         ${f1 && of.papel === 'titular' ? `<span class="lbl">Status</span><div class="ch-opts" style="margin:8px 0 0">${op('n1', false, 'Igual ao companheiro')}${op('n1', true, 'Piloto nº 1')}</div>` : ''}
         <p class="mut" style="font-size:14px;margin:12px 0 0">Ninguém diz sim antes de ouvir a proposta. E um não, às vezes, vira manchete.</p>
       </div>
@@ -21959,7 +21966,7 @@ const UIC = {
     UI.modal(UI.head('Motor', `Fornecedores de ${C.ano}`) +
       `<div class="mbd">
         <span class="lbl">Duração do contrato</span>
-        <div class="ch-opts" style="margin:8px 0 14px">${[1, 2, 3].map(a => `<button class="ch-opt ${UIC.mAnos === a ? 'sel' : ''}" onclick="UIC.mAnos=${a};UIC.motores()">${a} ano${a > 1 ? 's' : ''}</button>`).join('')}</div>
+        <div class="ch-opts" data-i18n-duration style="margin:8px 0 14px">${[1, 2, 3].map(a => `<button class="ch-opt ${UIC.mAnos === a ? 'sel' : ''}" onclick="UIC.mAnos=${a};UIC.motores()">${a} ano${a > 1 ? 's' : ''}</button>`).join('')}</div>
         ${multa ? `<p class="mut" style="font-size:14px;margin:0 0 10px">Trocar agora custa ${fmtD(multa)} de rescisão com a ${esc(atual.nome)}.</p>` : ''}
         ${lista.map(card).join('')}
         <button class="offer ${atual.proprio ? 'sel' : ''}" onclick="UIC.escolherMotor('__proprio')" ${atual.proprio ? 'disabled' : ''}>
@@ -22259,7 +22266,7 @@ UI.ofertasModal = function(){
           <div class="oh">
             <span class="stripe" style="background:${o.team.color};height:20px;width:5px"></span>
             <span class="on">${esc(o.team.name)}</span>
-            <span class="oc" style="${tagCor}">${tag}</span>
+            <span class="oc" data-i18n-duration style="${tagCor}">${tag}</span>
           </div>
           ${mudouCat ? `<div style="font-size:14px;font-weight:500;
                color:${sr?sr.color:'var(--gold)'};margin-top:6px">${esc(o.cat)}</div>` : ''}

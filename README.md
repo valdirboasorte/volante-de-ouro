@@ -809,8 +809,8 @@ o mundo nos fins de semana da Fórmula 1, porque é isso que elas são.
 
 ## Idiomas
 
-O seletor PT / EN / ES na barra superior muda a apresentação entre português,
-inglês e espanhol. A preferência fica salva no navegador, separada da carreira,
+O seletor PT / EN / ES / JP na barra superior muda a apresentação entre português,
+inglês, espanhol e japonês. A preferência fica salva no navegador, separada da carreira,
 e pode ser alterada durante o jogo. Os catálogos são arquivos locais em
 `assets/i18n/`, disponíveis também ao abrir `index.html` diretamente.
 
@@ -822,8 +822,14 @@ ou no idioma selecionado, com ou sem acento. Atributos acessíveis e mensagens
 criadas dinamicamente acompanham o idioma; retornar a PT recupera o texto
 original. Frases ainda sem entrada no catálogo aparecem em português.
 
+O japonês inclui menus, carreira, decisões, conversas, imprensa e corrida ao
+vivo. Os arquivos `ja*.js` contêm pares português/japonês. A apresentação usa
+fontes japonesas do sistema e distingue idade (歳) de duração de contratos
+(年). A busca também aceita katakana de meia largura e letras de largura inteira.
+
 Para ampliar a tradução, acrescente pares nos catálogos ou linhas
-`português|inglês|espanhol` nos arquivos compartilhados. Marcadores como `{0}`
+`português|inglês|espanhol` nos arquivos compartilhados, incluindo o par
+correspondente nos catálogos japoneses. Marcadores como `{0}`
 e `{eu}` precisam ser preservados. `node testes/idiomas.js` verifica a troca
 de idioma, texto dinâmico, formulários, preservação do save e os marcadores;
 `node testes/grid-kart.js` verifica os grids locais dos 96 países.
