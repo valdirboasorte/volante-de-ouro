@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="vdo-progress-recovery" content="1">
+<title>Volante de Ouro — recuperar progresso</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic UI",Meiryo,sans-serif;background:#101215;color:#f3f4f6;font-size:16px;line-height:1.6}*{box-sizing:border-box}body{margin:0;padding:24px 16px}main{max-width:780px;margin:auto}header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}.brand{font-weight:750;letter-spacing:.02em}h1{font-size:clamp(1.7rem,6vw,2.4rem);line-height:1.2;margin:0 0 16px}h2{font-size:1.2rem;margin:0 0 12px}p{margin:0 0 16px;color:#c7cbd2}section{padding:24px 0;border-top:1px solid #353a43}a{color:#f3c950;overflow-wrap:anywhere}button,.button{display:inline-block;min-height:44px;padding:11px 18px;background:#eec343;color:#141414;border:1px solid transparent;border-radius:7px;cursor:pointer;font:inherit;font-weight:650;text-decoration:none;text-align:center}button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:transparent;border-color:#69717e;color:#f3f4f6}select{color:inherit;background:transparent;border:1px solid #69717e;border-radius:5px;padding:9px;font:inherit}option{color:#111;background:#fff}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}.notice{padding:16px;border-left:3px solid #eec343;background:#1b1e24;margin:16px 0}.status{min-height:26px;white-space:pre-wrap;color:#dbe9ff}.status.error{color:#ffb5b5}input[type=file]{display:block;width:100%;font:inherit;color:#dbe0e8;margin:12px 0}input[type=file]::file-selector-button{padding:10px 12px;margin-right:12px;border:1px solid #69717e;border-radius:5px;background:#222833;color:inherit;cursor:pointer}label.check{display:flex;align-items:flex-start;gap:10px;margin:16px 0;color:#dbe0e8}input[type=checkbox]{margin-top:7px;flex-shrink:0;accent-color:#eec343}table{width:100%;border-collapse:collapse;font-size:.9rem;table-layout:fixed}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #353a43;vertical-align:top;overflow-wrap:anywhere}th{color:#b8c0ce;font-weight:600}td small{display:block;color:#b8c0ce}.muted{font-size:.9rem;color:#aeb6c4}.steps{margin:16px 0;padding-left:22px;color:#c7cbd2}.steps li{margin-bottom:8px}[hidden]{display:none!important}:focus-visible{outline:3px solid #f3c950;outline-offset:3px}footer{padding:24px 0;font-size:.9rem;color:#aeb6c4}@media(max-width:480px){body{padding:16px 12px}section{padding:20px 0}th,td{padding:9px 4px}.actions>*{width:100%}header{margin-bottom:22px}}
+</style>
+</head>
+<body>
+<main>
+<header><span class="brand">Volante de Ouro</span><select id="language" aria-label="Idioma"><option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option><option value="ja">JP</option></select></header>
+<h1 data-t="title">Recuperar progresso</h1>
+<p data-t="intro">Transfira sua carreira deste navegador para o domínio oficial usando um arquivo de backup.</p>
+<div class="notice" id="modeNote" role="note"></div>
+<div id="allowed" hidden>
+<ol class="steps"><li data-t="step1">No endereço antigo, baixe o backup no mesmo navegador e perfil em que você jogava.</li><li data-t="step2">Abra esta página no domínio oficial, escolha o arquivo e confira os nomes e anos.</li><li data-t="step3">Importe o progresso e depois abra o jogo oficial.</li></ol>
+<p class="muted" data-t="privacy">O arquivo contém seu progresso. Guarde-o em um local seguro. A transferência acontece neste aparelho; nenhum dado é enviado a um servidor nem colocado na URL.</p>
+<section>
+<h2 data-t="backupTitle">1. Baixar backup</h2><p data-t="backupInfo">Salva as carreiras de piloto e chefe, os históricos e as preferências deste domínio. Os dados originais permanecem guardados.</p>
+<button type="button" id="export" data-t="export">Baixar backup deste domínio</button>
+<p class="muted" id="exportSummary"></p>
+</section>
+<section id="importSection" hidden>
+<h2 data-t="importTitle">2. Importar no domínio oficial</h2><p data-t="importInfo">Feche as outras abas do jogo antes de importar. Por padrão, dados já existentes no domínio oficial são preservados.</p>
+<label for="file" data-t="choose">Escolher arquivo de backup (.json)</label><input id="file" type="file" accept="application/json,.json">
+<div id="preview" hidden><p class="muted" id="source"></p><table><thead><tr><th data-t="incoming">No backup</th><th data-t="current">Neste domínio</th><th data-t="action">Ação</th></tr></thead><tbody id="rows"></tbody></table>
+<label class="check"><input type="checkbox" id="replace"><span data-t="replace">Quero substituir também os dados deste domínio que entram em conflito com o backup.</span></label>
+<div id="replaceSteps" class="notice" hidden><p data-t="replaceWarning">Essa opção substitui os dados indicados na prévia. Primeiro baixe um backup do progresso atual do domínio oficial.</p><button type="button" class="secondary" id="exportCurrent" data-t="exportCurrent">Baixar backup atual antes de substituir</button><label class="check"><input type="checkbox" id="confirmed" disabled><span data-t="confirm">Confirmei o download e guardei o backup atual. Autorizo substituir os dados indicados.</span></label></div>
+<button type="button" id="import" data-t="import" disabled>Importar progresso</button>
+</div>
+</section>
+<section><h2 data-t="linksTitle">Continuar a transferência</h2><div class="actions"><a class="button secondary" href="https://volante-de-ouro.pages.dev/recuperar-progresso/" data-t="oldLink">Abrir recuperação no domínio antigo</a><a class="button secondary" href="https://volantedeouro.com/recuperar-progresso/" data-t="newLink">Abrir importação no domínio oficial</a><a class="button" href="https://volantedeouro.com/" data-t="gameLink">Abrir o jogo oficial</a></div></section>
+</div>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+<footer data-t="footer">Não limpe os dados do navegador no endereço antigo. Mantenha o arquivo de backup até confirmar que sua carreira abre normalmente no domínio oficial.</footer>
+</main>
+<script id="recovery-core">
+(function(global){
+'use strict';
+const OLD='https://volante-de-ouro.pages.dev',OFFICIAL='https://volantedeouro.com';
+const KEYS=Object.freeze(['vdo_save','vdo_chefe','vdo_hall','vdo_chefe_hall','vdo_language','vdo_theme','vdo_mov','vdo_durcorrida','vdo_velcorrida']);
+const FORMAT='volante-de-ouro-progress',VERSION=1,MAX_BYTES=12*1024*1024,MAX_UNITS=6*1024*1024;
+function fail(code){const error=new Error(code);error.code=code;throw error;}
+function allowed(origin){return origin===OLD||origin===OFFICIAL;}
+function object(value){return !!value&&typeof value==='object'&&!Array.isArray(value);}
+function exactKeys(value,keys){if(!object(value)||Object.keys(value).some(k=>!keys.includes(k)))fail('invalid');}
+function safeTree(value){let count=0;function visit(v,depth){if(depth>150||++count>2000000)fail('invalid');if(!v||typeof v!=='object')return;for(const k of Object.keys(v)){if(k==='__proto__')fail('invalid');visit(v[k],depth+1);}}visit(value,0);}
+function parseJSON(raw){let value;try{value=JSON.parse(raw);}catch(e){fail('invalid');}safeTree(value);return value;}
+function byteLength(text){let size=0;for(let i=0;i<text.length;i++){const n=text.charCodeAt(i);if(n<128)size++;else if(n<2048)size+=2;else if(n>=0xd800&&n<=0xdbff&&i+1<text.length&&text.charCodeAt(i+1)>=0xdc00&&text.charCodeAt(i+1)<=0xdfff){size+=4;i++;}else size+=3;}return size;}
+function validYear(value){return Number.isInteger(value)&&value>=1800&&value<=10000;}
+function validateValue(key,raw){
+  if(typeof raw!=='string'||raw.length>MAX_UNITS)fail('invalid');
+  if(['vdo_save','vdo_chefe','vdo_hall','vdo_chefe_hall'].includes(key)){
+    const value=parseJSON(raw);
+    if(key==='vdo_save'&&(!object(value)||!object(value.driver)||typeof value.driver.name!=='string'||!validYear(value.year==null&&object(value.season)?value.season.year:value.year)))fail('invalid');
+    if(key==='vdo_chefe'&&(!object(value)||!object(value.chefe)||typeof value.chefe.nome!=='string'||!object(value.eq)||typeof value.eq.nome!=='string'||!validYear(value.ano)))fail('invalid');
+    if((key==='vdo_hall'||key==='vdo_chefe_hall')&&(!Array.isArray(value)||value.some(v=>!object(v))))fail('invalid');
+  }else if(key==='vdo_language'&&!['pt','en','es','ja'].includes(raw))fail('invalid');
+  else if(key==='vdo_theme'&&!['dark','light'].includes(raw))fail('invalid');
+  else if(key==='vdo_mov'&&!['0','1'].includes(raw))fail('invalid');
+  else if(key==='vdo_durcorrida'&&(!/^\d+(?:\.\d+)?$/.test(raw)||+raw<=0||+raw>3600))fail('invalid');
+  else if(key==='vdo_velcorrida'&&!['1','4','8','16','32','64'].includes(raw))fail('invalid');
+}
+function validate(backup){
+  exactKeys(backup,['format','version','sourceOrigin','createdAt','values']);
+  if(backup.format!==FORMAT||backup.version!==VERSION||!allowed(backup.sourceOrigin)||typeof backup.createdAt!=='string'||!/^\d{4}-\d{2}-\d{2}T/.test(backup.createdAt)||!Number.isFinite(Date.parse(backup.createdAt)))fail('invalid');
+  exactKeys(backup.values,KEYS);let units=0;
+  for(const key of Object.keys(backup.values)){validateValue(key,backup.values[key]);units+=backup.values[key].length;}
+  if(units>MAX_UNITS)fail('tooLarge');return backup;
+}
+function parse(raw){if(typeof raw!=='string')fail('invalid');if(raw.length>MAX_BYTES||byteLength(raw)>MAX_BYTES)fail('tooLarge');return validate(parseJSON(raw));}
+function read(storage,origin){
+  if(!allowed(origin))fail('origin');const values=Object.create(null);
+  try{for(const key of KEYS){const value=storage.getItem(key);if(value!==null){if(typeof value!=='string')fail('storage');values[key]=value;}}}catch(e){fail('storage');}return values;
+}
+function backup(storage,origin){const values=read(storage,origin),raw=JSON.stringify(validate({format:FORMAT,version:VERSION,sourceOrigin:origin,createdAt:new Date().toISOString(),values}),null,2);if(byteLength(raw)>MAX_BYTES)fail('tooLarge');return raw;}
+function details(key,raw){
+  if(raw==null)return {key,empty:true};
+  try{const v=JSON.parse(raw);
+    if(key==='vdo_save')return {key,name:String(v.driver.name),year:v.year==null&&v.season?v.season.year:v.year,category:v.season&&v.season.cat||''};
+    if(key==='vdo_chefe')return {key,name:String(v.chefe.nome),team:String(v.eq.nome),year:v.ano,category:v.cat||''};
+    if(key==='vdo_hall'||key==='vdo_chefe_hall')return {key,count:v.length,names:v.slice(0,3).map(x=>String(x.name||x.nome||'')).filter(Boolean)};
+  }catch(e){}return {key,value:raw.length>100?raw.slice(0,100)+'…':raw};
+}
+function preview(raw,storage,origin){
+  if(origin!==OFFICIAL)fail('origin');const incoming=parse(raw),current=read(storage,origin);
+  return {sourceOrigin:incoming.sourceOrigin,createdAt:incoming.createdAt,entries:KEYS.filter(k=>Object.hasOwn(incoming.values,k)).map(key=>({key,incoming:details(key,incoming.values[key]),current:details(key,current[key]),conflict:Object.hasOwn(current,key),identical:current[key]===incoming.values[key]}))};
+}
+function equalValues(a,b){return KEYS.every(k=>Object.hasOwn(a,k)===Object.hasOwn(b,k)&&a[k]===b[k]);}
+function restore(raw,storage,origin,consent){
+  if(origin!==OFFICIAL)fail('origin');const incoming=parse(raw),before=read(storage,origin),replace=!!(consent&&consent.replace);
+  if(replace){
+    if(consent.confirmed!==true||typeof consent.backup!=='string')fail('consent');
+    const safety=parse(consent.backup);if(safety.sourceOrigin!==OFFICIAL||!equalValues(safety.values,before))fail('stale');
+  }
+  const written=[],skipped=[];
+  try{
+    for(const key of KEYS){
+      if(!Object.hasOwn(incoming.values,key))continue;
+      if(Object.hasOwn(before,key)&&(!replace||before[key]===incoming.values[key])){skipped.push(key);continue;}
+      const actual=storage.getItem(key);if(actual!==(Object.hasOwn(before,key)?before[key]:null))fail('stale');
+      written.push(key);storage.setItem(key,incoming.values[key]);
+      if(storage.getItem(key)!==incoming.values[key])fail('storage');
+    }
+  }catch(e){
+    if(!written.length){if(e&&e.code==='stale')fail('stale');fail('write');}
+    let rollback=true;
+    /* Libera primeiro as chaves novas e restaura os valores que reduzem espaço.
+       Um setItem recusado pode ter deixado o valor antigo intacto: não o apague.
+       Escritas de outra aba também não pertencem a esta importação. */
+    const undo=written.slice().sort((a,b)=>{
+      const hadA=Object.hasOwn(before,a),hadB=Object.hasOwn(before,b);
+      if(hadA!==hadB)return hadA?1:-1;
+      return (hadA?before[a].length-incoming.values[a].length:0)-(hadB?before[b].length-incoming.values[b].length:0);
+    });
+    for(const key of undo){
+      const previous=Object.hasOwn(before,key)?before[key]:null;
+      try{
+        const current=storage.getItem(key);
+        if(current===previous)continue;
+        if(current!==incoming.values[key]){rollback=false;continue;}
+        try{if(previous===null)storage.removeItem(key);else storage.setItem(key,previous);}catch(err){}
+        if(storage.getItem(key)!==previous)rollback=false;
+      }catch(err){rollback=false;}
+    }
+    try{for(const key of written){if(storage.getItem(key)!==(Object.hasOwn(before,key)?before[key]:null))rollback=false;}}catch(err){rollback=false;}
+    if(!rollback)fail('rollback');if(e&&e.code==='stale')fail('stale');fail('write');
+  }
+  return {written,skipped};
+}
+global.VDO_RECOVERY=Object.freeze({OLD,OFFICIAL,KEYS,MAX_BYTES,allowed,parse,read,backup,details,preview,restore});
+})(globalThis);
+</script>
+<script id="recovery-ui">
+(function(){
+'use strict';
+const R=VDO_RECOVERY,$=id=>document.getElementById(id),origin=location.origin;
+const messages={
+pt:{title:'Recuperar progresso',intro:'Transfira sua carreira deste navegador para o domínio oficial usando um arquivo de backup.',old:'Você está no domínio antigo. Baixe o backup aqui e depois abra a importação no domínio oficial. Seus dados antigos não serão apagados.',official:'Você está no domínio oficial. Importe o backup do endereço antigo ou baixe uma cópia do progresso atual.',unsupported:'Por segurança, esta página só funciona nos endereços HTTPS oficiais indicados abaixo. Abra https://volante-de-ouro.pages.dev/recuperar-progresso/ ou https://volantedeouro.com/recuperar-progresso/.',step1:'No endereço antigo, baixe o backup no mesmo navegador e perfil em que você jogava.',step2:'Abra esta página no domínio oficial, escolha o arquivo e confira os nomes e anos.',step3:'Importe o progresso e depois abra o jogo oficial.',privacy:'O arquivo contém seu progresso. Guarde-o em um local seguro. A transferência acontece neste aparelho; nenhum dado é enviado a um servidor nem colocado na URL.',backupTitle:'1. Baixar backup',backupInfo:'Salva as carreiras de piloto e chefe, os históricos e as preferências deste domínio. Os dados originais permanecem guardados.',export:'Baixar backup deste domínio',importTitle:'2. Importar no domínio oficial',importInfo:'Feche as outras abas do jogo antes de importar. Por padrão, dados já existentes no domínio oficial são preservados.',choose:'Escolher arquivo de backup (.json)',incoming:'No backup',current:'Neste domínio',action:'Ação',replace:'Quero substituir também os dados deste domínio que entram em conflito com o backup.',replaceWarning:'Essa opção substitui os dados indicados na prévia. Primeiro baixe um backup do progresso atual do domínio oficial.',exportCurrent:'Baixar backup atual antes de substituir',confirm:'Confirmei o download e guardei o backup atual. Autorizo substituir os dados indicados.',import:'Importar progresso',linksTitle:'Continuar a transferência',oldLink:'Abrir recuperação no domínio antigo',newLink:'Abrir importação no domínio oficial',gameLink:'Abrir o jogo oficial',footer:'Não limpe os dados do navegador no endereço antigo. Mantenha o arquivo de backup até confirmar que sua carreira abre normalmente no domínio oficial.',empty:'Ausente',keep:'Preservar',same:'Já é igual',add:'Importar',overwrite:'Substituir',downloaded:'Download solicitado. Confira se o arquivo foi guardado antes de continuar.',ready:'Confira a prévia antes de importar.',done:'Importação concluída. Dados importados: {n}. Dados preservados: {k}. Abra o jogo oficial para continuar.',noData:'Não há progresso nem preferências guardados neste domínio neste navegador.',source:'Origem: {origin} · Backup: {date}',count:'{n} registros',vdo_save:'Carreira de piloto',vdo_chefe:'Carreira de chefe',vdo_hall:'Histórico de pilotos',vdo_chefe_hall:'Histórico de equipes',vdo_language:'Idioma',vdo_theme:'Tema',vdo_mov:'Animações',vdo_durcorrida:'Duração da corrida',vdo_velcorrida:'Velocidade da corrida',invalid:'Arquivo inválido ou incompatível. Nenhum dado foi importado.',tooLarge:'O arquivo excede o limite de 12 MB.',origin:'Este endereço não está autorizado a importar ou exportar dados.',storage:'Este navegador bloqueou o armazenamento. Use o mesmo navegador e perfil em que jogava e permita o armazenamento do site.',consent:'Baixe e guarde o backup atual e confirme a substituição antes de continuar.',stale:'Os dados deste domínio mudaram. Confira a prévia e baixe um novo backup atual antes de confirmar.',write:'Não foi possível gravar o progresso, por bloqueio ou falta de espaço. As alterações desta importação foram desfeitas. Guarde seu arquivo de backup.',rollback:'A importação falhou e o navegador impediu a restauração completa. Guarde os dois arquivos de backup e não inicie outra carreira antes de recuperar os dados.',readFile:'Não foi possível ler o arquivo. Escolha o backup novamente.'},
+en:{title:'Recover progress',intro:'Transfer your career from this browser to the official domain using a backup file.',old:'You are on the old domain. Download your backup here, then open the import page on the official domain. Your old data will not be deleted.',official:'You are on the official domain. Import a backup from the old address or download a copy of your current progress.',unsupported:'For security, this page only works at these exact HTTPS addresses: https://volante-de-ouro.pages.dev/recuperar-progresso/ or https://volantedeouro.com/recuperar-progresso/.',step1:'On the old address, download a backup using the same browser and profile you used to play.',step2:'Open this page on the official domain, choose the file and check the names and years.',step3:'Import your progress, then open the official game.',privacy:'This file contains your progress. Keep it somewhere safe. Transfer takes place on this device; no data is uploaded to a server or included in the URL.',backupTitle:'1. Download a backup',backupInfo:'Saves this domain’s driver and team principal careers, history and preferences. The original data stays saved.',export:'Download a backup from this domain',importTitle:'2. Import on the official domain',importInfo:'Close other game tabs before importing. Existing data on the official domain is preserved by default.',choose:'Choose a backup file (.json)',incoming:'In the backup',current:'On this domain',action:'Action',replace:'Also replace data on this domain that conflicts with the backup.',replaceWarning:'This replaces the data shown in the preview. First download a backup of the current progress on the official domain.',exportCurrent:'Back up current progress before replacing',confirm:'I checked the download and saved the current backup. I authorize replacing the indicated data.',import:'Import progress',linksTitle:'Continue the transfer',oldLink:'Open recovery on the old domain',newLink:'Open import on the official domain',gameLink:'Open the official game',footer:'Do not clear browser data on the old address. Keep the backup file until you have confirmed that your career opens normally on the official domain.',empty:'Missing',keep:'Keep existing',same:'Already identical',add:'Import',overwrite:'Replace',downloaded:'Download requested. Check that the file was saved before continuing.',ready:'Check the preview before importing.',done:'Import complete. Imported items: {n}. Preserved items: {k}. Open the official game to continue.',noData:'There is no progress or preferences saved for this domain in this browser.',source:'Source: {origin} · Backup: {date}',count:'{n} records',vdo_save:'Driver career',vdo_chefe:'Team principal career',vdo_hall:'Driver history',vdo_chefe_hall:'Team history',vdo_language:'Language',vdo_theme:'Theme',vdo_mov:'Animations',vdo_durcorrida:'Race duration',vdo_velcorrida:'Race speed',invalid:'Invalid or incompatible file. No data was imported.',tooLarge:'The file exceeds the 12 MB limit.',origin:'This address is not authorized to import or export data.',storage:'This browser blocked storage. Use the same browser and profile you played with and allow site storage.',consent:'Download and save the current backup, then confirm the replacement before continuing.',stale:'Data on this domain has changed. Check the preview and download a new current backup before confirming.',write:'Progress could not be saved because storage is blocked or full. Changes from this import were rolled back. Keep your backup file.',rollback:'Import failed and the browser prevented a complete rollback. Keep both backup files and do not start another career before recovering your data.',readFile:'The file could not be read. Choose the backup again.'},
+es:{title:'Recuperar progreso',intro:'Transfiere tu carrera de este navegador al dominio oficial mediante un archivo de respaldo.',old:'Estás en el dominio antiguo. Descarga el respaldo aquí y abre la importación en el dominio oficial. Tus datos antiguos no se borrarán.',official:'Estás en el dominio oficial. Importa el respaldo de la dirección antigua o descarga una copia del progreso actual.',unsupported:'Por seguridad, esta página solo funciona en estas direcciones HTTPS exactas: https://volante-de-ouro.pages.dev/recuperar-progresso/ o https://volantedeouro.com/recuperar-progresso/.',step1:'En la dirección antigua, descarga el respaldo con el mismo navegador y perfil con los que jugabas.',step2:'Abre esta página en el dominio oficial, elige el archivo y comprueba los nombres y años.',step3:'Importa el progreso y después abre el juego oficial.',privacy:'El archivo contiene tu progreso. Guárdalo en un lugar seguro. La transferencia se realiza en este dispositivo; no se envían datos a un servidor ni se incluyen en la URL.',backupTitle:'1. Descargar respaldo',backupInfo:'Guarda las carreras de piloto y jefe, los historiales y las preferencias de este dominio. Los datos originales se conservan.',export:'Descargar respaldo de este dominio',importTitle:'2. Importar en el dominio oficial',importInfo:'Cierra las otras pestañas del juego antes de importar. Por defecto se conservan los datos existentes en el dominio oficial.',choose:'Elegir archivo de respaldo (.json)',incoming:'En el respaldo',current:'En este dominio',action:'Acción',replace:'También quiero sustituir los datos de este dominio que entren en conflicto con el respaldo.',replaceWarning:'Esta opción sustituye los datos indicados en la vista previa. Primero descarga un respaldo del progreso actual del dominio oficial.',exportCurrent:'Respaldar el progreso actual antes de sustituir',confirm:'Comprobé la descarga y guardé el respaldo actual. Autorizo sustituir los datos indicados.',import:'Importar progreso',linksTitle:'Continuar la transferencia',oldLink:'Abrir recuperación en el dominio antiguo',newLink:'Abrir importación en el dominio oficial',gameLink:'Abrir el juego oficial',footer:'No borres los datos del navegador en la dirección antigua. Conserva el archivo de respaldo hasta comprobar que tu carrera se abre normalmente en el dominio oficial.',empty:'Ausente',keep:'Conservar',same:'Ya es idéntico',add:'Importar',overwrite:'Sustituir',downloaded:'Descarga solicitada. Comprueba que el archivo se haya guardado antes de continuar.',ready:'Comprueba la vista previa antes de importar.',done:'Importación completada. Datos importados: {n}. Datos conservados: {k}. Abre el juego oficial para continuar.',noData:'No hay progreso ni preferencias guardados para este dominio en este navegador.',source:'Origen: {origin} · Respaldo: {date}',count:'{n} registros',vdo_save:'Carrera de piloto',vdo_chefe:'Carrera de jefe',vdo_hall:'Historial de pilotos',vdo_chefe_hall:'Historial de equipos',vdo_language:'Idioma',vdo_theme:'Tema',vdo_mov:'Animaciones',vdo_durcorrida:'Duración de la carrera',vdo_velcorrida:'Velocidad de la carrera',invalid:'Archivo inválido o incompatible. No se importaron datos.',tooLarge:'El archivo supera el límite de 12 MB.',origin:'Esta dirección no está autorizada para importar o exportar datos.',storage:'Este navegador bloqueó el almacenamiento. Usa el mismo navegador y perfil con los que jugabas y permite almacenar datos del sitio.',consent:'Descarga y guarda el respaldo actual y confirma la sustitución antes de continuar.',stale:'Los datos de este dominio cambiaron. Revisa la vista previa y descarga un nuevo respaldo actual antes de confirmar.',write:'No se pudo guardar el progreso por bloqueo o falta de espacio. Se deshicieron los cambios de esta importación. Conserva tu archivo de respaldo.',rollback:'La importación falló y el navegador impidió restaurar todos los datos. Conserva ambos archivos de respaldo y no inicies otra carrera antes de recuperar los datos.',readFile:'No se pudo leer el archivo. Vuelve a elegir el respaldo.'},
+ja:{title:'進行データの復元',intro:'バックアップファイルを使い、このブラウザーのキャリアを公式ドメインへ移行できます。',old:'旧ドメインを開いています。ここでバックアップをダウンロードし、公式ドメインの読み込みページを開いてください。元のデータは削除されません。',official:'公式ドメインを開いています。旧アドレスのバックアップを読み込むか、現在の進行データを保存できます。',unsupported:'安全のため、このページは次の HTTPS アドレスでのみ利用できます：https://volante-de-ouro.pages.dev/recuperar-progresso/ または https://volantedeouro.com/recuperar-progresso/',step1:'旧アドレスで、プレイしていたときと同じブラウザーとプロフィールを使ってバックアップを保存します。',step2:'公式ドメインでこのページを開き、ファイルを選んで名前と年を確認します。',step3:'進行データを読み込んでから、公式ゲームを開きます。',privacy:'このファイルには進行データが含まれます。安全な場所に保管してください。移行はこの端末内で行われ、データがサーバーへ送信されたり URL に含まれたりすることはありません。',backupTitle:'1. バックアップを保存',backupInfo:'このドメインのドライバーとチーム代表のキャリア、履歴、設定を保存します。元のデータはそのまま残ります。',export:'このドメインのバックアップを保存',importTitle:'2. 公式ドメインへ読み込む',importInfo:'読み込む前に、ゲームのほかのタブを閉じてください。初期設定では、公式ドメインにすでにあるデータは保持されます。',choose:'バックアップファイルを選択（.json）',incoming:'バックアップ内',current:'このドメイン内',action:'処理',replace:'バックアップと重複する、このドメインのデータも置き換えます。',replaceWarning:'プレビューに表示されたデータが置き換わります。先に公式ドメインの現在の進行データをバックアップしてください。',exportCurrent:'置き換える前に現在のデータを保存',confirm:'ダウンロードを確認し、現在のバックアップを保管しました。表示されたデータの置き換えを許可します。',import:'進行データを読み込む',linksTitle:'移行を続ける',oldLink:'旧ドメインの復元ページを開く',newLink:'公式ドメインの読み込みページを開く',gameLink:'公式ゲームを開く',footer:'旧アドレスのブラウザーデータを消去しないでください。公式ドメインでキャリアが正常に開けることを確認するまで、バックアップファイルを保管してください。',empty:'データなし',keep:'現在のデータを保持',same:'すでに同一',add:'読み込む',overwrite:'置き換える',downloaded:'ダウンロードを開始しました。続行する前にファイルが保存されたことを確認してください。',ready:'読み込む前にプレビューを確認してください。',done:'読み込みが完了しました。読み込み：{n} 件、保持：{k} 件。公式ゲームを開いて続けてください。',noData:'このブラウザーでは、このドメインの進行データや設定は保存されていません。',source:'移行元：{origin} · バックアップ：{date}',count:'{n} 件',vdo_save:'ドライバーのキャリア',vdo_chefe:'チーム代表のキャリア',vdo_hall:'ドライバーの履歴',vdo_chefe_hall:'チームの履歴',vdo_language:'言語',vdo_theme:'テーマ',vdo_mov:'アニメーション',vdo_durcorrida:'レースの表示時間',vdo_velcorrida:'レースの速度',invalid:'無効または非対応のファイルです。データは読み込まれていません。',tooLarge:'ファイルが 12 MB の上限を超えています。',origin:'このアドレスでは、データの読み込みや書き出しは許可されていません。',storage:'ブラウザーが保存領域へのアクセスをブロックしました。プレイしていたときと同じブラウザーとプロフィールを使い、サイトの保存を許可してください。',consent:'現在のバックアップをダウンロードして保管し、置き換えを確認してから続行してください。',stale:'このドメインのデータが変更されました。プレビューを確認し、現在のバックアップを再び保存してから確認してください。',write:'保存領域のブロックまたは容量不足で保存できませんでした。今回の変更は元に戻しました。バックアップファイルを保管してください。',rollback:'読み込みに失敗し、ブラウザーによって一部のデータを元に戻せませんでした。両方のバックアップを保管し、復元するまで新しいキャリアを開始しないでください。',readFile:'ファイルを読み取れませんでした。バックアップを選び直してください。'}
+};
+let lang='pt',raw=null,safety=null,model=null,fileGeneration=0;
+try{const value=localStorage.getItem('vdo_language');if(Object.hasOwn(messages,value))lang=value;}catch(e){}
+function t(key,args){let text=messages[lang][key]||messages.pt[key]||key;for(const [k,v]of Object.entries(args||{}))text=text.replaceAll('{'+k+'}',String(v));return text;}
+function status(key,error,args){$('status').textContent=t(key,args);$('status').className='status'+(error?' error':'');}
+function issue(error){const code=error&&error.name==='SecurityError'?'storage':error&&error.code;status(code&&messages[lang][code]?code:'invalid',true);}
+function summary(detail){if(detail.empty)return t('empty');let text=t(detail.key);if(detail.name)text+=' · '+detail.name;if(detail.team)text+=' · '+detail.team;if(detail.year)text+=' · '+detail.year;if(detail.category)text+=' · '+detail.category;if(detail.count!=null)text+=' · '+t('count',{n:detail.count})+(detail.names.length?' · '+detail.names.join(', '):'');if(detail.value!=null)text+=' · '+detail.value;return text;}
+function resetConsent(){safety=null;$('confirmed').checked=false;$('confirmed').disabled=true;}
+function renderPreview(){
+  if(!raw)return;try{model=R.preview(raw,localStorage,origin);}catch(e){model=null;$('preview').hidden=true;issue(e);return;}
+  $('preview').hidden=false;$('rows').replaceChildren();$('source').textContent=t('source',{origin:model.sourceOrigin,date:new Date(model.createdAt).toLocaleString(lang==='pt'?'pt-BR':lang)});
+  for(const entry of model.entries){const row=document.createElement('tr');for(const value of [summary(entry.incoming),summary(entry.current),t(entry.identical?'same':entry.conflict?($('replace').checked?'overwrite':'keep'):'add')]){const cell=document.createElement('td');cell.textContent=value;row.appendChild(cell);}$('rows').appendChild(row);}
+  $('replaceSteps').hidden=!$('replace').checked;$('import').disabled=!model.entries.length||($('replace').checked&&(!safety||!$('confirmed').checked));
+}
+function paint(){
+  document.documentElement.lang=lang==='pt'?'pt-BR':lang;document.title='Volante de Ouro — '+t('title');$('language').value=lang;$('language').setAttribute('aria-label',t('vdo_language'));
+  document.querySelectorAll('[data-t]').forEach(node=>node.textContent=t(node.dataset.t));
+  $('modeNote').textContent=t(!R.allowed(origin)?'unsupported':origin===R.OLD?'old':'official');$('allowed').hidden=!R.allowed(origin);$('importSection').hidden=origin!==R.OFFICIAL;renderPreview();
+}
+function download(value){
+  const blob=new Blob([value],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='volante-de-ouro-backup-'+(origin===R.OLD?'antigo':'oficial')+'-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';document.body.appendChild(link);
+  try{link.click();}finally{link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+}
+$('language').addEventListener('change',()=>{lang=$('language').value;paint();$('status').textContent='';});
+$('export').addEventListener('click',()=>{try{const value=R.backup(localStorage,origin),data=R.parse(value);if(!Object.keys(data.values).length){status('noData',false);return;}download(value);$('exportSummary').textContent=Object.entries(data.values).map(([key,value])=>summary(R.details(key,value))).join(' / ');status('downloaded',false);}catch(e){issue(e);}});
+$('file').addEventListener('change',async()=>{
+  const generation=++fileGeneration;raw=null;model=null;resetConsent();$('preview').hidden=true;$('replace').checked=false;const file=$('file').files[0];if(!file)return;
+  if(file.size>R.MAX_BYTES){status('tooLarge',true);return;}
+  try{const value=await file.text();if(generation!==fileGeneration)return;R.parse(value);raw=value;renderPreview();if(model)status(model.entries.length?'ready':'noData',false);}catch(e){if(generation!==fileGeneration)return;raw=null;model=null;issue(e&&e.code?e:{code:'readFile'});}
+});
+$('replace').addEventListener('change',()=>{resetConsent();renderPreview();});
+$('exportCurrent').addEventListener('click',()=>{try{const value=R.backup(localStorage,origin);download(value);safety=value;$('confirmed').disabled=false;$('confirmed').checked=false;status('downloaded',false);renderPreview();}catch(e){resetConsent();issue(e);renderPreview();}});
+$('confirmed').addEventListener('change',renderPreview);
+$('import').addEventListener('click',()=>{
+  if(!raw)return;try{const result=R.restore(raw,localStorage,origin,{replace:$('replace').checked,confirmed:$('confirmed').checked,backup:safety});resetConsent();$('replace').checked=false;renderPreview();status('done',false,{n:result.written.length,k:result.skipped.length});}
+  catch(e){resetConsent();renderPreview();issue(e);}
+});
+window.addEventListener('storage',()=>{resetConsent();renderPreview();if(raw)status('stale',true);});
+paint();
+})();
+</script>
+</body>
+</html>

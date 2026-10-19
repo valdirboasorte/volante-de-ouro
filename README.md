@@ -490,6 +490,10 @@ O projeto é estático. Qualquer hospedagem de site serve — Vercel, Netlify,
 Cloudflare Pages ou GitHub Pages. Na Vercel não é preciso configurar nada:
 o `index.html` na raiz é detectado sozinho.
 
+A migração de `volante-de-ouro.pages.dev` para `volantedeouro.com`, incluindo
+a proteção dos saves antigos e a regra no painel da Cloudflare, está descrita
+em [infra/cloudflare/README.md](infra/cloudflare/README.md).
+
 ## Estrutura
 
 ```

@@ -1,0 +1,12 @@
+{
+  "description": "Volante de Ouro: domínio antigo para domínio oficial, preservando recuperação de progresso",
+  "enabled": false,
+  "action": "redirect",
+  "expression": "(http.host eq \"volante-de-ouro.pages.dev\" and http.request.full_uri in $vdo_dominio_antigo and not (http.request.uri.path in {\"/recuperar-progresso\" \"/recuperar-progresso/\" \"/recuperar-progresso/index.html\"}))",
+  "action_parameters": {
+    "from_list": {
+      "name": "vdo_dominio_antigo",
+      "key": "http.request.full_uri"
+    }
+  }
+}

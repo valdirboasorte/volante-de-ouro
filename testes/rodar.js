@@ -4,6 +4,9 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 const testes = [
+  ['configuração da migração de domínio', 'dominio.js'],
+  ['verificador HTTP da migração', 'verificador-dominio.js'],
+  ['recuperação do progresso antigo', 'recuperacao-progresso.js'],
   ['regras do campeonato', 'regras.js'],
   ['mundo de pilotos (2023-2034)', 'mundo.js', ['2023', '2034']],
   ['carreiras jogadas além de 2026', 'carreiras.js', ['5', '2023', '16']],
