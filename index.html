@@ -42,7 +42,8 @@ try{ var mv = localStorage.getItem('vdo_mov'), liga = mv ? mv === '1' : true;
   --crimson:#e2231a; --red-txt:#ff5244; --green:#22c46e; --purple:#b75cf2;
   --yellow:#f5d000; --blue:#3d8ef7; --orange:#ff8a1f; --silver:#c9ccd1; --bronze:#c98a52;
   --rule:#25282e; --rule2:#353941;
-  --f:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --f-latin:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --f:var(--f-latin);
   --t-sm:14px;
   --t-body:clamp(16px,15.2px + .25vw,18px);
   --t-lead:clamp(20px,17.6px + .5vw,24px);
@@ -882,8 +883,22 @@ html[data-theme="light"] #topBar{background:rgba(233,235,238,.92)}
 .language-select{flex-shrink:0; width:58px; height:36px; min-height:36px; padding:0 5px; border:0; border-radius:6px; background:transparent; color:var(--soft); font:600 12px var(--f); cursor:pointer; transition:color .15s}
 .language-select:hover{background:transparent; color:var(--ink)}
 .language-select option{background:#f4f6f9; color:#20262e}
-html[lang="ja"]{--f:'Archivo','Yu Gothic UI','Hiragino Sans','Noto Sans JP',Meiryo,system-ui,sans-serif; line-break:strict}
-html[lang="ja"] :is(h1,h2,h3,h4,.topnav button){font-stretch:normal; letter-spacing:normal; line-height:1.4}
+/* A marca mantém a mesma largura em todos os idiomas. Para japonês, use
+   glifos nativos e evite a ampliação automática de texto no celular. */
+:is(.brand,.brand-pe,.ini-titulo){font-family:var(--f-latin)}
+html[lang="ja"]{
+  --f:'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,'Noto Sans CJK JP','Noto Sans JP',system-ui,sans-serif;
+  line-break:strict; -webkit-text-size-adjust:100%; text-size-adjust:100%;
+}
+html[lang="ja"] :is(h1:not(.ini-titulo),h2,h3,h4,.drv-id .nm,.cc-gp b,.mcard .tx b,.passo-n span,.ini-modo-tx b,.ini-era b,.ini-item b,.dec b){
+  font-stretch:normal; letter-spacing:0; line-height:1.25;
+}
+html[lang="ja"] :is(.btn,.topnav button,.ini-logos span){font-stretch:normal; letter-spacing:0; line-height:1.35}
+@media(max-width:760px){
+  html[lang="ja"] .form-hd h2{font-size:clamp(28px,7.5vw,40px)}
+  html[lang="ja"] .ini-cab h2{font-size:clamp(28px,7vw,36px)}
+  html[lang="ja"] :is(.ini-modo-tx b,.ini-item b){font-size:clamp(24px,6.4vw,30px)}
+}
 @media(max-width:380px){#topBar .iconbtn{width:32px;min-width:32px} #topBar .brand{font-size:17px;gap:6px} #topBar .brand .cf{display:none} .language-select{width:50px;padding:0 2px}}
 html[data-theme="light"] #topBar.stuck{background:rgba(233,235,238,.97)}
 body[data-tela="intro"] #topBar{position:fixed; left:0; right:0; top:0; z-index:60; background:transparent; border-bottom-color:transparent; --ink:#eef0f2; --soft:#c3c8cf; color:var(--ink)}
