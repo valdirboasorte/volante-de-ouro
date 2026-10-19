@@ -60,7 +60,8 @@ A página `recuperar-progresso/index.html` é autônoma, sem scripts externos:
 no antigo, exporta um arquivo de backup; no oficial, permite sua importação.
 O arquivo não é enviado a servidores nem colocado em URLs. Os dados antigos
 continuam guardados. A página também permite fazer backup dos dados atuais
-do domínio oficial. O link na abertura do jogo aparece apenas no domínio oficial.
+do domínio oficial. O acesso é pelo endereço direto `/recuperar-progresso/`;
+a tela inicial do jogo não exibe um link de recuperação.
 
 O jogador precisa usar o mesmo navegador/perfil em que jogava no endereço
 antigo para exportar seu save. A recuperação não consegue recuperar dados
@@ -69,8 +70,7 @@ encerramento de uma sessão privada.
 
 ## Ordem de publicação
 
-1. Publicar `recuperar-progresso/index.html`, `assets/migracao-dominio.js` e a
-   inclusão desse script em `index.html`. Não é necessário alterar o motor,
+1. Publicar `recuperar-progresso/index.html`. Não é necessário alterar o motor,
    chaves de armazenamento ou formato de saves.
 2. Conferir que `https://volante-de-ouro.pages.dev/recuperar-progresso/` e
    `https://volantedeouro.com/recuperar-progresso/` servem a página de recuperação,

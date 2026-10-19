@@ -1,7 +1,7 @@
 /* Contrato da configuração Cloudflare e do acesso à recuperação.
    A confirmação do HTTP publicado é feita por ferramentas/verificar-dominio.js. */
 'use strict';
-const assert = require('assert/strict'), fs = require('fs'), path = require('path'), vm = require('vm');
+const assert = require('assert/strict'), fs = require('fs'), path = require('path');
 const root = path.join(__dirname,'..'), read = p => fs.readFileSync(path.join(root,p),'utf8');
 const csv = read('infra/cloudflare/redirects.csv').trim().split(/\r?\n/);
 assert.equal(csv.length,1,'uma única origem; sem cabeçalho CSV');
@@ -37,25 +37,4 @@ for(const p of recovery) assert.equal(expected(legacy.origin+p+'?idioma=ja'),nul
 assert.equal(expected('https://preview.volante-de-ouro.pages.dev/carreira'),null,'preview fora do escopo');
 assert.equal(expected('https://volante-de-ouro.pages.dev.example.com/carreira'),null,'hostname precisa ser exato');
 
-const script=read('assets/migracao-dominio.js');
-function page(origin,language='pt-BR'){
-  const links=[],events={};
-  const doc={readyState:'complete',documentElement:{lang:language},getElementById:id=>links.find(x=>x.id===id),
-    querySelector:s=>s==='.ini-acoes'?{appendChild:n=>links.push(n)}:null,
-    createElement:()=>({attrs:{},setAttribute(k,v){this.attrs[k]=v;}})};
-  const ctx={document:doc,location:{origin},window:{addEventListener:(name,fn)=>events[name]=fn}};
-  Object.defineProperty(ctx,'localStorage',{get(){throw Error('link de recuperação não deve acessar nem alterar saves');}});
-  vm.runInNewContext(script,ctx);
-  return{doc,links,events};
-}
-for(const origin of [legacy.origin,'http://volantedeouro.com','https://preview.volante-de-ouro.pages.dev','null'])
-  assert.equal(page(origin).links.length,0,'link não modifica outros ambientes');
-const P=page(official.origin);
-assert.equal(P.links.length,1);assert.equal(P.links[0].href,'/recuperar-progresso/');
-assert.equal(P.links[0].textContent,'Recuperar progresso do site antigo');
-assert.ok(Object.hasOwn(P.links[0].attrs,'data-i18n-ignore'));
-for(const[lang,label]of [['en','Recover progress from the old site'],['es','Recuperar el progreso del sitio anterior'],['ja','旧サイトのセーブデータを復元']]){
-  P.doc.documentElement.lang=lang;P.events['vdo:languagechange']();assert.equal(P.links[0].textContent,label);
-}
-assert.ok(read('index.html').includes('<script src="assets/migracao-dominio.js" defer></script>'));
-console.log('domínio: configuração, caminhos, query strings, exceção de recuperação e link preservados');
+console.log('domínio: configuração, caminhos, query strings e exceção de recuperação preservados');
