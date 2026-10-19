@@ -34,7 +34,6 @@ function carreira(g, ano, idade){
 {
   /* a pilota vai para a F1 Academy e corre três anos: 2024-2026 com o grid real, 2027 só com inventadas */
   const J = carreira('f', 2023, 15);
-  const MASC = J.run('[].concat(...Object.values(NOMES_PROPRIOS))');
   const FEM = new Set(J.run('[].concat(...Object.values(NOMES_PROPRIOS_F))'));
   let viu = false, anos = [];
   for(let k = 0; k < 4; k++){
@@ -45,7 +44,9 @@ function carreira(g, ano, idade){
     const ano = J.run('S.year');
     /* quem correu de verdade em qualquer ano da F1 Academy (as reais seguem no grid depois de 2026) */
     const real = J.run(`[2023, 2024, 2025, 2026].flatMap(a => (elencoReal('F1 Academy', a) || []).map(x => x.name))`);
-    const homens = nomes.filter(n => real.indexOf(n) < 0 && (MASC.indexOf(n.split(' ')[0]) >= 0 || !FEM.has(n.split(' ')[0])));
+    /* Taylor, por exemplo, pertence aos dois repertórios. Estar no masculino
+       não torna inválido um nome também gerado pelo repertório feminino. */
+    const homens = nomes.filter(n => real.indexOf(n) < 0 && !FEM.has(n.split(' ')[0]));
     anos.push(ano + (homens.length ? ' (homens: ' + homens.join(', ') + ')' : ''));
   }
   ok(viu, 'a F1 Academy aparece nas propostas da pilota');

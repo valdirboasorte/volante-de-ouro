@@ -11,6 +11,8 @@ const testes = [
   ['academias até a categoria principal', 'academias.js'],
   ['nacionalidade na imprensa', 'nacionalidade.js'],
   ['kart regional e nacional no próprio país', 'kart-local.js'],
+  ['grid regional com maioria local', 'grid-kart.js'],
+  ['português, inglês e espanhol', 'idiomas.js'],
   ['modo chefe (carreiras aleatórias)', 'chefe.js', ['30']],
   ['modo chefe (decisões)', 'chefe-decisoes.js'],
   ['mercado do chefe', 'mercado-chefe.js'],

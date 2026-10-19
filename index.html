@@ -879,6 +879,10 @@ h1,.form-hd h2,.mhd h2,.season-hd .yr,.drv-id .nm,.res-hero .big,.cc-gp b,.cc-vo
 #topBar{position:sticky; top:0; height:64px; padding:0 var(--m); gap:4px; background:rgba(11,12,14,.9); border-bottom:1px solid var(--rule)} /* linha da barra (taste-skill-ignore) */
 html[data-theme="light"] #topBar{background:rgba(233,235,238,.92)}
 #topBar.stuck{background:rgba(11,12,14,.96)}
+.language-select{flex-shrink:0; width:58px; height:36px; min-height:36px; padding:0 5px; border:0; border-radius:6px; background:transparent; color:var(--soft); font:600 12px var(--f); cursor:pointer; transition:color .15s}
+.language-select:hover{background:transparent; color:var(--ink)}
+.language-select option{background:#f4f6f9; color:#20262e}
+@media(max-width:380px){#topBar .iconbtn{width:32px;min-width:32px} #topBar .brand{font-size:17px;gap:6px} #topBar .brand .cf{display:none} .language-select{width:50px;padding:0 2px}}
 html[data-theme="light"] #topBar.stuck{background:rgba(233,235,238,.97)}
 body[data-tela="intro"] #topBar{position:fixed; left:0; right:0; top:0; z-index:60; background:transparent; border-bottom-color:transparent; --ink:#eef0f2; --soft:#c3c8cf; color:var(--ink)}
 body[data-tela="intro"] #topBar.stuck{background:rgba(11,12,14,.94); border-bottom-color:#25282e}
@@ -1235,6 +1239,11 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <button onclick="UI.records()" id="btnRecords">Recordes</button>
     <button onclick="UI.help()">Como funciona</button>
   </nav>
+  <select class="language-select" id="languageSelect" aria-label="Idioma" title="Idioma">
+    <option value="pt" lang="pt-BR" aria-label="Português">PT</option>
+    <option value="en" lang="en" aria-label="English">EN</option>
+    <option value="es" lang="es" aria-label="Español">ES</option>
+  </select>
   <button class="iconbtn" id="btnMov" onclick="UI.alternarMovimento()" aria-pressed="true" title="Animações" aria-label="Animações">
     <svg viewBox="0 0 24 24"><path d="M3 7h11M7 12h14M3 17h9"/></svg></button>
   <button class="iconbtn" onclick="UI.toggleTheme()" title="Tema claro ou escuro" aria-label="Tema claro ou escuro" id="btnTheme">
@@ -1585,6 +1594,18 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <script src="dados/historico.js" defer></script>
 <!-- os traçados que vieram do OpenStreetMap, gerados por ferramentas/pistas-osm.mjs -->
 <script src="dados/tracados.js" defer></script>
+<script src="assets/i18n/en.js" defer></script>
+<script src="assets/i18n/es.js" defer></script>
+<script src="assets/i18n/common.js" defer></script>
+<script src="assets/i18n/career.js" defer></script>
+<script src="assets/i18n/events.js" defer></script>
+<script src="assets/i18n/nationalities.js" defer></script>
+<script src="assets/i18n/dialogues.js" defer></script>
+<script src="assets/i18n/race.js" defer></script>
+<script src="assets/i18n/advanced.js" defer></script>
+<script src="assets/i18n/media.js" defer></script>
+<script src="assets/i18n/interface.js" defer></script>
+<script src="assets/i18n/runtime.js" defer></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
    VOLANTE DE OURO — simulador de carreira no automobilismo
@@ -6532,7 +6553,10 @@ function paisDaCategoria(cat){
 /* quanto do grid é do país da categoria.
    A F4 brasileira é quase toda brasileira; a italiana é a porta de entrada
    da Europa e recebe o mundo inteiro — mas o maior bloco segue sendo local. */
-function mixNacional(cat){
+function mixNacional(cat, paisPiloto){
+  /* Regional pertence à carreira, não ao país usado para simular a escada
+     global. O país é explícito para não vazar entre os modos piloto e chefe. */
+  if(cat === 'Kart Regional') return /^[A-Z]{2}$/.test(paisPiloto || '') ? { cc:paisPiloto, share:.85, regional:true } : null;
   const cc = paisDaCategoria(cat);
   if(cc){
     if(/Kart/.test(cat))      return { cc, share: .94 };
@@ -6557,8 +6581,8 @@ const VIZINHOS = {
   AR:['AR','BR','UY','CL','ES','IT'],
   MX:['MX','US','BR','CO','AR','ES']
 };
-function ccJunior(cat){
-  const m = mixNacional(cat);
+function ccJunior(cat, cc){
+  const m = mixNacional(cat, cc);
   if(m && R.chance(m.share)) return m.cc;
   if(m){
     const viz = VIZINHOS[m.cc];
@@ -6970,6 +6994,39 @@ const Engine = {
     return mudou;
   },
 
+  /* Um save antigo só recebe o grid local antes do primeiro fim de semana.
+     Depois que alguém já correu, as identidades e os resultados são história. */
+  migrarGridKartLocal(){
+    if(!S || !S.driver || !S.season) return false;
+    const sea = S.season, mix = mixNacional(sea.cat, S.driver.cc);
+    if(!mix || !mix.regional || sea.isTop || sea.round || (sea.results || []).length || sea.fds) return false;
+    if(['dstand','cstand','fin'].some(k => Object.keys(sea[k] || {}).length)) return false;
+    const rivais = (sea.field || []).filter(f => !f.isMe), n = rivais.length;
+    let faltam = Math.ceil(n * mix.share) - rivais.filter(f => f.cc === mix.cc).length;
+    if(faltam <= 0) return false;
+    const W = Engine.garantirMundo(), ano = sea.year;
+    const g = Mundo.degrauDe(S.series, ano, sea.cat, S.catIdx, S.ladder.length);
+    const deg = Mundo.degraus(W.sk, ano)[g];
+    if(!deg) return false;
+    const usados = new Set((sea.field || []).map(f => f.name));
+    const locais = Mundo.noDegrau(W, g).filter(r => r.cc === mix.cc && !r.jog && !usados.has(r.n))
+      .sort((a, b) => b.h - a.h);
+    for(const f of rivais){
+      if(faltam <= 0) break;
+      if(f.cc === mix.cc) continue;
+      /* Substitui a inscrição, nunca muda a bandeira ou o nome de uma
+         pessoa já existente no mundo. O assento e o nível ficam iguais. */
+      const rec = locais.shift() || Mundo.inventar(W, g, ano, mix.cc,
+        R.int(deg.idade[0], deg.idade[1] - 1), deg);
+      rec.camp = sea.cat; rec.campAno = ano; rec.campPais = mix.cc;
+      f.mid = rec.id; f.name = rec.n; f.cc = rec.cc; f.doc = false;
+      faltam--;
+    }
+    Mundo.registrarGrid(W, ano, g, sea.field, sea.teams, false);
+    sea.docN = rivais.filter(f => f.doc).length;
+    return true;
+  },
+
   /* ---- monta a temporada ---- */
   buildSeason(){
     const era = Engine.eraOf(S.year, S.series);
@@ -7286,7 +7343,7 @@ const Engine = {
       const gJr = Mundo.degrauDe(S.series, S.year, cat, S.catIdx, S.ladder.length);
       /* campeonato só de mulheres: o grid real e, completando, pilotas que seguem de um ano para o outro */
       const cFem = (() => { const id = campDaCat(cat, S.year); const c = id && typeof Hist !== 'undefined' && Hist.ok() && Hist.camp(id); return c && c.fem ? c : null; })();
-      const recs = cFem ? Engine.gridFeminino(cFem, cat, n) : Mundo.gridDe(W, gJr, S.year, { n, cat, excluir: new Set([S.driver.name]) });
+      const recs = cFem ? Engine.gridFeminino(cFem, cat, n) : Mundo.gridDe(W, gJr, S.year, { n, cat, cc:S.driver.cc, excluir: new Set([S.driver.name]) });
       const reaisAno = new Set((elencoReal(cat, S.year) || []).map(x => x.name));
       const equipeDe = {};
       const hsJr = recs.map(r => r.h);
@@ -11602,6 +11659,75 @@ const SOBRENOMES_EXTRA = {
   HU:['Nagy','Kovács','Tóth','Szabó','Horváth','Varga','Kiss']
 };
 
+/* O kart local também precisa de nomes locais nos países sem um elenco
+   documentado. Estes são pilotos fictícios, com identidade persistente. */
+const NOMES_REGIONAIS_EXTRA = {
+  AO:[['João','Manuel','António','Mateus'],['Neto','Domingos','Baptista','Lopes','Kiala','Cunha']],
+  SA:[['Abdullah','Faisal','Khalid','Sultan'],['Al-Qahtani','Al-Otaibi','Al-Harbi','Al-Dosari','Al-Ghamdi','Al-Zahrani']],
+  AM:[['Aram','Hayk','Tigran','Narek'],['Hakobyan','Sargsyan','Grigoryan','Petrosyan','Harutyunyan','Avetisyan']],
+  AZ:[['Ali','Murad','Rashad','Elvin'],['Aliyev','Mammadov','Hasanov','Huseynov','Guliyev','Ismayilov']],
+  BH:[['Hamad','Salman','Yusuf','Ali'],['Al-Khalifa','Al-Mahdi','Al-Ansari','Al-Doseri','Al-Haddad','Al-Zayani']],
+  BO:[['Diego','Luis','Javier','Marcelo'],['Mamani','Quispe','Condori','Flores','Vargas','Rojas']],
+  BG:[['Ivan','Georgi','Dimitar','Nikolay'],['Ivanov','Georgiev','Dimitrov','Petrov','Nikolov','Stoyanov']],
+  CV:[['Dário','Jorge','André','Nuno'],['Andrade','Tavares','Monteiro','Veiga','Semedo','Lopes']],
+  CM:[['Samuel','Alain','Emmanuel','Jean'],['Ngassa','Fokou','Mballa','Kamga','Tchoumi','Njoya']],
+  KZ:[['Arman','Dias','Nursultan','Alikhan'],['Suleimenov','Nurgaliyev','Akhmetov','Omarov','Tulegenov','Sadykov']],
+  CY:[['Andreas','Giorgos','Michalis','Nikos'],['Georgiou','Christou','Ioannou','Nicolaou','Charalambous','Michael']],
+  KR:[['Min-jun','Seo-jun','Ji-ho','Do-yun'],['Kim','Lee','Park','Choi','Jung','Kang']],
+  CR:[['José','Andrés','Luis','David'],['Vargas','Solís','Chacón','Brenes','Mora','Calderón']],
+  HR:[['Luka','Ivan','Marko','Mateo'],['Horvat','Kovačević','Babić','Marić','Jurić','Novak']],
+  CU:[['Alejandro','Ernesto','Daniel','Carlos'],['Valdés','Pérez','García','Rodríguez','Fernández','Martínez']],
+  EG:[['Omar','Youssef','Ahmed','Karim'],['Hassan','Mahmoud','Mostafa','Ibrahim','Fathy','Naguib']],
+  SV:[['Óscar','José','Luis','Kevin'],['Hernández','Martínez','López','Guzmán','Alvarado','Menjívar']],
+  AE:[['Mohammed','Saeed','Khalifa','Rashid'],['Al-Mansoori','Al-Nuaimi','Al-Kaabi','Al-Mazrouei','Al-Suwaidi','Al-Qasimi']],
+  EC:[['José','Luis','Andrés','Mateo'],['Cedeño','Zambrano','Caicedo','Vera','Paredes','Espinoza']],
+  SK:[['Jakub','Martin','Samuel','Lukáš'],['Horváth','Kováč','Varga','Tóth','Nagy','Kováčik']],
+  SI:[['Luka','Jan','Žan','Marko'],['Novak','Horvat','Kovačič','Krajnc','Zupančič','Kolar']],
+  EE:[['Rasmus','Karl','Martin','Siim'],['Tamm','Saar','Sepp','Mägi','Kask','Kukk']],
+  PH:[['Miguel','Carlo','Paolo','Gabriel'],['Santos','Reyes','Cruz','Bautista','Mendoza','Ramos']],
+  GH:[['Kwame','Kofi','Kojo','Yaw'],['Mensah','Owusu','Boateng','Asante','Osei','Adjei']],
+  GE:[['Giorgi','Luka','Nikoloz','Sandro'],['Beridze','Kapanadze','Gelashvili','Lomidze','Kiknadze','Maisuradze']],
+  GR:[['Giorgos','Nikos','Kostas','Dimitris'],['Papadopoulos','Nikolaidis','Georgiou','Pappas','Dimitriou','Antoniou']],
+  GT:[['Luis','José','Diego','Jorge'],['García','López','Pérez','Hernández','Morales','Castillo']],
+  HN:[['Luis','Carlos','José','Mario'],['Flores','Zelaya','Suazo','Mejía','Pineda','Cáceres']],
+  HK:[['Chun-kit','Ka-ho','Wai-lam','Ho-yin'],['Chan','Wong','Cheung','Lee','Chow','Lam']],
+  ID:[['Rizky','Aditya','Dimas','Fajar'],['Pratama','Saputra','Wijaya','Santoso','Setiawan','Kurniawan']],
+  IS:[['Aron','Jón','Einar','Ólafur'],['Jónsson','Sigurðsson','Guðmundsson','Einarsson','Ólafsson','Árnason']],
+  IL:[['Noam','Daniel','Eitan','Itai'],['Cohen','Levi','Mizrahi','Peretz','Friedman','Shapira']],
+  JM:[['Andre','Dwayne','Jermaine','Ricardo'],['Brown','Campbell','Williams','Smith','Reid','Clarke']],
+  LV:[['Jānis','Kārlis','Artūrs','Roberts'],['Bērziņš','Kalniņš','Ozoliņš','Liepiņš','Krūmiņš','Lapiņš']],
+  LB:[['Karim','Rami','Jad','Elie'],['Khoury','Haddad','Nasser','Saad','Fakhoury','Mansour']],
+  LT:[['Jonas','Lukas','Mantas','Tomas'],['Kazlauskas','Petrauskas','Jankauskas','Stankevičius','Balčiūnas','Vaitkus']],
+  LU:[['Tom','Luc','Nicolas','Ben'],['Schmit','Weber','Muller','Hoffmann','Wagner','Klein']],
+  MO:[['Cheong','Wai','Ka-kit','Kin'],['Lau','Leong','Ho','Choi','Lei','Fong']],
+  MT:[['Luca','Matthew','Daniel','Mark'],['Borg','Camilleri','Vella','Farrugia','Zammit','Galea']],
+  MA:[['Youssef','Amine','Hamza','Mehdi'],['El Amrani','Bennani','Alaoui','Berrada','Lahlou','Idrissi']],
+  MZ:[['Paulo','Celso','Edson','Arlindo'],['Machel','Chissano','Mabunda','Mondlane','Nhantumbo','Bila']],
+  NI:[['Carlos','José','Luis','Marvin'],['Gutiérrez','López','González','Castro','Mendoza','Lacayo']],
+  NG:[['Chidi','Tunde','Emeka','Kunle'],['Okafor','Adeyemi','Okonkwo','Adebayo','Eze','Balogun']],
+  PA:[['Luis','Carlos','Ricardo','José'],['Batista','Quintero','Cedeño','Pérez','De León','Arosemena']],
+  PY:[['Diego','Rodrigo','Juan','Luis'],['Benítez','Giménez','Vera','Duarte','Ayala','Caballero']],
+  PE:[['Diego','Luis','Alonso','Joaquín'],['Quispe','Flores','Huamán','Vargas','Salazar','Torres']],
+  QA:[['Abdullah','Hamad','Nasser','Tamim'],['Al-Kuwari','Al-Thani','Al-Mohannadi','Al-Marri','Al-Sulaiti','Al-Dosari']],
+  KE:[['Kamau','Brian','Otieno','Kevin'],['Mwangi','Kiptoo','Njoroge','Karanja','Omondi','Kipchoge']],
+  DO:[['José','Luis','Carlos','Rafael'],['De la Cruz','Pérez','Santana','Reyes','Medina','Rosario']],
+  RO:[['Andrei','Alexandru','Mihai','Vlad'],['Popescu','Ionescu','Popa','Dumitrescu','Stan','Radu']],
+  RS:[['Luka','Nikola','Stefan','Marko'],['Jovanović','Petrović','Nikolić','Marković','Đorđević','Stojanović']],
+  SG:[['Wei Jie','Jun Hao','Ryan','Amir'],['Tan','Lim','Lee','Ng','Goh','Ong']],
+  TW:[['Cheng-hao','Yu-chen','Wei-lun','Chun-han'],['Chen','Lin','Huang','Chang','Liu','Tsai']],
+  TT:[['Akeem','Darian','Kieran','Ravi'],['Ali','Mohammed','Singh','Williams','Joseph','Ramcharan']],
+  TN:[['Mohamed','Yassine','Anis','Mehdi'],['Trabelsi','Ben Ali','Jaziri','Ayari','Mansouri','Gharbi']],
+  TR:[['Emir','Arda','Kerem','Eren'],['Yılmaz','Kaya','Demir','Çelik','Şahin','Aydın']],
+  UA:[['Oleksandr','Dmytro','Maksym','Andriy'],['Kovalenko','Shevchenko','Boyko','Melnyk','Bondarenko','Tkachenko']],
+  VE:[['José','Luis','Andrés','Alejandro'],['González','Rodríguez','Hernández','Rivas','Mendoza','Salazar']],
+  VN:[['Minh','Huy','Duc','Quang'],['Nguyen','Tran','Le','Pham','Hoang','Vu']],
+  ZW:[['Tendai','Tawanda','Farai','Tatenda'],['Moyo','Ncube','Dube','Sibanda','Ndlovu','Chikomba']]
+};
+for(const [cc, nomes] of Object.entries(NOMES_REGIONAIS_EXTRA)){
+  if(!NOMES_PROPRIOS[cc]) NOMES_PROPRIOS[cc] = nomes[0];
+  if(!SOBRENOMES_EXTRA[cc]) SOBRENOMES_EXTRA[cc] = nomes[1];
+}
+
 const Mundo = {
   V: 1,
   /* quantos anos a mais um piloto da base aguenta no mesmo degrau sem subir */
@@ -12199,8 +12325,11 @@ const Mundo = {
     const n = o.n || 19;
     const excluir = o.excluir || new Set();
     const deg = Mundo.degraus(W.sk, ano)[g] || Mundo.degraus(W.sk, ano)[1];
+    const mix = o.cat ? mixNacional(o.cat, o.cc) : null;
+    const maxEstr = mix && mix.regional ? n - Math.ceil(n * mix.share) : null;
     const escolhidos = [], ids = new Set();
     const pega = r => { if(!r || ids.has(r.id) || excluir.has(r.n) || r.st !== 'a' || r.jog) return false;
+                        if(maxEstr != null && r.cc !== mix.cc && escolhidos.filter(x => x.cc !== mix.cc).length >= maxEstr) return false;
                         ids.add(r.id); escolhidos.push(r); return true; };
     /* 1. o grid real daquele campeonato */
     const real = o.cat ? elencoReal(o.cat, ano) : null;
@@ -12220,10 +12349,10 @@ const Mundo = {
     });
     /* 2. quem já corria aqui */
     const doDegrau = Mundo.noDegrau(W, g);
-    if(o.cat) doDegrau.filter(r => r.camp === o.cat && r.campAno === ano - 1)
+    if(o.cat) doDegrau.filter(r => r.camp === o.cat && r.campAno === ano - 1 &&
+                                  (!mix || !mix.regional || !r.campPais || r.campPais === mix.cc))
                       .sort((a, b) => b.h - a.h).forEach(r => { if(escolhidos.length < n) pega(r); });
     /* 3. do degrau, conforme o país do campeonato */
-    const mix = o.cat ? mixNacional(o.cat) : null;
     const resto = doDegrau.filter(r => !ids.has(r.id))
       .map(r => ({ r, k: (mix && r.cc === mix.cc ? 0 : mix ? 1 : 0) + ((seedOf(r.id + ano) % 100) / 1000) }))
       .sort((a, b) => a.k - b.k);
@@ -12238,11 +12367,15 @@ const Mundo = {
     }
     /* 4. faltando gente, entra gente nova */
     while(escolhidos.length < n){
-      const cc = o.cat ? ccJunior(o.cat) : Mundo.ccDoDegrau(deg);
+      /* A probabilidade dá variedade; a cota garante uma maioria local
+         mesmo quando o mundo ainda não tem pilotos daquele país. */
+      const cc = maxEstr != null && escolhidos.filter(r => r.cc !== mix.cc).length >= maxEstr
+        ? mix.cc : o.cat ? ccJunior(o.cat, o.cc) : Mundo.ccDoDegrau(deg);
       const rec = Mundo.inventar(W, g, ano, cc, R.int(deg.idade[0], deg.idade[1] - 1), deg);
       pega(rec);
     }
-    if(o.cat) escolhidos.forEach(r => { r.camp = o.cat; r.campAno = ano; });
+    if(o.cat) escolhidos.forEach(r => { r.camp = o.cat; r.campAno = ano;
+      if(mix && mix.regional) r.campPais = mix.cc; });
     return escolhidos;
   },
 
@@ -13992,7 +14125,9 @@ const UI = {
   countryBox(){
     const inp = el('inCountry'), list = el('ctryList');
     const draw = q => {
-      const f = COUNTRIES.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())).slice(0,60);
+      const norm = s => window.VDO_I18N ? VDO_I18N.search(s) : s.toLowerCase();
+      const f = COUNTRIES.filter(c => norm(c.name).includes(norm(q)) ||
+        (window.VDO_I18N && norm(VDO_I18N.text(c.name)).includes(norm(q)))).slice(0,60);
       list.innerHTML = f.length ? f.map(c=>`
         <button type="button" onclick="UI.pickCountry('${c.cc}')">
           <span class="flag">${flag(c.cc)}</span>
@@ -14006,7 +14141,7 @@ const UI = {
   pickCountry(cc){
     UI.country = cc;
     const c = COUNTRIES.find(x=>x.cc===cc);
-    el('inCountry').value = c.name;
+    el('inCountry').value = window.VDO_I18N ? VDO_I18N.text(c.name) : c.name;
     el('ctryList').classList.remove('on');
   },
 
@@ -15078,7 +15213,8 @@ const Game = {
       /* vínculo da academia: recupera saídas antigas na base e conclui no topo */
       const mudouAcademia = S && Engine.migrarAcademia();
       const mudouKart = S && Engine.migrarKartLocal();
-      if(mudouAcademia || mudouKart) Game.save();
+      const mudouGrid = S && Engine.migrarGridKartLocal();
+      if(mudouAcademia || mudouKart || mudouGrid) Game.save();
       UI.show('career'); UI.render();
     }catch(e){ UI.toast('Não consegui abrir o save.'); }
   },
@@ -22302,6 +22438,20 @@ const Abertura = {
       </div><div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`);
   }
 };
+/* Nomes de pessoas e equipes são identidades, inclusive quando o jogador
+   escolhe uma palavra que também é um rótulo traduzível. */
+window.VDO_LANGUAGE_NAMES = () => new Set([
+  ...(S ? [S.driver && S.driver.name, S.team && S.team.name,
+    ...(S.season && S.season.field || []).map(f => f.name),
+    ...(S.season && S.season.teams || []).map(t => t.name)] : []),
+  ...(C ? [C.chefe && C.chefe.nome, C.eq && C.eq.nome, ...(C.pilotos || []).map(p => p.nome)] : [])
+].filter(Boolean));
+addEventListener('vdo:languagechange', () => {
+  if(UI.country){
+    const c = COUNTRIES.find(x => x.cc === UI.country);
+    if(c) el('inCountry').value = VDO_I18N.text(c.name);
+  }
+});
 UI.boot();
 </script>
 

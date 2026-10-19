@@ -1,0 +1,231 @@
+/* Tradução local, apresentação dinâmica e preservação dos dados do jogo.
+   Sem dependências: node testes/idiomas.js */
+const fs = require('fs'), path = require('path'), vm = require('vm');
+const assert = require('assert/strict');
+const H = require('./base');
+let checks = 0;
+function eq(a, b, message){ checks++; assert.equal(a, b, message); }
+function ok(value, message){ checks++; assert.ok(value, message); }
+const dir = path.join(__dirname, '..', 'assets', 'i18n');
+const scripts = ['en.js','es.js','common.js','career.js','events.js','nationalities.js','dialogues.js','race.js','advanced.js','media.js','interface.js','runtime.js'];
+
+/* DOM mínimo com a semântica usada pelo runtime: mutações são entregues
+   juntas, no fim da operação, e não durante a escrita de uma tradução. */
+function page(store = {}, blocked = false){
+  let active = null, pending = [], writes = 0;
+  const listeners = {}, ids = new Map();
+  const mutation = record => { if(active) pending.push(record); };
+  class Text {
+    constructor(value){ this.nodeType = 3; this._value = value; this.parentNode = null; }
+    get parentElement(){ return this.parentNode; }
+    get isConnected(){ return !!(this.parentNode && this.parentNode.isConnected); }
+    get nodeValue(){ return this._value; }
+    set nodeValue(value){ this._value = value; writes++; mutation({ type:'characterData', target:this }); }
+    get textContent(){ return this.nodeValue; }
+  }
+  class Element {
+    constructor(tag, id){
+      this.nodeType = 1; this.tagName = tag.toUpperCase(); this.childNodes = [];
+      this.parentNode = null; this.attrs = {}; this.events = {}; this._value = '';
+      if(id){ this.attrs.id = id; ids.set(id, this); }
+    }
+    get parentElement(){ return this.parentNode; }
+    get isConnected(){ return this === doc.documentElement || !!(this.parentNode && this.parentNode.isConnected); }
+    appendChild(node){
+      node.parentNode = this; this.childNodes.push(node);
+      mutation({ type:'childList', target:this, addedNodes:[node] }); return node;
+    }
+    get textContent(){ return this.childNodes.map(n => n.textContent).join(''); }
+    set textContent(value){
+      this.childNodes.forEach(n => n.parentNode = null);
+      const node = new Text(String(value)); node.parentNode = this; this.childNodes = [node];
+      mutation({ type:'childList', target:this, addedNodes:[node] });
+    }
+    get value(){ return this.tagName === 'OPTION' ? (this.attrs.value == null ? this.textContent : this.attrs.value) : this._value; }
+    set value(value){ this._value = String(value); }
+    hasAttribute(key){ return key in this.attrs; }
+    getAttribute(key){ return this.hasAttribute(key) ? this.attrs[key] : null; }
+    setAttribute(key, value){ this.attrs[key] = String(value); mutation({ type:'attributes', target:this, attributeName:key }); }
+    addEventListener(key, fn){ (this.events[key] = this.events[key] || []).push(fn); }
+    closest(selector){
+      const matches = selector.split(',').some(s => s.startsWith('[') ? this.hasAttribute(s.slice(1,-1)) : this.tagName.toLowerCase() === s);
+      return matches ? this : this.parentNode ? this.parentNode.closest(selector) : null;
+    }
+    set innerHTML(value){ throw new Error('A tradução não pode reescrever HTML: ' + value); }
+  }
+  const doc = { readyState:'loading', title:'', getElementById:id => ids.get(id) || null,
+    addEventListener(key, fn){ listeners[key] = fn; } };
+  doc.documentElement = new Element('html'); doc.body = new Element('body');
+  doc.documentElement.appendChild(doc.body);
+  const create = (tag, text, parent = doc.body, id) => {
+    const node = new Element(tag, id); if(text != null) node.appendChild(new Text(text)); parent.appendChild(node); return node;
+  };
+  const picker = create('select', null, doc.body, 'languageSelect');
+  picker.setAttribute('aria-label','Idioma');
+  for(const [value, label] of [['pt','PT'],['en','EN'],['es','ES']]) create('option',label,picker).setAttribute('value',value);
+  const context = { document:doc, console, Set, Map, WeakMap, String, Array, Object,
+    localStorage:{ getItem:key => { if(blocked) throw Error('storage'); return store[key] || null; },
+      setItem:(key,value) => { if(blocked) throw Error('storage'); store[key] = value; } },
+    CustomEvent:class { constructor(type, options){ this.type = type; this.detail = options.detail; } },
+    dispatchEvent(event){ if(listeners[event.type]) listeners[event.type](event); },
+    MutationObserver:class {
+      constructor(callback){ this.callback = callback; }
+      observe(){ active = this; }
+      disconnect(){ if(active === this) active = null; pending = []; }
+    }
+  };
+  context.window = context;
+  vm.createContext(context);
+  for(const name of scripts) vm.runInContext(fs.readFileSync(path.join(dir,name),'utf8'), context, { filename:name });
+  return { context, doc, picker, create, store, init:() => listeners.DOMContentLoaded(),
+    flush(){ const observer = active, records = pending; pending = []; if(observer && records.length) observer.callback(records); },
+    pending:() => pending.length, writes:() => writes };
+}
+
+const P = page(), api = P.context.VDO_I18N;
+const button = P.create('button','Iniciar carreira'), icon = P.create('svg',null,button);
+icon.setAttribute('viewBox','0 0 24 24'); const handler = () => {}; button.addEventListener('click',handler);
+const input = P.create('input'); input.value = 'Meu piloto <b>BR</b>'; input.setAttribute('placeholder','Buscar país…');
+const paragraph = P.create('p','Formação ativa desde 2023 · ligado à Aston Martin');
+const name = P.create('span','Brasil'); name.setAttribute('data-i18n-ignore','');
+const option = P.create('option','Todas');
+const typed = P.create('textarea','Arquivo'), code = P.create('code','Salvar');
+const image = P.create('img'); image.setAttribute('src','assets/flags/br.svg'); image.setAttribute('title','Brasil');
+const toast = P.create('p','Carreira salva neste aparelho.');
+P.init(); eq(api.language,'pt','português é o padrão');
+ok(api.setLanguage('en'),'inglês disponível');
+eq(button.textContent,'Start a career','rótulo estático traduzido');
+eq(button.childNodes[1],icon,'ícone SVG conserva a identidade');
+eq(button.events.click[0],handler,'evento de clique preservado');
+eq(input.value,'Meu piloto <b>BR</b>','valor digitado nunca é traduzido');
+eq(input.getAttribute('placeholder'),'Search countries…','placeholder traduzido');
+eq(option.textContent,'All','opção exibida traduzida'); eq(option.value,'Todas','valor implícito da opção continua canônico');
+eq(name.textContent,'Brasil','identidade marcada preservada');
+eq(typed.textContent,'Arquivo','conteúdo editável preservado'); eq(code.textContent,'Salvar','código preservado');
+eq(image.getAttribute('title'),'Brazil','atributo acessível traduzido'); eq(image.getAttribute('src'),'assets/flags/br.svg','caminho da bandeira preservado');
+eq(paragraph.textContent,'Academy member since 2023 · linked to Aston Martin','template e identidade da academia preservados');
+eq(P.doc.documentElement.lang,'en','idioma do documento correto'); eq(P.picker.value,'en','seletor acompanha idioma');
+eq(P.store.vdo_language,'en','preferência salva separada da carreira');
+eq(P.pending(),0,'tradução não realimenta o observador');
+
+toast.textContent = 'Você entrou na Ferrari Driver Academy.';
+input.setAttribute('placeholder','Ex.: Senna'); P.flush();
+eq(toast.textContent,'You have joined Ferrari Driver Academy.','mensagem criada após iniciar é traduzida');
+eq(input.getAttribute('placeholder'),'E.g. Senna','atributo atualizado pelo jogo é traduzido');
+eq(P.pending(),0,'atualização dinâmica não cria um ciclo');
+api.setLanguage('es');
+eq(button.textContent,'Iniciar carrera','troca do inglês direto para espanhol');
+eq(toast.textContent,'Te has unido a Ferrari Driver Academy.','texto dinâmico troca sem encadear traduções');
+eq(P.doc.documentElement.lang,'es','idioma espanhol no documento');
+api.setLanguage('pt');
+eq(button.textContent,'Iniciar carreira','volta ao texto português exato');
+eq(toast.textContent,'Você entrou na Ferrari Driver Academy.','texto dinâmico original recuperado');
+eq(input.getAttribute('placeholder'),'Ex.: Senna','atributo mais recente recuperado');
+eq(paragraph.textContent,'Formação ativa desde 2023 · ligado à Aston Martin','frase original recuperada');
+eq(P.doc.documentElement.lang,'pt-BR','idioma português no documento');
+ok(!api.setLanguage('fr'),'idioma desconhecido recusado sem trocar preferência');
+
+for(const [source,en,es] of [
+  ['Volta 3 de 40','Lap 3 of 40','Vuelta 3 de 40'],
+  ['Brasil · 17 anos','Brazil · 17 years old','Brasil · 17 años'],
+  ['Kart Regional → Fórmula 4 Italiana','Regional Karting → Italian Formula 4','Karting Regional → Fórmula 4 Italiana'],
+  ['— Provas avulsas de endurance liberadas.','— One-off endurance races allowed.','— Se permiten pruebas sueltas de resistencia.'],
+  ['Honda até 2025','Honda until 2025','Honda hasta 2025'],
+  ['motor Honda','Honda engine','motor Honda'],
+  ['Que orgulho ver um argentino campeão de novo. Muito bem, Messi.','So proud to see an Argentine become champion again. Well done, Messi.','Qué orgullo ver a un argentino campeón de nuevo. Muy bien, Messi.'],
+  ['€ 2,4 mi','€ 2.4m','€ 2,4 M'],
+  ['21º','21st','21º'],
+  ['Carlos de Oliveira','Carlos de Oliveira','Carlos de Oliveira'],
+  ['2. Argentino de Kart','2. Argentine Karting Championship','2. Campeonato Argentino de Karting'],
+  ['1950 a 1959','1950 to 1959','1950 a 1959'],
+  ['País: Alemanha','Country: Germany','País: Alemania'],
+  ['1 de 2','1 of 2','1 de 2'],
+  ['GP Bahrein','GP Bahrain','GP Baréin'],
+  ['Senna passa Prost.','Senna overtakes Prost.','Senna adelanta a Prost.'],
+  ['Venceu depois de largar em 2º debaixo de água. A vitória apareceu e você não hesitou.',
+    'You won after starting 2nd in the pouring rain. The opportunity came and you took it.',
+    'Ganaste tras salir en 2º bajo la lluvia. La oportunidad llegó y no dudaste.']
+]){ eq(api.text(source,'en'),en,source+' em inglês'); eq(api.text(source,'es'),es,source+' em espanhol'); }
+eq(api.search('Áustria'),'austria','busca ignora acentos');
+const injection = 'Você entrou na <img src=x onerror=alert(1)>.';
+toast.textContent = injection; api.setLanguage('en');
+eq(toast.childNodes.length,1,'valores de templates continuam texto, sem inserir HTML');
+eq(toast.textContent,'You have joined <img src=x onerror=alert(1)>.','template mantém conteúdo como texto');
+api.setLanguage('pt'); eq(toast.textContent,injection,'restauração não altera valor interpolado');
+P.context.VDO_LANGUAGE_NAMES = () => new Set(['Brasil']); api.setLanguage('en');
+eq(api.text('Brasil'),'Brasil','nome escolhido pelo jogador é protegido');
+P.context.VDO_LANGUAGE_NAMES = () => new Set(); api.apply();
+eq(api.text('Brasil'),'Brazil','cache acompanha a mudança de identidades');
+
+const resumed = page({ vdo_language:'es' }); resumed.init(); eq(resumed.context.VDO_I18N.language,'es','preferência restaurada em outra abertura');
+const invalid = page({ vdo_language:'xx' }); invalid.init(); eq(invalid.context.VDO_I18N.language,'pt','preferência inválida volta ao português');
+const storageBlocked = page({},true); storageBlocked.init(); ok(storageBlocked.context.VDO_I18N.setLanguage('es'),'idioma funciona com armazenamento bloqueado');
+
+for(const lang of ['en','es']){
+  const locale = P.context.VDO_LOCALES[lang]; ok(locale.pairs.length > 1000,'catálogo amplo de '+lang);
+  for(const [source,target] of locale.pairs){
+    ok(typeof source === 'string' && typeof target === 'string' && source.trim() && target.trim(),'par válido de '+lang);
+    const keys = s => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map(m=>m[1]))].sort().join('|');
+    eq(keys(source),keys(target),'placeholders preservados: '+source);
+    ok(!/<(?:script|iframe)\b/i.test(target),'catálogo de texto seguro');
+  }
+}
+
+/* A língua não participa da simulação e não traduz categorias dentro do save. */
+const J = H.carregar({ silencioso:true }); H.novaCarreira(J,{ era:7,ano:2024,idade:8,cc:'AR',nome:'Brasil',rapido:false });
+const before = J.run('JSON.stringify(S)');
+for(const lang of ['en','es','pt']){
+  J.ctx.VDO_I18N.setLanguage(lang); eq(J.run('JSON.stringify(S)'),before,'carreira intacta em '+lang);
+}
+J.ctx.VDO_I18N.setLanguage('en'); J.run("UI.pickCountry('DE')");
+eq(J.E('inCountry').value,'Germany','campo de país escolhido usa o idioma'); eq(J.run('UI.country'),'DE','nacionalidade mantém o código original');
+J.run('Game.save()');
+eq(JSON.parse(J.store.vdo_save).season.cat,'Kart Regional','save guarda categoria original');
+
+for(const data of ['CONVERSAS','PEDIDOS','EVENTOS']){
+  const choices = J.run(data + '.flatMap(x => [x.t, ...x.ops.map(o => o.t)])');
+  for(const lang of ['en','es']){
+    const translated = new Set(P.context.VDO_LOCALES[lang].pairs.map(p => p[0]));
+    ok(choices.every(t => translated.has(t)),data+': todos os títulos e escolhas possuem entrada em '+lang);
+  }
+}
+/* Textos dos dados da carreira também precisam de entradas, além dos menus. */
+for(const data of ['EMPRESARIOS','ORIGENS','RELACOES','ARQUETIPOS','TRACOS','INVERNO',
+  'COMPROMISSOS','PERSONAS','OBJETIVOS','CONVERSAS','PEDIDOS','EVENTOS','SEMENTES','PROMESSAS','LEITURAS','EVENTOS_FUNDOS']){
+  const sources = [];
+  function visit(obj, opening){
+    if(!obj || typeof obj !== 'object') return;
+    for(const [key,value] of Object.entries(obj)){
+      if(typeof value === 'string' && (opening || ['n','t','d','ds','sub','pista'].includes(key)) &&
+        !(data === 'EMPRESARIOS' && key === 'n')) sources.push(value);
+      else if(value && typeof value === 'object') visit(value, opening || key === 'abre');
+    }
+  }
+  visit(J.run(data),false);
+  for(const lang of ['en','es']){
+    const keys = new Set(P.context.VDO_LOCALES[lang].pairs.map(p => p[0].replace(/\s+/g,' ').trim()));
+    const missing = sources.filter(s => !keys.has(s.replace(/\s+/g,' ').trim()));
+    eq(missing.join('\n'),'',data+': cobertura dos textos em '+lang);
+  }
+}
+for(const cc of J.run('COUNTRIES.map(c => c.cc)')) for(const gender of ['m','f']){
+  const data = J.run(`nacionalidadePiloto(${JSON.stringify(cc)}, ${JSON.stringify(gender)})`);
+  for(const lang of ['en','es']){
+    const keys = new Set(P.context.VDO_LOCALES[lang].pairs.map(p => p[0]));
+    ok(Object.values(data).every(s => keys.has(s)),cc+'/'+gender+': nacionalidade catalogada em '+lang);
+  }
+}
+const chief = H.carregar({ silencioso:true });
+chief.run('Chefe.novo({modo:"assumir",ano:2024,idx:0,chefe:{nome:"Brasil",cc:"BR"}})');
+const teamBefore = chief.run('JSON.stringify(C)');
+for(const lang of ['es','en','pt']){
+  chief.ctx.VDO_I18N.setLanguage(lang);
+  eq(chief.run('JSON.stringify(C)'),teamBefore,'equipe do chefe intacta em '+lang);
+}
+const html = fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+for(const name of scripts){
+  ok(html.includes('src="assets/i18n/'+name+'" defer'), name+': carregamento local na página');
+}
+ok(html.includes('id="languageSelect"'),'seletor visível integrado na página');
+
+console.log(`${checks} verificações de idiomas: tudo certo`);

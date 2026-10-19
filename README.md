@@ -784,6 +784,13 @@ completar as rodadas com provas no exterior. Poucas pistas podem receber
 mais de uma etapa. Ao abrir um save antigo, só as etapas futuras são
 corrigidas; resultados e fins de semana já iniciados ficam preservados.
 
+O grid do Kart Regional tem pelo menos 85% dos rivais do país do piloto,
+com nomes locais e identidades persistentes de uma temporada para a outra.
+Os estrangeiros conservam sua nacionalidade: a maioria local é formada pela
+seleção de inscritos, sem trocar a bandeira de pessoas existentes. Saves
+antigos recebem o ajuste do grid antes do primeiro fim de semana; temporadas
+já iniciadas preservam seus participantes e resultados.
+
 A imprensa usa a nacionalidade e o gênero do seu piloto nas referências
 à sua origem, inclusive nas mensagens antigas que tinham texto fixo de
 piloto brasileiro. Os veículos e seus públicos continuam sendo os de cada
@@ -799,3 +806,24 @@ semana duplo, que é o que acontece de verdade.
 
 Fórmula Regional continua europeia e Fórmula 3 e Fórmula 2 continuam rodando
 o mundo nos fins de semana da Fórmula 1, porque é isso que elas são.
+
+## Idiomas
+
+O seletor PT / EN / ES na barra superior muda a apresentação entre português,
+inglês e espanhol. A preferência fica salva no navegador, separada da carreira,
+e pode ser alterada durante o jogo. Os catálogos são arquivos locais em
+`assets/i18n/`, disponíveis também ao abrir `index.html` diretamente.
+
+A tradução cobre a abertura, criação de piloto/equipe, painéis, tabelas,
+contratos, formação, finanças, pré-temporada e decisões do catálogo. Nomes de
+pessoas/equipes, códigos de país, valores dos formulários e dados do save
+mantêm sua identidade original. A busca de países aceita o nome em português
+ou no idioma selecionado, com ou sem acento. Atributos acessíveis e mensagens
+criadas dinamicamente acompanham o idioma; retornar a PT recupera o texto
+original. Frases ainda sem entrada no catálogo aparecem em português.
+
+Para ampliar a tradução, acrescente pares nos catálogos ou linhas
+`português|inglês|espanhol` nos arquivos compartilhados. Marcadores como `{0}`
+e `{eu}` precisam ser preservados. `node testes/idiomas.js` verifica a troca
+de idioma, texto dinâmico, formulários, preservação do save e os marcadores;
+`node testes/grid-kart.js` verifica os grids locais dos 96 países.

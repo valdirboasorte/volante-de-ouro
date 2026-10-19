@@ -47,9 +47,14 @@ function carregar(opts){
   if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
+  /* Os catálogos e a apresentação usam scripts locais defer, após o jogo. */
+  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'runtime.js']){
+    const p = require('path').join(__dirname, '..', 'assets', 'i18n', arq);
+    if(fs.existsSync(p)) vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename:'i18n/' + arq });
+  }
   const run = c => vm.runInContext(c, ctx);
   const E = id => document.getElementById(id);
-  return { ctx, run, E, store };
+  return { ctx, run, E, els, store };
 }
 
 /* começa uma carreira de piloto como o formulário faria */
