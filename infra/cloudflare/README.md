@@ -1,5 +1,17 @@
 # Migração para volantedeouro.com
 
+## Estado publicado
+
+Publicada e ativada em 19/10/2026. A recuperação dos saves foi publicada antes
+da ativação da regra **Volante de Ouro - dominio oficial e recuperacao**,
+associada à lista `vdo_dominio_antigo`. A Cloudflare mostra a regra como
+`Enabled` e a lista como `Active`.
+
+As 22 verificações HTTP de `node ferramentas/verificar-dominio.js` passaram:
+URLs antigas retornam 301 com o destino esperado, o domínio oficial retorna
+200 e as três variantes da recuperação permanecem na própria origem.
+Caminhos, Unicode codificado, parâmetros repetidos e escapes foram conferidos.
+
 ## Estado e arquitetura
 
 O projeto é HTML/CSS/JavaScript estático: `index.html`, `assets/`, `dados/` e
@@ -7,15 +19,16 @@ O projeto é HTML/CSS/JavaScript estático: `index.html`, `assets/`, `dados/` e
 Pages Functions ou Worker. `vercel.json` contém apenas cabeçalhos de uma
 hospedagem anterior e não configura a Cloudflare.
 
-No Pages, o conteúdo publicado é o diretório que contém `index.html`. Para este
-repositório, a configuração correspondente é sem framework, build `exit 0` e
-saída `.`. Os valores atuais do painel não estão disponíveis nesta sessão;
-não é necessário mudá-los para aplicar a regra de domínio.
+No Pages, o conteúdo publicado é o diretório que contém `index.html`.
+O painel foi conferido: comando de build vazio, saída `.`, diretório raiz
+vazio, branch de produção `main` e deploys automáticos habilitados. Não foi
+necessário alterar essa configuração.
 
-O redirecionamento será aplicado por **Bulk Redirects, no nível da conta**.
+O redirecionamento é aplicado por **Bulk Redirects, no nível da conta**.
 Este diretório é uma configuração para importar no painel; publicar o CSV ou
 o JSON como arquivos estáticos **não ativa a regra**. O JSON começa com
-`enabled: false`, para só ser ativado depois de publicar e testar a recuperação.
+`enabled: false`, como modelo seguro para uma nova instalação. O status real
+da regra já ativada deve ser consultado no painel.
 
 `_redirects` do Pages não suporta condições por hostname. Uma regra global
 `/* https://volantedeouro.com/:splat 301` também atingiria o domínio oficial
@@ -58,8 +71,7 @@ encerramento de uma sessão privada.
 
 1. Publicar `recuperar-progresso/index.html`, `assets/migracao-dominio.js` e a
    inclusão desse script em `index.html`. Não é necessário alterar o motor,
-   chaves de armazenamento ou formato de saves. Há alterações de tradução
-   pendentes no checkout; elas não são parte da migração de domínio.
+   chaves de armazenamento ou formato de saves.
 2. Conferir que `https://volante-de-ouro.pages.dev/recuperar-progresso/` e
    `https://volantedeouro.com/recuperar-progresso/` servem a página de recuperação,
    identificada pela meta `vdo-progress-recovery=1`, e não o fallback do jogo.
@@ -149,7 +161,8 @@ seguir um 301.
 
 ## Reversão
 
-Desabilitar somente a Bulk Redirect Rule `vdo_dominio_antigo`. Manter o domínio
+Desabilitar somente a Bulk Redirect Rule **Volante de Ouro - dominio oficial e
+recuperacao**, associada à lista `vdo_dominio_antigo`. Manter o domínio
 oficial, os DNS e a página de recuperação. Não limpar nenhum `localStorage`.
 Alguns clientes podem conservar o 301 em cache; a recuperação continua
 disponível pela sua URL própria, que foi excluída da regra desde o início.
