@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-21T01:53:45.766Z",
+  "url": "https://volantedeouro.com/",
+  "status": 200,
+  "officialSameAsMain": true,
+  "officialSHA256": "f2e5c881a91e3d6b2eb086ae0c96e40fc197ac5bc011fbcd645f1d213ad5ab52",
+  "mainSHA256": "f2e5c881a91e3d6b2eb086ae0c96e40fc197ac5bc011fbcd645f1d213ad5ab52",
+  "officialHasNewRoadmap": false,
+  "officialNoindex": null,
+  "remote": "8fc8fe9a6c23fb32d1b84b55e173f5058372b124\trefs/heads/main\n7bb70bc3efd5783daa21f2ee568d440226e85228\trefs/heads/preview/seo-roadmap-20261020"
+}

@@ -1,7 +1,12 @@
 # Presença web do Volante de Ouro
 
-Implementação local de 20/10/2026. Sem publicação, alteração de DNS ou mudança
-do motor da simulação. Os valores do Pix e o QR Code original não foram alterados.
+Implementação de 20/10/2026, publicada e validada somente em uma prévia do
+Cloudflare após autorização. O domínio oficial e a branch `main` continuam na
+versão anterior. Sem alteração de DNS ou do motor da simulação. Os valores do
+Pix e o QR Code original não foram alterados.
+
+Prévia validada: <https://cd749057.volante-de-ouro.pages.dev/>.
+Os testes reais e suas evidências estão em [VALIDACAO-PREVIA.md](VALIDACAO-PREVIA.md).
 
 ## Resultado e evidências
 
@@ -12,9 +17,9 @@ do motor da simulação. Os valores do Pix e o QR Code original não foram alter
 | robots e sitemap | Implementado e testado | Sitemap XML com namespace e uma URL canônica real; nenhuma data de modificação estimada |
 | Ícones e imagem de compartilhamento | Implementado e testado | Dimensões e conteúdo binário PNG/ICO conferidos; imagem OG original de 1200×630 |
 | Roadmap público | Implementado e testado | HTML inicial, link real por âncora, sete sistemas disponíveis e três planos sem prazo; navegação e traduções testadas em VM, com bloqueio durante corridas e decisões pendentes |
-| Visual móvel e teclado no navegador | Implementado, aguardando validação | CSS responsivo, menu recolhido até 1120 px, foco e navegação testados por estados; falta inspeção visual da versão local em navegador |
+| Visual móvel e teclado no navegador | Implementado e testado | Prévia real conferida em 390/768/1440 px, menu por Enter, foco no roadmap e temas claro/escuro; margens e rodapé ajustados após inspeção |
 | Saves antigos | Implementado e testado | Recuperação com 263 verificações, incluindo Vercel, conflitos, backup, rollback e reabertura de carreiras reais |
-| Cloudflare Pages | Implementado, aguardando validação | `_headers` local; a regra 301 publicada e suas exceções foram verificadas em 22 consultas HTTP e não foram alteradas |
+| Cloudflare Pages | Implementado e testado | Prévia com 566 verificações HTTP, 56 arquivos idênticos aos locais, headers e noindex corretos; publicação no domínio oficial ainda não realizada |
 | Vercel alternativa | Implementado, aguardando validação | `vercel.json` sem redirects/rewrite, com noindex; confirmação dos headers depende de publicação nesse provedor |
 | Manifest e instalação | Implementado e testado | Caminhos, formatos e identidade estável conferidos; instalação em aparelho continua aguardando teste manual |
 | Offline | Não introduzido | O projeto tinha manifest, mas não service worker; não se anuncia funcionamento offline |
@@ -32,6 +37,8 @@ do motor da simulação. Os valores do Pix e o QR Code original não foram alter
 - `testes/presenca-web.js`.
 - `infra/cloudflare/seo-infraestrutura.md` e este relatório.
 - `docs/validacao-schema.jpg`: captura da validação pública sem erros ou avisos.
+- `ferramentas/verificar-previa.js`: checagem HTTP restrita a prévias do projeto.
+- `docs/VALIDACAO-PREVIA.md`, evidências JSON e capturas da prévia.
 
 ## Arquivos modificados
 
@@ -94,8 +101,9 @@ Os rótulos novos do roadmap têm contraste calculado de 10,68:1 (dourado) e
 7,93:1 (verde) sobre carbono; no tema claro, os tons locais atingem 6,03:1 e
 5,95:1 sobre branco. Isso não substitui uma auditoria visual de todo o jogo.
 O lint do skill aplicado aos dois novos arquivos de interface passou sem
-falhas nem avisos; o inspector de navegador não foi executado devido ao bloqueio
-descrito abaixo. [Captura do Schema.org](validacao-schema.jpg).
+falhas nem avisos. O inspector automatizado não foi executado, mas a versão
+publicada em prévia foi inspecionada no navegador integrado em três larguras.
+[Captura do Schema.org](validacao-schema.jpg).
 
 ## Limites de validação
 
@@ -110,13 +118,14 @@ corrida, modal, escolha enfileirada ou continuação de simulação pendente, el
 apenas avisa o jogador; as referências da fila, do callback e dos dados da
 carreira permanecem intactas nos testes de regressão.
 
-O navegador integrado disponível não oferece o preview local utilizado pelo
-inspector de design nesta sessão. Não foi usado outro navegador ou servidor
-para contornar a restrição anterior de acesso a arquivos locais. Assim, não
-se afirma inspeção visual em 390/768/1440 px, ausência de erros no console do
-navegador novo, medição de Core Web Vitals ou instalação em celular.
+A inspeção local inicialmente ficou bloqueada pelo navegador. Após o pedido
+de publicação de uma prévia real do Cloudflare, foi possível validar o site
+em HTTPS: desktop, tablet e celular, traduções, teclado, temas, criação de
+carreiras e retomada após recarregar. Não houve erros ou avisos nos logs
+capturados desses percursos. Core Web Vitals e instalação PWA em aparelho
+físico continuam sem medição/validação.
 
-Os testes do jogo usam seu harness Node/VM, e o JSON-LD foi validado no site
+Os testes gerais do jogo usam seu harness Node/VM, e o JSON-LD foi validado no site
 Schema.org. A produção observada ainda é a versão anterior: robots e sitemap
 recebiam HTML de fallback com status 200. Isso está registrado no documento de
 infraestrutura, sem confundir disponibilidade antiga com publicação nova.
@@ -126,8 +135,9 @@ infraestrutura, sem confundir disponibilidade antiga com publicação nova.
 1. Publicar esta versão e conferir os arquivos efetivos no Cloudflare Pages.
 2. Conferir `_headers`, tipos de conteúdo e ausência de noindex no oficial.
 3. Publicar/conferir a Vercel separadamente, mantendo o acesso e o noindex.
-4. Testar inicial, piloto, chefe, roadmap, doações e recuperação no navegador;
-   repetir em celular e com JavaScript desabilitado para o conteúdo público.
+4. Repetir no oficial os percursos já aprovados na prévia: inicial, piloto,
+   chefe, roadmap e doações; validar a recuperação apenas nas origens permitidas.
+   Conferir também em aparelho físico e com JavaScript desabilitado.
 5. Cadastrar a propriedade de domínio no Search Console, adicionar seu TXT DNS,
    enviar o sitemap e solicitar inspeção/indexação da raiz oficial.
 6. Medir LCP/INP/CLS e conferir instalação PWA em aparelho antes de prometer

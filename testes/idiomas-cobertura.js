@@ -58,8 +58,8 @@ for(const year of [1950,1988,2024])for(const mode of ['assumir','criar','base'])
 /* Estes eventos vêm dos mesmos geradores usados no acompanhamento ao vivo. */
 J.run("Central.P={carros:[{nome:'Senna'},{nome:'Prost'}]}; AoVivo.R={carros:[{c:{nome:'Senna'}},{c:{nome:'Prost'}}]};");
 for(const kind of ['ultrapassagem','retardatario','boxes','batida','quebra','sc','verde','bandeira'])inspect(J.run(`Central.texto({tipo:'${kind}',a:0,b:1})`));
-for(const kind of ['ultrapassagem','boxes','lenta','batida','quebra','sc','vsc','verde','bandeira','erro','toque','furo','punicao','chuva','parou','falha','radio','ordem','sugestao'])inspect(J.run(`AoVivo.texto({tipo:'${kind}',a:0,b:1,c:'S',seg:5,motivo:'detrito',furo:1,txt:'Poupar o motor até o fim',por:'pneu'})`));
-for(const cause of ['plano','pneu','furo','comb','chuva','seco','regra','sc'])for(const compound of ['S','M','H','I','W'])inspect(J.run(`AoVivo.fraseBox('${cause}','${compound}')`));
+for(const kind of ['ultrapassagem','boxes','lenta','batida','quebra','sc','vsc','verde','bandeira','erro','toque','furo','punicao','chuva','parou','falha','radio','ordem','ordemEq','auto','sugestao'])inspect(J.run(`AoVivo.texto({tipo:'${kind}',a:0,b:1,c:'S',seg:5,motivo:'detrito',furo:1,txt:'Poupar o motor até o fim',por:'pneu'})`));
+for(const cause of ['plano','pneu','furo','comb','chuva','seco','regra','sc','undercut','cobrir'])for(const compound of ['S','M','H','I','W'])inspect(J.run(`AoVivo.fraseBox('${cause}','${compound}')`));
 /* Saídas independentes do catálogo: pontuação, composição e unidades. */
 const api=J.ctx.VDO_I18N;
 for(const [source,en,es,ja]of [

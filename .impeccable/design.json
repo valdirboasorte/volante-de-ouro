@@ -1,0 +1,745 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T14:49:39.516Z",
+  "title": "Design System: Volante de Ouro",
+  "extensions": {
+    "colorMeta": {
+      "carbono": {
+        "role": "neutral",
+        "displayName": "Carbono",
+        "canonical": "#0b0c0e",
+        "oklch": "oklch(15.4% 0.005 264.4)",
+        "lightTheme": "#e9ebee",
+        "purpose": "Fundo da página, do traçado e das etapas futuras.",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232426",
+          "#3f4042",
+          "#5d5e5f",
+          "#7c7d7e",
+          "#9e9e9f",
+          "#c7c7c8",
+          "#eeeeef"
+        ]
+      },
+      "trilho": {
+        "role": "neutral",
+        "displayName": "Trilho",
+        "canonical": "#0f1113",
+        "oklch": "oklch(17.6% 0.005 248.1)",
+        "lightTheme": "#f4f5f7",
+        "purpose": "Barra lateral do hub.",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#222426",
+          "#3e4042",
+          "#5c5e5f",
+          "#7c7d7f",
+          "#9d9e9f",
+          "#c6c7c8",
+          "#edeef0"
+        ]
+      },
+      "superficie-1": {
+        "role": "neutral",
+        "displayName": "Superfície 1",
+        "canonical": "#141619",
+        "oklch": "oklch(19.9% 0.007 258.4)",
+        "lightTheme": "#ffffff",
+        "purpose": "Painéis, chips do topo, cartões, janelas.",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#222427",
+          "#3e4043",
+          "#5c5e60",
+          "#7c7d7f",
+          "#9d9ea0",
+          "#c6c7c9",
+          "#edeef0"
+        ]
+      },
+      "superficie-2": {
+        "role": "neutral",
+        "displayName": "Superfície 2",
+        "canonical": "#1a1c20",
+        "oklch": "oklch(22.6% 0.008 264.4)",
+        "lightTheme": "#f4f5f7",
+        "purpose": "Peças dentro do painel, etapas, tarefas; hover do painel.",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#222428",
+          "#3e4043",
+          "#5c5e61",
+          "#7c7d80",
+          "#9d9ea1",
+          "#c6c7c9",
+          "#edeef0"
+        ]
+      },
+      "superficie-3": {
+        "role": "neutral",
+        "displayName": "Superfície 3",
+        "canonical": "#212429",
+        "oklch": "oklch(25.9% 0.010 260.7)",
+        "lightTheme": "#eceef1",
+        "purpose": "Trilha de barras, botão neutro, posição neutra.",
+        "tonalRamp": [
+          "#090b0f",
+          "#212429",
+          "#3d4045",
+          "#5b5e62",
+          "#7b7d81",
+          "#9d9ea1",
+          "#c6c7ca",
+          "#edeef1"
+        ]
+      },
+      "superficie-4": {
+        "role": "neutral",
+        "displayName": "Superfície 4",
+        "canonical": "#2b2f35",
+        "oklch": "oklch(30.4% 0.012 258.4)",
+        "lightTheme": "#e0e3e8",
+        "purpose": "Hover do botão neutro.",
+        "tonalRamp": [
+          "#090b0f",
+          "#21242a",
+          "#3c4046",
+          "#5a5e63",
+          "#7a7d82",
+          "#9c9fa2",
+          "#c5c7ca",
+          "#edeff1"
+        ]
+      },
+      "tinta": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#eef0f2",
+        "oklch": "oklch(95.4% 0.003 247.9)",
+        "lightTheme": "#101215",
+        "purpose": "Texto principal; seleção e destaque.",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#232425",
+          "#3f4040",
+          "#5d5e5e",
+          "#7c7d7e",
+          "#9d9ea0",
+          "#c6c7c9",
+          "#edeff1"
+        ]
+      },
+      "tinta-suave": {
+        "role": "neutral",
+        "displayName": "Tinta Suave",
+        "canonical": "#a8aeb7",
+        "oklch": "oklch(74.9% 0.015 258.4)",
+        "lightTheme": "#4f5763",
+        "purpose": "Rótulos e texto secundário.",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#222427",
+          "#3d4044",
+          "#5a5e63",
+          "#797e84",
+          "#999fa7",
+          "#c2c8d0",
+          "#eaeff6"
+        ]
+      },
+      "tinta-fraca": {
+        "role": "neutral",
+        "displayName": "Tinta Fraca",
+        "canonical": "#8a919b",
+        "oklch": "oklch(65.4% 0.017 257.2)",
+        "lightTheme": "#5f6773",
+        "purpose": "Legendas, dt, números de etapa.",
+        "tonalRamp": [
+          "#090b0e",
+          "#212428",
+          "#3c4046",
+          "#595e65",
+          "#777e87",
+          "#989fa9",
+          "#c2c8d0",
+          "#eaeff6"
+        ]
+      },
+      "ouro": {
+        "role": "primary",
+        "displayName": "Dourado de Vitória",
+        "canonical": "#f0c12e",
+        "oklch": "oklch(83.0% 0.158 89.4)",
+        "lightTheme": "#f0c12e",
+        "purpose": "Vitória e título; no hub só o item atual e a ação principal. No tema claro o texto dourado (--accent-txt) é #a87b00; o fundo dourado não muda.",
+        "tonalRamp": [
+          "#140900",
+          "#2f2200",
+          "#4f3d07",
+          "#725a10",
+          "#987919",
+          "#bf9922",
+          "#f0c12e",
+          "#ffea7d"
+        ]
+      },
+      "ouro-hover": {
+        "role": "primary",
+        "displayName": "Dourado Aceso",
+        "canonical": "#ffd34d",
+        "oklch": "oklch(88.2% 0.154 90.3)",
+        "lightTheme": "#ffd34d",
+        "purpose": "Hover do botão dourado.",
+        "tonalRamp": [
+          "#140900",
+          "#2e2200",
+          "#4c3e16",
+          "#6f5b22",
+          "#947a2d",
+          "#bb9b39",
+          "#ebc347",
+          "#ffea76"
+        ]
+      },
+      "ouro-velho": {
+        "role": "primary",
+        "displayName": "Ouro Velho",
+        "canonical": "#b98f14",
+        "oklch": "oklch(67.2% 0.133 86.8)",
+        "lightTheme": "#b98f14",
+        "purpose": "Campeão e parcial em tabelas históricas, misturado ao fundo.",
+        "tonalRamp": [
+          "#140900",
+          "#322100",
+          "#533c00",
+          "#775900",
+          "#9c7703",
+          "#c1982d",
+          "#e6c372",
+          "#ffebaa"
+        ]
+      },
+      "tinta-sobre-ouro": {
+        "role": "primary",
+        "displayName": "Tinta Sobre Ouro",
+        "canonical": "#15110a",
+        "oklch": "oklch(18.0% 0.015 81.4)",
+        "lightTheme": "#15110a",
+        "purpose": "Texto sobre dourado.",
+        "tonalRamp": [
+          "#0e0b05",
+          "#27231d",
+          "#433f39",
+          "#605d58",
+          "#7f7d78",
+          "#a09e9a",
+          "#c9c7c3",
+          "#f0eeeb"
+        ]
+      },
+      "vermelho-acao": {
+        "role": "secondary",
+        "displayName": "Vermelho de Largada",
+        "canonical": "#e2231a",
+        "oklch": "oklch(58.5% 0.223 29.1)",
+        "lightTheme": "#d11a10",
+        "purpose": "Ação fora do hub, aba e chip escolhidos, foco de campo, selo de pendência.",
+        "tonalRamp": [
+          "#2a0000",
+          "#540000",
+          "#810000",
+          "#b20404",
+          "#e3271d",
+          "#ff6453",
+          "#ff9d8b",
+          "#ffcebe"
+        ]
+      },
+      "vermelho-acao-hover": {
+        "role": "secondary",
+        "displayName": "Vermelho Aceso",
+        "canonical": "#f5372d",
+        "oklch": "oklch(63.4% 0.226 28.6)",
+        "lightTheme": "#e8261b",
+        "purpose": "Hover do botão vermelho.",
+        "tonalRamp": [
+          "#270000",
+          "#510000",
+          "#7e0000",
+          "#ae1612",
+          "#e02e25",
+          "#ff5c4d",
+          "#ff9785",
+          "#ffc9b8"
+        ]
+      },
+      "vermelho-texto": {
+        "role": "secondary",
+        "displayName": "Vermelho de Texto",
+        "canonical": "#ff5244",
+        "oklch": "oklch(67.7% 0.211 28.6)",
+        "lightTheme": "#d11a10",
+        "purpose": "Caixa negativo, vaga, abandono.",
+        "tonalRamp": [
+          "#230000",
+          "#4b0101",
+          "#77140f",
+          "#a52a21",
+          "#d74034",
+          "#ff5d4e",
+          "#ff9785",
+          "#ffc9b8"
+        ]
+      },
+      "verde-ganho": {
+        "role": "tertiary",
+        "displayName": "Verde de Ganho",
+        "canonical": "#22c46e",
+        "oklch": "oklch(72.3% 0.177 153.3)",
+        "lightTheme": "#0d8a4a",
+        "purpose": "Ganho, tarefa feita.",
+        "tonalRamp": [
+          "#001201",
+          "#002e10",
+          "#004e24",
+          "#00713a",
+          "#0a9651",
+          "#1ebc69",
+          "#6ce497",
+          "#a8ffc6"
+        ]
+      },
+      "roxo-melhor": {
+        "role": "tertiary",
+        "displayName": "Roxo do Melhor",
+        "canonical": "#b75cf2",
+        "oklch": "oklch(64.9% 0.222 309.5)",
+        "lightTheme": "#8a35c9",
+        "purpose": "Melhor do grid.",
+        "tonalRamp": [
+          "#160026",
+          "#35084e",
+          "#571f79",
+          "#7b36a7",
+          "#a24ed7",
+          "#c571fe",
+          "#e9a5ff",
+          "#ffd4ff"
+        ]
+      },
+      "amarelo-bandeira": {
+        "role": "tertiary",
+        "displayName": "Amarelo de Bandeira",
+        "canonical": "#f5d000",
+        "oklch": "oklch(86.3% 0.178 96.0)",
+        "lightTheme": "#8a7400",
+        "purpose": "Bandeira.",
+        "tonalRamp": [
+          "#130900",
+          "#2d2300",
+          "#4b3f06",
+          "#6e5d08",
+          "#937c08",
+          "#b99d07",
+          "#e9c502",
+          "#ffee62"
+        ]
+      },
+      "azul": {
+        "role": "tertiary",
+        "displayName": "Azul",
+        "canonical": "#3d8ef7",
+        "oklch": "oklch(65.0% 0.175 256.3)",
+        "lightTheme": "#1463d6",
+        "purpose": "Cronometragem.",
+        "tonalRamp": [
+          "#000828",
+          "#002250",
+          "#0b3e7b",
+          "#1e5caa",
+          "#327cdb",
+          "#549fff",
+          "#8bcaff",
+          "#bdf2ff"
+        ]
+      },
+      "laranja": {
+        "role": "tertiary",
+        "displayName": "Laranja",
+        "canonical": "#ff8a1f",
+        "oklch": "oklch(74.8% 0.176 55.4)",
+        "lightTheme": "#c25a00",
+        "purpose": "Cronometragem.",
+        "tonalRamp": [
+          "#1d0200",
+          "#3d1800",
+          "#652f00",
+          "#8f4800",
+          "#bb620a",
+          "#ea7e19",
+          "#ffa958",
+          "#ffd695"
+        ]
+      },
+      "prata": {
+        "role": "tertiary",
+        "displayName": "Prata",
+        "canonical": "#c9ccd1",
+        "oklch": "oklch(84.4% 0.008 260.7)",
+        "lightTheme": "#7a7f87",
+        "purpose": "Pódio, 2º.",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232425",
+          "#3f4041",
+          "#5c5e60",
+          "#7b7d80",
+          "#9c9ea2",
+          "#c4c7cc",
+          "#eceff3"
+        ]
+      },
+      "bronze": {
+        "role": "tertiary",
+        "displayName": "Bronze",
+        "canonical": "#c98a52",
+        "oklch": "oklch(68.5% 0.106 61.2)",
+        "lightTheme": "#99602c",
+        "purpose": "Pódio, 3º.",
+        "tonalRamp": [
+          "#160700",
+          "#361d06",
+          "#593718",
+          "#7e522b",
+          "#a5703f",
+          "#cd8f58",
+          "#f1bb8d",
+          "#ffe4be"
+        ]
+      },
+      "linha": {
+        "role": "neutral",
+        "displayName": "Linha",
+        "canonical": "#25282e",
+        "oklch": "oklch(27.6% 0.012 264.4)",
+        "lightTheme": "#d8dce2",
+        "purpose": "Tabelas e bordas dos cartões e janelas antigos.",
+        "tonalRamp": [
+          "#090b10",
+          "#21242a",
+          "#3d4045",
+          "#5b5e63",
+          "#7b7d82",
+          "#9c9ea2",
+          "#c6c7ca",
+          "#edeef1"
+        ]
+      },
+      "linha-2": {
+        "role": "neutral",
+        "displayName": "Linha 2",
+        "canonical": "#353941",
+        "oklch": "oklch(34.4% 0.015 264.4)",
+        "lightTheme": "#bec4cd",
+        "purpose": "Borda de campo.",
+        "tonalRamp": [
+          "#090b10",
+          "#21242b",
+          "#3c4048",
+          "#5a5e65",
+          "#7a7d84",
+          "#9c9ea4",
+          "#c5c7cb",
+          "#edeef2"
+        ]
+      },
+      "cor-da-equipe": {
+        "role": "tertiary",
+        "displayName": "Cor da Equipe (--tc)",
+        "canonical": "runtime",
+        "purpose": "Definida por equipe nos dados; marca só o que é nosso: identidade no trilho, monograma, capa sem foto, linha nossa (24% sobre superfície 1), amostra de 4px na tabela."
+      },
+      "regua": {
+        "role": "neutral",
+        "displayName": "Régua",
+        "canonical": "#24272d",
+        "oklch": "oklch(26.6% 0.008 264)",
+        "lightTheme": "#d6d9de",
+        "purpose": "Fio de 1px da folha do chefe: entre blocos e entre linhas de lista.",
+        "tonalRamp": [
+          "#0c0d0f",
+          "#24272d",
+          "#3d4148",
+          "#575c64",
+          "#737881",
+          "#90959d",
+          "#b8bcc2",
+          "#e4e6e9"
+        ]
+      },
+      "regua-forte": {
+        "role": "neutral",
+        "displayName": "Régua forte",
+        "canonical": "#34383f",
+        "oklch": "oklch(32.5% 0.01 264)",
+        "lightTheme": "#bfc3c9",
+        "purpose": "Fio sob o título de cada bloco da folha do chefe.",
+        "tonalRamp": [
+          "#0c0d0f",
+          "#24272d",
+          "#34383f",
+          "#575c64",
+          "#737881",
+          "#90959d",
+          "#b8bcc2",
+          "#e4e6e9"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título da abertura e grandes títulos; maiúsculas, largura 72%."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Nome da equipe sobre a foto da capa; maiúsculas, máx. 12ch."
+      },
+      "page-title": {
+        "displayName": "Título de página",
+        "purpose": "h1 de cada página do hub (24px no celular); maiúsculas, largura 72%."
+      },
+      "title": {
+        "displayName": "Título de painel",
+        "purpose": "Cabeça de painel do hub."
+      },
+      "number": {
+        "displayName": "Número",
+        "purpose": "Números grandes com rótulo abaixo; tabulares."
+      },
+      "body": {
+        "displayName": "Corpo",
+        "purpose": "Texto corrido; tabular no corpo inteiro."
+      },
+      "body-sm": {
+        "displayName": "Corpo do painel",
+        "purpose": "Listas e fatos nos painéis do hub."
+      },
+      "label": {
+        "displayName": "Rótulo",
+        "purpose": "dt, legendas, créditos (12px); nunca em maiúsculas espaçadas."
+      },
+      "button": {
+        "displayName": "Botão",
+        "purpose": "Todos os .btn: maiúsculas, largura 85%."
+      }
+    },
+    "shadows": [
+      {
+        "name": "janela",
+        "value": "0 30px 80px rgba(0,0,0,.6)",
+        "purpose": "Janelas modais e menu aberto do topo. Tema claro: 0 30px 80px rgba(16,18,21,.18)."
+      },
+      {
+        "name": "estado-atual",
+        "value": "inset 0 0 0 2px var(--ink)",
+        "purpose": "Etapa atual na faixa da temporada."
+      },
+      {
+        "name": "em-obra",
+        "value": "inset 0 0 0 1px var(--soft)",
+        "purpose": "Nível de instalação em obra."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Transições gerais do jogo (botões, abas)."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Hub do chefe e entradas de tela."
+      },
+      {
+        "name": "cor",
+        "value": "150ms",
+        "purpose": "Fundo e cor no hover e na seleção do hub (150 a 200ms no resto do jogo)."
+      },
+      {
+        "name": "toque",
+        "value": "120ms scale(.97)",
+        "purpose": "Compressão no :active do trilho, chips, vistas, etapas e links; tarefa usa scale(.99)."
+      },
+      {
+        "name": "entra",
+        "value": "320ms translateY(8px) para 0, com opacidade",
+        "purpose": "Entrada de tela."
+      },
+      {
+        "name": "hover-gate",
+        "value": "@media (hover:hover) and (pointer:fine)",
+        "purpose": "Hover do hub só com ponteiro fino."
+      },
+      {
+        "name": "sem-movimento",
+        "value": ".sem-mov / prefers-reduced-motion",
+        "purpose": "A chave de movimento do jogo desliga as transições."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tres-para-duas",
+        "value": "1240px"
+      },
+      {
+        "name": "capa-empilha",
+        "value": "1100px"
+      },
+      {
+        "name": "trilho-horizontal",
+        "value": "980px"
+      },
+      {
+        "name": "uma-coluna",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão principal (dourado)",
+      "kind": "button",
+      "refersTo": "botao-principal",
+      "description": "A única ação principal de cada página do hub.",
+      "html": "<button class=\"ds-btn-ouro\">Preparar o fim de semana →</button>",
+      "css": ".ds-btn-ouro{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;border:0;border-radius:999px;font-family:Archivo,system-ui,sans-serif;font-size:16px;font-weight:700;font-stretch:85%;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;background:var(--accent,#f0c12e);color:var(--accent-ink,#15110a);transition:background .2s cubic-bezier(.2,.8,.2,1),transform .12s cubic-bezier(.16,1,.3,1)}.ds-btn-ouro:hover{background:#ffd34d}.ds-btn-ouro:active{transform:scale(.97)}.ds-btn-ouro:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    },
+    {
+      "name": "Botão de agir (vermelho)",
+      "kind": "button",
+      "refersTo": "botao-agir",
+      "description": "Ação principal fora do hub (carreira de piloto, janelas).",
+      "html": "<button class=\"ds-btn-agir\">Correr</button>",
+      "css": ".ds-btn-agir{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;border:0;border-radius:999px;font-family:Archivo,system-ui,sans-serif;font-size:16px;font-weight:700;font-stretch:85%;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;background:var(--acao,#e2231a);color:#fff;transition:background .2s cubic-bezier(.2,.8,.2,1),transform .18s cubic-bezier(.2,.8,.2,1)}.ds-btn-agir:hover{background:var(--acao-2,#f5372d);transform:translateY(-1px)}.ds-btn-agir:active{transform:scale(.98)}.ds-btn-agir:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    },
+    {
+      "name": "Botão neutro",
+      "kind": "button",
+      "refersTo": "botao-neutro",
+      "description": "Ações secundárias.",
+      "html": "<button class=\"ds-btn-neutro\">Sair do modo chefe</button>",
+      "css": ".ds-btn-neutro{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;border:0;border-radius:999px;font-family:Archivo,system-ui,sans-serif;font-size:16px;font-weight:700;font-stretch:85%;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;background:var(--s3,#212429);color:var(--ink,#eef0f2);transition:background .2s,transform .18s}.ds-btn-neutro:hover{background:var(--s4,#2b2f35)}.ds-btn-neutro:active{transform:scale(.98)}.ds-btn-neutro:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    },
+    {
+      "name": "Trilho do hub",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Itens em pílula com ícone desenhado; o atual em dourado, pendência em selo vermelho.",
+      "html": "<nav class=\"ds-nav\"><button aria-current=\"page\"><svg viewBox=\"0 0 24 24\"><path d=\"M3 11l9-7 9 7v9H3z\"/></svg><span>Visão geral</span></button><button><svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg><span>Calendário</span></button><button><svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c1-4 4-6 8-6s7 2 8 6\"/></svg><span>Pilotos</span><i>2</i></button></nav>",
+      "css": ".ds-nav{display:grid;gap:2px;width:232px;padding:12px;background:var(--rail,#0f1113);font-family:Archivo,system-ui,sans-serif}.ds-nav button{display:flex;align-items:center;gap:12px;min-height:42px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--soft,#a8aeb7);font:inherit;font-size:15px;font-weight:500;text-align:left;cursor:pointer;transition:background .15s cubic-bezier(.16,1,.3,1),color .15s cubic-bezier(.16,1,.3,1),transform .12s cubic-bezier(.16,1,.3,1)}.ds-nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.ds-nav span{flex:1}.ds-nav i{font-style:normal;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--acao,#e2231a);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}.ds-nav button[aria-current=page]{background:var(--accent,#f0c12e);color:var(--accent-ink,#15110a);font-weight:700}.ds-nav button:active{transform:scale(.97)}@media (hover:hover) and (pointer:fine){.ds-nav button:not([aria-current=page]):hover{background:var(--s2,#1a1c20);color:var(--ink,#eef0f2)}}.ds-nav button:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    },
+    {
+      "name": "Chip do topo",
+      "kind": "chip",
+      "refersTo": "chip-topo",
+      "description": "Estado da equipe no topo de cada página: rótulo e valor tabular.",
+      "html": "<button class=\"ds-chip\"><span>Caixa</span><b class=\"neg\">−€ 58 mi</b></button>",
+      "css": ".ds-chip{display:grid;gap:1px;padding:8px 14px;border:0;border-radius:0;background:var(--s1,#141619);color:var(--ink,#eef0f2);text-align:left;font-family:Archivo,system-ui,sans-serif;cursor:pointer;transition:background .15s cubic-bezier(.16,1,.3,1),transform .12s cubic-bezier(.16,1,.3,1)}.ds-chip span{font-size:12px;color:var(--faint,#8a919b)}.ds-chip b{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}.ds-chip b.neg{color:var(--red-txt,#ff5244)}.ds-chip:active{transform:scale(.97)}@media (hover:hover) and (pointer:fine){.ds-chip:hover{background:var(--s2,#1a1c20)}}.ds-chip:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    },
+    {
+      "name": "Painel do hub",
+      "kind": "card",
+      "refersTo": "painel-chefe",
+      "description": "Painel reto em tom, sem borda, com barras de 6px e link para a página.",
+      "html": "<section class=\"ds-painel\"><h2>O carro</h2><div class=\"ds-barra\"><span>Aerodinâmica</span><b>82</b><s><i style=\"width:82%\"></i></s></div><div class=\"ds-barra\"><span>Motor</span><b>86</b><s><i style=\"width:86%\"></i></s></div><a href=\"#\">Desenvolvimento →</a></section>",
+      "css": ".ds-painel{display:grid;gap:12px;padding:18px 20px 20px;background:var(--s1,#141619);color:var(--ink,#eef0f2);font-family:Archivo,system-ui,sans-serif;max-width:360px}.ds-painel h2{margin:0;font-size:18px;font-weight:700;line-height:1.2}.ds-barra{display:grid;grid-template-columns:1fr auto;gap:5px 12px;align-items:baseline}.ds-barra span{font-size:14px;color:var(--soft,#a8aeb7)}.ds-barra b{font-size:15px;font-variant-numeric:tabular-nums}.ds-barra s{grid-column:1/-1;height:6px;background:var(--s3,#212429)}.ds-barra s i{display:block;height:100%;background:var(--ink,#eef0f2)}.ds-painel a{justify-self:start;font-size:14px;font-weight:600;color:var(--soft,#a8aeb7);text-decoration:underline;text-decoration-color:var(--s4,#2b2f35);text-underline-offset:.25em;transition:color .15s cubic-bezier(.16,1,.3,1)}.ds-painel a:hover{color:var(--ink,#eef0f2);text-decoration-color:currentColor}.ds-painel a:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    },
+    {
+      "name": "Faixa da temporada",
+      "kind": "custom",
+      "refersTo": "painel-chefe",
+      "description": "Uma célula por etapa com as posições dos dois carros; 1º em tinta invertida, a próxima com contorno interno.",
+      "html": "<ol class=\"ds-faixa\"><li><b class=\"p1\">1</b><b>9</b><em>1</em></li><li><b>6</b><b class=\"dnf\">AB</b><em>2</em></li><li class=\"prox\"><b></b><b></b><em>3</em></li><li class=\"fut\"><b></b><b></b><em>4</em></li></ol>",
+      "css": ".ds-faixa{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,44px);gap:4px;font-family:Archivo,system-ui,sans-serif}.ds-faixa li{display:grid;justify-items:center;gap:4px;padding:7px 2px;background:var(--s2,#1a1c20)}.ds-faixa b{min-width:26px;height:20px;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--s3,#212429);color:var(--faint,#8a919b);border-radius:999px}.ds-faixa b.p1{background:var(--ink,#eef0f2);color:var(--bg,#0b0c0e)}.ds-faixa b.dnf{font-size:10px;color:var(--red-txt,#ff5244)}.ds-faixa em{font-style:normal;font-size:12px;font-weight:700;color:var(--faint,#8a919b);font-variant-numeric:tabular-nums}.ds-faixa li.prox{box-shadow:inset 0 0 0 2px var(--ink,#eef0f2)}.ds-faixa li.prox em{color:var(--ink,#eef0f2)}.ds-faixa li.fut{background:var(--bg,#0b0c0e)}.ds-faixa li.fut b{background:transparent}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "campo",
+      "description": "Campo de texto e seleção do jogo.",
+      "html": "<input class=\"ds-campo\" type=\"text\" placeholder=\"Nome da equipe\">",
+      "css": ".ds-campo{height:44px;padding:0 12px;border:1px solid var(--rule2,#353941);border-radius:14px;background:var(--bg,#0b0c0e);color:var(--ink,#eef0f2);font-family:Archivo,system-ui,sans-serif;font-size:15px;transition:border-color .15s}.ds-campo:focus{outline:none;border-color:var(--acao,#e2231a)}.ds-campo:focus-visible{outline:2px solid #f0c12e;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "O muro dos boxes",
+    "overview": "**Creative North Star: \"O muro dos boxes\"**\n\nCarbono escuro, uma família tipográfica só e fotos reais de corrida. O jogo se lê como uma tela de cronometragem: superfícies separadas por tom e não por contorno, números tabulares em tudo que é tempo, ponto e dinheiro, e cores de cronometragem que guardam o seu sentido (roxo é o melhor do grid, verde é ganho, amarelo é bandeira, vermelho é abandono ou perda). Vermelho é a cor de agir; dourado é a cor do que vale ouro.\n\nO modo chefe, a superfície mais nova, leva isso ao limite como **folha de cronometragem**: um trilho lateral só em texto, e a página inteira como uma folha única dividida por fios de 1px (`regua`), sem caixas, com títulos e números condensados, a cor da equipe em amostras sólidas e o dourado reservado para o item escolhido do trilho e para a única ação principal da tela. Escolhido pelo dono em 2026-10-21 para tirar a cara de painel genérico (\"sem cara de IA\"). O resto do jogo (carreira de piloto, cartões de série, página de apoio) é anterior e mais arredondado: cartões com raio de 20px e janelas de 26px. Os dois convivem sobre os mesmos tokens.\n\nRejeitado pelo dono: vidro (glassmorphism), visual 3D, rostos e pinturas gerados por IA. A corrida ao vivo continua escura, como uma transmissão de TV.",
+    "keyCharacteristics": [
+      "Fundo carbono com quatro degraus de superfície; profundidade por tom.",
+      "Archivo em uma família só: títulos condensados (largura 72%) e em maiúsculas, como o letreiro de um carro; botões a 85%.",
+      "Algarismos tabulares no corpo inteiro.",
+      "Fotos reais do Wikimedia Commons, com crédito na tela; monograma na cor da equipe quando não há foto livre.",
+      "Tema claro completo, com a capa fotográfica sempre escura."
+    ],
+    "rules": [
+      {
+        "name": "A Regra do Ouro Raro",
+        "body": "No hub, o dourado aparece em exatamente dois lugares: o item atual do trilho e a ação principal da página. Seleção e destaque usam `tinta` (vista escolhida, opção escolhida, etapa atual, 1º lugar).",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Que É Nosso",
+        "body": "A cor da equipe marca só o que pertence ao jogador. Nunca vira cor de botão ou de estado.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Cor Que Significa",
+        "body": "Vermelho em texto é perda, roxo é o melhor, verde é ganho. Cor de estado só onde há estado.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Letreiro",
+        "body": "Maiúsculas e largura condensada são para títulos e botões. Rótulos e texto nunca vão em maiúsculas espaçadas.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Tabular",
+        "body": "Todo número que se compara (tempo, ponto, dinheiro, posição) é tabular.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Tom",
+        "body": "Superfícies se separam por degrau de tom, não por linha. Se um painel precisa de borda para se destacar, ele está no degrau errado.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Véu Neutro",
+        "body": "O único degradê é o véu de carbono (`rgba(11,12,14,…)`) sob texto sobre foto. Nada de degradê colorido ou brilho.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Fio",
+        "text": "Na folha do chefe não há caixa: o que separa bloco de bloco e linha de linha é um fio de 1px em regua, como numa tela de cronometragem."
+      }
+    ],
+    "dos": [
+      "**Do** separar superfícies por degrau de tom (`carbono` → `superficie-4`), sem contorno.",
+      "**Do** reservar o dourado, no hub, para o item atual do trilho e para uma única ação principal por página.",
+      "**Do** marcar o que é do jogador com a cor da equipe e a seleção e o destaque com `tinta`.",
+      "**Do** creditar na tela toda foto do Commons (autor, licença, link) e cair no monograma na cor da equipe ou na foto da era quando não houver foto livre.",
+      "**Do** usar algarismos tabulares em todo número comparável.",
+      "**Do** manter as transições curtas e com `--ease-out` (cor em 150ms, toque em 120ms com `scale(.97)`), com hover só em `(hover:hover) and (pointer:fine)`, e desligá-las com a chave de movimento do jogo (`.sem-mov`) e com o movimento reduzido."
+    ],
+    "donts": [
+      "**Don't** usar vidro, desfoque de fundo ou visual 3D; o dono rejeitou.",
+      "**Don't** usar rosto, pintura ou foto gerados por IA.",
+      "**Don't** usar faixa lateral colorida (`border-left`) em painel, aviso ou linha de tabela no hub; a linha nossa é preenchida no tom.",
+      "**Don't** usar degradê fora do véu neutro de carbono sob texto sobre foto.",
+      "**Don't** usar cor de cronometragem como decoração, nem cor sozinha para passar informação.",
+      "**Don't** mostrar painel de recurso que o jogo não tem, nem número inventado."
+    ]
+  }
+}

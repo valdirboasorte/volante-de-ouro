@@ -23,6 +23,8 @@ J.run(`globalThis._ate = (semente, passo) => {
   const eu = R.carros.find(s => s.c.ctrl); eu.plano = []; eu.modo = 'atacar';
   let max = 0, chegou = null, ritmo100 = null, ritmoDepois = null, guarda = 0;
   while(!eu.furo && eu.estado !== 3 && eu.estado !== 4 && R.t < 9000 && guarda++ < 1e6){
+    /* o rádio pode chamar (um toque quebrou a asa): o carro segue, como pede o teste */
+    if(R.pergunta) Gp.responder(R, R.pergunta.opcoes.some(o => o.k === 'seguir') ? 'seguir' : R.pergunta.padrao);
     Gp.avancar(R, R.t + (passo || 1));
     max = Math.max(max, eu.pneu.gasto);
     if(eu.pneu.gasto >= 1 && chegou == null){ chegou = eu.s; ritmo100 = eu.m; }
@@ -30,13 +32,14 @@ J.run(`globalThis._ate = (semente, passo) => {
     if(eu.estado !== 0 && eu.estado !== 5 && eu.pneu.gasto < .5) break;
   }
   return { max, furou: !!eu.furo, voltasNoFio: chegou == null ? null : (eu.s - chegou) / R.g.L, fio: eu.pneu.fio / R.g.L,
-    ritmo100, ritmoDepois, abandonou: eu.estado === 3 || eu.estado === 4, evento: R.eventos.filter(e => e.tipo === 'furo' && e.a === eu.i).map(e => !!e.estouro),
+    ritmo100, ritmoDepois, abandonou: eu.estado === 3 || eu.estado === 4, toque: R.eventos.some(e => e.tipo === 'toque' && (e.a === eu.i || e.b === eu.i)), evento: R.eventos.filter(e => e.tipo === 'furo' && e.a === eu.i).map(e => !!e.estouro),
     quando: (R.eventos.find(e => e.tipo === 'furo' && e.a === eu.i && e.estouro) || {}).t, fioExato: eu.pneu.fio };
 }`);
 
 const lotes = [];
-for(let k = 1; k <= 24; k++) lotes.push(J.run(`_ate(${k * 97})`));
-const comFio = lotes.filter(x => x.voltasNoFio != null && !x.abandonou);
+for(let k = 1; k <= 64; k++) lotes.push(J.run(`_ate(${k * 97})`));
+/* um toque com outro carro (furo ou asa quebrada) é outro lance: fica fora da conta */
+const comFio = lotes.filter(x => x.voltasNoFio != null && !x.abandonou && !x.toque);
 ok(lotes.every(x => x.max <= 1 + 1e-9), `o desgaste nunca passa de 100% (máximo ${Math.max(...lotes.map(x => x.max)).toFixed(3)})`);
 ok(comFio.length >= 12 && comFio.every(x => x.furou), `${comFio.length} pneus chegaram ao limite com o carro na pista, e todos acabaram estourando`);
 const v = comFio.map(x => x.voltasNoFio).sort((a, b) => a - b);

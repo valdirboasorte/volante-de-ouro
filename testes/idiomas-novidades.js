@@ -120,6 +120,72 @@ for(const [sk, ano, rd] of [['f1', 2024, 0], ['f1', 1989, 0], ['f1', 2005, 0], [
     (C.news || []).forEach(n => UI.toast(n.t)); })()`);
 }
 
+/* o hub do chefe em páginas: todas as áreas, na pré-temporada e na temporada */
+run('chefe:hub', `(() => { const l = eraOfSeries(2024, 'f1').teams.map((t, i) => [i, Engine.resolveTeam(t, i, 2024, 'f1')]).filter(x => x[1]);
+  Chefe.novo({ modo:'assumir', sk:'f1', ano:2024, idx: l.find(x => x[1].name === 'Ferrari')[0], chefe:{ nome:'T', cc:'BR' }, realismo:true });
+  UI.show('chefe'); UIC.pag = 'visao'; UIC.render();
+  UIC.PAGS.forEach(([k]) => UIC.pagina(k)); UIC.pagina('pilotos'); UIC.academia(); UIC.pagina('desenvolvimento'); UIC.motores(); UIC.pagina('financas'); UIC.banco();
+  __inverno(); Chefe.comecarTemporada(); UI.limparFila(); UI.close();
+  UIC.PAGS.forEach(([k]) => UIC.pagina(k));
+  const sea = C.temporada; for(let i = 0; i < 3; i++){ Chefe.gridDaEtapa(sea); Chefe.correr(); }
+  /* as peças: projeto em andamento, pronto, fabricando; o acerto com a leitura do piloto */
+  Pecas.projetar('asaD', 'lenta', 2); Pecas.projetar('susp', 'pneu', 0); Pecas.avancar(40);
+  const pr = C.pecas.proj.find(x => x.st === 'pronto'); if(pr) Pecas.fabricar(pr.e, 2);
+  Pecas.projetar('assoalho', 'rapida', 1); UIC.pagina('desenvolvimento'); UIC.pagina('visao');
+  Acerto.saida(0); Acerto.auto(1); UIC.pagina('corrida');
+  [0, 1, 2, 3].forEach(i => { UIC._dp = Pecas.partes()[i]; UIC._di = i % 3; UIC.pagina('desenvolvimento'); });
+  UIC.PAGS.forEach(([k]) => UIC.pagina(k)); UIC.irCorrida();
+  while(sea.round < sea.calendar.length) Chefe.correr();
+  UIC.pagina('visao'); UIC.pagina('corrida'); Chefe.fimDeTemporada(); UIC.pagina('visao'); UIC.topo(); UI.show('intro'); })()`);
+
+/* os treinos livres do chefe: programa e acerto de cada carro */
+run('chefe:treinos', `(() => { const idx = eraOfSeries(2024, 'f1').teams.findIndex((t, i) => Engine.resolveTeam(t, i, 2024, 'f1'));
+  Chefe.novo({ modo:'assumir', sk:'f1', ano:2024, idx, chefe:{ nome:'T', cc:'BR' }, realismo:true }); __inverno(); Chefe.comecarTemporada(); UI.limparFila(); UI.close();
+  UIC.preCorrida(); UIC.dec('treino', '0', 'corrida'); UIC.dec('treino', '1', 'quali'); UIC.dec('acerto', '0', 'corrida'); UIC.dec('acerto', '1', 'quali'); })()`);
+
+/* a administração do chefe: caixa etapa a etapa, obra, pacote, patrocinador, diretoria e balanço */
+run('chefe:admin', `(() => { const idx = eraOfSeries(2019, 'f1').teams.findIndex((t, i) => Engine.resolveTeam(t, i, 2019, 'f1'));
+  Chefe.novo({ modo:'assumir', sk:'f1', ano:2019, idx, chefe:{ nome:'T', cc:'BR' }, realismo:true }); __inverno(); Chefe.comecarTemporada(); UI.limparFila(); UI.close();
+  if(!C.patro.length) Chefe.ofertasPatrocinio(2).forEach(s => Chefe.aceitarPatro(s));
+  if(!C.dir) C.dir = { conf: 55, meta: 5, aporte: 0, dono: 'conselho', prio: 'financas' };
+  UI.show('chefe'); UIC.render(); UIC.trocarAba('fin'); UIC.instalacoes(); UI.close(); UIC.pacote(); UI.close(); UIC.preCorrida(); UI.close();
+  const sea = C.temporada; ['podio','top5','pontos','dois'].forEach(k => { sea.objPatro = null; Chefe.objetivoPatro(sea); sea.objPatro.k = k; UIC.preCorrida(); UI.close(); });
+  for(let k = 0; k < 3; k++){ Chefe.gridDaEtapa(sea); const M = Chefe.montar(); const rec = Chefe.correr(); UIC.resultado(rec); UI.close(); }
+  UIC.render(); UIC.trocarAba('fin');
+  C.patro.forEach((x, k) => { x.ate = sea.ano; x.sat = k ? 20 : 90; });
+  while(sea.round < sea.calendar.length) Chefe.correr();
+  Chefe.fimDeTemporada(); UIC.fimTemporada && UIC.fimTemporada(); (C.news || []).slice(0, 12).forEach(n => UI.toast(n.t)); })()`);
+
+/* as rivais com gestão própria, depois da história */
+run('chefe:rivais', `(() => { const idx = eraOfSeries(2026, 'f1').teams.findIndex((t, i) => Engine.resolveTeam(t, i, 2026, 'f1'));
+  Chefe.novo({ modo:'assumir', sk:'f1', ano:2026, idx, chefe:{ nome:'T', cc:'BR' }, realismo:true }); __inverno(); __temporada(); Chefe.proximoAno(); UI.limparFila(); UI.close(); __inverno();
+  Chefe.comecarTemporada(); UI.limparFila(); UI.close(); C.rel = { McLaren: -30, Ferrari: 12, Williams: -10, Haas: 0 };
+  const sea = C.temporada; while(sea.round < Math.floor(sea.calendar.length / 3) + 1){ Chefe.gridDaEtapa(sea); Chefe.correr(); }
+  UI.show('chefe'); UIC.render(); UIC.trocarAba('con'); (C.news || []).slice(0, 20).forEach(n => UI.toast(n.t));
+  const p = { id: Chefe.novoId(), nome:'Piloto da Rival', cc:'GB', nasc: 2000, real:false, hab: 84, pot: 86, skill: 84, pede: 1e6, eqHist:'Mercedes', orig:'f1', moral:60, fama:40, papel:'livre', est:{ gps:0, v:0, pod:0, pts:0, poles:0 } };
+  Chefe.assinar(p, { sal:1, anos:1, papel:'teste' }, 1); (C.news || []).slice(0, 3).forEach(n => UI.toast(n.t)); })()`);
+
+/* a central de corrida do chefe: torre, câmera, cartões, previsões, mistura e ordens */
+for(const [sk, ano] of [['f1', 2024], ['f1', 1986], ['f1', 2005], ['fe', 2020]]){
+  run('chefe:central:' + sk + ano, `(() => { globalThis.requestAnimationFrame = () => 0; globalThis.cancelAnimationFrame = () => {};
+    const idx = eraOfSeries(${ano}, '${sk}').teams.findIndex((t, i) => Engine.resolveTeam(t, i, ${ano}, '${sk}'));
+    Chefe.novo({ modo:'assumir', sk:'${sk}', ano:${ano}, idx, chefe:{ nome:'T', cc:'BR' }, realismo:true });
+    __inverno(); Chefe.comecarTemporada(); UI.limparFila(); UI.close();
+    const sea = C.temporada; Chefe.gridDaEtapa(sea);
+    const R = Gp.criar(UIC.entradaDaEtapa()); AoVivo.R = R; AoVivo.opc = { serie: C.cat, chefe: true }; AoVivo.cam = null;
+    while(R.lider == null || R.lider.voltas < 8){ if(R.pergunta) Gp.responder(R, R.pergunta.padrao); Gp.passo(R); }
+    AoVivo.montar();
+    ['int', 'lider', 'pneu', 'voltas'].forEach(m => { AoVivo.modoTorre = m; AoVivo.painel(); });
+    const meus = R.carros.filter(s => s.c.ctrl);
+    meus.forEach((s, k) => { s.sugestao = { c: R.regras.secos[0], por: k ? 'cobrir' : 'undercut', volta: s.voltas + 1, desde: s.voltas }; s.economia = !!k; if(s.carga != null) s.carga = k ? .1 : .9; s.auto = !k; });
+    AoVivo.cartoes();
+    meus.forEach(s => { s.pneu.gasto = 1; s.parar = R.regras.secos[0]; s._prev = null; }); AoVivo.cartoes();
+    meus.forEach(s => { s.estado = 2; }); AoVivo.cartoes();
+    if(meus[0]){ Gp.comandar(R, meus[0].i, { ordemEq: 'manter' }); Gp.comandar(R, meus[0].i, { ordemEq: 'livre' }); R.carros[meus[0].i].estado = 0; Gp.comandar(R, meus[0].i, { auto: true }); }
+    R.eventos.slice(-12).forEach(e => UI.toast(AoVivo.texto(e)));
+    AoVivo.R = null; AoVivo.svg = null; })()`);
+}
+
 /* cenários do chefe: lista, abertura, depósito, objetivos e o fim */
 run('cenarios:lista', 'UIC.cenarios();');
 for(const id of ['brawn09', 'andrea92', 'mclaren88', 'minardi01', 'williams19', 'foyt21'])

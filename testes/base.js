@@ -64,7 +64,11 @@ function carregar(opts){
   const HISTARQ = require('path').join(__dirname, '..', 'dados', 'historico.js');
   if(!opts.semHistorico && fs.existsSync(HISTARQ)) vm.runInContext(fs.readFileSync(HISTARQ, 'utf8'), ctx, { filename:'historico.js' });
   const VENCARQ = require('path').join(__dirname, '..', 'dados', 'vencedores.js');
+  const ESCARQ = require('path').join(__dirname, '..', 'dados', 'escalacoes.js');
+  if(!opts.semHistorico && fs.existsSync(ESCARQ)) vm.runInContext(fs.readFileSync(ESCARQ, 'utf8'), ctx, { filename:'escalacoes.js' });
   if(!opts.semHistorico && fs.existsSync(VENCARQ)) vm.runInContext(fs.readFileSync(VENCARQ, 'utf8'), ctx, { filename:'vencedores.js' });
+  const FOTARQ = require('path').join(__dirname, '..', 'dados', 'fotos.js');
+  if(!opts.semHistorico && fs.existsSync(FOTARQ)) vm.runInContext(fs.readFileSync(FOTARQ, 'utf8'), ctx, { filename:'fotos.js' });
   const TRACARQ = require('path').join(__dirname, '..', 'dados', 'tracados.js');
   if(!opts.semHistorico && fs.existsSync(TRACARQ)) vm.runInContext(fs.readFileSync(TRACARQ, 'utf8'), ctx, { filename:'tracados.js' });
   if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };

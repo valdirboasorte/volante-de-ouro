@@ -204,6 +204,36 @@ segundos é o que separa rápido de campeão.
 Três a seis candidatos ao título por temporada concentram os pontos, para que
 o campeonato vá até o fim.
 
+**As escalações reais.** Na F1 (desde 1950) e na IndyCar (de 1970 em diante,
+menos 2000, cuja lista de inscritos não diz a equipe), as duplas de cada equipe
+vêm da lista de inscritos de cada temporada, etapa por etapa, nos dois modos. Na primeira vez que um grid é montado, a tabela de escalações e as
+listas de pilotos de cada época são completadas com os inscritos reais daquele
+ano (`completarEscalacoes`, com os dados de `dados/escalacoes.js`):
+- **Pilotos por equipe:** cada piloto fica na equipe em que fez mais etapas, e
+  a equipe põe primeiro quem fez mais etapas. A inscrição vale pelo nome de
+  quem inscreveu (o "McLaren Mercedes" de 2014 é a McLaren); o chassi só
+  desempata.
+- **Trocas no meio do ano:** quem trocou de equipe fica na equipe em que fez a
+  maior parte do ano (Kvyat na Toro Rosso e Verstappen na Red Bull em 2016). A
+  corrida de substituto (Russell na Mercedes em 2020) e a corrida fora do
+  campeonato (Meira pela Foyt em 2008) não tiram ninguém do lugar.
+- **Carros por equipe:** cada equipe leva os carros que tinha na maior parte
+  das etapas: a Coloni de 1988, um; a Penske de 2019, três; a Andretti de 2019,
+  quatro. A inscrição que só foi às 500 Milhas não conta como carro da temporada.
+- **Substitutos:** quem passa do número de carros da equipe é substituto. Ele
+  não tira o lugar de quem correu o ano inteiro em outra equipe.
+- **Equipe de um carro só no modo chefe:** o segundo carro fica com alguém que
+  não estava no carro de outra equipe naquele ano.
+- **Nomes e notas:** quem faltava nas listas de época entra com uma nota
+  estimada pela posição real. O mesmo piloto com outro nome ("Graham Rahal" e
+  "Rahal") fica com o nome que o jogo já usa.
+- **Sem etapas:** temporada cuja tabela não diz as etapas (a CART de 1990) usa
+  a equipe que o banco guarda e a ordem da classificação final.
+- **Limite:** a escalação vale para o ano inteiro. Quem fez só o começo do ano
+  (Senna na Williams em 1994) fica atrás de quem fez mais etapas.
+
+Nas outras séries a tabela continua a escrita à mão.
+
 ## Os campeonatos reais
 
 O jogo traz um catálogo de 122 campeonatos reais, de 1950 a hoje: F1 e tudo o
@@ -611,6 +641,191 @@ resultado é decidido: nos testes a Brawn ganha o título em alguns lotes e
 perde para a Ferrari em outros. O cenário salva e retoma com o save do chefe,
 e depois do resultado a carreira continua sem prazo.
 
+### Manager 2.0: corrida, treinos, administração e rivais
+
+A reforma do modo chefe (outubro de 2026) foi feita sobre os sistemas que já
+existiam; a auditoria e o plano estão em [`MANAGER_AUDIT.md`](MANAGER_AUDIT.md).
+
+**A corrida com o muro gerenciando.** É o mesmo motor da corrida ao vivo do
+modo piloto, com mais decisões quando quem manda é o chefe:
+
+- *Risco durante a prova.* Ninguém larga com a quebra marcada: a chance de
+  quebrar e de bater de cada carro vira um risco a cada volta, que o ritmo
+  aumenta ou diminui.
+- *Ritmo em quatro níveis:* conservar, equilibrado, atacar e ataque máximo.
+  Cada um mexe no tempo, no pneu, no erro, no motor e no consumo.
+- *Gestão de pneus à parte:* cuidar, normal ou forçar.
+- *Combustível e energia só onde a regra existia.*
+  - F1 de 1984 a 1988: limite de combustível. Com ordem sua de andar rico, o
+    tanque pode secar.
+  - F1 desde 2014: o piloto tira o pé antes de faltar.
+  - Fórmula E desde 2018: energia da bateria.
+- *A IA de corrida tem o jeito da equipe.* Ataca, defende, poupa pneu, tenta o
+  undercut e cobre quem parou atrás.
+- *O piloto se administra sozinho* ("Auto") até você dar uma ordem.
+- *Ordens de equipe:* corrida livre, manter posições e ceder.
+
+**A central.** Ela tem:
+
+- torre com intervalo, líder, pneus e voltas;
+- mapa com câmera (geral, líder ou um carro seu);
+- um console por carro, com previsões em faixas e nunca em número exato: vida
+  do pneu, onde volta se parar agora, estratégias com uma, duas ou três paradas,
+  combustível;
+- pausa e velocidades de 1×, 2×, 4×, 8×, 16×, 32× e 64×.
+
+A mesma semente com as mesmas ordens dá o mesmo resultado em qualquer
+velocidade.
+
+**Treinos livres.** Cada carro tem um programa (simulação de classificação,
+equilíbrio ou ritmo de corrida) e uma direção de acerto. Os dados de pneu
+colhidos estreitam as faixas da central, e com pouco dado o plano de paradas
+da equipe erra mais a vida do pneu.
+
+**Administração.**
+
+- O caixa é projetado etapa a etapa, com gráfico, faixa no fim do ano e o
+  efeito de uma obra ou de um pacote antes de confirmar.
+- O patrocinador pede um objetivo por corrida. A satisfação decide a
+  renovação.
+- O chefe de mecânicos pesa no tempo parado e na parada lenta.
+- A diretoria acompanha corrida a corrida e cobra a prioridade dela:
+  resultado, contas no azul ou formar pilotos.
+- No topo da temporada aparece a próxima etapa, com a ação principal.
+
+**As rivais.**
+
+- Até 2026 a força delas é a da história.
+- De 2027 em diante cada uma é gerida: orçamento, tipo (fábrica ou
+  independente) e jeito próprio. Decidem o carro no inverno pelo próprio
+  resultado, levam pacotes no meio do ano e respeitam o teto de gastos.
+- Cada rival lembra de você. Tirar um piloto dela encarece o motor dela e
+  dificulta contratar os pilotos dela; comprar o motor dela aproxima.
+
+O save do chefe tem versão (`C.v`, hoje 5) e migração (`Chefe.migrar`): um
+save de antes abre, joga e salva na versão nova (na 5, as peças do carro e o
+acerto por pista nascem quando a equipe precisa deles).
+
+### O painel do chefe
+
+A tela do chefe é um painel com trilho lateral e doze áreas, cada uma uma
+página: Visão geral, Calendário, Pilotos, Funcionários, Desenvolvimento,
+Instalações, Finanças, Patrocinadores, Regulamentos, Central de corrida,
+Classificação e Histórico. As janelas de antes (mercado de pilotos, academia,
+engenharia, plano do carro, motor, obras, patrocínio, banco, investidores e a
+preparação do fim de semana) moram dentro da página da sua área quando você
+está no painel (`UIC.mostrar` e `UIC.HOSPEDA`); fora dele continuam abrindo
+como janela. Nada foi duplicado: é o mesmo código das decisões.
+
+- **Visão geral:** a capa com a foto do carro que a equipe usou naquele ano,
+  os dois titulares com retrato, nível, moral e pontos; a próxima etapa com o
+  traçado real do circuito, a chuva, o objetivo do patrocinador, a meta da
+  diretoria e o botão dourado da ação do momento (preparar o fim de semana,
+  continuar a classificação, ir para a largada, o balanço ou começar a
+  temporada); a faixa da temporada com a posição dos dois carros em cada
+  etapa; carro, caixa, construtores, engenharia, instalações e notícias.
+- **Pré-temporada:** a próxima etapa vira a lista do que falta resolver
+  (pilotos, plano do carro, motor, patrocínio), cada item levando à página
+  certa, e o trilho marca com "!" as áreas que precisam de você.
+- **Celular:** o trilho vira uma fileira de abas no alto; a foto da capa vira
+  uma faixa e os pilotos vêm abaixo.
+
+**As fotos.** Os retratos dos pilotos e as fotos dos carros vêm do Wikimedia
+Commons, só com licenças livres (CC0, domínio público, CC BY e CC BY-SA; NC e
+ND ficam de fora). Todo piloto do banco histórico com foto livre na ficha da
+Wikipédia tem rosto em todas as séries: no elenco, no mercado, na academia, na
+classificação e no resultado da corrida; quem não tem foto aparece com as
+iniciais na cor da equipe. Para não pôr o rosto de um homônimo, a página só vale
+se a descrição curta da Wikipédia disser que a pessoa é piloto (781 páginas
+ficaram de fora por isso). O carro da capa é o chassi que a equipe (ou os seus
+pilotos) usou naquele ano, segundo o banco histórico; nas séries em que o banco
+não guarda o chassi (IndyCar, NASCAR, Fórmula E), é a foto livre da página da
+equipe. Depois do último ano documentado aparece o último carro real, com o ano.
+Cada página do painel tem "Créditos das fotos" com autor, licença e o link de
+cada uma; o crédito do carro e dos titulares fica na própria capa. As imagens
+são carregadas do Commons quando há internet (não ficam no projeto), e
+`dados/fotos.js` só é pedido quando o modo chefe abre; sem conexão, ou se o
+Commons falhar duas vezes, o jogo cai nas fotos de época e nas iniciais.
+`ferramentas/fotos/mapear.mjs` lê o banco histórico e gera `dados/fotos.js`
+(3.923 retratos, 1.493 chassis e 294 equipes, ~490 KB); rode de novo quando o
+banco ganhar pilotos ou temporadas.
+
+### A largada pelas luzes
+
+Na corrida ao vivo, nos dois modos, a transmissão abre no pórtico: segure o
+botão (mouse, dedo na tela ou barra de espaço), as cinco luzes vermelhas
+acendem uma por segundo e apagam depois de uma espera sorteada; solte quando
+apagarem. O tempo entre o apagar e o soltar é a sua reação, e cada carro seu
+sai da grelha esse tempo depois das luzes (no modo chefe ela vale para os dois
+carros, somada ao jeito de largar de cada piloto; a IA reage entre 0,17 e
+0,30 s). Nos primeiros 8 segundos ninguém fica preso atrás de ninguém: é a
+arrancada lado a lado, e quem reagiu antes passa. Soltar antes de as cinco
+acenderem recomeça a contagem; soltar com elas acesas queima a largada (5 s de
+punição). O feed diz a reação e quantas posições cada carro seu ganhou ou
+perdeu. "Largada automática" pula o minigame com a reação do próprio piloto.
+
+### As peças do carro (F1 e Endurance)
+
+Na F1 e no Endurance o carro é um conjunto de peças, cada uma com a sua
+especificação e as suas unidades físicas. As peças são as da época: chassi e
+suspensão sempre; carroceria até 1967; asas dianteira e traseira desde 1968;
+assoalho e laterais desde 1977. Cada peça alimenta atributos do carro (curvas
+lentas, curvas rápidas, velocidade de reta, tração, cuidado com o pneu, ar
+sujo), e cada tipo de pista pede atributos diferentes: um carro de curva lenta
+rende mais nas ruas e menos nas pistas de alta. As categorias de carro
+padronizado (IndyCar, NASCAR, Stock Car, DTM, Fórmula E) continuam sem peças.
+
+- **O carro do ano** sai do plano de gastos do inverno, como antes; as peças
+  nascem em volta dele, com a média do carro.
+- **Projeto:** escolha a peça, o atributo em foco e a intensidade (leve,
+  normal, agressivo). Custa dinheiro (no teto de gastos, onde houver), horas de
+  túnel e dias; a equipe técnica e as instalações decidem a velocidade e a
+  chance de dar certo. Um projeto pode render mais que o previsto, quase nada ou
+  deixar a peça pior. A fábrica toca de 2 a 4 projetos ao mesmo tempo.
+- **Horas de túnel:** desde 2021, pela regra da F1, quem terminou mais à frente
+  no ano anterior tem menos horas (70% ao campeão, 115% ao décimo); antes, o
+  limite é o próprio túnel de vento.
+- **Fabricação e montagem:** a peça pronta é fabricada (1, 2 ou 4 unidades) e
+  vai primeiro para o carro que você escolher. Cada corrida gasta as peças;
+  abaixo de 35% elas rendem menos e quebram mais. Batida destrói peça; sem
+  reserva, a fábrica faz uma unidade às pressas da especificação mais antiga.
+- O que um acontecimento ou um protesto ganho somou no carro continua valendo
+  quando a fábrica recalcula o carro pelas peças.
+- No lugar das janelas de pacote, que continuam existindo nas outras séries.
+
+### Treino livre e classificação ao vivo
+
+Os dois, como a corrida: os carros andam no traçado real, a torre de tempos
+anda junto e a velocidade vai de 1× a 64×.
+- **Treino livre** (botão "Treino livre ao vivo" na Central de corrida): cada
+  saída de um carro seu tem volta de saída, três voltas rápidas e volta de
+  entrada, e gasta uma saída do acerto. De volta aos boxes, o piloto diz o que
+  sente e os ajustes do acerto mudam antes da próxima saída; o tempo da volta
+  mostra o acerto de agora.
+- **Classificação** ("Q1 ao vivo", "Q2 ao vivo"...): você manda cada carro
+  para a pista quando quiser, com a tática normal, de pista livre ou de vácuo.
+  A hora da volta rápida vira a janela de saída: a pista melhora no fim, e o
+  risco também sobe. O carro que não sai fica sem tempo. Depois da bandeirada
+  ninguém abre volta rápida.
+- **Resultado:** sai do mesmo modelo de sempre, e a torre mostra a mesma ordem.
+  Os formatos de volta única põem um carro de cada vez, na ordem do regulamento.
+  "Rodar sem assistir" e "Simular a classificação inteira" continuam lá.
+
+### O acerto nos treinos
+
+Além do foco do acerto (classificação, equilíbrio, corrida), cada carro tem o
+ajuste fino: asa dianteira, asa traseira, suspensão, altura e câmber. Cada
+carro, piloto e fim de semana tem um acerto ideal escondido. Cada saída nos
+treinos traz o que o piloto sente em cinco áreas (equilíbrio, retas, zebras,
+freadas, pneus) e a estimativa do engenheiro; ler o piloto e mexer nos ajustes
+certos aproxima do ideal. O número de saídas depende do simulador e do diretor
+técnico (menos duas se o carro foi cedido no primeiro treino). "Deixar com o
+engenheiro" usa as saídas que sobram com cautela (em média, de 74% para 92%);
+quem ajusta na mão pode chegar a 100%. Com 70% o acerto não ajuda nem
+atrapalha; acima disso rende no sábado e no domingo, e o câmber errado gasta
+mais pneu. O acerto que correu fica guardado para a mesma pista no ano
+seguinte.
+
 ### Limitações conhecidas
 
 - Sua equipe tem dois carros em todas as séries; as equipes da IA usam o
@@ -618,13 +833,18 @@ e depois do resultado a carreira continua sem prazo.
   principal: duplas e trios não são simulados.
 - O playoff da NASCAR existe no modo piloto, não no modo chefe; os pontos de
   dono por carro da NASCAR e da IndyCar viram uma tabela de equipes.
-- A gestão de energia da Fórmula E e as provas especiais da IndyCar estão na
-  corrida ao vivo (regras de pneus, reabastecimento e safety car por série),
-  mas não têm decisões próprias no muro do chefe.
+- As provas especiais da IndyCar (500 Milhas) não têm decisões próprias no
+  muro do chefe além das da corrida comum.
 - Antes de 2027, as equipes da IA seguem a história: força e pilotos de cada
-  ano são os reais (menos quem você tirou delas). Elas não têm orçamento
-  próprio; depois de 2026 a força delas deriva ano a ano, sem economia
-  individual.
+  ano são os reais (menos quem você tirou delas), e a gestão delas só começa
+  depois do último ano documentado. A F1 não tem mudança de regulamento
+  inventada depois de 2026.
+- As melhorias do motor de corrida (risco por volta, ataque máximo, gestão de
+  pneus, energia, IA de ritmo) valem para o modo chefe; o modo piloto continua
+  com a corrida de antes, só com a central redesenhada.
+- Um dos testes da corrida estatística (`prova.js`) usa sorteio sem semente e
+  falha de vez em quando ("mais de dois carros fora do lugar" numa corrida de
+  kart); passou nas repetições e não envolve o código do Manager 2.0.
 - O mundo é um por categoria principal: a Fórmula 2 que alimenta a F1 e a que
   alimenta a Fórmula E são registros separados.
 - Não há grid documentado da base para 2026 no projeto; ele é projeção.
@@ -733,7 +953,8 @@ index.html      o jogo inteiro — HTML, CSS, dados e motor de simulação
 assets/         fotografias, filme de 1906, logos das categorias e credits.json
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
-dados/          o banco histórico (historico.js), gerado por ferramentas/historico
+dados/          o banco histórico (historico.js), gerado por ferramentas/historico,
+                e as fotos livres do modo chefe (fotos.js), por ferramentas/fotos
 testes/         verificações que rodam no Node, sem navegador
 ferramentas/    geração dos traçados reais, do banco histórico e capturas de tela
 ```
@@ -788,6 +1009,42 @@ preservado, pneu por carro sem corrida duplicada), safety car
 regulamento, relargada, safety car virtual, 1×/8×/25×), idade por época
 (`entrada-epoca.js`), cenários (`chefe-cenarios.js`) e a página de
 apoio (`doacao.js`).
+
+Os testes do Manager 2.0:
+
+- `gestao-corrida.js`: mesmo resultado a 1×, 2×, 4× e 16×; modo piloto intacto;
+  os quatro ritmos e a gestão de pneus; risco por volta; combustível e energia
+  por época; IA de ritmo; manter posições; ordem do nº 1 dentro da simulação.
+- `treinos-chefe.js`: save da versão 1 migrando e jogando; treinos na
+  classificação e na corrida; dados de pneu nas faixas e no plano de paradas.
+- `administracao-chefe.js`: caixa etapa a etapa contra o real; efeito de uma
+  decisão; chefe de mecânicos; objetivo e renovação de patrocínio; diretoria.
+- `ia-chefe.js`: história intacta até 2026; gestão das rivais depois,
+  determinística, com orçamento, teto e pacotes; relação com você.
+- `largada.js`: reação da IA entre 0,12 e 0,45 s; reagir rápido rende posições
+  na primeira volta; largada queimada dá 5 s; a reação só vale antes da corrida
+  andar; mesma semente e mesma reação, mesma corrida.
+- `sessao-ao-vivo.js`: no treino, a saída gasta uma saída do acerto, traz a
+  impressão do piloto e o acerto bom deixa a volta mais rápida; na
+  classificação, o carro que não sai cai para o fim, a hora da volta vira a
+  janela, a torre e o resultado oficial têm a mesma ordem; a volta única em fila.
+- `escalacoes-reais.js`: duplas reais da F1 (2014, 2016, 2020, 1994, a Coloni de
+  1988 com um carro) e da IndyCar (Meira na Panther em 2008, Penske com três carros
+  e Andretti com quatro em 2019, 2021), e o cenário A.J. Foyt.
+- `pecas-chefe.js`: peças por série e por época; o carro do ano com a média das
+  peças; projeto, teto, horas de túnel, fabricação e montagem; horas pela regra
+  de 2021; a pista pesando nos atributos; desgaste, batida e reserva; save da
+  versão 4 abrindo na 5; o acerto (ideal, leitura do piloto, engenheiro).
+
+Duas medições ficam fora da suíte:
+
+- `medir-gp.js`: abandonos, paradas e velocidades.
+- `medir-justica.js`: os seus carros contra a IA, pelo ritmo.
+
+```bash
+node testes/medir-gp.js 12 2024 4
+node testes/medir-justica.js 30 2024 4
+```
 
 Para atualizar o banco histórico (baixa só o que não está no cache; veja
 [`ferramentas/historico/LEIAME.md`](ferramentas/historico/LEIAME.md)):
@@ -878,6 +1135,12 @@ de cada um; `assets/eras` e `assets/cartoes` guardam versões reduzidas):
 
 As fotos mostram o mundo real das corridas e não indicam apoio de pilotos,
 equipes ou fotógrafos ao jogo.
+
+**Retratos e carros do modo chefe** (`dados/fotos.js`): miniaturas do
+Wikimedia Commons sob CC0, domínio público, CC BY ou CC BY-SA, escolhidas pela
+imagem livre principal da página de cada piloto e de cada chassi na Wikipedia
+em inglês. Autor e licença de cada uma, conferidos no Commons, aparecem na
+capa do painel com o link para a página do arquivo.
 
 **Logos das categorias** (`assets/logos`): Fórmula 1, IndyCar, NASCAR, FIA
 WEC, Stock Car, DTM e Fórmula E, via Wikimedia Commons, em domínio público por

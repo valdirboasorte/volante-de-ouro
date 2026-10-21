@@ -1,5 +1,6 @@
 /* O piloto automático do modo chefe, usado pelos testes de carreiras de chefe:
-   decide o inverno ao acaso (__inverno) e corre uma temporada inteira (__temporada). */
+   decide o inverno ao acaso (__inverno) e corre uma temporada inteira (__temporada),
+   com projetos de peça e o acerto deixado com o engenheiro de vez em quando. */
 module.exports = `
   globalThis.__pick = a => a[Math.floor(Math.random() * a.length)];
   globalThis.__inverno = function(){
@@ -42,6 +43,13 @@ module.exports = `
     const dup = nomes.filter((x, i) => nomes.indexOf(x) !== i);
     while(sea.round < sea.calendar.length){
       if(Chefe.janelaPacote() != null && Math.random() < .5) Chefe.levarPacote(__pick(Chefe.areasAtivas().filter(x => x !== 'futuro')), __pick([1,2,3]));
+      /* com as peças (F1 e Endurance): projeta de vez em quando e fabrica o que fica pronto e é melhor */
+      if(Pecas.ativo()){
+        const P = Pecas.P();
+        if(Math.random() < .35 && C.caixa > 0){ const ps = Pecas.partes(), p = __pick(ps); Pecas.projetar(p, __pick(Object.keys(Pecas.PARTES[p].w)), __pick([0, 1, 2])); }
+        P.proj.filter(x => x.st === 'pronto').forEach(x => { if(x.dif > 0) Pecas.fabricar(x.e, __pick([1, 2])); else Pecas.arquivar(x.id); });
+        if(Math.random() < .5) [0, 1].forEach(k => { if(Acerto.ativo()) Acerto.auto(k); });
+      }
       const rec = Chefe.correr(); delete rec.tl;
       Chefe.sortearEvento(rec);
       if(C.evento){ const def = CH_EVENTOS.find(e => e.k === C.evento.k); Chefe.resolverEvento(Math.floor(Math.random() * def.ops.length)); }

@@ -64,7 +64,7 @@ function validateValue(key,raw){
   else if(key==='vdo_theme'&&!['dark','light'].includes(raw))fail('invalid');
   else if(key==='vdo_mov'&&!['0','1'].includes(raw))fail('invalid');
   else if(key==='vdo_durcorrida'&&(!/^\d+(?:\.\d+)?$/.test(raw)||+raw<=0||+raw>3600))fail('invalid');
-  else if(key==='vdo_velcorrida'&&!['1','4','8','16','32','64'].includes(raw))fail('invalid');
+  else if(key==='vdo_velcorrida'&&!['1','2','4','8','16','32','64'].includes(raw))fail('invalid');
 }
 function validate(backup){
   exactKeys(backup,['format','version','sourceOrigin','createdAt','values']);

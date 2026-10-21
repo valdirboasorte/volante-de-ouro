@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-21T01:50:22.270Z",
+  "url": "https://cd749057.volante-de-ouro.pages.dev/",
+  "checks": 566,
+  "passed": 566,
+  "failed": 0,
+  "requests": 56,
+  "comparedFiles": 56,
+  "htmlSHA256": {
+    "local": "716d108c1402a08b27f25cf77bd6d0a82102ef70f9c20687707a630e349fd20d",
+    "preview": "716d108c1402a08b27f25cf77bd6d0a82102ef70f9c20687707a630e349fd20d"
+  },
+  "failures": []
+}
