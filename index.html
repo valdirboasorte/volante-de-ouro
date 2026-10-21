@@ -284,11 +284,11 @@ body[data-tela="intro"] .wrap{max-width:none; padding:0}
 .ini-apoio{display:inline-flex; align-items:center; gap:8px; margin-top:14px; min-height:40px; padding:0 2px; font-size:15px; color:var(--ink);
   text-decoration:underline; text-underline-offset:.25em; background:none}
 .ini-apoio[hidden]{display:none}
-/* o item amarelo do menu superior: o mesmo amarelo nos dois temas e no menu do celular */
-.topnav button.topnav-apoio{margin-left:6px; background:#f5c518; color:#15110a}
-.topnav button.topnav-apoio:hover,.topnav button.topnav-apoio[aria-current="page"]{background:#ffd84a; color:#15110a}
+/* texto amarelo, sem fundo, nos dois temas e no menu do celular */
+.topnav button.topnav-apoio{margin-left:6px; background:transparent; color:#f5c518}
+.topnav button.topnav-apoio:hover,.topnav button.topnav-apoio[aria-current="page"]{background:var(--s2); color:#ffd84a}
 .topnav button.topnav-apoio:focus-visible{outline:2px solid #f5c518; outline-offset:3px}
-@media(max-width:999px){ .topnav button.topnav-apoio{margin:6px 0 0; color:#15110a} }
+@media(max-width:999px){ .topnav button.topnav-apoio{margin:6px 0 0; color:#f5c518} }
 /* ── Apoie o projeto ──
    A gramática da abertura: uma frase em escala de cartaz com uma foto no lugar
    de uma palavra, e cada seção como afirmação + prova. Carbono, o dourado como
@@ -25761,7 +25761,6 @@ const Doacao = {
           <code class="apoio-chave" id="apoioChave" data-i18n-ignore>${esc(c.pix.chave)}</code>
           <div class="apoio-acoes">
             <button class="btn btn-primary" id="apoioCopiar" onclick="Doacao.copiar()">Copiar chave Pix</button>
-            ${c.pix.copia ? `<button class="btn btn-ghost" id="apoioCopiarCC" onclick="Doacao.copiar('cc')">Copiar Pix Copia e Cola</button>` : ''}
             <span id="apoioAviso" class="apoio-aviso" role="status" aria-live="polite"></span>
           </div>
           <ol class="apoio-passos">
@@ -25770,7 +25769,6 @@ const Doacao = {
             <li>Escaneie o QR Code ou cole a chave.</li>
             <li>Confira os dados do destinatário e escolha o valor.</li>
           </ol>
-          <p class="apoio-seg">O pagamento acontece no seu banco, fora do jogo. Esta página não pede CPF, senha, cartão nem nenhum dado seu.</p>
         </div>
         ${c.pix.qr ? `<figure class="apoio-qrbox" data-ap>
           <img class="apoio-qr" src="${esc(c.pix.qr)}" width="380" height="380" alt="QR Code Pix para apoiar o Volante de Ouro">

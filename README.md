@@ -680,8 +680,8 @@ corridas sprint não existem no jogo.
 do celular), no rodapé e na tela inicial, e abre uma página própria (atalho:
 `#apoie`): por que apoiar (manutenção do site e ideias para o futuro, como
 multiplayer cooperativo e saves na nuvem — marcadas como ideia, sem data nem
-promessa), o cartão do Pix com QR Code, chave, "Copiar chave Pix" e "Copiar
-Pix Copia e Cola", as instruções de pagamento, a transparência (o jogo continua
+promessa), o cartão do Pix com QR Code, chave e o botão "Copiar chave Pix",
+as instruções de pagamento, a transparência (o jogo continua
 gratuito; doar é opcional e não dá vantagem nenhuma) e o agradecimento, com o
 botão de voltar ao menu principal.
 
@@ -691,7 +691,7 @@ A configuração inteira está em [`assets/doacao.js`](assets/doacao.js):
   recebedor, para a pessoa conferir (os dois são obrigatórios para o Pix aparecer);
 - `pix.copiaecola`: o "Pix Copia e Cola" gerado pelo banco. O jogo confere o
   código (CRC16, arranjo `BR.GOV.BCB.PIX` e a mesma chave) antes de mostrar o QR
-  Code e o botão de copiar — se não bater, nenhum dos dois aparece;
+  Code — se não bater, a imagem não aparece;
 - `pix.qrcode`: a imagem do QR Code gerada pelo banco, dentro do projeto. Ela
   só aparece com um código conferido, e o teste lê a imagem pixel a pixel
   (`ferramentas/pix/ler-qr.py`, só com Python e PIL) para garantir que é o

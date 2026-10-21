@@ -17,7 +17,7 @@ ok(fs.existsSync(CONF) && /<script src="assets\/doacao\.js"><\/script>\s*<script
 {
   const nav = (html.match(/<nav class="topnav" id="topMenu"[\s\S]*?<\/nav>/) || [''])[0];
   ok(/class="topnav-apoio" id="navApoio" onclick="Doacao\.pagina\(\)">Apoie o projeto</.test(nav) && !/navApoio[^>]*hidden/.test(nav), 'o item "Apoie o projeto" fica sempre no menu superior');
-  ok(/\.topnav button\.topnav-apoio\{[^}]*background:#f5c518/.test(html) && /@media\(max-width:999px\)\{ \.topnav button\.topnav-apoio/.test(html), 'com destaque amarelo, também no menu do celular');
+  ok(/\.topnav button\.topnav-apoio\{[^}]*background:transparent; color:#f5c518/.test(html) && /@media\(max-width:999px\)\{ \.topnav button\.topnav-apoio[^}]*color:#f5c518/.test(html), 'com texto amarelo e fundo transparente, também no menu do celular');
   ok(/aria-controls="topMenu"/.test(html), 'o botão de menu do celular abre o mesmo menu');
   ok(/<button onclick="Doacao\.pagina\(\)" id="peApoio">/.test(html), 'o rodapé também leva à página');
 }
@@ -39,12 +39,11 @@ const PAGINA = (html.match(/<section class="screen" id="scr-apoio"[\s\S]*?(?=<!-
   ok(J.run(`(() => { const o = window.VDO_DOACAO.pix.copiaecola; window.VDO_DOACAO.pix.copiaecola = o.replace('SAO PAULO', 'SAO PAULX'); const x = Doacao.config(); window.VDO_DOACAO.pix.copiaecola = o; return !x.pix.copia && !x.pix.qr; })()`), 'um código adulterado (CRC errado) é recusado');
   J.run(`document.body.dataset.tela = 'intro'; Doacao.pagina();`);
   const m = J.E('apoioMeios').innerHTML, mot = PAGINA;
-  ok(/Faça parte dessa história/.test(m) && /Copiar chave Pix/.test(m) && /Copiar Pix Copia e Cola/.test(m) && /apoio-qr/.test(m), 'a página mostra o cartão do Pix com QR Code, chave e os dois botões de copiar');
-  ok(/Abra o aplicativo do seu banco/.test(m) && /Confira os dados do destinatário/.test(m) && /não pede CPF, senha, cartão/.test(m), 'com as instruções e o aviso de que nenhum dado é pedido');
+  ok(/Faça parte dessa história/.test(m) && /Copiar chave Pix/.test(m) && !/apoioCopiarCC|Copiar Pix Copia e Cola/.test(m) && /apoio-qr/.test(m), 'a página mostra o cartão do Pix com QR Code, chave e só o botão de copiar a chave');
+  ok(/Abra o aplicativo do seu banco/.test(m) && /Confira os dados do destinatário/.test(m), 'com as instruções para doar por Pix');
   ok((mot.match(/<li class="ap-motivo/g) || []).length === 4 && (mot.match(/Ideia para o futuro, sem data definida/g) || []).length === 2, 'os quatro motivos, cada um com foto real, e os planos marcados como ideia, sem data nem promessa');
-  J.run(`navigator.clipboard = { writeText: t => { globalThis._cc = t; return Promise.resolve(); } }; Doacao.copiar('cc'); Doacao.copiar();`);
-  ok(J.run('globalThis._cc') === c.pix.chave && J.run(`(() => { navigator.clipboard = { writeText: t => { globalThis._cc2 = t; return Promise.resolve(); } }; Doacao.copiar('cc'); return globalThis._cc2; })()`) === c.pix.copiaecola,
-     '"Copiar Pix Copia e Cola" copia o código inteiro, e "Copiar chave Pix" só a chave');
+  J.run(`navigator.clipboard = { writeText: t => { globalThis._cc = t; return Promise.resolve(); } }; Doacao.copiar();`);
+  ok(J.run('globalThis._cc') === c.pix.chave, '"Copiar chave Pix" copia só a chave');
 }
 {
   /* sem nada configurado — a página diz que ainda não há como doar */
