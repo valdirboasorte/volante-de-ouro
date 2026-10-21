@@ -17,7 +17,9 @@ Caminhos, Unicode codificado, parâmetros repetidos e escapes foram conferidos.
 O projeto é HTML/CSS/JavaScript estático: `index.html`, `assets/`, `dados/` e
 `manifest.json`. Não há framework, `package.json`, comando de build, backend,
 Pages Functions ou Worker. `vercel.json` contém apenas cabeçalhos de uma
-hospedagem anterior e não configura a Cloudflare.
+hospedagem alternativa e não configura a Cloudflare. Os cabeçalhos do Pages
+ficam no `_headers` da raiz. SEO, cache, Vercel e instruções do Search Console
+estão documentados em [seo-infraestrutura.md](seo-infraestrutura.md).
 
 No Pages, o conteúdo publicado é o diretório que contém `index.html`.
 O painel foi conferido: comando de build vazio, saída `.`, diretório raiz

@@ -1,0 +1,32 @@
+# HTML, scripts, data and icons use stable filenames: revalidate on updates.
+# Do not use immutable without content hashes in filenames.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+
+# Keep the recovery page accessible to old saves, outside search results.
+/recuperar-progresso
+  X-Robots-Tag: noindex, nofollow
+
+/recuperar-progresso/*
+  X-Robots-Tag: noindex, nofollow
+
+# Source documentation and local test tools are not public landing pages.
+/infra/*
+  X-Robots-Tag: noindex
+
+/testes/*
+  X-Robots-Tag: noindex
+
+/ferramentas/*
+  X-Robots-Tag: noindex
+
+# Host-specific headers do not affect the official custom domain.
+# Redirects still run first; the existing account rule is unchanged.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

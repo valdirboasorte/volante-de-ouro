@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Volante de Ouro · Construa sua carreira no automobilismo</title>
-<meta name="description" content="Do kart à glória. Sete décadas de automobilismo, uma carreira só sua — com o retrospecto completo de cada corrida de cada temporada.">
+<title>Volante de Ouro — Simulador de Carreira no Automobilismo</title>
+<meta name="description" content="Seja piloto ou chefe de equipe, dispute campeonatos históricos e construa sua carreira no Volante de Ouro, um simulador gratuito de automobilismo para navegador.">
+<link rel="canonical" href="https://volantedeouro.com/">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0b0c0e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,18 +14,42 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Volante de Ouro">
 <meta property="og:locale" content="pt_BR">
-<meta property="og:title" content="Volante de Ouro · Construa sua carreira no automobilismo">
-<meta property="og:description" content="Do kart à glória. Sete décadas, uma carreira só sua — com o retrospecto de cada corrida.">
+<meta property="og:title" content="Volante de Ouro — Simulador de Carreira no Automobilismo">
+<meta property="og:description" content="Seja piloto ou chefe de equipe, dispute campeonatos históricos e construa sua carreira no Volante de Ouro, um simulador gratuito de automobilismo para navegador.">
+<meta property="og:url" content="https://volantedeouro.com/">
+<meta property="og:image" content="https://volantedeouro.com/assets/brand/og-volante-de-ouro.png">
+<meta property="og:image:secure_url" content="https://volantedeouro.com/assets/brand/og-volante-de-ouro.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Volante de Ouro. Sua carreira. Sua história. volantedeouro.com.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Volante de Ouro — Simulador de Carreira no Automobilismo">
+<meta name="twitter:description" content="Seja piloto ou chefe de equipe, dispute campeonatos históricos e construa sua carreira no Volante de Ouro, um simulador gratuito de automobilismo para navegador.">
+<meta name="twitter:image" content="https://volantedeouro.com/assets/brand/og-volante-de-ouro.png">
+<meta name="twitter:image:alt" content="Volante de Ouro. Sua carreira. Sua história. volantedeouro.com.">
+<link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="icon" href="favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+<script type="application/ld+json" id="site-schema">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {"@type":"WebSite","@id":"https://volantedeouro.com/#website","url":"https://volantedeouro.com/","name":"Volante de Ouro","inLanguage":["pt-BR","en","es","ja"]},
+    {"@type":"VideoGame","@id":"https://volantedeouro.com/#game","url":"https://volantedeouro.com/","name":"Volante de Ouro","description":"Simulador gratuito de carreira automobilística para navegador, com carreira de piloto, gerenciamento de equipes e campeonatos históricos.","inLanguage":["pt-BR","en","es","ja"],"genre":["Simulação","Automobilismo","Gerenciamento esportivo"],"applicationCategory":"GameApplication","gamePlatform":"Navegador web","operatingSystem":"Navegador web","playMode":"https://schema.org/SinglePlayer","isAccessibleForFree":true,"image":"https://volantedeouro.com/assets/brand/og-volante-de-ouro.png","isPartOf":{"@id":"https://volantedeouro.com/#website"}}
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <script>
 /* animações: ligadas, a não ser que a pessoa tenha desligado neste aparelho */
-try{ var mv = localStorage.getItem('vdo_mov'), liga = mv ? mv === '1' : true;
+try{ var mv = localStorage.getItem('vdo_mov'), liga = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) && (mv ? mv === '1' : true);
   document.documentElement.classList.add(liga ? 'mov' : 'sem-mov'); }catch(e){ document.documentElement.classList.add('mov'); }
 </script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0f14'/%3E%3Cg fill='%23f5c518'%3E%3Crect x='12' y='12' width='10' height='10'/%3E%3Crect x='32' y='12' width='10' height='10'/%3E%3Crect x='22' y='22' width='10' height='10'/%3E%3Crect x='42' y='22' width='10' height='10'/%3E%3Crect x='12' y='32' width='10' height='10'/%3E%3Crect x='32' y='32' width='10' height='10'/%3E%3Crect x='22' y='42' width='10' height='10'/%3E%3Crect x='42' y='42' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 /* ══════════════════════════════════════════════════════════════════
    VOLANTE DE OURO — linguagem visual
@@ -1061,7 +1087,7 @@ body[data-tela="intro"] .brand b{color:var(--accent)}
 .iconbtn[aria-pressed="false"]{opacity:.55}
 #topAcao{display:none !important}
 #btnMenu{display:none}
-@media(max-width:999px){
+@media(max-width:1120px){
   #btnMenu{display:grid}
   .topnav{display:none; position:absolute; top:calc(100% + 8px); left:var(--m); right:var(--m); z-index:61; flex-direction:column; align-items:stretch;
     padding:8px; border-radius:20px; background:#141619; border:1px solid #25282e; box-shadow:var(--dialog-shadow)} /* menu aberto: flutua (taste-skill-ignore) */
@@ -1459,8 +1485,10 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   .hc-grid td.e.k,.hc-grid th.k{display:none}
 }
 </style>
+<link rel="stylesheet" href="assets/presenca-web.css">
 </head>
 <body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
 
 <div id="topBar">
   <button class="brand" onclick="Game.goHome()" aria-label="Volante de Ouro, início">
@@ -1474,6 +1502,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <button onclick="UI.hall()">Lendas</button>
     <button onclick="UI.records()" id="btnRecords">Recordes</button>
     <button onclick="UI.help()">Como funciona</button>
+    <a href="#roadmap" id="navRoadmap">Roadmap</a>
     <button class="topnav-apoio" id="navApoio" onclick="Doacao.pagina()">Apoie o projeto</button>
   </nav>
   <select class="language-select" id="languageSelect" aria-label="Idioma" title="Idioma">
@@ -1491,7 +1520,8 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/></svg></button>
 </div>
 
-<div class="wrap">
+<main class="wrap" id="conteudo" tabindex="-1">
+<noscript><p class="aviso-javascript">Para jogar ou transferir progresso, ative o JavaScript no navegador. O <a href="#roadmap">roadmap</a> pode ser consultado abaixo.</p></noscript>
 
 <!-- ═════════ ABERTURA ═════════ -->
 <section class="screen on" id="scr-intro">
@@ -1507,7 +1537,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
           <span class="l"><span class="lin" style="--i:0">Volante</span></span>
           <span class="l"><span class="lin" style="--i:1">de <span class="ouro">Ouro</span></span></span>
         </h1>
-        <p class="ini-sub">Comece no kart, suba pelas categorias de base e brigue por um lugar no grid, em qualquer temporada de 1950 a 2026. A vaga é sua enquanto você conseguir segurar.</p>
+        <p class="ini-sub">Um simulador gratuito de carreira no automobilismo para navegador. Seja piloto ou chefe de equipe, da base à Fórmula 1 e a outras categorias, em temporadas de 1950 a 2026.</p>
         <div class="ini-acoes">
           <button class="btn btn-primary btn-lg" id="abAcao" onclick="Abertura.comecar()">Iniciar carreira <span class="seta" aria-hidden="true">→</span></button>
           <button class="btn btn-contorno btn-lg" onclick="Abertura.chefe()">Chefe de equipe <span class="seta" aria-hidden="true">→</span></button>
@@ -1590,11 +1620,58 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <div class="ini-mais" id="abMais"></div>
   </section>
 
+  <section class="ini-secao roadmap" id="roadmap" aria-labelledby="roadmapT" tabindex="-1">
+    <header class="rm-cab">
+      <h2 id="roadmapT">Roadmap — o futuro do Volante de Ouro</h2>
+      <p>Uma carreira já está esperando por você. Veja o que está disponível e os próximos caminhos que queremos explorar.</p>
+    </header>
+    <div class="rm-grade">
+      <article class="rm-agora">
+        <span class="rm-status rm-disponivel">Disponível</span>
+        <h3>Já está no jogo</h3>
+        <ul class="rm-recursos">
+          <li><b>Carreira de piloto</b><span>Evolua, escolha equipes e construa sua trajetória.</span></li>
+          <li><b>Chefe de equipe</b><span>Contrate pilotos e administre o desenvolvimento e as finanças.</span></li>
+          <li><b>Campeonatos históricos</b><span>Dispute temporadas e cenários de diferentes décadas.</span></li>
+          <li><b>Simulação de corridas</b><span>Acompanhe a prova e tome decisões de estratégia.</span></li>
+          <li><b>Mercado de pilotos</b><span>Avalie propostas e oportunidades entre temporadas.</span></li>
+          <li><b>Sistema de contratos</b><span>Negocie seu próximo passo no automobilismo.</span></li>
+          <li><b>Estatísticas e recordes</b><span>Consulte resultados, conquistas e o histórico da carreira.</span></li>
+        </ul>
+      </article>
+      <div class="rm-planos">
+        <article class="rm-plano">
+          <div><span class="rm-status">Planejado</span><h3>Multiplayer cooperativo</h3></div>
+          <p>Compartilhar uma carreira com outros jogadores, tomando decisões e vivendo a mesma história. O formato ainda será definido.</p>
+        </article>
+        <article class="rm-plano">
+          <div><span class="rm-status">Planejado</span><h3>Saves na nuvem</h3></div>
+          <p>Guardar a carreira online e continuar em outros dispositivos. Hoje o progresso fica no navegador e pode ser transferido por arquivo.</p>
+        </article>
+        <article class="rm-plano">
+          <div><span class="rm-status">Planejado</span><h3>Infraestrutura para crescer</h3></div>
+          <p>Preparar a manutenção do domínio e os serviços necessários às próximas funcionalidades, preservando o jogo atual.</p>
+        </article>
+      </div>
+    </div>
+    <div class="rm-rodape">
+      <p>O apoio voluntário ajuda na manutenção do domínio, na infraestrutura e no desenvolvimento das ideias do roadmap. O jogo continua gratuito; doar não é comprar uma funcionalidade futura.</p>
+      <button class="btn btn-ghost" onclick="Doacao.pagina()">Apoie o projeto</button>
+    </div>
+    <p class="rm-aviso">O roadmap apresenta planos para o futuro do Volante de Ouro. Funcionalidades e prioridades podem mudar durante o desenvolvimento.</p>
+    <details class="rm-saves">
+      <summary>Como proteger e transferir sua carreira</summary>
+      <p>O progresso fica separado em cada navegador e endereço. Antes de trocar de dispositivo ou domínio, exporte um backup. A importação preserva os dados existentes por padrão.</p>
+      <a href="recuperar-progresso/">Abrir backup e importação de progresso</a>
+    </details>
+  </section>
+
   <footer class="ini-pe">
     <span class="brand-pe"><span class="cf" id="peFlag"></span><span data-i18n-ignore>Volante de <b>Ouro</b></span></span>
     <p>Projeto de fã, sem vínculo com a Fórmula 1, a FIA, a IndyCar, a NASCAR, o WEC, a Stock Car, o DTM, a Fórmula E ou as equipes. Nomes, logos e marcas pertencem a seus titulares e aparecem só para identificar cada campeonato. Tudo roda no seu navegador; a carreira fica salva só no seu aparelho.</p>
     <nav aria-label="Rodapé">
       <button onclick="Abertura.creditos()">Créditos das fotos</button>
+      <a href="#roadmap">Roadmap</a>
       <button onclick="Doacao.pagina()" id="peApoio">Apoie o projeto</button>
       <button onclick="UI.alternarMovimento()" id="peMov">Animações</button>
     </nav>
@@ -1622,7 +1699,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
       </div>
     </header>
     <figure class="ap-faixa" data-ap>
-      <img src="assets/apoio/spa-2008-before-start.jpg" alt="O grid de Spa-Francorchamps antes da largada, 2008" width="1920" height="1280" decoding="async">
+      <img src="assets/apoio/spa-2008-before-start.jpg" alt="O grid de Spa-Francorchamps antes da largada, 2008" width="1920" height="1280" loading="lazy" decoding="async">
     </figure>
 
     <section class="ap-porque" aria-labelledby="apoioPorqueT">
@@ -1690,11 +1767,11 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <div class="card pad">
       <div class="row c3" style="margin-bottom:18px">
         <div class="field" style="margin:0">
-          <span class="lbl">Sobrenome</span>
+          <label class="lbl" for="inName">Sobrenome</label>
           <input type="text" id="inName" placeholder="Ex.: Senna" maxlength="16" autocomplete="off">
         </div>
         <div class="field" style="margin:0">
-          <span class="lbl">Número (1–99)</span>
+          <label class="lbl" for="inNum">Número (1–99)</label>
           <input type="text" id="inNum" placeholder="Nº" inputmode="numeric" maxlength="2" autocomplete="off">
         </div>
         <div class="field" style="margin:0">
@@ -1704,7 +1781,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
       </div>
 
       <div class="field ctry-box">
-        <span class="lbl">Nacionalidade</span>
+        <label class="lbl" for="inCountry">Nacionalidade</label>
         <input type="text" id="inCountry" placeholder="Buscar país…" autocomplete="off">
         <div class="ctry-list" id="ctryList"></div>
       </div>
@@ -1728,7 +1805,7 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
       <div style="margin-top:20px">
         <span class="lbl" style="display:block; margin-bottom:9px">Idade ao começar</span>
         <div class="agebox">
-          <input type="range" id="inAge" min="8" max="30" value="17" oninput="UI.ageChanged()">
+          <input type="range" id="inAge" aria-label="Idade" min="8" max="30" value="17" oninput="UI.ageChanged()">
           <div class="agev"><b id="ageVal">17</b><span>anos</span></div>
         </div>
         <div class="agehint mut" id="ageHint"></div>
@@ -1852,11 +1929,11 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     <div class="card pad">
       <div class="row c3">
         <div class="field" style="margin:0">
-          <span class="lbl">Nome do chefe</span>
+          <label class="lbl" for="chnChefe">Nome do chefe</label>
           <input type="text" id="chnChefe" maxlength="24" placeholder="Ex.: Ayrton Senna" autocomplete="off">
         </div>
         <div class="field" style="margin:0">
-          <span class="lbl">Nacionalidade</span>
+          <label class="lbl" for="chnChefePais">Nacionalidade</label>
           <select id="chnChefePais" class="ch-sel"></select>
         </div>
       </div>
@@ -1905,11 +1982,11 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
     </div>
   </div>
 </section>
-</div>
+</main>
 
 <!-- ═════════ JANELAS ═════════ -->
 <div class="ov" id="ov"><div class="modal" id="modal"></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- o banco histórico (campeonatos, temporadas, grids reais e fontes), gerado por ferramentas/historico -->
 <script src="dados/historico.js" defer></script>
@@ -1936,7 +2013,9 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 <script src="assets/i18n/complete-chief.js" defer></script>
 <script src="assets/i18n/complete-common.js" defer></script>
 <script src="assets/i18n/novidades.js" defer></script>
+<script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
+<script src="assets/presenca-web.js" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -16094,14 +16173,14 @@ const UI = {
     UI.generoGrid(); UI.styleGrid(); UI.countryBox(); UI.ageChanged(); UI.difForm();
     UI.aplicarMovimento();
     try{ Abertura.iniciar(); }catch(e){ console.error(e); }
-    addEventListener('scroll', ()=> el('topBar').classList.toggle('stuck', scrollY>6));
+    addEventListener('scroll', ()=> el('topBar').classList.toggle('stuck', scrollY>6), { passive:true });
     Game.checkSave();
     Doacao.doEndereco();
     addEventListener('hashchange', () => Doacao.doEndereco());
   },
 
   /* animações: ligadas por padrão; quem quiser desliga, e a escolha fica guardada */
-  movimentoLigado(){ const p = Store.get('vdo_mov'); return p ? p === '1' : true; },
+  movimentoLigado(){ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return false; const p = Store.get('vdo_mov'); return p ? p === '1' : true; },
   aplicarMovimento(){
     const on = UI.movimentoLigado(), r = document.documentElement;
     r.classList.toggle('mov', on); r.classList.toggle('sem-mov', !on);
@@ -26569,7 +26648,7 @@ UI.menuTopo = function(abrir){
 };
 addEventListener('click', e => {
   const m = el('topMenu'); if(!m || !m.classList.contains('on')) return;
-  if(e.target.closest('#topMenu button') || !e.target.closest('#topMenu, #btnMenu')) UI.menuTopo(false);
+  if(e.target.closest('#topMenu button, #topMenu a') || !e.target.closest('#topMenu, #btnMenu')) UI.menuTopo(false);
 });
 addEventListener('keydown', e => { if(e.key === 'Escape') UI.menuTopo(false); });
 ICONES.pausa = 'M8 5v14M16 5v14';

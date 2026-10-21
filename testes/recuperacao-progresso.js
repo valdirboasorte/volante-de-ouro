@@ -24,20 +24,34 @@ function raw(withValues=values,changes={}){return JSON.stringify({format:'volant
 ok(html.includes('<meta name="vdo-progress-recovery" content="1">'),'marcador HTTP distingue a recuperação do fallback SPA');
 ok(!/<script[^>]+src=|<link[^>]+(?:stylesheet|href=)|<iframe|\bfetch\s*\(|XMLHttpRequest|sendBeacon|document\.cookie|innerHTML\s*=/.test(html),'página independente não carrega recursos, envia dados nem injeta HTML');
 eq(Array.from(R.KEYS),Object.keys(values),'allowlist é exatamente as nove chaves do jogo');
-for(const origin of [R.OLD,R.OFFICIAL])ok(R.allowed(origin),'origin HTTPS autorizado');
-for(const origin of ['null','file://','http://volantedeouro.com','https://www.volantedeouro.com','https://volantedeouro.com.evil.example','https://volante-de-ouro.pages.dev:444','https://preview.volante-de-ouro.pages.dev']){
+for(const origin of [R.OLD,R.VERCEL,R.OFFICIAL])ok(R.allowed(origin),'origin HTTPS autorizado');
+eq(R.VERCEL,'https://volante-de-ouro.vercel.app','Vercel autorizada pelo origin HTTPS exato');
+for(const origin of ['null','file://','http://volantedeouro.com','https://www.volantedeouro.com','https://volantedeouro.com.evil.example','https://volante-de-ouro.pages.dev:444','https://preview.volante-de-ouro.pages.dev','http://volante-de-ouro.vercel.app','https://volante-de-ouro.vercel.app:444','https://preview.volante-de-ouro.vercel.app','https://volante-de-ouro.vercel.app.evil.example']){
   ok(!R.allowed(origin),'origin não autorizado recusado');error(()=>R.backup(storage(values),origin),'origin','não exporta fora dos origins exatos');
 }
 const source=storage({...values,unrelated:'secret',auth_token:'never export'}),sourceBefore={...source.values};
 const exported=R.backup(source,R.OLD),parsed=R.parse(exported);
 eq(parsed.values,values,'exporta valores originais byte a byte, incluindo Unicode e espaços');
 eq(parsed.sourceOrigin,R.OLD,'registra origin de exportação');eq(parsed.version,1,'backup versionado');eq(source.values,sourceBefore,'exportação não modifica origem nem dados alheios');eq(source.calls,[],'exportação nunca escreve nem apaga');
+const vercelSource=storage({...values,unrelated:'never export'}),vercelBefore={...vercelSource.values};
+const vercelBackup=R.backup(vercelSource,R.VERCEL),vercelParsed=R.parse(vercelBackup);
+eq(vercelParsed.sourceOrigin,R.VERCEL,'backup identifica sua origem Vercel');
+eq(vercelParsed.values,values,'exportação Vercel cobre exatamente as nove chaves originais');
+eq(vercelSource.values,vercelBefore,'exportação Vercel preserva todos os dados de origem');
+eq(vercelSource.calls,[],'exportação Vercel não faz nenhuma escrita ou remoção');
+const fromVercel=storage({vdo_save:currentPilotForVercel(),unrelated:'keep'});
+const fromVercelBefore={...fromVercel.values},vercelResult=R.restore(vercelBackup,fromVercel,R.OFFICIAL);
+eq(fromVercel.values.vdo_save,fromVercelBefore.vdo_save,'importação Vercel preserva carreira oficial conflitante');
+eq(fromVercel.values,{...values,...fromVercelBefore},'importação Vercel preenche ausentes e preserva dados oficiais e alheios');
+eq(vercelResult.skipped,['vdo_save'],'conflito vindo da Vercel é informado');
+function currentPilotForVercel(){return JSON.stringify({year:2026,driver:{name:'Carreira oficial preservada'},season:{year:2026,cat:'Fórmula 1'}});}
 const destination=storage({unrelated:'keep'}),result=R.restore(exported,destination,R.OFFICIAL);
 eq(result.written,R.KEYS,'restaura piloto, chefe, históricos e preferências');eq(destination.values,{unrelated:'keep',...values},'restauração conserva exatamente as strings e dados alheios');
 eq(R.restore(exported,destination,R.OFFICIAL).written,[],'segunda importação não regrava dados existentes');
-for(const origin of [R.OLD,'null','http://volantedeouro.com']){
+for(const origin of [R.OLD,R.VERCEL,'null','http://volantedeouro.com']){
   const target=storage(values);error(()=>R.restore(exported,target,origin),'origin','importação só escreve no domínio oficial');eq(target.calls,[],'origin inválido não toca no armazenamento');
 }
+const vercelTarget=storage(values);error(()=>R.preview(vercelBackup,vercelTarget,R.VERCEL),'origin','Vercel também recusa prévia de importação');eq(vercelTarget.calls,[],'prévia recusada na Vercel não altera dados');
 const preview=R.preview(exported,storage({vdo_save:'existing broken save'}),R.OFFICIAL);
 eq(preview.entries[0].incoming.name,'山田 太郎 🏁 <b>José</b>','prévia mostra nome como texto');eq(preview.entries[0].incoming.year,2026,'prévia mostra ano');eq(preview.entries[1].incoming.team,'Équipe 日本','prévia mostra equipe');eq(preview.entries[2].incoming.count,1,'prévia mostra históricos');ok(preview.entries[0].conflict,'mesmo dado oficial inválido ou vazio é preservado por padrão');
 const conflicts=storage({vdo_save:'',vdo_language:'en',vdo_hall:'[]',unrelated:'untouched'});
@@ -100,6 +114,9 @@ const H=require('./base'),game=H.carregar();H.novaCarreira(game,{era:7,ano:2020,
 game.run("Chefe.novo({modo:'base',ano:2015,cat:'Fórmula 4 Britânica',chefe:{nome:'鈴木 花子',cc:'JP'},eq:{nome:'日本レーシング',cor:'#123456',cc:'JP'}}); UIC.salvar();");
 const actual=storage({vdo_save:game.store.vdo_save,vdo_chefe:game.store.vdo_chefe}),received=storage();R.restore(R.backup(actual,R.OLD),received,R.OFFICIAL);
 const reopened=H.carregar({store:received.values});reopened.run('Game.continueSave(); UIC.continuar();');eq(reopened.run('S.driver.name'),'山田 太郎','carreira de piloto real reabre após transferência');eq(reopened.run('C.chefe.nome'),'鈴木 花子','carreira de chefe real reabre após transferência');eq(received.values.vdo_save,actual.values.vdo_save,'motor recebe save de piloto sem modificar seu formato');
+const vercelReceived=storage();R.restore(R.backup(actual,R.VERCEL),vercelReceived,R.OFFICIAL);
+const vercelReopened=H.carregar({store:vercelReceived.values});vercelReopened.run('Game.continueSave(); UIC.continuar();');
+eq(vercelReopened.run('S.driver.name'),'山田 太郎','piloto real vindo da Vercel reabre no motor');eq(vercelReopened.run('C.chefe.nome'),'鈴木 花子','chefe real vindo da Vercel reabre no motor');eq(vercelReceived.values.vdo_save,actual.values.vdo_save,'transferência Vercel preserva o formato do save real');
 
 /* DOM mínimo verifica idiomas, modo por origin, segurança de texto e fluxo de consentimento. */
 function page(origin,initial={}){
@@ -115,13 +132,16 @@ function page(origin,initial={}){
   sandbox.window=sandbox;vm.createContext(sandbox);vm.runInContext(core,sandbox);vm.runInContext(ui,sandbox);
   return {nodes,document,store,downloads,events,sandbox,labels};
 }
-for(const [lang,title]of [['pt','Recuperar progresso'],['en','Recover progress'],['es','Recuperar progreso'],['ja','進行データの復元']]){
-  const P=page(R.OLD,{...values,vdo_language:lang});eq(P.document.title,'Volante de Ouro — '+title,'página traduzida conforme preferência');ok(P.nodes.importSection.hidden,'no antigo a importação permanece oculta');ok(!P.nodes.allowed.hidden,'no antigo a exportação está disponível');P.nodes.export.click();eq(P.downloads.length,1,'backup baixado localmente');eq(P.store.calls,[],'página no antigo não escreve nem mesmo idioma');eq(JSON.parse(P.downloads[0].blob.parts[0]).values.vdo_save,pilot,'download conserva raw save');
+for(const origin of [R.OLD,R.VERCEL])for(const [lang,title]of [['pt','Recuperar progresso'],['en','Recover progress'],['es','Recuperar progreso'],['ja','進行データの復元']]){
+  const P=page(origin,{...values,vdo_language:lang});eq(P.document.title,'Volante de Ouro — '+title,'página traduzida conforme preferência');ok(P.nodes.importSection.hidden,'na origem alternativa a importação permanece oculta');ok(!P.nodes.allowed.hidden,'na origem alternativa a exportação está disponível');ok(P.nodes.modeNote.textContent.includes(origin),'aviso nos quatro idiomas identifica a origem real');P.nodes.export.click();eq(P.downloads.length,1,'backup baixado localmente');eq(P.store.calls,[],'página alternativa não escreve nem mesmo idioma');const downloaded=JSON.parse(P.downloads[0].blob.parts[0]);eq(downloaded.values.vdo_save,pilot,'download conserva raw save');eq(downloaded.sourceOrigin,origin,'download informa a origem correta');eq(Object.keys(downloaded.values),Array.from(R.KEYS),'download cobre as nove chaves');if(origin===R.VERCEL)ok(P.downloads[0].name.includes('-vercel-'),'nome do arquivo distingue o backup Vercel');
 }
 const unsupported=page('null',values);ok(unsupported.nodes.allowed.hidden,'file:// não permite ações de recuperação');ok(unsupported.nodes.modeNote.textContent.includes('HTTPS'),'endereço inválido explicado');
 const P=page(R.OFFICIAL,{vdo_save:currentPilot,vdo_language:'en'});ok(!P.nodes.importSection.hidden,'oficial oferece importação');
 P.nodes.file.files=[{size:Buffer.byteLength(exported),text:async()=>exported}];
 (async()=>{
+  const V=page(R.OFFICIAL,{vdo_save:currentPilot,vdo_language:'es'});V.nodes.file.files=[{size:Buffer.byteLength(vercelBackup),text:async()=>vercelBackup}];
+  await V.nodes.file.events.change();ok(!V.nodes.preview.hidden,'arquivo Vercel exibe prévia no oficial');ok(V.nodes.source.textContent.includes(R.VERCEL),'prévia identifica origem Vercel');
+  V.nodes.import.click();eq(V.store.values.vdo_save,currentPilot,'fluxo DOM preserva carreira oficial ao importar Vercel sem substituir');eq(V.store.values.vdo_chefe,chief,'fluxo DOM importa chefe ausente do backup Vercel');eq(V.store.values.vdo_language,'es','fluxo DOM preserva preferência oficial conflitante');eq(vercelSource.calls,[],'importação oficial nunca escreve na origem Vercel');
   await P.nodes.file.events.change();ok(!P.nodes.preview.hidden,'arquivo válido exibe prévia');ok(!P.nodes.import.disabled,'padrão permite importar ausentes');
   const rowText=P.nodes.rows.children.flatMap(row=>row.children.map(cell=>cell.textContent)).join(' ');ok(rowText.includes('山田 太郎 🏁 <b>José</b>'),'nome com marcação exibido literalmente');ok(rowText.includes('Carreira oficial'),'prévia inclui carreira oficial conflitante');
   P.nodes.replace.checked=true;P.nodes.replace.events.change();ok(P.nodes.import.disabled,'substituição começa bloqueada');ok(P.nodes.confirmed.disabled,'confirmação exige baixar backup atual');

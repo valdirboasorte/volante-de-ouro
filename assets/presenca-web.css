@@ -1,0 +1,38 @@
+/* Public content: existing Archivo/carbon/gold tokens; no game or payment styles. */
+.pular-conteudo{position:fixed;left:16px;top:-120px;z-index:200;padding:12px 18px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.pular-conteudo:focus{top:12px}
+.aviso-javascript{padding:90px var(--m) 20px;margin:0;background:var(--s1);color:var(--ink)}
+.topnav a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;font-size:15px;font-weight:600;font-stretch:85%;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;color:var(--soft);text-decoration:none;transition:color .2s,background .2s}
+.topnav a:hover,.topnav a[aria-current]{background:var(--s2);color:var(--ink)}
+.roadmap{scroll-margin-top:90px;outline-offset:8px}
+html[data-theme="light"] .roadmap{--accent-txt:#805d00;--green:#08733d}
+.rm-cab{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:end;margin-bottom:40px}
+.rm-cab h2{max-width:23ch;font-size:clamp(30px,4.4vw,64px);font-weight:800;font-stretch:85%;line-height:1.08}
+.rm-cab p{margin:0;max-width:48ch;font-size:var(--t-lead);color:var(--soft)}
+.rm-grade{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px}
+.rm-agora,.rm-plano{background:var(--s1);padding:clamp(22px,3vw,36px);border-radius:20px;min-width:0}
+.rm-agora h3{font-size:clamp(26px,3vw,40px);margin:18px 0 24px;font-weight:700}
+.rm-status{display:inline-flex;align-items:center;gap:8px;color:var(--accent-txt);font-size:16px}
+.rm-status::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.rm-disponivel{color:var(--green)}
+.rm-recursos{list-style:none;margin:0;padding:0;display:grid;gap:22px}
+.rm-recursos li{display:grid;gap:3px}
+.rm-recursos b{font-weight:650;font-size:18px}
+.rm-recursos span{color:var(--soft);font-size:16px;line-height:1.5}
+.rm-planos{display:grid;gap:20px}
+.rm-plano{transition:transform .2s}
+.rm-plano h3{font-size:clamp(24px,2.2vw,34px);margin:12px 0 16px;font-weight:700;line-height:1.15}
+.rm-plano p{margin:0;color:var(--soft);font-size:17px;max-width:58ch;line-height:1.6}
+.rm-rodape{display:flex;align-items:center;gap:24px;margin-top:32px}
+.rm-rodape p{margin:0;max-width:75ch;font-size:17px}
+.rm-rodape .btn{flex:none}
+.rm-aviso{font-size:15px;line-height:1.6;color:var(--soft);max-width:90ch;margin:24px 0}
+.rm-saves{max-width:75ch;font-size:16px;color:var(--soft)}
+.rm-saves summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--ink)}
+.rm-saves a{display:inline-block;padding:10px 0;min-height:44px;color:var(--accent-txt)}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.mov .rm-plano:hover{transform:translateY(-3px)}}
+@media(min-width:1121px) and (max-width:1350px){.topnav button,.topnav a{padding-left:8px;padding-right:8px;font-size:14px}#topBar{gap:4px}}
+@media(max-width:1120px){.topnav a{min-height:50px;padding:0 18px;font-size:18px;text-align:left;color:var(--ink)}.topnav button.topnav-apoio{margin:6px 0 0}}
+@media(max-width:700px){.rm-cab,.rm-grade{grid-template-columns:minmax(0,1fr)}.rm-cab{gap:18px;margin-bottom:26px}.rm-cab h2{max-width:none}.rm-rodape{align-items:flex-start;flex-direction:column;gap:18px}.rm-planos{gap:16px}.rm-cab p{font-size:20px}.rm-plano h3{font-size:26px}}
+/* The operating-system preference also overrides the pre-existing motion styles. */
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation:none!important;transition:none!important}[data-rv],[data-ap],.ini-titulo .lin,.ini-sub,.ini-acoes>*{opacity:1!important;transform:none!important}}

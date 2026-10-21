@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Volante de Ouro</title>
+  <rect width="64" height="64" rx="14" fill="#0d0f14"/>
+  <g fill="#f5c518">
+    <path d="M12 12h10v10H12zM32 12h10v10H32zM22 22h10v10H22zM42 22h10v10H42zM12 32h10v10H12zM32 32h10v10H32zM22 42h10v10H22zM42 42h10v10H42z"/>
+  </g>
+</svg>

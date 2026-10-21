@@ -11,7 +11,7 @@ const ok = (c, m) => { if(!c){ falhas++; console.log('  ✗ ' + m); } else conso
 const fechar = J => J.run('UI.close(); UI.proxima();');
 
 {
-  const J = H.carregar({ silencioso: true });
+  const J = H.carregar({ silencioso: true, seed: 20261020 });
   H.novaCarreira(J, { era: 7, ano: 2023, idade: 24, rapido: false });
   J.run('S.season.eventosAt = [S.season.round + 1]; S.season.dilemmaAt = 99; S.promessasAtivas = [];');
   /* a corrida inteira, como o jogador: fim de semana, corrida, resultado */
@@ -36,7 +36,7 @@ const fechar = J => J.run('UI.close(); UI.proxima();');
   ok(J.run('!!S.season.fds && S.season.fds.rd === S.season.round && UI.aberta()'), 'depois dele, o fim de semana começa sozinho');
 }
 {
-  const J = H.carregar({ silencioso: true });
+  const J = H.carregar({ silencioso: true, seed: 20261020 });
   H.novaCarreira(J, { era: 7, ano: 2023, idade: 24, rapido: true });
   J.run('S.season.eventosAt = [2, 4]; S.season.dilemmaAt = 99; S.promessasAtivas = []; UI.limparFila(); UI.close();');
   J.run('Game.simSeason(true);');
@@ -49,17 +49,20 @@ const fechar = J => J.run('UI.close(); UI.proxima();');
   ok(paradas.join(',') === '2,4' && fim, `simular o ano para nos acontecimentos (parou nas rodadas ${paradas.join(', ') || 'nenhuma'}) e vai até o fim`);
 }
 {
-  const J = H.carregar({ silencioso: true });
+  const J = H.carregar({ silencioso: true, seed: 20261020 });
   H.novaCarreira(J, { era: 7, ano: 2023, idade: 24, rapido: true });
   const r = J.run(`(() => { S.driver.morale = 60; const e = EVENTOS.find(x => x.id === 'familia');
     UI.eventoModal(e); Game.escolherEvento(2);
     return { moral: S.driver.morale, emb: Engine.embalo(S.season), embalo: S.embalo }; })()`);
   ok(r.moral === 60 - Math.round(9 * 1.4), `efeito maior que o da ficha (moral 60 → ${r.moral})`);
   ok(r.emb < 0 && r.embalo.ate === J.run('S.season.round') + 3, `abalado nas próximas três corridas (${r.emb})`);
-  /* e o embalo pesa no ritmo da corrida */
-  const d = J.run(`(() => { let soma = 0; for(let k = 0; k < 40; k++){ S.embalo = { v: 1.5, ano: S.season.year, ate: S.season.round + 3 };
-      const a = Engine.montarCorrida(S.season).running.find(x => x.f.isMe); S.embalo = null;
-      const b = Engine.montarCorrida(S.season).running.find(x => x.f.isMe); if(a && b) soma += a.vr - b.vr; } return soma / 40; })()`);
+  /* Mesmo acaso em cada par: o que muda é só o embalo, não um novo dia sorteado. */
+  const d = J.run(`(() => { let soma = 0; const original = Math.random;
+    const repetir = seed => { let t = seed; Math.random = () => { t = (Math.imul(t, 1664525) + 1013904223) >>> 0; return t / 4294967296; }; };
+    try { for(let k = 0; k < 40; k++){ S.embalo = { v: 1.5, ano: S.season.year, ate: S.season.round + 3 };
+      repetir(1000 + k); const a = Engine.montarCorrida(S.season).running.find(x => x.f.isMe); S.embalo = null;
+      repetir(1000 + k); const b = Engine.montarCorrida(S.season).running.find(x => x.f.isMe); if(a && b) soma += a.vr - b.vr; }
+    } finally { Math.random = original; } return soma / 40; })()`);
   ok(d > 0, `embalo positivo deixa o carro mais rápido (+${d.toFixed(2)} de ritmo médio)`);
 }
 

@@ -2,7 +2,8 @@
 const H = require('./base');
 let falhas = 0;
 const ok = (c, m) => { if(!c){ falhas++; console.log('  ✗ ' + m); } else console.log('  ✓ ' + m); };
-const J = H.carregar();
+/* Amostra reproduzível: evita falhar por não sortear uma desistência em 40 ofertas. */
+const J = H.carregar({ seed: 20261020 });
 const run = J.run, html = () => J.E('modal').innerHTML;
 
 /* A. dinheiro de quem funda */

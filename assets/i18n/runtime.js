@@ -255,7 +255,7 @@
     if(observer) observer.disconnect();
     refreshNames(); translateNode(root || doc.body);
     if(!root && doc.querySelectorAll){
-      for(const meta of doc.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"]'))
+      for(const meta of doc.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"],meta[name="twitter:title"],meta[name="twitter:description"],meta[property="og:image:alt"],meta[name="twitter:image:alt"]'))
         translateAttribute(meta, 'content');
       const locale = doc.querySelector('meta[property="og:locale"]');
       if(locale) locale.setAttribute('content', { pt:'pt_BR', en:'en_US', es:'es_ES', ja:'ja_JP' }[language]);
@@ -268,7 +268,7 @@
     try{ global.localStorage.setItem(KEY, lang); }catch(e){}
     if(doc){
       doc.documentElement.lang = lang === 'pt' ? 'pt-BR' : locales[lang].htmlLang;
-      doc.title = lang === 'pt' ? 'Volante de Ouro · Construa sua carreira no automobilismo' : locales[lang].title;
+      doc.title = lang === 'pt' ? 'Volante de Ouro — Simulador de Carreira no Automobilismo' : locales[lang].title;
       const picker = doc.getElementById('languageSelect'); if(picker) picker.value = lang;
       apply();
     }

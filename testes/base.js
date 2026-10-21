@@ -71,7 +71,7 @@ function carregar(opts){
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
   /* Os catálogos e a apresentação usam scripts locais defer, após o jogo. */
-  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'novidades.js', 'runtime.js']){
+  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'novidades.js', 'presenca.js', 'runtime.js']){
     const p = require('path').join(__dirname, '..', 'assets', 'i18n', arq);
     if(fs.existsSync(p)) vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename:'i18n/' + arq });
   }

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <title>Volante de Ouro — Sua carreira. Sua história.</title>
+  <desc>Identidade original em preto carbono e dourado com uma bandeira quadriculada. volantedeouro.com</desc>
+  <defs>
+    <pattern id="carbon" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M0 16 16 0" stroke="#1c1f25" stroke-width="1"/>
+    </pattern>
+    <clipPath id="right"><path d="M800 0h400v630H655z"/></clipPath>
+  </defs>
+  <rect width="1200" height="630" fill="#0d0f14"/>
+  <g clip-path="url(#right)">
+    <rect x="650" width="550" height="630" fill="#14171d"/>
+    <rect x="650" width="550" height="630" fill="url(#carbon)"/>
+    <path d="M980-90h160c72 0 124 65 101 132l-116 340c-21 62-69 114-134 114H760c-61 0-97-53-76-113L827 14c22-62 85-104 153-104Z" fill="none" stroke="#33353b" stroke-width="3"/>
+    <path d="M978-62h140c54 0 91 47 74 98l-117 341c-17 49-57 90-105 90H779c-41 0-65-35-50-76L869 27c18-54 59-89 109-89Z" fill="none" stroke="#292c32" stroke-width="2"/>
+    <path d="m803 500 128-348" fill="none" stroke="#f5c518" stroke-width="3"/>
+  </g>
+  <g transform="translate(64 53) scale(.7)" fill="#f5c518">
+    <path d="M0 0h14v14H0zM28 0h14v14H28zM14 14h14v14H14zM42 14h14v14H42zM0 28h14v14H0zM28 28h14v14H28zM14 42h14v14H14zM42 42h14v14H42z"/>
+  </g>
+  <text x="124" y="79" fill="#b5bac3" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="2">SIMULADOR DE CARREIRA</text>
+  <g font-family="Arial Narrow, Arial, sans-serif" font-weight="700" font-stretch="condensed">
+    <text x="59" y="244" fill="#f2f3f5" font-size="116" letter-spacing="-4">VOLANTE</text>
+    <text x="59" y="365" fill="#f5c518" font-size="116" letter-spacing="-4">DE OURO</text>
+  </g>
+  <text x="64" y="445" fill="#f2f3f5" font-family="Arial, sans-serif" font-size="32" letter-spacing="-.5">Sua carreira. Sua história.</text>
+  <path d="M64 493h64" stroke="#f5c518" stroke-width="3"/>
+  <text x="64" y="553" fill="#b5bac3" font-family="Arial, sans-serif" font-size="22">volantedeouro.com</text>
+  <g transform="translate(870 192) rotate(9 112 112)" fill="#f5c518">
+    <path d="M0 0h56v56H0zM112 0h56v56h-56zM56 56h56v56H56zM168 56h56v56h-56zM0 112h56v56H0zM112 112h56v56h-56zM56 168h56v56H56zM168 168h56v56h-56z"/>
+  </g>
+  <rect y="622" width="1200" height="8" fill="#f5c518"/>
+</svg>

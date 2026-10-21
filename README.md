@@ -4,6 +4,10 @@ Um simulador de carreira no automobilismo que roda inteiro em um arquivo HTML.
 Sem servidor, sem build, sem dependência: abra o `index.html` com a pasta
 `assets` ao lado, onde ficam as fotografias.
 
+O site oficial é **[volantedeouro.com](https://volantedeouro.com/)**, hospedado
+no **Cloudflare Pages**. A implantação da Vercel é alternativa; o domínio antigo
+do Pages redireciona para o oficial, mantendo a rota de recuperação de saves.
+
 A interface usa fotografias reais de corridas, nenhuma gerada por IA. Autor,
 licença e página de cada uma estão em `assets/credits.json`, no fim deste
 arquivo e nos créditos dentro do jogo.
@@ -730,9 +734,13 @@ assets/         fotografias, filme de 1906, logos das categorias e credits.json
 manifest.json   manifesto PWA, para instalar como aplicativo
 vercel.json     cabeçalhos de cache
 dados/          o banco histórico (historico.js), gerado por ferramentas/historico
-testes/         verificações que rodam no Node, sem navegador (não vão para o site)
+testes/         verificações que rodam no Node, sem navegador
 ferramentas/    geração dos traçados reais, do banco histórico e capturas de tela
 ```
+
+A Vercel exclui ferramentas e testes conforme `.vercelignore`. No Cloudflare
+Pages com saída `.`, esses arquivos continuam públicos; `_headers` solicita
+que não sejam indexados, sem funcionar como controle de acesso.
 
 ## Testes
 
@@ -1129,3 +1137,87 @@ de idioma, texto dinâmico, formulários, preservação do save e os marcadores.
 carreiras das sete séries, nos três modos de chefe, nos imprevistos e no rádio,
 além de regressões de pontuação, números, nomes e busca traduzida;
 `node testes/grid-kart.js` verifica os grids locais dos 96 países.
+
+## Presença web, SEO e roadmap
+
+O HTML inicial contém título, descrição, canonical `https://volantedeouro.com/`,
+Open Graph, Twitter Card e JSON-LD `WebSite`/`VideoGame`, sem avaliações,
+empresa ou datas inventadas. O conteúdo de apresentação e o roadmap estão no
+HTML antes dos scripts. O título e os textos públicos acompanham PT/EN/ES/JP;
+o canonical permanece único, pois não há URLs de idioma separadas.
+
+- [`robots.txt`](robots.txt) permite rastrear o conteúdo e referencia o sitemap.
+- [`sitemap.xml`](sitemap.xml) contém só a raiz oficial. Âncoras como `#roadmap`
+  e `#apoie`, carreiras e telas internas não são páginas independentes.
+- O link **Roadmap** no menu e no rodapé abre a seção pública. Os sete sistemas
+  atuais aparecem como disponíveis; multiplayer cooperativo, saves na nuvem e
+  infraestrutura futura aparecem como planejados, sem data nem percentual.
+- A navegação por teclado inclui um atalho ao conteúdo e foco no roadmap.
+  A preferência de movimento reduzido do sistema é respeitada sem alterar a
+  configuração salva do jogador.
+  Corridas e decisões pendentes bloqueiam a abertura do roadmap, preservando
+  a fila de escolhas e a continuação da simulação.
+
+### Ícones, compartilhamento e PWA
+
+O favicon SVG preserva a bandeira quadriculada original em carbono/dourado.
+Há ICO real de 16/32/48 px, PNG de 32 px, Apple Touch Icon de 180 px e ícones
+PWA de 192/512 px, além de maskable com área segura. A imagem original de
+compartilhamento está em `assets/brand/og-volante-de-ouro.png` (1200×630).
+
+[`manifest.json`](manifest.json) conserva o `start_url` anterior e explicita
+`id: ./index.html`, com `scope: ./` e modo standalone. Não existe service worker
+nem garantia de funcionamento offline. Não foi adicionado cache que possa
+prender uma versão antiga do jogo no aparelho.
+
+### Publicação e hospedagem alternativa
+
+O Cloudflare Pages continua estático: branch `main`, saída `.`, sem build nem
+framework. `_headers` define revalidação de arquivos sem hash e cabeçalhos de
+segurança compatíveis com scripts inline. Não existe `_redirects` global para
+o domínio oficial: o redirect antigo é a regra externa de Bulk Redirects já
+documentada em [`infra/cloudflare/README.md`](infra/cloudflare/README.md).
+
+O `vercel.json` aplica `X-Robots-Tag: noindex` apenas na implantação Vercel,
+mantendo o jogo e a recuperação acessíveis. O canonical no HTML aponta para o
+oficial. Nenhuma dessas configurações transfere `localStorage` entre domínios.
+
+Depois do deploy, conferir o tipo de conteúdo de robots e sitemap: um status
+200 sozinho não basta, pois o fallback do Pages pode devolver o jogo para um
+arquivo que não existe. Os headers e a publicação em cada provedor precisam
+ser conferidos separadamente.
+
+### Backup e migração entre endereços
+
+Abra `/recuperar-progresso/` no mesmo navegador/perfil em que jogava:
+
+1. No Pages antigo ou na Vercel alternativa, exporte o backup das nove chaves.
+2. Abra a recuperação no domínio oficial e selecione o arquivo JSON.
+3. Confira a prévia. Dados existentes são preservados por padrão.
+4. Para substituir conflitos, faça primeiro o backup atual e confirme a troca.
+
+A página também permite backup no oficial. A importação só é habilitada nele.
+O arquivo não é enviado a servidores, e os dados antigos não são apagados.
+O atalho fica em uma explicação recolhida no roadmap, sem restaurar o aviso de
+recuperação anteriormente removido da abertura.
+
+### Search Console e validação
+
+O passo a passo de cadastro por propriedade de domínio, TXT DNS, envio do
+sitemap, inspeção de URL e acompanhamento está em
+[`infra/cloudflare/seo-infraestrutura.md`](infra/cloudflare/seo-infraestrutura.md).
+O TXT deve ser o fornecido pela conta do Google; nenhum token foi inventado e
+nenhuma propriedade foi declarada verificada.
+
+```sh
+node testes/presenca-web.js
+node testes/recuperacao-progresso.js
+node testes/rodar.js
+node ferramentas/verificar-dominio.js
+```
+
+O primeiro teste verifica os arquivos locais de SEO, formatos reais dos
+ícones, traduções, metadados, configurações e navegação sem alterar saves.
+Métricas reais de LCP/INP/CLS e a renderização móvel precisam ser verificadas
+em navegador após publicar a nova versão. Relatório desta implementação:
+[`docs/PRESENCA-WEB.md`](docs/PRESENCA-WEB.md).

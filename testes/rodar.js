@@ -4,6 +4,7 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 const testes = [
+  ['SEO, identidade e roadmap público', 'presenca-web.js'],
   ['configuração da migração de domínio', 'dominio.js'],
   ['verificador HTTP da migração', 'verificador-dominio.js'],
   ['recuperação do progresso antigo', 'recuperacao-progresso.js'],

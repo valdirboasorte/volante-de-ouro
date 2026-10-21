@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Volante de Ouro — ícone adaptável</title>
+  <rect width="512" height="512" fill="#0d0f14"/>
+  <!-- O símbolo inteiro permanece dentro da área segura circular de 80%. -->
+  <g fill="#f5c518">
+    <path d="M144 144h56v56h-56zM256 144h56v56h-56zM200 200h56v56h-56zM312 200h56v56h-56zM144 256h56v56h-56zM256 256h56v56h-56zM200 312h56v56h-56zM312 312h56v56h-56z"/>
+  </g>
+</svg>
