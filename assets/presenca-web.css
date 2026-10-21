@@ -32,7 +32,7 @@ html[data-theme="light"] .roadmap{--accent-txt:#805d00;--green:#08733d}
 .rm-saves a{display:inline-block;padding:10px 0;min-height:44px;color:var(--accent-txt)}
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.mov .rm-plano:hover{transform:translateY(-3px)}}
 @media(min-width:1121px) and (max-width:1350px){.topnav button,.topnav a{padding-left:8px;padding-right:8px;font-size:14px}#topBar{gap:4px}}
-@media(max-width:1120px){.topnav a{min-height:50px;padding:0 18px;font-size:18px;text-align:left;color:var(--ink)}.topnav button.topnav-apoio{margin:6px 0 0}}
+@media(max-width:1120px){.topnav a{min-height:50px;padding:0 18px;font-size:18px;text-align:left;color:var(--ink)}.topnav button.topnav-apoio{margin:6px 0 0}.ini-pe{grid-template-columns:1fr}.ini-pe nav{justify-content:flex-start}}
 @media(max-width:700px){.rm-cab,.rm-grade{grid-template-columns:minmax(0,1fr)}.rm-cab{gap:18px;margin-bottom:26px}.rm-cab h2{max-width:none}.rm-rodape{align-items:flex-start;flex-direction:column;gap:18px}.rm-planos{gap:16px}.rm-cab p{font-size:20px}.rm-plano h3{font-size:26px}}
 /* The operating-system preference also overrides the pre-existing motion styles. */
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation:none!important;transition:none!important}[data-rv],[data-ap],.ini-titulo .lin,.ini-sub,.ini-acoes>*{opacity:1!important;transform:none!important}}
