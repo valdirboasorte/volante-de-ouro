@@ -46,8 +46,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <script>
-/* animações: ligadas, a não ser que a pessoa tenha desligado neste aparelho */
-try{ var mv = localStorage.getItem('vdo_mov'), liga = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) && (mv ? mv === '1' : true);
+/* A escolha neste aparelho tem prioridade; sem escolha, segue o sistema. */
+try{ var mv = localStorage.getItem('vdo_mov'), liga = mv === '1' || (mv !== '0' && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   document.documentElement.classList.add(liga ? 'mov' : 'sem-mov'); }catch(e){ document.documentElement.classList.add('mov'); }
 </script>
 <style>
@@ -17075,8 +17075,8 @@ const UI = {
     addEventListener('hashchange', () => Doacao.doEndereco());
   },
 
-  /* animações: ligadas por padrão; quem quiser desliga, e a escolha fica guardada */
-  movimentoLigado(){ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return false; const p = Store.get('vdo_mov'); return p ? p === '1' : true; },
+  /* A escolha explícita vale também quando o sistema pede movimento reduzido. */
+  movimentoLigado(){ const p = Store.get('vdo_mov'); return p === '1' || (p !== '0' && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)); },
   aplicarMovimento(){
     const on = UI.movimentoLigado(), r = document.documentElement;
     r.classList.toggle('mov', on); r.classList.toggle('sem-mov', !on);

@@ -196,8 +196,8 @@ function publico({loading=false}={}){
     matchMedia:()=>({addEventListener:(kind,fn)=>{mediaEvents[kind]=fn;}}),
     localStorage:{getItem(){throw Error('o script não deve ler saves');},setItem(){throw Error('o script não deve gravar saves');},removeItem(){throw Error('o script não deve apagar saves');}},
     S:saves.driver,C:saves.chief,
-    UI:{show:id=>calls.push(['show',id]),aplicarMovimento:()=>calls.push(['motion']),movimentoLigado:()=>false},
-    Abertura:{reduzido:false,filme:()=>calls.push(['film'])}};
+    UI:{show:id=>calls.push(['show',id]),aplicarMovimento:()=>{calls.push(['motion']); return false;},movimentoLigado:()=>false},
+    Abertura:{reduzido:false,mais:()=>calls.push(['menu']),filme:()=>calls.push(['film']),revelar:()=>calls.push(['reveal'])}};
   vm.createContext(context); vm.runInContext(read('assets/presenca-web.js'),context);
   return {context,calls,docEvents,mediaEvents,saves,stored};
 }
@@ -205,7 +205,7 @@ function publico({loading=false}={}){
   const p=publico();
   eq(p.calls, [], 'carregar o script não muda a tela, o histórico nem a página, mesmo com #roadmap no endereço');
   p.mediaEvents.change();
-  ok(p.context.Abertura.reduzido && p.calls.some(c=>c[0]==='motion') && p.calls.some(c=>c[0]==='film'),'mudança de movimento reduzido atualiza a abertura');
+  ok(p.context.Abertura.reduzido && ['motion','menu','film','reveal'].every(kind=>p.calls.some(c=>c[0]===kind)),'mudança de movimento reduzido atualiza a abertura e o menu');
   eq(JSON.stringify(p.saves),p.stored,'o script não modifica dados das carreiras');
   const deferred=publico({loading:true});
   ok(typeof deferred.docEvents.DOMContentLoaded==='function' && !deferred.mediaEvents.change,'inicialização aguarda o DOM quando necessário');
