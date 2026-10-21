@@ -99,37 +99,25 @@ function png(buffer, expected, label){
     ok(new RegExp('<label\\b[^>]*for="'+id+'"').test(html), 'campo de criação possui rótulo associado: '+id);
   }
   ok(/id="inAge" aria-label="Idade"/.test(html), 'controle de idade possui nome acessível');
-  const roadmap = html.match(/<section\b[^>]*id="roadmap"[^>]*>[\s\S]*?<\/section>/)[0];
-  ok(/aria-labelledby="roadmapT"/.test(roadmap) && /<h2 id="roadmapT">/.test(roadmap), 'roadmap possui nome acessível e hierarquia');
-  const features = roadmap.match(/<ul class="rm-recursos">([\s\S]*?)<\/ul>/)[1];
-  eq((features.match(/<li>/g) || []).length, 7, 'sete recursos disponíveis em HTML');
-  for(const feature of ['Carreira de piloto','Chefe de equipe','Campeonatos históricos','Simulação de corridas','Mercado de pilotos','Sistema de contratos','Estatísticas e recordes'])
-    ok(features.includes(feature), 'recurso público: ' + feature);
-  eq((roadmap.match(/>Planejado<\//g) || []).length, 3, 'três planos com estado honesto');
-  for(const plan of ['Multiplayer cooperativo','Saves na nuvem','Infraestrutura para crescer']) ok(roadmap.includes(plan), 'plano: ' + plan);
-  ok(!/Em desenvolvimento|\b20\d\d\b|\d+\s*%/i.test(roadmap), 'roadmap não inventa datas, percentuais ou desenvolvimento em andamento');
-  ok(roadmap.includes('Funcionalidades e prioridades podem mudar'), 'aviso de mudança de prioridades');
-  ok(roadmap.includes('doar não é comprar uma funcionalidade futura'), 'apoio não é pré-venda');
-  const nav = html.match(/<nav class="topnav"[\s\S]*?<\/nav>/)[0];
-  ok(/<a href="#roadmap"/.test(nav), 'menu utiliza âncora real do roadmap');
-  ok(/<script src="assets\/presenca-web\.js" defer><\/script>/.test(html), 'navegação pública carrega sem bloquear o HTML');
+  /* o roadmap saiu do site (21/10/2026): nem seção, nem link no menu ou no rodapé */
+  ok(!/id="roadmap"|href="#roadmap"|navRoadmap/i.test(html), 'sem seção nem link de roadmap');
+  ok(/<script src="assets\/presenca-web\.js" defer><\/script>/.test(html), 'script público carrega sem bloquear o HTML');
   const css = read('assets/presenca-web.css');
-  ok(css.includes('prefers-reduced-motion:reduce') && css.includes('@media(max-width:700px)'), 'estilos incluem movimento reduzido e versão móvel');
+  ok(css.includes('prefers-reduced-motion:reduce') && !/roadmap|\.rm-/.test(css), 'estilos incluem movimento reduzido, sem resto do roadmap');
 
   const locales={en:{pairs:[]},es:{pairs:[]},ja:{pairs:[]}};
   const context={window:{VDO_LOCALES:locales}};
   vm.createContext(context);
   vm.runInContext(read('assets/i18n/presenca.js'),context);
-  const phrases=[...roadmap.matchAll(/>([^<>]+)</g)].map(m=>m[1].trim()).filter(Boolean);
-  phrases.push(meta('description'),meta('og:title'),meta('og:image:alt'),'Pular para o conteúdo','Roadmap',
-    'Termine a corrida antes de abrir o roadmap.','Conclua a decisão atual antes de abrir o roadmap.');
+  const phrases=[meta('description'),meta('og:title'),meta('og:image:alt'),'Pular para o conteúdo',
+    'Para jogar ou transferir progresso, ative o JavaScript no navegador.'];
   for(const lang of ['en','es','ja']){
     const translated=new Map(locales[lang].pairs);
     for(const phrase of new Set(phrases)){
       ok(typeof translated.get(phrase)==='string' && translated.get(phrase).trim().length>0, 'conteúdo público traduzido em '+lang+': '+phrase);
     }
     ok(locales[lang].title.includes('Volante de Ouro'), 'título traduzido preserva a marca em '+lang);
-    ok(translated.get('Planejado')!=='Planejado' && translated.get('Saves na nuvem')!=='Saves na nuvem', 'planos apresentados no idioma selecionado: '+lang);
+    ok(![...translated.keys()].some(k=>/roadmap/i.test(k)), 'traduções sem textos do roadmap: '+lang);
   }
 }
 
@@ -196,77 +184,32 @@ function png(buffer, expected, label){
   ok(vercel.headers.some(r=>r.source==='/(.*)' && r.headers.some(h=>h.key==='X-Robots-Tag' && h.value==='noindex')), 'noindex da Vercel definido apenas na configuração Vercel');
 }
 
-/* Executa o script real com um DOM mínimo: mede efeitos públicos observáveis.
-   Acesso ao armazenamento falha de propósito para detectar leituras/escritas. */
-function navigation({hash='',loading=false,live=false,missing=false,modal=false,queued=false,continuation=false}={}){
-  const calls=[], events={}, docEvents={}, linkEvents=[{},{}], mediaEvents={};
-  const saves={driver:{name:'Piloto antigo',year:1994},chief:{team:'Equipe',money:12345}};
-  const stored=JSON.stringify(saves), url=new URL(official+'?idioma=ja'+hash);
-  const section={scrollIntoView:opts=>calls.push(['scroll',JSON.parse(JSON.stringify(opts))]),focus:opts=>calls.push(['focus',JSON.parse(JSON.stringify(opts))])};
-  const context={console,location:{hash:url.hash},document:{readyState:loading?'loading':'complete',
-    getElementById:id=>id==='roadmap'&&!missing?section:null,
-    querySelectorAll:()=>linkEvents.map(b=>({addEventListener:(kind,fn)=>{b[kind]=fn;}})),
+/* Executa o script real com um DOM mínimo: só acompanha a preferência de movimento
+   do sistema. Acesso ao armazenamento falha de propósito para detectar leituras/escritas. */
+function publico({loading=false}={}){
+  const calls=[], docEvents={}, mediaEvents={};
+  const saves={driver:{name:'Piloto antigo',year:1994},chief:{team:'Equipe',money:12345}}, stored=JSON.stringify(saves);
+  const context={console,location:{hash:'#roadmap'},document:{readyState:loading?'loading':'complete',
+    getElementById:()=>{ calls.push(['dom']); return null; },querySelectorAll:()=>{ calls.push(['dom']); return []; },
     addEventListener:(kind,fn)=>{docEvents[kind]=fn;}},
-    history:{pushState:(state,title,to)=>{url.hash=to;context.location.hash=url.hash;calls.push(['history',to]);}},
-    addEventListener:(kind,fn)=>{events[kind]=fn;},
+    history:{pushState:()=>calls.push(['history'])},addEventListener:()=>calls.push(['listener']),
     matchMedia:()=>({addEventListener:(kind,fn)=>{mediaEvents[kind]=fn;}}),
-    localStorage:{getItem(){throw Error('navegação não deve ler saves');},setItem(){throw Error('navegação não deve gravar saves');},removeItem(){throw Error('navegação não deve apagar saves');}},
-    S:saves.driver,C:saves.chief,AoVivo:{R:live?{running:true}:null},
-    UI:{aberta:()=>modal,_fila:queued?[()=>calls.push(['decision'])]:[],
-      _aoEsvaziar:continuation?()=>{saves.driver.year++;calls.push(['resume']);}:null,
-      limparFila:()=>calls.push(['queue']),close:()=>calls.push(['close']),show:id=>calls.push(['show',id]),
-      menuTopo:value=>calls.push(['menu',value]),toast:text=>calls.push(['toast',text]),
-      aplicarMovimento:()=>calls.push(['motion']),movimentoLigado:()=>false},
+    localStorage:{getItem(){throw Error('o script não deve ler saves');},setItem(){throw Error('o script não deve gravar saves');},removeItem(){throw Error('o script não deve apagar saves');}},
+    S:saves.driver,C:saves.chief,
+    UI:{show:id=>calls.push(['show',id]),aplicarMovimento:()=>calls.push(['motion']),movimentoLigado:()=>false},
     Abertura:{reduzido:false,filme:()=>calls.push(['film'])}};
   vm.createContext(context); vm.runInContext(read('assets/presenca-web.js'),context);
-  return {context,calls,events,docEvents,linkEvents,mediaEvents,stored,saves,url,
-    click(overrides={}){ const event={button:0,prevented:false,preventDefault(){this.prevented=true;},...overrides};linkEvents[0].click(event);return event; }};
+  return {context,calls,docEvents,mediaEvents,saves,stored};
 }
 {
-  const p=navigation();
-  ok(p.linkEvents.every(e=>typeof e.click==='function'), 'menu e rodapé recebem navegação pública');
-  eq(p.calls, [], 'carregar o script sem hash não muda a tela');
-  const click=p.click();
-  ok(click.prevented, 'clique comum usa navegação interna');
-  ok(p.calls.some(c=>c[0]==='show'&&c[1]==='intro'), 'vindo de outra tela, exibe a abertura que contém roadmap');
-  ok(p.calls.some(c=>c[0]==='menu'&&c[1]===false), 'fecha menu móvel');
-  eq(p.url.href,official+'?idioma=ja#roadmap','âncora preserva domínio e query');
-  ok(p.calls.some(c=>c[0]==='scroll')&&p.calls.some(c=>c[0]==='focus'), 'roadmap recebe rolagem e foco de teclado');
-  eq(JSON.stringify(p.saves),p.stored,'navegação não modifica dados das carreiras');
-  ok(!p.calls.some(c=>c[0]==='queue'||c[0]==='close'),'navegação livre não limpa fila nem agenda callbacks de fechamento');
-  p.calls.length=0; p.click();
-  ok(!p.calls.some(c=>c[0]==='history'), 'abrir novamente não duplica entrada de histórico');
-  for(const modified of [{ctrlKey:true},{metaKey:true},{shiftKey:true},{altKey:true},{button:1},{button:2}]){
-    const m=navigation();
-    ok(!m.click(modified).prevented && m.calls.length===0,'clique modificado mantém comportamento nativo: '+JSON.stringify(modified));
-  }
-  const keyboard=navigation();
-  ok(keyboard.click({button:undefined}).prevented && keyboard.calls.some(c=>c[0]==='focus'), 'ativação por teclado abre e foca o roadmap');
-  const live=navigation({live:true});
-  live.click();
-  eq(live.calls.map(c=>c[0]),['toast'],'corrida ativa recebe aviso sem limpar fila, fechar diálogo ou trocar tela');
-  eq(live.url.hash,'','corrida ativa não altera histórico');
-  eq(JSON.stringify(live.saves),live.stored,'corrida ativa preserva saves');
-  for(const pending of [{modal:true},{queued:true},{continuation:true},{modal:true,queued:true,continuation:true}]){
-    const busy=navigation(pending), queue=busy.context.UI._fila, callback=busy.context.UI._aoEsvaziar;
-    ok(busy.click().prevented,'decisão pendente bloqueia a navegação: '+JSON.stringify(pending));
-    eq(busy.calls.map(c=>c[0]),['toast'],'decisão pendente só avisa, sem executar fechamento ou simulação');
-    eq(busy.url.hash,'','decisão pendente preserva o histórico');
-    ok(busy.context.UI._fila===queue && busy.context.UI._aoEsvaziar===callback,'fila e continuação pendentes preservadas por referência');
-    eq(JSON.stringify(busy.saves),busy.stored,'decisão pendente preserva dados das carreiras');
-  }
-  const initial=navigation({hash:'#roadmap'});
-  ok(initial.calls.some(c=>c[0]==='show'&&c[1]==='intro') && initial.calls.some(c=>c[0]==='focus'),'link direto com hash abre o roadmap');
-  ok(!initial.calls.some(c=>c[0]==='history'),'hash inicial não cria histórico extra');
-  const deferred=navigation({loading:true});
-  ok(!deferred.linkEvents[0].click && typeof deferred.docEvents.DOMContentLoaded==='function','inicialização aguarda DOM quando necessário');
+  const p=publico();
+  eq(p.calls, [], 'carregar o script não muda a tela, o histórico nem a página, mesmo com #roadmap no endereço');
+  p.mediaEvents.change();
+  ok(p.context.Abertura.reduzido && p.calls.some(c=>c[0]==='motion') && p.calls.some(c=>c[0]==='film'),'mudança de movimento reduzido atualiza a abertura');
+  eq(JSON.stringify(p.saves),p.stored,'o script não modifica dados das carreiras');
+  const deferred=publico({loading:true});
+  ok(typeof deferred.docEvents.DOMContentLoaded==='function' && !deferred.mediaEvents.change,'inicialização aguarda o DOM quando necessário');
   deferred.docEvents.DOMContentLoaded();
-  ok(typeof deferred.linkEvents[0].click==='function','DOMContentLoaded conecta os links');
-  deferred.context.location.hash='#roadmap';deferred.events.hashchange();
-  ok(deferred.calls.some(c=>c[0]==='focus'),'mudança de hash também abre o roadmap');
-  const absent=navigation({missing:true});
-  ok(!absent.click().prevented && absent.calls.length===0,'seção ausente não interrompe navegação nem carreira');
-  const reduced=navigation();reduced.mediaEvents.change();
-  ok(reduced.context.Abertura.reduzido && reduced.calls.some(c=>c[0]==='motion') && reduced.calls.some(c=>c[0]==='film'),'mudança de movimento reduzido atualiza a abertura');
+  ok(typeof deferred.mediaEvents.change==='function','DOMContentLoaded liga a preferência de movimento');
 }
-console.log(`presença web: ${checks} verificações de SEO, ativos, roadmap e navegação passaram`);
+console.log(`presença web: ${checks} verificações de SEO, ativos e script público passaram`);

@@ -1401,25 +1401,22 @@ carreiras das sete séries, nos três modos de chefe, nos imprevistos e no rádi
 além de regressões de pontuação, números, nomes e busca traduzida;
 `node testes/grid-kart.js` verifica os grids locais dos 96 países.
 
-## Presença web, SEO e roadmap
+## Presença web e SEO
 
 O HTML inicial contém título, descrição, canonical `https://volantedeouro.com/`,
 Open Graph, Twitter Card e JSON-LD `WebSite`/`VideoGame`, sem avaliações,
-empresa ou datas inventadas. O conteúdo de apresentação e o roadmap estão no
-HTML antes dos scripts. O título e os textos públicos acompanham PT/EN/ES/JP;
+empresa ou datas inventadas. O conteúdo de apresentação está no HTML antes dos
+scripts. O título e os textos públicos acompanham PT/EN/ES/JP;
 o canonical permanece único, pois não há URLs de idioma separadas.
 
 - [`robots.txt`](robots.txt) permite rastrear o conteúdo e referencia o sitemap.
-- [`sitemap.xml`](sitemap.xml) contém só a raiz oficial. Âncoras como `#roadmap`
-  e `#apoie`, carreiras e telas internas não são páginas independentes.
-- O link **Roadmap** no menu e no rodapé abre a seção pública. Os sete sistemas
-  atuais aparecem como disponíveis; multiplayer cooperativo, saves na nuvem e
-  infraestrutura futura aparecem como planejados, sem data nem percentual.
-- A navegação por teclado inclui um atalho ao conteúdo e foco no roadmap.
-  A preferência de movimento reduzido do sistema é respeitada sem alterar a
-  configuração salva do jogador.
-  Corridas e decisões pendentes bloqueiam a abertura do roadmap, preservando
-  a fila de escolhas e a continuação da simulação.
+- [`sitemap.xml`](sitemap.xml) contém só a raiz oficial. Âncoras como `#apoie`,
+  carreiras e telas internas não são páginas independentes.
+- A navegação por teclado inclui um atalho ao conteúdo. A preferência de
+  movimento reduzido do sistema é respeitada sem alterar a configuração salva
+  do jogador.
+- O roadmap público da prévia de 20/10/2026 foi retirado em 21/10/2026: não há
+  seção nem link de roadmap no menu ou no rodapé.
 
 ### Ícones, compartilhamento e PWA
 
@@ -1461,8 +1458,7 @@ Abra `/recuperar-progresso/` no mesmo navegador/perfil em que jogava:
 
 A página também permite backup no oficial. A importação só é habilitada nele.
 O arquivo não é enviado a servidores, e os dados antigos não são apagados.
-O atalho fica em uma explicação recolhida no roadmap, sem restaurar o aviso de
-recuperação anteriormente removido da abertura.
+O acesso é pelo endereço direto: a abertura não mostra link de recuperação.
 
 ### Search Console e validação
 

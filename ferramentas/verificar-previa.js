@@ -111,8 +111,7 @@ async function runChecks(value, {fetchImpl=globalThis.fetch}={}){
     check(image===OFFICIAL+'assets/brand/og-volante-de-ouro.png','imagem Open Graph absoluta oficial');
     check(metadata('twitter:image')===image,'imagem Twitter consistente');
     check(metadata('og:image:width')==='1200' && metadata('og:image:height')==='630','dimensões OG declaradas');
-    check(/<section\b[^>]*id="roadmap"[^>]*>[\s\S]*?Multiplayer cooperativo[\s\S]*?Saves na nuvem[\s\S]*?<\/section>/.test(html),'roadmap completo presente no HTML estático');
-    check(/<a href="#roadmap" id="navRoadmap">/.test(html),'roadmap acessível no menu');
+    check(!/id="roadmap"|href="#roadmap"/.test(html),'sem roadmap no HTML publicado');
     const structured = [...head.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
       .filter(m=>attrs(m[1]).type==='application/ld+json');
     check(structured.length===1,'um bloco JSON-LD');

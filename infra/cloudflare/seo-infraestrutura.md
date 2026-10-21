@@ -14,7 +14,7 @@ dependem de um deploy autorizado.
   domínio oficial. Não serve como controle de acesso nem bloqueia a leitura de
   diretivas `noindex`.
 - `sitemap.xml`: lista apenas `https://volantedeouro.com/`, a página pública
-  canônica real. Menus, carreiras, doação e roadmap são telas/seções da mesma
+  canônica real. Menus, carreiras e doação são telas/seções da mesma
   aplicação, não páginas independentes para inventar URLs no sitemap.
   Não há `lastmod`: não existe fonte confiável de data de modificação editorial.
 - `_headers`: aplica cabeçalhos aos arquivos estáticos do Cloudflare Pages.

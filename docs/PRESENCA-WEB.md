@@ -1,5 +1,7 @@
 # Presença web do Volante de Ouro
 
+> **21/10/2026:** o roadmap público foi retirado do site a pedido do dono. A seção, os links no menu e no rodapé, a navegação por âncora e as traduções saíram; o resto deste documento descreve a prévia como ela era.
+
 Implementação de 20/10/2026, publicada e validada somente em uma prévia do
 Cloudflare após autorização. O domínio oficial e a branch `main` continuam na
 versão anterior. Sem alteração de DNS ou do motor da simulação. Os valores do
