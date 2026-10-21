@@ -13,6 +13,7 @@ node ferramentas/historico/importar.mjs todos            # baixa e lê as tempor
 node ferramentas/historico/descobrir.mjs pendentes       # acha páginas pelas categorias da Wikipedia
 node ferramentas/historico/importar.mjs todos            # lê o que a descoberta achou
 node ferramentas/historico/gerar.mjs                     # valida, junta pessoas e escreve o banco
+node ferramentas/historico/vencedores.mjs                # o vencedor de cada corrida, do cache
 ```
 
 Um campeonato ou um período só: `importar.mjs f3_brit,f3_alema 1980-1989`.
@@ -28,6 +29,7 @@ Para reler tudo do cache depois de mudar o leitor, sem nenhuma requisição:
 | `analisar.js` | Lê a página no navegador: lista de inscritos (equipe, construtor, carro, motor, número, etapas — inclusive tabelas com vários pilotos por célula), calendário, classificação final e campeão. Não completa nada: o que a tabela não diz fica vazio. |
 | `descobrir.mjs` | Lista as páginas das categorias "… seasons" da Wikipedia para os campeonatos cujos títulos não seguem padrão. Em categoria compartilhada (por exemplo "Formula Renault seasons"), só vale o título que tem o nome do campeonato. |
 | `gerar.mjs` | Valida (campeão na lista, tamanho do grid, nacionalidades), junta a mesma pessoa lida de jeitos diferentes, dá a cada uma o nome que o jogo já usa e escreve o banco, o relatório e a auditoria. |
+| `vencedores.mjs` | Lê do cache (sem rede) o vencedor de cada corrida das categorias principais das sete séries e escreve `dados/vencedores.js`. É de onde vêm as vitórias reais de antes do save em "Os maiores da história". Rode depois do `gerar.mjs`; temporadas sem página no cache ou sem a coluna de vencedor ficam de fora e são listadas. |
 | `paises.mjs` | Nome do país na bandeira → código do jogo; países extintos guardam o nome histórico. |
 | `corrigir-escalacoes.mjs` | Propõe (e com `--aplicar` aplica) correções nas escalações do jogo a partir da auditoria. Os casos ambíguos ficam numa lista para revisão manual. |
 | `diff-escalacoes.mjs` | Lista o que mudou nas escalações desde um commit. |

@@ -11,7 +11,8 @@ function fakeEl(onWrite, id){
     classList:{ add:c => cl.add(c), remove:c => cl.delete(c),
       toggle:(c, f) => { (f === undefined ? !cl.has(c) : f) ? cl.add(c) : cl.delete(c); }, contains:c => cl.has(c) },
     get value(){ return this._v; }, set value(v){ this._v = String(v); },
-    addEventListener(){}, appendChild(){}, focus(){}, scrollIntoView(){}, setAttribute(){}, getAttribute(){ return null; },
+    _a:{}, addEventListener(){}, appendChild(){}, focus(){}, scrollIntoView(){},
+    setAttribute(n, v){ this._a[n] = String(v); }, getAttribute(n){ return n in this._a ? this._a[n] : null; }, removeAttribute(n){ delete this._a[n]; },
     play(){ return Promise.resolve(); }, pause(){}, load(){},
     querySelector(){ return fakeEl(onWrite); }, querySelectorAll(){ return []; },
     getBoundingClientRect(){ return { top:0, left:0, width:0, height:0, right:0, bottom:0 }; }
@@ -24,6 +25,7 @@ function fakeEl(onWrite, id){
       } });
     }
     element.setAttribute = (name, value) => {
+      element._a[name] = String(value);
       if(['title','aria-label','placeholder','alt','label'].includes(name))
         onWrite({ id:id || '', property:name, value:String(value) });
     };
@@ -44,24 +46,32 @@ function carregar(opts){
   const store = opts.store || {};
   const ctx = {
     document, console, Math, JSON, Date, Object, Array, String, Number, Set, Map, Promise, Symbol, Error, RegExp,
-    isNaN, parseInt, parseFloat, Infinity, NaN, encodeURIComponent, decodeURIComponent,
+    isNaN, parseInt, parseFloat, Infinity, NaN, encodeURIComponent, decodeURIComponent, URL,
     localStorage: { getItem:k => (k in store ? store[k] : null), setItem:(k, v) => { store[k] = String(v); }, removeItem:k => { delete store[k]; } },
     setTimeout: () => 0, clearTimeout(){}, setInterval: () => 0, clearInterval(){},
     addEventListener(){}, scrollTo(){}, scrollY:0, innerWidth:1200, performance:{ now:() => Date.now() },
     navigator:{ userAgent:'node' }, location:{ reload(){} }, matchMedia:() => ({ matches:false, addEventListener(){} })
   };
+  /* lotes reproduzíveis: com opts.seed, o acaso do jogo vem de um gerador fixo */
+  if(opts.seed != null){
+    let t = (opts.seed >>> 0) || 1;
+    const rnd = () => { t = (t + 0x6D2B79F5) >>> 0; let x = Math.imul(t ^ (t >>> 15), 1 | t); x ^= x + Math.imul(x ^ (x >>> 7), 61 | x); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+    const M = Object.create(Math); M.random = rnd; ctx.Math = M;
+  }
   ctx.window = ctx; ctx.self = ctx;
   vm.createContext(ctx);
   /* o banco histórico, que a página carrega por <script src> antes do jogo */
   const HISTARQ = require('path').join(__dirname, '..', 'dados', 'historico.js');
   if(!opts.semHistorico && fs.existsSync(HISTARQ)) vm.runInContext(fs.readFileSync(HISTARQ, 'utf8'), ctx, { filename:'historico.js' });
+  const VENCARQ = require('path').join(__dirname, '..', 'dados', 'vencedores.js');
+  if(!opts.semHistorico && fs.existsSync(VENCARQ)) vm.runInContext(fs.readFileSync(VENCARQ, 'utf8'), ctx, { filename:'vencedores.js' });
   const TRACARQ = require('path').join(__dirname, '..', 'dados', 'tracados.js');
   if(!opts.semHistorico && fs.existsSync(TRACARQ)) vm.runInContext(fs.readFileSync(TRACARQ, 'utf8'), ctx, { filename:'tracados.js' });
   if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
   /* Os catálogos e a apresentação usam scripts locais defer, após o jogo. */
-  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'runtime.js']){
+  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'novidades.js', 'runtime.js']){
     const p = require('path').join(__dirname, '..', 'assets', 'i18n', arq);
     if(fs.existsSync(p)) vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename:'i18n/' + arq });
   }

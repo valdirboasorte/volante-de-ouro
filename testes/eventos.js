@@ -23,6 +23,8 @@ const fechar = J => J.run('UI.close(); UI.proxima();');
     else if(st.etapa === 'treino') J.run(`Game.fazerTreino('acerto');`);
     else if(st.etapa === 'acerto') J.run('Game.setupNoEngenheiro();');
     else if(st.etapa === 'quali') J.run(`Game.fazerQuali('meio');`);
+    /* depois do grid vem a preparação: a corrida só sai quando o jogador confirma a largada */
+    else if(st.etapa === 'corrida') J.run('Game.confirmarLargada();');
   }
   ok(J.run('S.season.round') === 1, 'a primeira corrida acabou');
   ok(J.run('UI._fila.length') >= 1, 'o acontecimento ficou esperando atrás do resultado');

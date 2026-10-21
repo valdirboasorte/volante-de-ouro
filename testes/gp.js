@@ -94,6 +94,8 @@ function fimDeSemana(etapa){
     if(st.etapa === 'treino') J.run(`Game.fazerTreino('acerto');`);
     else if(st.etapa === 'acerto') J.run('Game.setupNoEngenheiro();');
     else if(st.etapa === 'quali') J.run(`Game.fazerQuali('meio');`);
+    /* grid fechado: a preparação da corrida pede confirmação antes da largada */
+    else if(st.etapa === 'corrida') J.run('Game.confirmarLargada();');
   }
   J.run('UI.limparFila(); UI.close();');
   return { correu: J.run('S.season.round') === rd0 + 1, vistos };

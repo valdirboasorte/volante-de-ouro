@@ -43,11 +43,13 @@ console.log('  motivos vistos:', Object.entries(resumo.motivos).map(([m, n]) => 
   ok(/Você tem contrato com a/.test(J.E('modal').innerHTML), 'o aviso de contrato em vigor aparece');
   const eq = J.run('S.team.name'), saldo = J.run('S.money.saldo');
   const ofs = J.run('S.pendingOffers');
-  const i = ofs.findIndex(o => o.team && o.team.name !== eq && o.podeP !== false);
+  /* uma vaga de titular em outra equipe da mesma categoria (reserva e outras séries têm regras próprias) */
+  const i = ofs.findIndex(o => o.team && o.team.name !== eq && o.podeP !== false && !o.papel && !o.sk && !o.livre);
   if(i >= 0){
     J.run(`Game.takeOffer(${i}); UI.limparFila(); UI.close();`);
     ok(J.run('S.rompeu && S.rompeu.nome') === eq, 'trocar de equipe no meio do contrato registra a quebra');
-    ok(J.run('S.money.saldo') < saldo + 1, 'a multa sai do caixa no modo realista');
+    /* o salário da equipe nova entra no mesmo inverno: o que se confere é a multa cobrada */
+    ok(J.run('S.money.multas || 0') > 0, 'a multa sai do caixa no modo realista');
   } else console.log('  (sem proposta de outra equipe para testar a quebra)');
 }
 console.log(falhas ? falhas + ' falha(s)' : 'mercado sem falhas');

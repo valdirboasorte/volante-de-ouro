@@ -124,6 +124,53 @@ depressa nos primeiros anos e tem o auge depois da estreia. Nos testes, cerca
 de um em cada cinco desses pilotos termina algum ano no top 5 da Fórmula 1,
 contra quase metade de quem começou no kart.
 
+### Dificuldade
+
+Na ficha da carreira (e a qualquer momento, pela barra da carreira) dá para
+escolher **Tranquilo**, **Equilibrado** (o padrão, também para saves antigos)
+ou **Desafio** (o jogo sem ajuda, como era antes). O mundo, a IA e as regras
+são os mesmos nas três; muda só o que pesa do seu lado:
+
+| | Tranquilo | Equilibrado | Desafio |
+|---|---|---|---|
+| Ritmo na classificação e na corrida | +2,5 | +1,2 | 0 |
+| Quebras do seu carro | metade | ¾ | iguais |
+| Suas batidas | 60% | 80% | iguais |
+| Evolução até o potencial | +25% | +10% | igual |
+| Interesse das equipes no mercado | +3 | +1,5 | 0 |
+| Paciência da equipe antes de dispensar | alta | média | a de sempre |
+| Chance de lesão | metade | ¾ | igual |
+| Pneu no limite aguenta, em média | 3 voltas | 2 voltas | 1 volta |
+| Quanto sai do bolso pela vaga (modo com dinheiro) | 50% | 70% | 100% |
+
+Medido na escada simulada (`node testes/escada.js`, estreia aos 8 em 2012,
+modo com dinheiro): no Desafio 42% das carreiras ficavam presas no kart e 38%
+chegavam à F1; no Equilibrado 92% chegam à F4 e 67% à F1; no Tranquilo, 75%.
+
+### Como o equilíbrio de carreira foi calibrado
+
+Em 200 carreiras simuladas por lote (`node testes/balanco.js 40 8,12,15,18,22
+2000 3`), olhando o título por temporada de quem teve carro entre os dois
+melhores, apareceram três causas — e nenhuma foi resolvida com teto ou cota de
+títulos:
+
+- o seu piloto evoluía até um teto mais baixo e mais devagar que um piloto da
+  IA com o mesmo talento (o mesmo potencial terminava 2 a 3 pontos abaixo);
+- a faixa de "talento de ponta" ficava abaixo do nível dos bons pilotos reais
+  da categoria principal;
+- só a IA tinha a "fome de campeonato" (menos acidente e erro mais barato para
+  quem briga por título): o seu carro de ponta abandonava o dobro.
+
+Depois da correção (lote de 200 carreiras, estreia em 2000): 68% chegam à F1
+(9% dos menos talentosos, 57% dos medianos); quem tem talento de ponta (84–88
+de potencial) ganha pelo menos um título em 30% das carreiras e 6% das
+temporadas com carro top-2 (antes, 4% e 0%); talento geracional é raro (3% no
+sorteio) e domina quando tem carro (39% das temporadas com carro top-2). 12%
+das carreiras ganham algum título e 6% chegam a quatro ou mais. A cauda
+extraordinária existe (o recorde do lote foi 15 títulos, em 1 de 200
+carreiras): o piloto geracional quase sempre consegue mudar para o melhor
+carro, e a reação dos rivais depois de títulos seguidos é pequena.
+
 ## Talento não é a mesma coisa que saber correr ali
 
 Cada categoria tem identidade própria — variância, peso da experiência, peso
@@ -305,6 +352,50 @@ as paradas até a bandeirada. Você escolhe também o ritmo de cada carro
 (atacar, normal, poupar) e, no modo chefe, a ordem de equipe quando um carro
 seu está colado atrás do outro.
 
+**Entre o grid e a largada existe a preparação.** Depois da classificação o
+grid fica fechado e aparece, para cada carro seu, a posição de largada, o
+tempo (pista, chuva agora, radar, temperatura do asfalto), os compostos que o
+regulamento permite com aderência e duração estimadas, a sugestão da equipe,
+o plano de paradas e as restrições (dois compostos, pneu de chuva). A corrida
+só começa quando você confirma; o pneu confirmado é o que vai para a pista,
+abrir a corrida não refaz o grid e confirmar duas vezes não corre a etapa duas
+vezes. No modo piloto a escolha é do seu carro; no chefe, de cada carro.
+
+**Cada resultado tem um estado explícito.** Terminou (com posição), abandono
+por acidente, abandono por problema mecânico, não largou por lesão, não se
+classificou (DNQ), não passou da pré-classificação (DNPQ), não largou (DNS) e
+reserva, piloto de testes ou sem equipe (RES, TST, S/E) — quem estava no box
+não aparece como abandono, e nenhuma narrativa fala de pódio sem posição
+válida. Os saves antigos não são reescritos: o que faltava ali aparece como
+"sem resultado registrado".
+
+**O safety car agrupa de verdade.** O líder segue o ritmo do carro de
+segurança e quem vem atrás anda mais rápido até alcançar a fila, que se forma
+ao longo das voltas com a distância de seguir segura — ninguém é
+teletransportado. A ordem na pista se mantém, os boxes funcionam, e
+retardatário à frente do líder só vai para o fim da fila e recupera a volta
+nas épocas em que o regulamento deixava (F1 2007–2009 e desde 2012, IndyCar
+desde 2000, NASCAR desde 2009); a relargada sai com o pelotão agrupado. O
+safety car virtual não agrupa: todo mundo anda no mesmo ritmo reduzido e os
+intervalos ficam. O resultado é o mesmo de 1× a 64× e no modo rápido.
+
+**O pneu no limite estoura quando acabar.** O desgaste trava em 100%; dali
+em diante quanto o pneu ainda aguenta é sorteado uma vez (em média uma volta,
+sem memória): pode estourar no segundo seguinte ou, com sorte, durar várias
+voltas — e o ritmo continua caindo enquanto ele resiste. É a aposta de quem
+estica o stint. O ponto do estouro é o mesmo em qualquer velocidade de
+transmissão.
+
+**Reserva de uma equipe grande, correndo numa categoria menor.** Quando há
+proposta de reserva da categoria principal e vaga de corrida numa categoria
+menor da mesma série, dá para acumular as duas (como Bearman em 2024, reserva
+da Ferrari e titular na F2): você corre a temporada de baixo inteira e a equipe
+grande chama você quando um titular dela não puder correr. A convocação corre
+na principal e devolve a temporada de baixo intacta; o ano conta na avaliação
+da equipe e no mercado seguinte. O vínculo acaba ao virar titular na principal,
+ao assinar outro papel ou ao trocar de série — e o papel de reserva nunca
+acompanha você para outra série.
+
 A corrida não tem resultado marcado: o que acontece na pista é o resultado.
 Cada carro freia, acelera, gasta pneu por quilômetro (o macio anda mais e dura
 menos, o duro o contrário, e todo pneu despenca no fim da vida), pega vácuo e
@@ -371,11 +462,15 @@ reputação e o parentesco entre as categorias.
 Um segundo jogo dentro do mesmo arquivo, com save próprio. Você não pilota:
 contrata quem pilota, paga a conta e responde por ela.
 
+- **Sete séries.** Fórmula 1, IndyCar, Endurance, Stock Car Brasil, NASCAR,
+  DTM e Fórmula E, cada uma com as próprias equipes, pilotos, escalações,
+  calendário, pontuação, escada de acesso e mundo de pilotos. Dá para fazer a
+  carreira inteira fora da F1: subir da base leva ao topo da própria série.
+  Saves de chefe anteriores, que não tinham série, abrem como Fórmula 1.
 - **Três portas.** Assumir uma equipe real (a McLaren de 1988 vem com Senna,
   Prost, motor Honda e uma diretoria que espera título), fundar uma equipe e
-  largar na Fórmula 1 com o pior carro do grid e dinheiro de investidor, ou
-  começar numa categoria de acesso daquela época — Fórmula Júnior, F3, F3000,
-  GP2, F2 — e subir até a F1.
+  largar na categoria principal com o pior carro do grid e dinheiro de
+  investidor, ou começar numa categoria de acesso daquela época e subir.
 - **O mundo segue a história até você mexer nele.** As outras equipes têm a
   força que tinham em cada ano, e os pilotos vão para onde foram de verdade. A
   sua equipe sai do grid da história; quem você contratar deixa um buraco na
@@ -456,8 +551,72 @@ contrata quem pilota, paga a conta e responde por ela.
   com a carreira que tiver. Depois de 2026 as equipes da IA contratam no
   mercado do mundo e mudam de força ano a ano.
 
+### Fora da Fórmula 1
+
+O que só a F1 tem fica só na F1: mercado de motores (comprado ou próprio),
+regulamentos que zeram o carro, teto de gastos desde 2021, eventos ligados a
+eles e o mercado que traz pilotos de outras séries. Nas outras séries:
+
+- o carro pesa menos: a força da sua equipe sai da média do grid real e o
+  desenvolvimento de chassi e confiabilidade move o carro na medida de
+  `SERIES[sk].spec` (chassi quase único na IndyCar, na Stock e na Fórmula E);
+- o dinheiro tem o tamanho da série (`Chefe.FATOR_SERIE`): orçamento, prêmios,
+  patrocínio, custo de operação e de inscrição; salários de piloto caem menos
+  que o orçamento;
+- a tabela de equipes conta os dois melhores carros de cada uma por corrida,
+  porque há equipes de três e quatro carros.
+
+### A classificação do chefe
+
+O fim de semana do chefe segue a ordem de verdade: decisões de sexta,
+pré-classificação quando o regulamento tem, as sessões do formato daquele ano
+e daquela etapa (Q1/Q2/Q3 com eliminação, a eliminação progressiva das duas
+primeiras etapas de 2016, as voltas somadas de 2005, as voltas únicas de 2003
+e 2004, as duas sessões até 1995, as fases da IndyCar e da NASCAR), grid
+final, preparação e largada. Em cada sessão você escolhe a janela de cada
+carro (sair cedo, no meio, no fim, procurar vácuo); um carro pode passar
+enquanto o outro cai, e quem caiu não volta na sessão seguinte. Dá para rodar
+uma sessão por vez ou simular a classificação inteira, salvar no meio e
+continuar depois. A série, o ano e a etapa vão explícitos para o regulamento:
+nada depende do save do modo piloto nem supõe Fórmula 1. A isenção da
+pré-classificação sai do histórico da equipe (estreante não é isenta; quem
+terminou o ano anterior entre as treze primeiras é).
+
+### Cenários de chefe
+
+Pontos de partida reais com objetivos e prazo, em "Cenários de chefe" (na
+tela do modo chefe e em "Mais caminhos"):
+
+| Cenário | Série / ano | Dificuldade | Objetivo principal | Prazo |
+|---|---|---|---|---|
+| Brawn GP | F1 2009 | Média | Título de construtores | 2009 |
+| Andrea Moda | F1 1992 | Extrema | Chegar viva a 1993 | 1993 |
+| McLaren | F1 1988 | Média | Começar 1989 com Senna e Prost | 1989 |
+| Minardi | F1 2001 | Alta | Chegar viva a 2004 | 2003 |
+| Williams | F1 2019 | Alta | Entre as seis primeiras de construtores | 2021 |
+| A.J. Foyt | IndyCar 2021 | Alta | Entre as oito primeiras equipes | 2022 |
+
+Cada um tem contexto ("o que aconteceu de verdade"), condições iniciais
+("o seu ponto de partida"), restrições, objetivos intermediários
+acompanhados durante o ano e critérios de sucesso e fracasso. A Brawn começa
+com o carro entre os melhores, sem patrocinador principal, motor Mercedes de
+cliente e caixa curto, sem dono rico; a Andrea Moda paga (ou não) o depósito
+de equipe nova antes da primeira etapa e disputa uma pré-classificação com a
+Brabham nas oito primeiras (condição do cenário, simplificada). Nenhum
+resultado é decidido: nos testes a Brawn ganha o título em alguns lotes e
+perde para a Ferrari em outros. O cenário salva e retoma com o save do chefe,
+e depois do resultado a carreira continua sem prazo.
+
 ### Limitações conhecidas
 
+- Sua equipe tem dois carros em todas as séries; as equipes da IA usam o
+  número real de carros de cada época. No Endurance, cada carro tem um piloto
+  principal: duplas e trios não são simulados.
+- O playoff da NASCAR existe no modo piloto, não no modo chefe; os pontos de
+  dono por carro da NASCAR e da IndyCar viram uma tabela de equipes.
+- A gestão de energia da Fórmula E e as provas especiais da IndyCar estão na
+  corrida ao vivo (regras de pneus, reabastecimento e safety car por série),
+  mas não têm decisões próprias no muro do chefe.
 - Antes de 2027, as equipes da IA seguem a história: força e pilotos de cada
   ano são os reais (menos quem você tirou delas). Elas não têm orçamento
   próprio; depois de 2026 a força delas deriva ano a ano, sem economia
@@ -473,6 +632,75 @@ contrata quem pilota, paga a conta e responde por ela.
   criado pelo jogo (no modo de base, esses aparecem depois dos reais).
 - A negociação de propostas do modo piloto vale para a categoria principal.
 - Pilotos da IA não trocam de equipe no meio do ano.
+- A força das equipes da IA vem da tabela de cada década: na F1 de 2000 a
+  2009 a Ferrari tem a mesma força o tempo todo, então em 2009 ela é mais
+  forte do que foi de verdade (e é a rival da Brawn no cenário).
+- No primeiro ano de uma equipe assumida, fundada ou promovida o carro é o
+  daquela temporada: o plano de desenvolvimento só pode melhorar, não refaz
+  o carro do zero no primeiro inverno.
+
+## O regulamento do fim de semana
+
+Antes da classificação há um resumo do regulamento daquela etapa: formato de
+classificação, quantos largam, pré-classificação, regra dos 107%, pneus,
+reabastecimento e pontos. O formato é por etapa, não por ano:
+
+- 2005: tempos somados (sábado com pouco combustível + domingo de manhã com o
+  da corrida) só nas seis primeiras etapas; depois, volta única no sábado;
+- 2016: eliminação progressiva só nas duas primeiras etapas; depois, Q1/Q2/Q3;
+- 2003 e 2004 com voltas únicas, 1996–2002 com doze voltas, até 1995 duas
+  sessões, 2006–2009 com o combustível do Q3 na largada;
+- F1 de 1977 a 1995: largam no máximo 26; de 1977 a 1992, com mais de 30
+  inscritos, as equipes fora da cota passam pela pré-classificação (DNPQ) e
+  os mais lentos ficam fora do grid (DNQ);
+- 500 Milhas: 33 largam, média de quatro voltas; Bump Day até 2009, Fast Nine
+  2010–2021, Last Row Shootout desde 2019, Top 12 e Fast Six desde 2022;
+- NASCAR: 43 largam de 1998 a 2015; 40 desde 2016, com vaga garantida para os
+  times com licença.
+
+O formato usado em cada etapa jogada fica guardado no save (`qualiFmt`), e
+quem ficou fora do grid também (`naoLarga`).
+
+Fontes: [história dos formatos de classificação (formula1.com)](https://www.formula1.com/en/latest/article/deciding-the-grid-a-history-of-f1-qualifying-formats.1oh1hemlnZ4x9rt2nff8vn),
+[pré-classificação (grandprix.com)](https://www.grandprix.com/features/joe-saward/news-feature-pre-qualifying.html),
+[Bump Day (indycar.com, 2013)](https://www.indycar.com/News/2013/05/5-18-Bump-Day-primer),
+[formato de 2022 das 500 Milhas (the-race.com)](https://the-race.com/indycar/indy-500-gets-revised-qualifying-format-for-2022/).
+
+Simplificações: o jogo não mede tempo absoluto, então a regra dos 107% aparece
+no resumo mas não tira ninguém do grid; limites de largada de provas
+específicas (Mônaco e outras dos anos 50 a 70) não são modelados; a isenção da
+pré-classificação sai do resultado da equipe no ano anterior (o regulamento
+usava os semestres anteriores); nas 500 Milhas as inscrições avulsas não são
+simuladas, então o bumping só acontece se o grid do jogo passar de 33 carros;
+corridas sprint não existem no jogo.
+
+## Apoie o projeto
+
+"Apoie o projeto" fica no menu superior com destaque amarelo (também no menu
+do celular), no rodapé e na tela inicial, e abre uma página própria (atalho:
+`#apoie`): por que apoiar (manutenção do site e ideias para o futuro, como
+multiplayer cooperativo e saves na nuvem — marcadas como ideia, sem data nem
+promessa), o cartão do Pix com QR Code, chave, "Copiar chave Pix" e "Copiar
+Pix Copia e Cola", as instruções de pagamento, a transparência (o jogo continua
+gratuito; doar é opcional e não dá vantagem nenhuma) e o agradecimento, com o
+botão de voltar ao menu principal.
+
+A configuração inteira está em [`assets/doacao.js`](assets/doacao.js):
+
+- `pix.chave` e `pix.beneficiario`: a chave como está no banco e o nome do
+  recebedor, para a pessoa conferir (os dois são obrigatórios para o Pix aparecer);
+- `pix.copiaecola`: o "Pix Copia e Cola" gerado pelo banco. O jogo confere o
+  código (CRC16, arranjo `BR.GOV.BCB.PIX` e a mesma chave) antes de mostrar o QR
+  Code e o botão de copiar — se não bater, nenhum dos dois aparece;
+- `pix.qrcode`: a imagem do QR Code gerada pelo banco, dentro do projeto. Ela
+  só aparece com um código conferido, e o teste lê a imagem pixel a pixel
+  (`ferramentas/pix/ler-qr.py`, só com Python e PIL) para garantir que é o
+  mesmo código;
+- `link.url` e `link.nome` (opcionais): uma página de doação externa, com `https://`.
+
+O jogo não gera chave, QR Code nem link, não processa pagamento, não pede dado
+nenhum e não dá vantagem a quem doa. Sem nada configurado, a página diz que as
+doações ainda não estão disponíveis. A cópia só é confirmada quando funciona.
 
 ## Rodar localmente
 
@@ -531,6 +759,28 @@ anacronismo nas escadas de 1950, 1960, 1975, 1985, 1995, 2005, 2015 e 2026, o
 grid real aparecendo na carreira, a escolha de campeonato de estreia e um save
 de antes do banco abrindo e seguindo sem piloto duplicado).
 
+Também conferem a porta da categoria principal (campeão da F2 sem vaga, grid
+todo contratado, rápido promovido, campeão tardio contra jovem excepcional,
+reserva e testes sem promoção garantida, substituição de titular machucado e
+convocação de academia), as estatísticas separadas por categoria e os rankings
+sem participação indevida, bens de luxo por idade e época, o apoio ao projeto
+escondido sem configuração, pneu de largada e depois de um toque, relações com
+contexto e memória, o regulamento por etapa (2005, 2016, pré-classificação de
+1989, 500 Milhas), o modo chefe nas sete séries e as telas novas em inglês,
+espanhol e japonês.
+
+Os testes desta rodada reproduzem os relatos: resultados com estado explícito
+(`resultados.js`: temporada de reserva sem ABD nem "Pnull", DNQ e DNPQ fora da
+conta de abandonos, abandono de um carro de ponta em temporada normal,
+o mesmo resultado em velocidades diferentes), classificação do chefe e
+preparação (`chefe-quali.js`: Q1/Q2/Q3, 2016, 2005, pré-classificação de 1989,
+IndyCar e NASCAR, um carro passa e o outro cai, salvar no meio, grid
+preservado, pneu por carro sem corrida duplicada), safety car
+(`safety-car.js`: agrupamento progressivo, ordem, retardatário por
+regulamento, relargada, safety car virtual, 1×/8×/25×), idade por época
+(`entrada-epoca.js`), cenários (`chefe-cenarios.js`) e a página de
+apoio (`doacao.js`).
+
 Para atualizar o banco histórico (baixa só o que não está no cache; veja
 [`ferramentas/historico/LEIAME.md`](ferramentas/historico/LEIAME.md)):
 
@@ -553,6 +803,16 @@ de carreira por idade de estreia:
 ```bash
 node testes/equilibrio.js 15
 node testes/dificuldade.js 25 classico
+```
+
+Lotes reproduzíveis de carreiras inteiras (talento, chegada à principal,
+títulos, idade de estreia, anos de reserva), o mesmo piloto em carros de
+níveis diferentes e a economia do modo chefe em cada série:
+
+```bash
+node testes/balanco.js 40 8,12,15,18,22 2000 3
+node testes/carro.js 16 2024 1
+node testes/chefe-economia.js 4 4
 ```
 
 ## Créditos e uso de imagens
@@ -763,6 +1023,30 @@ equipe da base quando guardam o registro dessa saída. Dispensar por desempenho
 continua sendo uma decisão válida e não é revertido ao carregar o save. Se a
 data de entrada não foi preservada, ela não é inventada. Carreiras que já
 chegaram ao topo não voltam à formação.
+
+## Onde e com que idade a carreira começa
+
+O kart nasceu nos Estados Unidos em 1956, chegou à Europa por volta de 1960,
+ganhou comissão internacional (CIK) em 1962 e Mundial em 1964. Antes disso, e
+nos países onde ele ainda não tinha chegado, a carreira começa nas corridas
+regionais de carros. A criação mostra o mínimo da época e do país e o motivo,
+e a largada não aceita menos. Simplificações do jogo, não regras legais de
+cada década:
+
+| Época e lugar | Primeiro degrau | Idade mínima |
+|---|---|---|
+| Antes de 1960, qualquer país | Corridas regionais de carros | 16 |
+| 1960–1964: EUA, Canadá e Europa ocidental | Kart | 12 |
+| 1960–1964: demais países | Corridas regionais de carros | 16 |
+| 1965–1969: também Brasil, Argentina, Austrália, Japão, México, África do Sul e o resto da Europa | Kart | 12 |
+| 1970–1984, qualquer país | Kart | 10 |
+| Desde 1985, qualquer país | Kart (categorias infantis) | 8 |
+
+Nos anos 50 e 60 as carreiras também começavam mais tarde e iam mais longe:
+auge e fim de carreira ficam três anos depois antes de 1965 e um ano depois
+até 1979. Quem entra mais tarde ainda evolui (nos testes, carreiras criadas em
+1955 aos 16 e 18 anos chegam à F1 em boa parte dos casos). Saves antigos
+criados com outra idade abrem iguais.
 
 ## O kart é passagem, não carreira
 
