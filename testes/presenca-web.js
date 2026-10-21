@@ -101,7 +101,11 @@ function png(buffer, expected, label){
   ok(/id="inAge" aria-label="Idade"/.test(html), 'controle de idade possui nome acessível');
   /* o roadmap saiu do site (21/10/2026): nem seção, nem link no menu ou no rodapé */
   ok(!/id="roadmap"|href="#roadmap"|navRoadmap/i.test(html), 'sem seção nem link de roadmap');
-  ok(/<script src="assets\/presenca-web\.js" defer><\/script>/.test(html), 'script público carrega sem bloquear o HTML');
+  ok(/<script src="assets\/presenca-web\.js\?v=[^"&]+" defer><\/script>/.test(html), 'script público versionado carrega sem bloquear o HTML');
+  for(const file of ['assets/presenca-web.css', 'assets/presenca-web.js', 'assets/i18n/novidades.js']){
+    const tag = [...html.matchAll(/<(?:link|script)\b[^>]*>/g)].map(m => attrs(m[0])).find(a => (a.href || a.src || '').startsWith(file + '?'));
+    ok(tag && new URL(tag.href || tag.src, official).searchParams.has('v'), 'versão do recurso evita cache de uma publicação anterior: ' + file);
+  }
   const css = read('assets/presenca-web.css');
   ok(css.includes('prefers-reduced-motion:reduce') && !/roadmap|\.rm-/.test(css), 'estilos incluem movimento reduzido, sem resto do roadmap');
 

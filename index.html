@@ -1444,9 +1444,6 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .ss-cartao dl{display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:8px; margin:0}
 .ss-cartao dt{font-size:12px; color:var(--av-soft)} .ss-cartao dd{margin:2px 0 0; font-weight:700; font-variant-numeric:tabular-nums}
 .ss-acoes{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
-.ss-seg{display:flex; flex-wrap:wrap; gap:4px}
-.ss-seg button{height:32px; padding:0 12px; border-radius:999px; background:var(--av-s2); color:var(--av-soft); font-size:13px; font-weight:700}
-.ss-seg button[aria-pressed="true"]{background:var(--av-ink); color:#0b0c0e}
 .ss-nota{font-size:13px; color:var(--av-soft); margin:0}
 .ss-acerto{background:var(--av-s1); padding:12px 14px; display:grid; gap:10px}
 .ss-acerto header{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:baseline}
@@ -1970,7 +1967,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
   .hc-grid td.e.k,.hc-grid th.k{display:none}
 }
 </style>
-<link rel="stylesheet" href="assets/presenca-web.css">
+<link rel="stylesheet" href="assets/presenca-web.css?v=20261021-movimento">
 </head>
 <body>
 <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
@@ -2432,10 +2429,10 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/complete-driver.js" defer></script>
 <script src="assets/i18n/complete-chief.js" defer></script>
 <script src="assets/i18n/complete-common.js" defer></script>
-<script src="assets/i18n/novidades.js" defer></script>
+<script src="assets/i18n/novidades.js?v=20261021-chefe" defer></script>
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
-<script src="assets/presenca-web.js" defer></script>
+<script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -26033,7 +26030,6 @@ const Sessao = {
     el('ssMuro').addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
       if(b.dataset.sair != null){ if(!Sessao.sair(+b.dataset.sair)) UI.toast(S.tipo === 'treino' ? 'Não há mais saídas para este carro.' : 'Não dá mais tempo de abrir uma volta.'); }
-      if(b.dataset.tat){ const c = S.carros[+b.dataset.i]; if(c) c.tatica = b.dataset.tat; }
       if(b.dataset.ver != null) Sessao.sel = +b.dataset.ver;
       Sessao.muro(true);
     });
@@ -26091,12 +26087,6 @@ const Sessao = {
     const S = Sessao.S, box = el('ssMuro'); if(!S || !box) return;
     const meus = S.carros.map((c, i) => [c, i]).filter(([c]) => c.ctrl);
     const ord = Sessao.ordem(S);
-    const tatHtml = (c, i) => {
-      if(S.tipo !== 'quali' || S.emFila) return '';
-      const js = Engine.janelasDe(Engine.regulamento(S.sea, S.sea.round, S.qs.sk).fmt, S.trk).map(j => j.k);
-      const ops = [['normal', 'Normal']].concat(js.indexOf('sozinho') >= 0 ? [['sozinho', 'Pista livre']] : []).concat(js.indexOf('vacuo') >= 0 ? [['vacuo', 'Procurar vácuo']] : []);
-      return ops.length > 1 ? `<div class="ss-seg" role="group" aria-label="Tática">${ops.map(([k, n]) => `<button data-i="${i}" data-tat="${k}" aria-pressed="${c.tatica === k}">${n}</button>`).join('')}</div>` : '';
-    };
     const cartao = ([c, i]) => {
       const pos = ord.indexOf(c) + 1;
       const st = S.tipo === 'treino' ? Acerto.estado(S.sea, c.carro) : null;
@@ -26106,7 +26096,6 @@ const Sessao = {
         <header><s style="background:${esc(c.cor)}"></s><b>${esc(c.nome)}</b><em>${c.melhor != null ? pos + 'º' : '—'}</em></header>
         <dl><div><dt>Agora</dt><dd>${estado}</dd></div><div><dt>Última</dt><dd>${c.ult != null ? Prova.fmtTempo(c.ult) : '—'}</dd></div><div><dt>Melhor</dt><dd>${c.melhor != null ? Prova.fmtTempo(c.melhor) : '—'}</dd></div>
           ${st ? `<div><dt>Saídas</dt><dd>${st.usadas} de ${st.saidas}</dd></div>` : ''}</dl>
-        ${tatHtml(c, i)}
         <div class="ss-acoes">${S.emFila ? '<span class="ss-nota">Sai na ordem do regulamento.</span>' : `<button class="btn btn-primary btn-sm" data-sair="${i}" ${pode ? '' : 'disabled'}>${S.tipo === 'treino' ? 'Sair para a pista' : c.saidas ? 'Mais uma tentativa' : 'Sair agora'}</button>`}
           ${S.tipo === 'treino' ? `<button class="btn btn-ghost btn-sm" data-ver="${i}">Acerto</button>` : ''}</div>
       </article>`;

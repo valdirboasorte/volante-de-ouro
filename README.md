@@ -1385,6 +1385,13 @@ criadas dinamicamente acompanham o idioma; retornar a PT recupera o texto
 original. Novos textos precisam de entradas nos três catálogos para evitar
 o retorno ao texto original em português.
 
+No modo chefe, os cartões do treino e da classificação acompanham o idioma,
+incluindo o estado dos carros, os comandos de saída e os resultados da sessão.
+A classificação ao vivo não exibe mais o seletor Normal / Pista livre;
+o jogador continua escolhendo quando enviar cada carro para a pista.
+Os recursos de tradução e de animação atualizados têm uma versão na URL para
+evitar que o navegador combine o HTML novo com arquivos antigos em cache.
+
 O japonês inclui menus, carreira, decisões, conversas, imprensa e corrida ao
 vivo. Os arquivos `ja*.js` contêm pares português/japonês; os arquivos
 `complete-*.js` reúnem as mensagens complementares dos três idiomas. A apresentação usa
@@ -1399,6 +1406,8 @@ de idioma, texto dinâmico, formulários, preservação do save e os marcadores.
 `node testes/idiomas-cobertura.js` exercita mensagens realmente geradas em
 carreiras das sete séries, nos três modos de chefe, nos imprevistos e no rádio,
 além de regressões de pontuação, números, nomes e busca traduzida;
+`node testes/idiomas-chefe.js` cobre os painéis do chefe e os estados das
+sessões ao vivo nos três idiomas, preservando os dados da equipe;
 `node testes/grid-kart.js` verifica os grids locais dos 96 países.
 
 ## Presença web e SEO

@@ -4,6 +4,16 @@
    Gerado a partir das tabelas de tradução revisadas; os nomes próprios ficam fora. */
 (function(){
   const rows = [
+    ["Continuar a classificação","Continue qualifying","Continuar la clasificación","予選を続ける"],
+    ["O calendário aparece quando a temporada começar.","The calendar will appear when the season starts.","El calendario aparecerá cuando empiece la temporada.","シーズンが始まるとカレンダーが表示されます。"],
+    ["Você deve {0} parcela(s) de {1}.","You owe {0} instalment(s) of {1}.","Debes {0} cuota(s) de {1}.","{1}の返済が残り{0}回あります。"],
+    ["{nome}: sem tempo","{nome}: no time","{nome}: sin tiempo","{nome}：タイムなし"],
+    ["licença MIT","MIT license","licencia MIT","MITライセンス"],
+    ["1 parada","1 stop","1 parada","1ストップ"],
+    ["{0} paradas","{0} stops","{0} paradas","{0}ストップ"],
+    ["meta {pos}","target {pos}","objetivo {pos}","目標{pos}"],
+    ["previsto {0}","projected {0}","previsto {0}","予測{0}"],
+    ["{0} encerrada","{0} finished","{0} finalizada","{0}年終了"],
     ["Ataque máximo","Maximum attack","Ataque máximo","全開アタック"],
     ["Auto","Auto","Auto","オート"],
     ["Cuidar","Manage","Cuidar","いたわる"],

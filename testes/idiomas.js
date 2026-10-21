@@ -285,8 +285,11 @@ for(const lang of ['es','en','ja','pt']){
   eq(chief.run('JSON.stringify(C)'),teamBefore,'equipe do chefe intacta em '+lang);
 }
 const html = fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+/* A versão na URL invalida o cache dos catálogos após uma publicação. */
+const localScripts = new Set([...html.matchAll(/<script\b(?=[^>]*\bdefer\b)[^>]*\bsrc="([^"]+)"[^>]*>/g)]
+  .map(m => m[1].split('?')[0]));
 for(const name of scripts){
-  ok(html.includes('src="assets/i18n/'+name+'" defer'), name+': carregamento local na página');
+  ok(localScripts.has('assets/i18n/' + name), name+': carregamento local na página');
 }
 ok(html.includes('id="languageSelect"'),'seletor visível integrado na página');
 ok(html.includes('value="ja" lang="ja" aria-label="日本語">JP</option>'),'opção japonesa exibe JP e mantém o código de idioma correto');

@@ -30,6 +30,7 @@ const testes = [
   ['português, inglês, espanhol e japonês', 'idiomas.js'],
   ['tradução durante as carreiras e corridas', 'idiomas-cobertura.js'],
   ['tradução das telas novas', 'idiomas-novidades.js'],
+  ['tradução do chefe e sessões ao vivo', 'idiomas-chefe.js'],
   ['modo chefe (carreiras aleatórias)', 'chefe.js', ['30']],
   ['modo chefe nas sete séries', 'chefe-series.js', ['3']],
   ['classificação do chefe e preparação da largada', 'chefe-quali.js'],

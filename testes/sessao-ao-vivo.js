@@ -69,6 +69,22 @@ function equipe(ano, pos, seed){
   ok(r.prox === 1, `o resultado do ${r.sessao} entra na classificação e a próxima sessão fica pronta`);
 }
 
+/* Os cartões da classificação mantêm o comando de saída sem o seletor de tática. */
+{
+  const J = equipe(2010, 5);
+  const r = J.run(`(() => {
+    Sessao.S = Sessao.criar('quali'); Sessao.muro(true);
+    const antes = el('ssMuro').innerHTML;
+    Sessao.S.carros.filter(c => c.ctrl).forEach(c => { c.saidas = 1; });
+    Sessao.muro(true);
+    const depois = el('ssMuro').innerHTML;
+    return { semTatica: !/data-tat|ss-seg/.test(antes + depois),
+      sair: antes.includes('Sair agora'), repetir: depois.includes('Mais uma tentativa') };
+  })()`);
+  ok(r.semTatica, 'classificação sem os botões Normal e Pista livre');
+  ok(r.sair && r.repetir, 'os comandos de sair e tentar novamente continuam disponíveis');
+}
+
 /* 3. a volta única de 2004: em fila, uma vez cada um */
 {
   const J = equipe(2004, 3);
