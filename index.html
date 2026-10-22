@@ -26197,7 +26197,22 @@ const Fotos = {
     return { url: FOTOS.base + f + (w ? '/' + w + 'px-' + enc : ''), autor: FOTOS.a[ia] || 'autor no Commons', lic: FOTOS.l[il] || '',
              pagina: 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(arq.replace(/ /g, '_')) };
   },
-  piloto(nome){ if(!Fotos.ok() || !nome) return null; const c = FOTOS.p[nome]; return c ? Fotos.info(c) : null; },
+  /* retratos que o projeto guarda em assets/pilotos: valem antes do Commons */
+  LOCAIS: {
+    'Senna': 'assets/pilotos/senna.jpg',
+    'Hamilton': 'assets/pilotos/hamilton.jpg'
+  },
+  piloto(nome){
+    if(!nome) return null;
+    if(Fotos.LOCAIS[nome]) return { url: Fotos.LOCAIS[nome], autor: 'acervo do Volante de Ouro', lic: '', pagina: '' };
+    if(!Fotos.ok()) return null;
+    const c = FOTOS.p[nome]; return c ? Fotos.info(c) : null;
+  },
+  /* "Leclerc (autor, licença)", com o link do Commons quando a foto vem de lá */
+  credito(n, f){
+    return f.pagina ? `<a href="${esc(f.pagina)}" target="_blank" rel="noopener noreferrer" data-i18n-ignore>${esc(n)}</a> (<span data-i18n-ignore>${esc(f.autor)}${f.lic ? ', ' + esc(f.lic) : ''}</span>)`
+      : `<span data-i18n-ignore>${esc(n)}</span> (<span>${esc(f.autor)}</span>)`;
+  },
   chave(carro){ return String(carro || '').split(' · ')[0].trim(); },
   norm(t){ return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); },
   iniciais(nome){ return String(nome || '?').replace(/\s*\([^)]*\)/g, '').split(/[\s.]+/).filter(Boolean).map(x => x[0] || '').join('').slice(0, 2).toUpperCase(); },
@@ -26207,14 +26222,14 @@ const Fotos = {
   rosto(nome, cor, cls){
     const f = Fotos.piloto(nome);
     if(f) Fotos.usadas.set(nome, f);
-    const tit = f ? `Foto: ${f.autor}, ${f.lic}, via Wikimedia Commons` : '';
+    const tit = f ? (f.pagina ? `Foto: ${f.autor}, ${f.lic}, via Wikimedia Commons` : `Foto: ${f.autor}`) : '';
     return `<span class="rosto${cls ? ' ' + cls : ''}" style="--tc:${esc(cor || '#3a3f46')}" aria-hidden="true"${tit ? ` title="${esc(tit)}"` : ''}><span>${esc(Fotos.iniciais(nome))}</span>${
       f ? `<img src="${esc(f.url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>`;
   },
   /* "Fotos: Leclerc (autor, licença); ..." para o pé da página */
   creditosHtml(){
     if(!Fotos.usadas.size) return '';
-    const l = [...Fotos.usadas].map(([n, f]) => `<span><a href="${esc(f.pagina)}" target="_blank" rel="noopener noreferrer" data-i18n-ignore>${esc(n)}</a> (<span data-i18n-ignore>${esc(f.autor)}, ${esc(f.lic)}</span>)</span>`);
+    const l = [...Fotos.usadas].map(([n, f]) => `<span>${Fotos.credito(n, f)}</span>`);
     return `<details class="chx-creditos"><summary>Créditos das fotos (${l.length})</summary><p>${l.join('; ')}.</p><p>Fotos via Wikimedia Commons.</p></details>`;
   },
   /* a inscrição é desta equipe? "Scuderia Ferrari" é a Ferrari; "Red Bull Racing-Honda RBPT RB20", a Red Bull */
@@ -26229,30 +26244,42 @@ const Fotos = {
     if(!Fotos.ok() || typeof Hist === 'undefined' || !Hist.ok()) return null;
     cat = cat || (typeof C !== 'undefined' && C && C.cat) || 'Fórmula 1';
     const topo = Math.min(ano, Engine.HORIZONTE);
+    /* no carro vale só o construtor, antes do hífen do motor: "Minardi-Ferrari M191"
+       é Minardi, não Ferrari; "Talbot-Lago T26C" continua Talbot-Lago */
+    const onde = (txt, nome) => {
+      const b = Fotos.norm(nome);
+      const x = b && new RegExp('(^|[^a-z0-9])' + b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').exec(Fotos.norm(txt));
+      return x ? x.index : -1;
+    };
+    /* pelo inscrito, desde que o construtor do carro não venha antes no nome:
+       "Vodafone McLaren Mercedes" é a McLaren, não a Mercedes */
+    const peloInscrito = (txt, c) => {
+      const e = onde(txt, eq); if(e < 0) return false;
+      const cons = c ? c.split(/[\s-]/)[0] : '', ce = cons ? onde(txt, cons) : -1;
+      return ce < 0 || ce >= e;
+    };
+    const daEq = i => {
+      const c = Fotos.chave(i.carro), h = c.indexOf('-'), k = onde(c, eq);
+      if(k >= 0 && (h < 0 || k < h)) return true;
+      return peloInscrito(i.eq, c);
+    };
+    const anos = [];
     for(let a = topo; a >= topo - 8; a--){
       const cid = typeof campDaCat === 'function' ? campDaCat(cat, a) : 'f1';
-      const t = cid && Hist.temporada(cid, a); if(!t || !t.inscritos.length) continue;
+      const t = cid && Hist.temporada(cid, a);
+      if(t && t.inscritos.length) anos.push([a, t]);
+    }
+    /* o carro da própria equipe, mesmo de um ano antes, vem antes de qualquer outra foto */
+    for(const [a, t] of anos){
       const com = t.inscritos.filter(i => i.carro && FOTOS.k[Fotos.chave(i.carro)]);
-      /* no carro vale só o construtor, antes do hífen do motor: "Minardi-Ferrari M191"
-         é Minardi, não Ferrari; "Talbot-Lago T26C" continua Talbot-Lago */
-      const onde = (txt, nome) => {
-        const b = Fotos.norm(nome);
-        const x = b && new RegExp('(^|[^a-z0-9])' + b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').exec(Fotos.norm(txt));
-        return x ? x.index : -1;
-      };
-      const daEq = i => {
-        const c = Fotos.chave(i.carro), h = c.indexOf('-'), k = onde(c, eq);
-        if(k >= 0 && (h < 0 || k < h)) return true;
-        /* pelo inscrito, desde que o construtor do carro não venha antes no nome:
-           "Vodafone McLaren Mercedes" é a McLaren, não a Mercedes */
-        const e = onde(i.eq, eq); if(e < 0) return false;
-        const cons = c.split(/[\s-]/)[0], ce = cons ? onde(i.eq, cons) : -1;
-        return ce < 0 || ce >= e;
-      };
       const x = com.find(i => (nomes || []).indexOf(i.name) >= 0 && daEq(i)) || com.find(daEq);
       if(x){ const k = Fotos.chave(x.carro); return Object.assign(Fotos.info(FOTOS.k[k]), { chassi: k, ano: a }); }
-      /* sem o chassi no banco (IndyCar, NASCAR, Fórmula E...): a foto da página da equipe */
-      const e = FOTOS.e && t.inscritos.find(i => i.eq && FOTOS.e[i.eq] && ((nomes || []).indexOf(i.name) >= 0 || Fotos.daEquipe(i.eq, eq)));
+    }
+    /* sem o chassi no banco (IndyCar, NASCAR, Fórmula E...): a foto da página da equipe.
+       O inscrito tem de ser a equipe (os pilotos dela podem ter corrido em outra: a
+       Williams de 2021 do Russell não é a Mercedes), e um logo não serve de capa */
+    if(FOTOS.e) for(const [a, t] of anos){
+      const e = t.inscritos.find(i => i.eq && FOTOS.e[i.eq] && !/\.svg/i.test(FOTOS.e[i.eq][0]) && peloInscrito(i.eq, Fotos.chave(i.carro)));
       if(e) return Object.assign(Fotos.info(FOTOS.e[e.eq]), { chassi: e.eq, ano: null, equipe: true });
     }
     return null;
@@ -27351,7 +27378,7 @@ const UIC = {
     const tit = Chefe.titulares();
     const foto = UIC.fotoCapa(tit.map(p => p.nome));
     const retratos = tit.slice(0, 2).map(p => [p, Fotos.piloto(p.nome)]).filter(x => x[1]);
-    const credRet = retratos.length ? `<span class="cred-ret">Retratos: ${retratos.map(([p, f], k) => `<span data-ret="${esc(p.id)}">${k ? '; ' : ''}<a href="${esc(f.pagina)}" target="_blank" rel="noopener noreferrer">${esc(Engine.sobrenome(p.nome))}</a> (${esc(f.autor)}, ${esc(f.lic)})</span>`).join('')}, via Wikimedia Commons</span>` : '';
+    const credRet = retratos.length ? `<span class="cred-ret">Retratos: ${retratos.map(([p, f], k) => `<span data-ret="${esc(p.id)}">${k ? '; ' : ''}${Fotos.credito(Engine.sobrenome(p.nome), f)}</span>`).join('')}${retratos.some(([, f]) => f.pagina) ? ', via Wikimedia Commons' : ''}</span>` : '';
     return `<section class="chx-capa" style="--tc:${esc(C.eq.cor)}" aria-label="A equipe">
       <img src="${esc(foto.src)}" alt="${esc(foto.alt)}" decoding="async"${foto.externa ? ` referrerpolicy="no-referrer" onerror="UIC.fotoFalhou(this, true)"` : ''}>
       <div class="chx-capa-tx"><h2>${esc(C.eq.nome)}</h2>${foto.chassi ? `<p><span data-i18n-ignore>${esc(foto.chassi)}</span>${foto.anoCarro && foto.anoCarro !== C.ano ? ` · <span>${C.ano > Engine.HORIZONTE ? 'o último carro real, de ' + foto.anoCarro : 'foto do carro de ' + foto.anoCarro}</span>` : ''}</p>` : `<p>${esc(C.cat)} · ${inverno ? 'pré-temporada de ' + C.ano : 'temporada ' + C.ano}</p>`}</div>

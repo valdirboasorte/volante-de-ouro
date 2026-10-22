@@ -1465,7 +1465,8 @@
     ["· {0} voltas","· {0} laps","· {0} vueltas","· {0}周"],
     ["· {0} volta","· {0} lap","· {0} vuelta","· {0}周"],
     ["{0}, {1} voltas","{0}, {1} laps","{0}, {1} vueltas","{0}、{1}周"],
-    ["Pneu de chuva","Full wet","Lluvia extrema","フルウェット"]
+    ["Pneu de chuva","Full wet","Lluvia extrema","フルウェット"],
+    ["acervo do Volante de Ouro","Volante de Ouro collection","archivo de Volante de Ouro","Volante de Ouro所蔵"]
   ];
   for(const [lang,column] of [['en',1],['es',2],['ja',3]]){
     const locale=window.VDO_LOCALES[lang];
