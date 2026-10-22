@@ -62,7 +62,6 @@ const testes = [
   ['evolução, decisões e save do piloto', 'progresso-piloto.js'],
   ['evolução em cenários e dificuldades', 'evolucao-cenarios.js'],
   ['superlicença pela tabela real de cada ano', 'superlicenca.js'],
-  ['rodada dupla com grid invertido na base', 'rodada-dupla.js'],
   ['banco histórico (escadas e grids reais)', 'historico.js'],
   ['save de antes do banco histórico', 'migracao-historico.js'],
   ['tamanho do save', 'save.js']

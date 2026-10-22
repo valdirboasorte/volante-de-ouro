@@ -3057,105 +3057,6 @@ function pontosBase(year){
   if(year<=2009) return {p:[10,8,6,5,4,3,2,1], fl:0, label:'10-8-6-5-4-3-2-1'};
   return {p:[25,18,15,12,10,8,6,4,2,1], fl:0, label:'25-18-15-12-10-8-6-4-2-1'};
 }
-/* ─────────────── O FIM DE SEMANA DAS CATEGORIAS DE BASE ───────────────
-   Na F2, na F3 e nas categorias de acesso, cada fim de semana tem duas ou três
-   corridas, e a corrida curta larga com o grid invertido. O formato é o do
-   campeonato real daquele ano (campDaCat): quantas corridas, de onde sai o grid de
-   cada uma e quanto cada uma paga. Cada corrida é uma entrada do calendário;
-   as do mesmo fim de semana dividem a pista, o acerto e a classificação.
-   grid: 'quali' (a classificação do fim de semana), 'nova' (uma sessão própria),
-   ou { inv: N, de: 'quali' | 'anterior' } (os N primeiros invertidos, da
-   classificação ou da corrida anterior; N = 0 inverte o grid inteiro).
-   Fontes (consultadas em out/2026): regulamentos da GP2, da F2 e da F3 da FIA nas
-   páginas de cada temporada da Wikipedia; F3 Euro Series (Wikipedia, formato de
-   2006 a 2010); F3 Europeia da FIA (três corridas por etapa); F4 Italiana (relatos
-   de 2014 e 2020: Jenzer Motorsport) e F4 Britânica (fiaformula4.com, mudança do
-   grid invertido em 2022; páginas de 2021 a 2025).
-   Simplificações: nas outras F4 nacionais, na Fórmula Regional e na Fórmula
-   Renault 2.0 as corridas têm grid de classificação, sem inversão (cada regulamento
-   nacional mudou muito de ano para ano); na F4 Britânica até 2020 a corrida 2 inverte
-   os oito primeiros da corrida 1 ("a metade de cima"). */
-const P25 = [25,18,15,12,10,8,6,4,2,1];
-function formatoFds(cat, ano, sk){
-  if(!cat || typeof campDaCat !== 'function') return null;
-  const id = campDaCat(cat, ano);
-  if(!id) return null;
-  const C = (tipo, grid, pts, dist, n) => ({ tipo, grid, pts, dist: dist || 1, n });
-  const lab = p => p.p.join('-') + (p.pole ? ' + ' + p.pole + ' pela pole' : '') + (p.fl ? ' + ' + p.fl + ' pela volta mais rápida' : '') + (p.pole || p.fl ? '' : ' pontos');
-  const fmt = (corridas, nota) => ({ id, corridas, nota,
-    label: corridas.map(c => c.n + ': ' + lab(c.pts)).join(' · ') });
-  /* GP2 (2005-2016) e F2 da FIA (2017 em diante) */
-  if(id === 'gp2' || id === 'f2'){
-    if(ano <= 2011) return fmt([C('principal', 'quali', { p:[10,8,6,5,4,3,2,1], pole:2, fl:1 }, 1, 'Principal'),
-                                C('sprint', { inv:8, de:'anterior' }, { p:[6,5,4,3,2,1], fl:1 }, .67, 'Sprint')]);
-    if(ano <= 2020) return fmt([C('principal', 'quali', { p:P25, pole:4, fl:2 }, 1, 'Principal'),
-                                C('sprint', { inv:8, de:'anterior' }, { p:[15,12,10,8,6,4,2,1], fl:2 }, .67, 'Sprint')]);
-    if(ano === 2021) return fmt([C('sprint', { inv:10, de:'quali' }, { p:[15,12,10,8,6,5,4,3,2,1], fl:2 }, .67, 'Sprint 1'),
-                                 C('sprint', { inv:10, de:'anterior' }, { p:[15,12,10,8,6,5,4,3,2,1], fl:2 }, .67, 'Sprint 2'),
-                                 C('principal', 'quali', { p:P25, pole:4, fl:2 }, 1, 'Principal')]);
-    return fmt([C('sprint', { inv:10, de:'quali' }, { p:[10,8,6,5,4,3,2,1], fl:1 }, .67, 'Sprint'),
-                C('principal', 'quali', { p:P25, pole:2, fl:1 }, 1, 'Principal')]);
-  }
-  /* F3 da FIA (2019 em diante) */
-  if(id === 'f3'){
-    if(ano <= 2020) return fmt([C('principal', 'quali', { p:P25, pole:4, fl:2 }, 1, 'Corrida 1'),
-                                C('sprint', { inv:8, de:'anterior' }, { p:[15,12,10,8,6,4,2,1], fl:2 }, .85, 'Corrida 2')]);
-    if(ano === 2021) return fmt([C('sprint', { inv:12, de:'quali' }, { p:[15,12,10,8,6,5,4,3,2,1], fl:2 }, .85, 'Sprint 1'),
-                                 C('sprint', { inv:12, de:'anterior' }, { p:[15,12,10,8,6,5,4,3,2,1], fl:2 }, .85, 'Sprint 2'),
-                                 C('principal', 'quali', { p:P25, pole:4, fl:2 }, 1, 'Principal')]);
-    return fmt([C('sprint', { inv:12, de:'quali' }, { p:[10,9,8,7,6,5,4,3,2,1], fl:1 }, .85, 'Sprint'),
-                C('principal', 'quali', { p:P25, pole:2, fl:1 }, 1, 'Principal')]);
-  }
-  /* F3 Euro Series (2003-2011) e F3 Europeia da FIA (2012-2018) */
-  if(id === 'f3_euroseries'){
-    if(ano <= 2005) return fmt([C('corrida', 'quali', { p:[10,8,6,5,4,3,2,1] }, 1, 'Corrida 1'),
-                                C('corrida', 'nova', { p:[10,8,6,5,4,3,2,1], pole:1 }, .75, 'Corrida 2')]);
-    return fmt([C('principal', 'quali', { p:[10,8,6,5,4,3,2,1], pole:1 }, 1, 'Corrida 1'),
-                C('sprint', { inv:8, de:'anterior' }, { p:[6,5,4,3,2,1] }, .75, 'Corrida 2')]);
-  }
-  if(id === 'f3_euro_fia') return fmt([C('corrida', 'quali', { p:P25 }, 1, 'Corrida 1'), C('corrida', 'nova', { p:P25 }, 1, 'Corrida 2'),
-                                       C('corrida', 'nova', { p:P25 }, 1, 'Corrida 3')]);
-  /* F4 Italiana e F4 Britânica: três corridas, com a regra do grid de cada época */
-  if(id === 'f4_italia'){
-    if(ano <= 2015) return fmt([C('corrida', 'quali', { p:P25 }, 1, 'Corrida 1'), C('sprint', { inv:10, de:'anterior' }, { p:P25 }, 1, 'Corrida 2'),
-                                C('corrida', 'nova', { p:P25 }, 1, 'Corrida 3')]);
-    return fmt([C('corrida', 'quali', { p:P25 }, 1, 'Corrida 1'), C('corrida', 'nova', { p:P25 }, 1, 'Corrida 2'), C('corrida', 'nova', { p:P25 }, 1, 'Corrida 3')]);
-  }
-  if(id === 'f4_brit'){
-    const fl = ano >= 2022 ? 1 : 0;
-    const inv = ano <= 2020 ? { inv:8, de:'anterior' } : ano === 2021 ? { inv:0, de:'quali' } : ano <= 2024 ? { inv:10, de:'quali' } : { inv:12, de:'quali' };
-    return fmt([C('corrida', 'quali', { p:P25, fl }, 1, 'Corrida 1'),
-                C('sprint', inv, { p: ano >= 2023 ? [15,12,10,8,6,4,2,1] : P25, fl }, 1, 'Corrida 2'),
-                C('corrida', 'nova', { p:P25, fl }, 1, 'Corrida 3')]);
-  }
-  /* as outras F4 nacionais: três corridas, cada uma com a sua classificação */
-  if(/^f4_/.test(id)) return fmt([C('corrida', 'quali', { p:P25 }, 1, 'Corrida 1'), C('corrida', 'nova', { p:P25 }, 1, 'Corrida 2'),
-                                  C('corrida', 'nova', { p:P25 }, 1, 'Corrida 3')], 'simplificado');
-  /* Fórmula Regional e Fórmula Renault 2.0: duas corridas, duas classificações */
-  if(id === 'frec' || id === 'fr_eurocup'){
-    const p = id === 'frec' || ano >= 2010 ? { p:P25 } : { p: pontosBase(ano).p };
-    return fmt([C('corrida', 'quali', p, 1, 'Corrida 1'), C('corrida', 'nova', p, 1, 'Corrida 2')], 'simplificado');
-  }
-  return null;
-}
-/* Um calendário de corridas avulsas vira fins de semana com o formato do ano:
-   as n corridas que a categoria teria ficam em n/k fins de semana de k corridas. */
-function calendarioFds(ids, fmt, mk){
-  if(!fmt) return ids.map((id, i) => mk(id, i));
-  const k = fmt.corridas.length, w = Math.max(2, Math.round(ids.length / k));
-  const out = [];
-  ids.slice(0, w).forEach((id, wi) => fmt.corridas.forEach((c, j) => {
-    const e = mk(id, out.length);
-    Object.assign(e, { fds: wi, fdsN: j, fdsK: k, tipo: c.tipo, gridRegra: c.grid, pts: c.pts, dist: c.dist, corridaN: c.n });
-    out.push(e);
-  }));
-  return out;
-}
-/* a primeira corrida do fim de semana de uma etapa (a própria, quando é corrida avulsa) */
-function rdBaseFds(sea, rd){
-  const t = sea && sea.calendar && sea.calendar[rd];
-  return t && t.fdsN ? rd - t.fdsN : rd;
-}
 /* O kart pontua como kart: a escala da CIK-FIA para a final (quinze
    pontuam, 25 para quem vence) e o pior resultado do ano descartado, como
    no Europeu da FIA e no Brasileiro. Nada de playoff nem de 25-18-15. */
@@ -9040,10 +8941,7 @@ const Engine = {
       ids = juniorCalendar(cat, S.year, S.series, n, S.driver.cc);
       if(Engine.ehKart(cat)) pts = pontosKart(ids.length);
     }
-    /* na base, o fim de semana do campeonato real: rodada dupla ou tripla, com grid invertido */
-    const fmtFds = isTop || Engine.ehKart(cat) ? null : formatoFds(cat, S.year, S.series);
-    if(fmtFds) pts = Object.assign({}, fmtFds.corridas.find(c => c.tipo === 'principal' || c.tipo === 'corrida').pts, { label: fmtFds.label });
-    const calendar = calendarioFds(ids, fmtFds, (id, i) => {
+    const calendar = ids.map((id,i)=>{
       const t = TRACKS[id] || TRACKS['it'];
       return { r:i+1, id, gp:t.gp, circ:t.circ, cc:t.cc, type:t.type,
                rainP: clamp(t.rainP * era.rain, 0, .95),
@@ -12267,60 +12165,11 @@ const Engine = {
 
   garantirFds(sea, rd){
     if(!sea.fds || sea.fds.rd !== rd){
-      const t = sea.calendar[rd], ant = sea.fds;
-      /* a segunda (e a terceira) corrida do fim de semana: mesmos treinos e mesmo
-         acerto; o grid é o que o regulamento manda (invertido, ou da classificação) */
-      if(t && t.fdsN && ant && ant.rd === rd - 1){
-        sea.fds = { rd, etapa:'corrida', treinos: ant.treinos || [], quali:null, herdado:true,
-                    sessoes: ant.sessoes || Engine.sessoesDe(sea.year, S.series) };
-        if(sea.setup && sea.setupRound === rd - 1) sea.setupRound = rd;
-      } else {
-        sea.fds = { rd, etapa:'treino', treinos:[], quali:null,
-                    sessoes: Engine.sessoesDe(sea.year, S.series) };
-      }
+      sea.fds = { rd, etapa:'treino', treinos:[], quali:null,
+                  sessoes: Engine.sessoesDe(sea.year, S.series) };
     }
     return sea.fds;
   },
-  /* ── as corridas do mesmo fim de semana ──
-     A classificação do fim de semana fica guardada (para a corrida que larga por ela
-     depois, e para a que inverte os primeiros dela); a chegada de cada corrida também
-     (para a corrida seguinte que inverte o resultado). */
-  guardarQualiFds(sea, rd, grid){
-    const t = sea.calendar[rd]; if(!t || t.fds == null || t.gridRegra === 'nova') return;
-    if(t.fdsN && sea.qualiFds && sea.qualiFds[t.fds]) return;
-    (sea.qualiFds = sea.qualiFds || {})[t.fds] = Object.keys(grid).sort((a, b) => grid[a] - grid[b]);
-  },
-  guardarChegadaFds(sea, rd, ordem){
-    const t = sea.calendar[rd]; if(!t || t.fds == null) return;
-    (sea.chegadaFds = sea.chegadaFds || {})[t.fds + ':' + t.fdsN] = ordem;
-  },
-  /* o grid de uma corrida que não larga pela própria classificação, ou null */
-  gridDoFds(sea, rd, ids){
-    const t = sea.calendar[rd], g = t && t.gridRegra;
-    if(!g || g === 'nova') return null;
-    const base = g === 'quali' || g.de === 'quali' ? (sea.qualiFds || {})[t.fds]
-               : (sea.chegadaFds || {})[t.fds + ':' + (t.fdsN - 1)];
-    if(!base || !base.length) return null;
-    const ordem = base.filter(id => ids.indexOf(id) >= 0).concat(ids.filter(id => base.indexOf(id) < 0));
-    let nova = ordem;
-    if(typeof g === 'object'){
-      const n = g.inv ? Math.min(g.inv, ordem.length) : ordem.length;
-      nova = ordem.slice(0, n).reverse().concat(ordem.slice(n));
-    }
-    const grid = {}; nova.forEach((id, i) => grid[id] = i + 1);
-    return grid;
-  },
-  /* de onde sai o grid de uma corrida do fim de semana, em uma frase */
-  textoGridFds(t){
-    const g = t && t.gridRegra;
-    if(g && typeof g === 'object'){
-      if(!g.inv) return 'grid inteiro invertido, da classificação';
-      return 'grid invertido: os ' + g.inv + ' primeiros ' + (g.de === 'anterior' ? 'da corrida anterior' : 'da classificação');
-    }
-    return g === 'nova' ? 'classificação própria' : t && t.fdsN ? 'grid da classificação' : '';
-  },
-  /* a corrida larga com o grid invertido? (aí o primeiro do grid não fez pole) */
-  gridInvertido(sea, rd){ const t = sea && sea.calendar && sea.calendar[rd]; return !!(t && t.gridRegra && typeof t.gridRegra === 'object'); },
   /* o que cada sessão de treino rendeu, acumulado no fim de semana */
   ganhoTreino(area){
     const sea = S.season;
@@ -12816,11 +12665,7 @@ const Engine = {
     const notas = [];
     let grid;
     let fora = {};
-    /* a corrida do fim de semana que larga pela classificação de antes (a principal da F2 depois da sprint) */
-    const daQualiFds = trk.fdsN && trk.gridRegra === 'quali' ? Engine.gridDoFds(sea, rd, campo.map(f => f.id)) : null;
-    if(daQualiFds){
-      grid = daQualiFds;
-    } else if(!semMim && sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid){
+    if(!semMim && sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid){
       grid = sea.fds.quali.grid;
       fora = (sea.naoLarga && sea.naoLarga[rd]) || {};
     } else {
@@ -12838,15 +12683,6 @@ const Engine = {
       sea.naoLarga = sea.naoLarga || {};
       if(Object.keys(fora).length) sea.naoLarga[rd] = fora; else delete sea.naoLarga[rd];
       grid = {}; corte.largam.forEach((f, i) => grid[f.id] = i + 1);
-    }
-    /* rodada dupla: guarda a classificação do fim de semana e, se a corrida é a de
-       grid invertido, larga com os primeiros invertidos */
-    if(trk.fds != null){
-      Engine.guardarQualiFds(sea, rd, grid);
-      if(Engine.gridInvertido(sea, rd)){
-        const inv = Engine.gridDoFds(sea, rd, Object.keys(grid));
-        if(inv) grid = inv;
-      }
     }
     /* quem ficou fora pelo regulamento não corre */
     if(Object.keys(fora).length){
@@ -12958,11 +12794,9 @@ const Engine = {
       }
     }
 
-    /* pontos — Indianápolis e Le Mans valem o dobro no regulamento das suas categorias;
-       na rodada dupla, cada corrida paga a sua tabela (a sprint paga menos e não tem pole) */
-    const P = trk.pts ? Object.assign({ melhores: sea.pts.melhores }, trk.pts) : sea.pts;
+    /* pontos — Indianápolis e Le Mans valem o dobro no regulamento das suas categorias */
+    const P = sea.pts;
     const mult = trk.dbl ? 2 : 1;
-    Engine.guardarChegadaFds(sea, rd, finish.map(x => x.f.id));
     finish.forEach(x=>{
       x.pts = 0;
       if(!x.out && x.pos <= P.p.length) x.pts = P.p[x.pos-1] * mult;
@@ -13012,7 +12846,6 @@ const Engine = {
 
     const rec = {
       r: rd+1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet, dbl:!!trk.dbl,
-      corridaN: trk.corridaN || undefined, inv: Engine.gridInvertido(sea, rd) || undefined,
       setup: mine && sea.setup ? { asa:sea.setup.asa, susp:sea.setup.susp, motor:sea.setup.motor,
                            erro: ajuste.erro, auto: !!sea.setup.auto, filo: ajuste.filo,
                            rev: Engine.setupRevisao(sea, rd, sea.setup.resp) } : null,
@@ -16055,8 +15888,7 @@ const Prova = {
   },
 
   /* ── quantas voltas: a distância de cada categoria e época ── */
-  /* dist: a fração da distância normal (a sprint da F2 tem dois terços da principal) */
-  voltas(sk, nivel, ano, trk, L, Tref, dist){
+  voltas(sk, nivel, ano, trk, L, Tref){
     let km;
     if(nivel >= 4) km = 22;
     else if(nivel === 3) km = 80;
@@ -16070,7 +15902,6 @@ const Prova = {
     else if(sk === 'dtm') km = 160;
     else if(sk === 'stock') km = 110;
     else km = 300;
-    if(dist && dist > 0 && dist < 1) km *= dist;
     let N = Math.max(5, Math.round(km * 1000 / L)), condensada = false;
     /* corrida de mais de duas horas e meia vira corrida condensada: as mesmas posições, menos voltas */
     const max = Math.floor(9000 / (Tref * 1.07));
@@ -16115,7 +15946,7 @@ const Prova = {
     const fis = Prova.fisica(ent.sk, ent.ano, ent.nivel, kart);
     Prova._oval = false;
     const perf = Prova.perfil(g, fis, ent.wet, trk.type === 'oval');
-    const { N, condensada, km } = Prova.voltas(ent.sk, ent.nivel, ent.ano, trk, g.L, perf.T, ent.dist);
+    const { N, condensada, km } = Prova.voltas(ent.sk, ent.nivel, ent.ano, trk, g.L, perf.T);
     const est = Prova.estrategia(ent.sk, ent.ano, ent.nivel, N, km, ent.wet, kart);
     let melhor = null;
     for(let tent = 0; tent < 5; tent++){
@@ -16709,7 +16540,7 @@ const Gp = {
     const fis = Prova.fisica(ent.sk, ent.ano, ent.nivel, kart);
     Prova._oval = false;
     const seco = Prova.perfil(g, fis, false, oval), molhado = Prova.perfil(g, fis, true, oval);
-    const { N, condensada, km } = Prova.voltas(ent.sk, ent.nivel, ent.ano, trk, g.L, seco.T, ent.dist);
+    const { N, condensada, km } = Prova.voltas(ent.sk, ent.nivel, ent.ano, trk, g.L, seco.T);
     const est = Prova.estrategia(ent.sk, ent.ano, ent.nivel, N, km, false, kart);
     const regras = Gp.regras(ent.sk, ent.ano, ent.nivel, kart, oval, est, N);
     const rnd = rngDe((ent.seed || 7) >>> 0);
@@ -17476,8 +17307,7 @@ const Gp = {
     const escolha = sea.pneusLargada && sea.pneusLargada.rd === M.rd ? sea.pneusLargada.carros || {} : {};
     carros.forEach(c => { if(c.ctrl && escolha[c.id]) c.pneuIni = escolha[c.id]; });
     return { trkId: M.trk.id, ano, sk, nivel: Prova.nivelDe(sea), wet: !!M.wet, seed: opts.seed != null ? opts.seed : sea.gpSeed[M.rd],
-             gp: M.trk.gp, circ: M.trk.circ, r: M.rd + 1, carros, calor: calor || 0, gestao, n1: opts.n1 != null ? opts.n1 : null,
-             dist: M.trk.dist || 1, corridaN: M.trk.corridaN || null };
+             gp: M.trk.gp, circ: M.trk.circ, r: M.rd + 1, carros, calor: calor || 0, gestao, n1: opts.n1 != null ? opts.n1 : null };
   },
   chegada(M, res){
     const porId = {};
@@ -18188,12 +18018,6 @@ const UI = {
     return out.join('');
   },
 
-  /* qual corrida do fim de semana é esta, e de onde sai o grid dela */
-  pillCorridaFds(t, sea){
-    if(!t || !t.corridaN) return '';
-    const txt = Engine.textoGridFds(t);
-    return `<span class="pill g">${esc(t.corridaN)} · ${t.fdsN + 1} de ${t.fdsK}</span>${txt ? `<span class="pill">${esc(txt)}</span>` : ''}`;
-  },
   /* a superlicença no painel: quanto falta para poder correr na F1 no ano que vem */
   linhaSuperlicenca(){
     if(S.series !== 'f1' || S.year + 1 < 2016 || S.retired || (S.season && S.season.isTop && !S.papel)) return '';
@@ -18235,7 +18059,6 @@ const UI = {
           <span class="pill">${tn}</span>
           <span class="pill">${nx.rainP>.3?ico('chuva'):nx.rainP>.15?ico('nuvem'):ico('sol')} ${Math.round(nx.rainP*100)}% de chuva</span>
           ${nx.dbl?('<span class="pill g">'+ico('estrela')+' pontos em dobro</span>'):''}
-          ${UI.pillCorridaFds(nx, sea)}
         </div>
       </div>`;
     } else if(S.retired){
@@ -20304,7 +20127,7 @@ const Game = {
     const chance = clamp(.18 + S.driver.fame/160, .18, .8);
     if(rec.pos === 1) Engine.noticia("vitoria", rec);
     else if(rec.pos && rec.pos <= 3 && R.chance(chance)) Engine.noticia("podio", rec);
-    else if(rec.grid === 1 && !rec.inv && R.chance(chance)) Engine.noticia("pole", rec);
+    else if(rec.grid === 1 && R.chance(chance)) Engine.noticia("pole", rec);
     else if(rec.dnf && R.chance(chance*.7)) Engine.noticia("abandono", rec);
     /* Vitória no kart não é vitória na Fórmula 1. Os dois números existem, e
        existem separados: o de cima é a carreira profissional, o de baixo é a
@@ -20316,15 +20139,14 @@ const Game = {
       ps.gps = (ps.gps || 0) + 1; ps.pts = (ps.pts || 0) + (rec.pts || 0);
       if(rec.pos === 1) ps.wins++;
       if(rec.pos && rec.pos <= 3) ps.podiums++;
-      if(rec.grid === 1 && !rec.inv) ps.poles = (ps.poles || 0) + 1;
+      if(rec.grid === 1) ps.poles = (ps.poles || 0) + 1;
       if(rec.fl) ps.fls = (ps.fls || 0) + 1;
       if(rec.dnf) ps.dnfs = (ps.dnfs || 0) + 1;
     }
     alvo.gps++;
     alvo.pts += rec.pts;
     if(rec.fl) alvo.fls++;
-    /* largar na frente de um grid invertido não é pole */
-    if(rec.grid === 1 && !rec.inv) alvo.poles++;
+    if(rec.grid === 1) alvo.poles++;
     if(rec.dnf) alvo.dnfs++;
     if(rec.pos === 1) alvo.wins++;
     if(rec.pos && rec.pos <= 3) alvo.podiums++;
@@ -23900,12 +23722,9 @@ const Chefe = {
         const r = Chefe.ligar(p); r.g = gN; r.eq = C.eq.nome;
       });
     } catch(e){}
-    let pts = f1 ? pointsFor(ano, Chefe.sk()) : Chefe.pontosJunior(ano);
+    const pts = f1 ? pointsFor(ano, Chefe.sk()) : Chefe.pontosJunior(ano);
     const ids = f1 ? calendarFor(ano, Chefe.sk()) : juniorCalendar(C.cat, ano, Chefe.sk(), Chefe.corridasJunior(), C.eq.cc || C.chefe.cc);
-    /* na base, o fim de semana do campeonato real: rodada dupla ou tripla, com grid invertido */
-    const fmtFds = f1 || Engine.ehKart(C.cat) ? null : formatoFds(C.cat, ano, Chefe.sk());
-    if(fmtFds) pts = Object.assign({}, fmtFds.corridas.find(c => c.tipo === 'principal' || c.tipo === 'corrida').pts, { label: fmtFds.label });
-    const calendar = calendarioFds(ids, fmtFds, (id, i) => {
+    const calendar = ids.map((id, i) => {
       const t = TRACKS[id] || TRACKS.it;
       return { r:i + 1, id, gp:t.gp, circ:t.circ, cc:t.cc, type:t.type,
                rainP: clamp(t.rainP * era.rain, 0, .95), dbl:false };
@@ -24032,12 +23851,6 @@ const Chefe = {
   fdsDe(sea){
     const rd = sea.round, trk = sea.calendar[rd];
     if(sea.fds && sea.fds.rd === rd) return sea.fds;
-    /* a segunda corrida do fim de semana: o imprevisto já foi resolvido na primeira
-       (a punição de grid não vale de novo) */
-    if(trk && trk.fdsN && sea.fds && sea.fds.rd === rd - 1){
-      const ant = sea.fds, ef = Object.assign({}, ant.efeitos || {}); delete ef.grid; delete ef.dinheiro; delete ef.moral;
-      return (sea.fds = { rd, evento: null, efeitos: ef, resolvido: !!ant.resolvido, herdado: true });
-    }
     sea.fds = { rd, evento: null, efeitos: {} };
     if(!trk || !R.chance(.5)) return sea.fds;
     const carros = [0, 1].map(k => sea.field.find(f => f.teamId === 'EU' && f.ativo && f.carro === k)).filter(Boolean);
@@ -24134,18 +23947,6 @@ const Chefe = {
   /* começa (ou retoma) a classificação desta etapa */
   qualiDaEtapa(sea){
     if(sea.qs && sea.qs.rd === sea.round) return sea.qs;
-    /* a segunda (ou terceira) corrida do fim de semana não tem classificação própria:
-       larga pela do fim de semana, ou com os primeiros invertidos */
-    const trk = sea.calendar[sea.round];
-    if(trk && trk.fdsN && trk.gridRegra !== 'nova'){
-      const ids = Chefe.inscritosDaEtapa(sea).map(f => f.id);
-      const grid = Engine.gridDoFds(sea, sea.round, ids);
-      if(grid){
-        const ordem = Object.keys(grid).sort((a, b) => grid[a] - grid[b]);
-        return (sea.qs = { rd: sea.round, sk: Chefe.sk(), herdada: true, concluida: true, grid, fora: {}, inscritos: ids, vivos: ids,
-                           ordemQuali: ordem, res: [], sessoes: [], i: 0, janelas: {}, forma: {}, isentos: [] });
-      }
-    }
     Chefe.fdsResolver(sea);
     const ctx = Chefe.ctxQuali(sea);
     const inscritos = Chefe.inscritosDaEtapa(sea);
@@ -24212,8 +24013,6 @@ const Chefe = {
       const corte = Engine.cortarGrid(sea, sea.round, objs, { semPre: true, sk: qs.sk });
       Object.assign(qs.fora, corte.fora);
       qs.grid = {}; corte.largam.forEach((f, i) => qs.grid[f.id] = i + 1);
-      /* rodada dupla: a classificação do fim de semana fica guardada para as outras corridas */
-      Engine.guardarQualiFds(sea, sea.round, qs.grid);
       /* o que fica no histórico da temporada: onde os seus carros ficaram */
       sea.qsHist = sea.qsHist || {};
       sea.qsHist[sea.round] = sea.field.filter(f => f.teamId === 'EU' && qs.inscritos.indexOf(f.id) >= 0)
@@ -24254,9 +24053,8 @@ const Chefe = {
       return p ? (p.moral - 60) * .04 : 0;
     };
 
-    /* sábado: o grid é o das sessões — na corrida de grid invertido, com os primeiros invertidos */
-    const inv = Engine.gridInvertido(sea, rd) && !qsEtapa.herdada ? Engine.gridDoFds(sea, rd, Object.keys(qsEtapa.grid)) : null;
-    const grid = Object.assign({}, inv || qsEtapa.grid);
+    /* sábado: o grid é o das sessões */
+    const grid = Object.assign({}, qsEtapa.grid);
     corre.forEach(f => { if(grid[f.id] == null) grid[f.id] = Object.keys(grid).length + 1; });
     /* punição de grid do fim de semana */
     corre.forEach(f => {
@@ -24355,17 +24153,14 @@ const Chefe = {
         flId = flPool[k].f.id;
       }
     }
-    /* na rodada dupla da base, cada corrida paga a sua tabela (com pole e volta mais rápida dela) */
-    const P = trk.pts ? Object.assign({ melhores: sea.pts.melhores }, trk.pts) : sea.pts;
-    Engine.guardarChegadaFds(sea, rd, finish.map(x => x.f.id));
+    const P = sea.pts;
     /* fora da F1 há equipes de três, quatro carros: na tabela de equipes contam
        os dois melhores de cada uma por corrida, o mesmo tamanho da sua */
     const contaEq = {}, limiteEq = Chefe.sk() === 'f1' ? Infinity : 2;
     finish.slice().sort((a, b) => (a.out ? 999 : a.pos) - (b.out ? 999 : b.pos)).forEach(x => {
       x.pts = 0;
       if(!x.out && x.pos <= P.p.length) x.pts = P.p[x.pos - 1];
-      if(P.fl && x.f.id === flId && !x.out && (sea.ano <= 1959 || x.pos <= 10)) x.pts += trk.pts && typeof P.fl === 'number' ? P.fl : 1;
-      if(trk.pts && P.pole && grid[x.f.id] === 1) x.pts += P.pole;
+      if(P.fl && x.f.id === flId && !x.out && (sea.ano <= 1959 || x.pos <= 10)) x.pts += 1;
       sea.dstand[x.f.id] = (sea.dstand[x.f.id] || 0) + x.pts;
       ((sea.porCorrida = sea.porCorrida || {})[x.f.id] = sea.porCorrida[x.f.id] || []).push(x.pts);
       contaEq[x.f.teamId] = (contaEq[x.f.teamId] || 0) + 1;
@@ -24400,7 +24195,7 @@ const Chefe = {
       p.est.gps++; p.est.pts += x.pts;
       if(!x.out && x.pos === 1) p.est.v++;
       if(!x.out && x.pos <= 3) p.est.pod++;
-      if(grid[x.f.id] === 1 && !Engine.gridInvertido(sea, rd)) p.est.poles++;
+      if(grid[x.f.id] === 1) p.est.poles++;
       const esperado = Math.max(1, sea.rankCarro * 2 - 1);
       if(!x.out) p.moral = clamp(p.moral + (esperado - x.pos) * .6 + (x.pos === 1 ? 5 : 0), 5, 99);
       if(x.dnf === 'MEC') p.moral = clamp(p.moral - 2, 5, 99);
@@ -26696,13 +26491,11 @@ const Acerto = {
     const trk = sea.calendar[sea.round] || {}, b = Acerto.BASE[trk.type] || Acerto.BASE.mixed;
     const f = sea.field.find(x => x.teamId === 'EU' && x.ativo && x.carro === k);
     const pid = f ? (f.pid || f.name) : 'k' + k;
-    return b.map((v, j) => clamp(Math.round(v + (Acerto.h('pref:' + pid + j) - .5) * 4 + (Acerto.h('fds:' + sea.ano + ':' + rdBaseFds(sea, sea.round) + ':' + j) - .5) * 3), 1, 20));
+    return b.map((v, j) => clamp(Math.round(v + (Acerto.h('pref:' + pid + j) - .5) * 4 + (Acerto.h('fds:' + sea.ano + ':' + sea.round + ':' + j) - .5) * 3), 1, 20));
   },
   /* o estado do fim de semana: começa no acerto do ano passado nesta pista, ou no palpite do engenheiro */
   estado(sea, k){
-    /* o acerto é do fim de semana: na rodada dupla, as corridas dividem o mesmo */
-    const rdA = rdBaseFds(sea, sea.round);
-    if(!sea.ac || sea.ac.rd !== rdA) sea.ac = { rd: rdA, c:{} };
+    if(!sea.ac || sea.ac.rd !== sea.round) sea.ac = { rd: sea.round, c:{} };
     if(sea.ac.c[k]) return sea.ac.c[k];
     const trk = sea.calendar[sea.round] || {}, id = Acerto.ideal(sea, k);
     const guardado = C.acertos && C.acertos[trk.id] && C.acertos[trk.id][k];
@@ -26786,7 +26579,7 @@ const Acerto = {
   },
   /* o acerto que correu fica para o ano que vem nesta pista */
   guardar(sea, rd){
-    const trk = sea.calendar[rd]; if(!trk || !sea.ac || sea.ac.rd !== rdBaseFds(sea, rd)) return;
+    const trk = sea.calendar[rd]; if(!trk || !sea.ac || sea.ac.rd !== rd) return;
     C.acertos = C.acertos || {};
     const g = C.acertos[trk.id] = C.acertos[trk.id] || {};
     Object.keys(sea.ac.c).forEach(k => { g[k] = sea.ac.c[k].v.slice(); });
@@ -27413,10 +27206,7 @@ const UIC = {
   /* o botão principal: a central da corrida, no ponto em que o fim de semana está */
   irCorrida(){
     if(!C || !C.temporada || C.fase !== 'temporada') return;
-    const sea = C.temporada, t = sea.calendar[sea.round];
-    /* a segunda corrida do fim de semana já tem o grid: vai direto para a largada */
-    if(t && t.fdsN && !(sea.qs && sea.qs.rd === sea.round)){ Chefe.gridDaEtapa(sea); UIC.salvar(); }
-    const qs = sea.qs && sea.qs.rd === sea.round ? sea.qs : null;
+    const sea = C.temporada, qs = sea.qs && sea.qs.rd === sea.round ? sea.qs : null;
     UIC.pagina('corrida');
     if(qs) UIC.fimDeSemana();
   },
@@ -27524,16 +27314,11 @@ const UIC = {
     const pos = rd ? Chefe.posConstrutores(sea, 'EU') : null;
     const f = Chefe.fluxo(), prim = f && f.etapas.find(e => e.caixa < 0);
     const fatos = [['Tempo', Math.round((t.rainP || 0) * 100) + '% de chance de chuva']];
-    /* rodada dupla: qual corrida do fim de semana, e de onde sai o grid */
-    if(t.corridaN){
-      const gtx = Engine.textoGridFds(t);
-      fatos.unshift(['Corrida', t.corridaN + ' · ' + (t.fdsN + 1) + ' de ' + t.fdsK + (gtx ? ' · ' + gtx : '')]);
-    }
     if(ob) fatos.push([ob.patro, Chefe.OBJ_PATRO[ob.k].n + ' · bônus de ' + fmtD(ob.bonus), '', true]);
     if(sea.meta) fatos.push(['Diretoria', 'meta ' + ord(sea.meta) + ' nos construtores' + (pos ? ' · hoje ' + ord(pos) : '')]);
     if(prim) fatos.push(['Caixa', C.caixa < 0 && f.etapas.every(e => e.caixa < 0) ? 'no vermelho até o prêmio do fim do ano' : 'abaixo de zero depois do GP ' + prim.gp, 'neg']);
     const qs = sea.qs && sea.qs.rd === rd ? sea.qs : null;
-    const acao = !qs ? (t.fdsN ? 'Ir para a largada' : 'Preparar o fim de semana') : !qs.concluida ? 'Continuar a classificação' : !qs.grid ? 'Ver o grid' : 'Ir para a largada';
+    const acao = !qs ? 'Preparar o fim de semana' : !qs.concluida ? 'Continuar a classificação' : !qs.grid ? 'Ver o grid' : 'Ir para a largada';
     return `<section class="chx-p chx-prox" aria-label="Próxima etapa">
       <div class="chx-prox-cab">${fg(t.cc)}<div><h2>GP ${esc(t.gp)}</h2><p>${esc(t.circ)} · ${tipo} · etapa ${rd + 1} de ${sea.calendar.length}</p></div></div>
       ${UIC.tracadoSvg(t.id, sea.ano, t.circ)}
@@ -28355,7 +28140,6 @@ const UIC = {
   fimDeSemana(){
     const sea = C.temporada; if(!sea || !sea.calendar[sea.round]) return;
     const qs = sea.qs && sea.qs.rd === sea.round ? sea.qs : null;
-    if(!qs && sea.calendar[sea.round].fdsN){ Chefe.gridDaEtapa(sea); UIC.salvar(); return UIC.fimDeSemana(); }
     if(!qs) return UIC.preCorrida();
     if(!qs.concluida) return UIC.quali();
     if(!qs.grid) return UIC.gridFinal();
@@ -30122,7 +29906,7 @@ const AoVivo = {
       </article>`;
     ov.innerHTML = `
       <header class="av-topo">
-        <div class="av-gp"><b>GP ${esc(ent.gp || '')}${ent.corridaN ? ` · <span>${esc(ent.corridaN)}</span>` : ''}${chefe && R.trk && R.trk.cc ? ` <span class="av-gp-fg">${fg(R.trk.cc)}</span>` : ''}</b><span><span>${esc(ent.circ || '')}</span> · <span>${ent.ano}</span> · <span>${esc(AoVivo.opc.serie || 'Corrida')}</span>${R.g.real ? '' : ' · <span>traçado esquemático</span>'}</span></div>
+        <div class="av-gp"><b>GP ${esc(ent.gp || '')}${chefe && R.trk && R.trk.cc ? ` <span class="av-gp-fg">${fg(R.trk.cc)}</span>` : ''}</b><span><span>${esc(ent.circ || '')}</span> · <span>${ent.ano}</span> · <span>${esc(AoVivo.opc.serie || 'Corrida')}</span>${R.g.real ? '' : ' · <span>traçado esquemático</span>'}</span></div>
         <div class="av-placar">
           <span class="av-volta" id="avVolta">Volta 1 de ${R.N}</span>
           <b class="av-rel" id="avRelogio">0:00</b>
