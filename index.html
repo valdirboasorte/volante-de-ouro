@@ -1532,7 +1532,9 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   .av-placar{grid-area:placar; gap:8px} .av-ctrl{grid-area:ctrl; flex-wrap:nowrap; gap:6px}
   .av-gp b{font-size:17px} .av-rel{display:none} .av-volta{font-size:14px}
   .av-bandeira{padding:4px 9px; font-size:12px}
-  .av-play{width:38px; height:38px}
+  /* pausar e continuar no alcance do polegar: botão redondo preso embaixo, à direita */
+  .av-play{position:fixed; right:14px; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:26; width:58px; height:58px; box-shadow:0 6px 18px rgba(0,0,0,.45)}
+  .av-play .ico{width:22px; height:22px}
   .av-vel{flex:1; min-width:0; overflow-x:auto; scrollbar-width:none} .av-vel::-webkit-scrollbar{display:none}
   .av-vel{padding:2px} .av-vel button{height:32px; min-width:27px; padding:0 3px; font-size:12px; flex:1 0 auto; letter-spacing:-.02em}
   .av-pular{width:38px; height:38px; padding:0; flex:none; display:grid; place-items:center}
@@ -1579,7 +1581,9 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
 .av-torre-top,.av-torre-cab,.av-exp,.av-circ,.av-filtros,.av-opcoes,.av-subs,.av-pilsel,.av-resumo,.av-rapida,.av-c-foto,.av-cred,.av-h,.av-gp-fg{display:none}
 @media (max-width:820px){
   .av-tela.av-chefe{display:flex; flex-direction:column; gap:8px; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain;
-    height:100vh; height:100dvh; padding:0 0 calc(70px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch}
+    height:100vh; height:100dvh; padding:0 0 calc(140px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch}
+  /* no chefe, o botão de pausa fica logo acima da barra de baixo */
+  .av-chefe .av-play{bottom:calc(74px + env(safe-area-inset-bottom))}
   .av-chefe > *{flex:none; min-width:0}
   .av-chefe h2{margin:0; font-size:17px; font-weight:800; letter-spacing:-.01em}
   /* o placar fica preso no alto enquanto o resto rola */
@@ -17581,7 +17585,26 @@ const Store = {
   mem:{}, ok:true,
   get(k){ try{ return localStorage.getItem(k); }catch(e){ Store.ok=false; return k in Store.mem ? Store.mem[k] : null; } },
   set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ Store.ok=false; Store.mem[k]=v; } },
-  del(k){ try{ localStorage.removeItem(k); }catch(e){ Store.ok=false; delete Store.mem[k]; } }
+  del(k){ try{ localStorage.removeItem(k); }catch(e){ Store.ok=false; delete Store.mem[k]; } },
+  /* galeria de lendas: acrescenta sem tirar ninguém. Uma lista que não abre fica
+     guardada à parte (nunca vira lista vazia por cima); sem espaço no aparelho,
+     devolve false e quem chamou mantém o save da carreira */
+  galeria(k, rec, ordem){
+    const raw = Store.get(k);
+    let l = [];
+    if(raw){
+      try { l = JSON.parse(raw); } catch(e){ l = null; }
+      if(!Array.isArray(l)){ if(!Store.get(k + '_corrompido')) Store.set(k + '_corrompido', raw); l = []; }
+    }
+    l.push(rec);
+    if(ordem) l.sort(ordem);
+    const txt = JSON.stringify(l);
+    try { localStorage.setItem(k, txt); return true; }
+    catch(e){
+      if(!Store.ok || typeof localStorage === 'undefined'){ Store.mem[k] = txt; return true; }
+      return false;
+    }
+  }
 };
 
 /* ═══ VÁRIOS JOGOS SALVOS ═══
@@ -21003,13 +21026,9 @@ const Game = {
       serie: (function(){ try{ return serieDaCarreira(); }catch(e){ return S.series || 'f1'; } })(),
       score: c.titles*100 + c.wins*12 + c.podiums*4 + c.poles*3 + c.seasons*2
     };
-    try{
-      const hall = JSON.parse(Store.get('vdo_hall')||'[]');
-      hall.push(rec);
-      hall.sort((a,b)=>b.score-a.score);
-      Store.set('vdo_hall', JSON.stringify(hall.slice(0,30)));
-      Store.del('vdo_save');
-    }catch(e){}
+    /* sem espaço para a galeria, o save fica: a carreira não some */
+    if(Store.galeria('vdo_hall', rec, (a,b)=>b.score-a.score)) Store.del('vdo_save');
+    else UI.toast('Não há espaço no aparelho para gravar a carreira na galeria de lendas. Apague um jogo em "Jogos salvos" para liberar espaço.');
     S.fimRec = rec; S.fimRazao = reason;
     UI.render();
     UI.careerEnd(rec, reason);
@@ -24463,9 +24482,11 @@ const Chefe = {
     if(teto && v < 0 && C.temporada) C.temporada.gastoTeto += -v;
   },
   saldoLivro(){ return Object.keys(C.livro).reduce((s, k) => s + C.livro[k], 0); },
+  /* o valor de um contrato: milhar redondo, sem que um contrato pequeno vire zero no arredondamento */
+  valorPatro(v){ return v >= 5000 ? Math.round(v / 1000) * 1000 : Math.max(1, Math.round(v)); },
   pagarPatrocinios(sea){
     const n = sea.calendar.length;
-    C.patro.forEach(s => { if(!s.calote) Chefe.lancar('patrocinio', s.valor / n); });
+    C.patro.forEach(s => { if(!s.calote && !s.rompido) Chefe.lancar('patrocinio', s.valor / n); });
     if(C.dir && C.dir.aporte) Chefe.lancar('dono', C.dir.aporte / n);
     const pag = C.pilotos.filter(p => (p.papel === 'titular' || p.papel === 'teste') && p.aporte > 0)
                          .reduce((s, p) => s + p.aporte, 0);
@@ -25003,7 +25024,7 @@ Object.assign(Chefe, {
         if(s.ate < ano) s.venceu = true;
         if(s.real){ const e = CH_ENGENHEIROS.find(x => x[0] === s.nome); if(e && ano > e[5]){ s.venceu = true; s.aposentou = true; } }
       });
-      C.patro = C.patro.filter(s => s.ate >= ano && !s.rompido);
+      C.patro = C.patro.filter(s => s.ate >= ano && !s.rompido && s.valor > 0);
       Object.keys(C.obras).forEach(k => {
         const ob = C.obras[k];
         if(ob.pronto <= ano){
@@ -25714,16 +25735,18 @@ Object.assign(Chefe, {
       else if(s.meta.k === 'podio') ok = sea.results.some(r => r.nossos.some(x => x.pos && x.pos <= 3));
       else if(s.meta.k === 'piloto') ok = Chefe.titulares().some(p => p.cc === s.meta.v);
       if(ok) Chefe.lancar('patrocinio', s.bonus);
-      else s.valor = Math.round(s.valor * .82 / 1000) * 1000;
+      else s.valor = Chefe.valorPatro(s.valor * .82);
       pats.push({ s, ok });
     });
-    /* contrato que termina este ano: renova quem está satisfeito */
+    /* contrato que termina este ano: renova quem está satisfeito, se o chefe não
+       cancelou a renovação; contrato que já não paga nada (save antigo) não renova */
     C.patro.forEach(x => {
       if(x.rompido || x.calote || x.ate !== sea.ano) return;
       const st = x.sat == null ? 60 : x.sat;
-      if(st >= 68){ x.ate += st >= 82 ? 2 : 1; x.valor = Math.round(x.valor * (st >= 82 ? 1.1 : 1.04) / 1000) * 1000; x.renovou = sea.ano;
+      if(x.semRenovar || !(x.valor > 0)){ Chefe.noticia(x.nome + ' encerra o patrocínio no fim do contrato.', ''); pats.push({ s: x, saiu: true }); }
+      else if(st >= 68){ x.ate += st >= 82 ? 2 : 1; x.valor = Chefe.valorPatro(x.valor * (st >= 82 ? 1.1 : 1.04)); x.renovou = sea.ano;
         Chefe.noticia(x.nome + ' renova o patrocínio: a marca gostou do ano.', 'g'); pats.push({ s: x, renovou: true }); }
-      else if(st >= 45){ x.ate += 1; x.valor = Math.round(x.valor * .95 / 1000) * 1000; x.renovou = sea.ano;
+      else if(st >= 45){ x.ate += 1; x.valor = Chefe.valorPatro(x.valor * .95); x.renovou = sea.ano;
         Chefe.noticia(x.nome + ' fica mais um ano, com um pouco menos de dinheiro.', ''); pats.push({ s: x, renovou: true }); }
       else { Chefe.noticia(x.nome + ' não renova: a marca saiu insatisfeita.', 'rd'); pats.push({ s: x, saiu: true }); }
     });
@@ -27744,8 +27767,8 @@ const UIC = {
   pg_patrocinadores(){
     if(C.fase === 'inverno' && C.inv){ UIC.patrocinio(); return null; }
     const sea = C.temporada, ob = sea && C.fase === 'temporada' ? Chefe.objetivoPatro(sea) : null;
-    return `<div class="chx-g chx-2"><section class="chx-p"><h2>Contratos</h2>${C.patro.length ? `<div class="chx-barras">${C.patro.map(s =>
-        `<div class="chx-barra"><span><b data-i18n-ignore>${esc(s.nome)}</b> · ${s.principal ? 'principal' : 'secundário'} · ${fmtD(s.valor)} por ano · até ${s.ate}${s.calote || s.rompido ? ' · rompido' : ''}</span><b>${Math.round(s.sat == null ? 60 : s.sat)}%</b><s><i style="width:${clamp(s.sat == null ? 60 : s.sat, 0, 100)}%"></i></s></div>`).join('')}</div>
+    return `<div class="chx-g chx-2"><section class="chx-p"><h2>Contratos</h2>${C.patro.length ? `<div class="chx-barras">${C.patro.map((s, i) =>
+        `<div class="chx-barra"><span><b data-i18n-ignore>${esc(s.nome)}</b> · ${s.principal ? 'principal' : 'secundário'} · ${fmtD(s.valor)} por ano · até ${s.ate}${s.calote || s.rompido ? ' · rompido' : s.semRenovar ? ' · sem renovação' : ''}</span><b>${Math.round(s.sat == null ? 60 : s.sat)}%</b><s><i style="width:${clamp(s.sat == null ? 60 : s.sat, 0, 100)}%"></i></s></div>${UIC.botoesPatro(s, i)}`).join('')}</div>
         <p class="chx-nota">A barra é a satisfação de cada marca. No fim do contrato, quem está satisfeito renova.</p>` : '<p class="chx-nota">Nenhum contrato. As propostas chegam na pré-temporada.</p>'}</section>
       <section class="chx-p"><h2>A próxima etapa</h2>${ob ? `<p class="chx-nota"><b data-i18n-ignore>${esc(ob.patro)}</b> <span>${esc(Chefe.OBJ_PATRO[ob.k].n)}.</span> <span>Bônus de ${fmtD(ob.bonus)}.</span></p>` : '<p class="chx-nota">Sem objetivo de patrocinador nesta etapa.</p>'}
         ${C.patro.filter(s => s.meta).map(s => `<p class="chx-nota"><span data-i18n-ignore>${esc(s.nome)}</span>: <span>${esc(s.meta.t)}</span></p>`).join('')}</section></div>`;
@@ -28696,12 +28719,8 @@ const UIC = {
     const tot = C.total;
     const motivo = tipo === 'venda' ? `Você vendeu a ${esc(C.eq.nome)}${C.vendida ? ' para ' + esc(C.vendida.quem) + ' por ' + fmtD(C.vendida.valor) : ''}.`
       : tipo === 'falencia' ? `A ${esc(C.eq.nome)} fechou as portas.` : tipo === 'demitido' ? 'Você deixou o paddock.' : 'Fim de carreira.';
-    try {
-      const hall = JSON.parse(Store.get('vdo_chefe_hall') || '[]');
-      hall.push({ nome:C.chefe.nome, eq:C.eq.nome, cor:C.eq.cor, de:C.inicio, ate:C.ano, tit:tot.tit, v:tot.v, anos:tot.temporadas, motivo:tipo });
-      Store.set('vdo_chefe_hall', JSON.stringify(hall.slice(-30)));
-    } catch(e){}
-    Store.del('vdo_chefe');
+    if(Store.galeria('vdo_chefe_hall', { nome:C.chefe.nome, eq:C.eq.nome, cor:C.eq.cor, de:C.inicio, ate:C.ano, tit:tot.tit, v:tot.v, anos:tot.temporadas, motivo:tipo })) Store.del('vdo_chefe');
+    else UI.toast('Não há espaço no aparelho para gravar a carreira na galeria de lendas. Apague um jogo em "Jogos salvos" para liberar espaço.');
     UI.limparFila();
     UI.modal(UI.head('Fim da linha', esc(C.chefe.nome) + ' · ' + C.inicio + '–' + C.ano, false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0">${motivo}</div>
@@ -29104,9 +29123,10 @@ const UIC = {
     const card = (s, i, oferta) => `<div class="ch-card">
       <div class="oh"><span class="on">${s.principal ? ico('estrela') + ' ' : ''}${esc(s.nome)}</span><span class="oc">${fmtD(s.valor)} / ano</span></div>
       <div class="od">${esc((CH_SETOR[s.setor] || {}).n || '')} · ${s.principal ? 'patrocinador principal' : 'secundário'} · ${oferta ? s.anos + ' ano(s)' : 'até ' + s.ate}
+        ${!oferta && s.semRenovar ? ' · sem renovação' : ''}
         ${s.meta ? '<br>Meta: ' + esc(s.meta.t) + ' (bônus de ' + fmtD(s.bonus) + ')' : ''}</div>
       ${oferta ? `<div class="ch-opts" style="margin-top:8px"><button class="ch-opt" ${(s.principal ? nP >= v.principal : nS >= v.sec) ? 'disabled' : ''} onclick="UIC.aceitarPatro(${i})">Assinar</button>
-        ${s.negociado ? '' : `<button class="ch-opt" onclick="UIC.pedirPatro(${i})">Pedir mais</button>`}</div>` : ''}</div>`;
+        ${s.negociado ? '' : `<button class="ch-opt" onclick="UIC.pedirPatro(${i})">Pedir mais</button>`}</div>` : UIC.botoesPatro(s, i)}</div>`;
     UIC.mostrar('patrocinio', UI.head('Patrocínio', `Principal ${nP}/${v.principal} · secundários ${nS}/${v.sec}`) +
       `<div class="mbd">
         ${C.ano < 1968 ? '<p class="mut" style="font-size:14px;margin:0 0 10px">Até 1968 o regulamento não deixa pintar o carro com marca. Só fornecedores de combustível, pneu e peças pagam alguma coisa.</p>' : ''}
@@ -29115,6 +29135,35 @@ const UIC = {
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
   },
+  /* contrato assinado: cancelar a renovação automática ou rescindir já, sempre com confirmação */
+  botoesPatro(s, i){
+    if(s.rompido || s.calote) return '';
+    return `<div class="ch-opts" style="margin-top:8px"><button class="ch-opt" onclick="UIC.confirmarPatro(${i}, 'renov')">${s.semRenovar ? 'Reativar a renovação' : 'Cancelar a renovação'}</button>
+      <button class="ch-opt" onclick="UIC.confirmarPatro(${i}, 'rescindir')">Rescindir</button></div>`;
+  },
+  confirmarPatro(i, acao){
+    const s = C.patro[i]; if(!s) return;
+    const txt = acao === 'rescindir'
+      ? `O contrato acaba agora: ${fmtD(s.valor)} por ano deixam de entrar a partir da próxima etapa, e a vaga fica livre para outra marca na pré-temporada.`
+      : s.semRenovar ? `A renovação volta a valer: no fim de ${s.ate}, se a marca estiver satisfeita, o contrato continua.`
+      : `O contrato vale até o fim de ${s.ate} e depois acaba, mesmo com a marca satisfeita.`;
+    UI.modal(UI.head(esc(s.nome), acao === 'rescindir' ? 'Rescindir o contrato' : 'Renovação automática', false) +
+      `<div class="mbd"><div class="res-nar" style="margin-top:0">${txt}</div></div>
+      <div class="mft"><button class="btn btn-ghost" onclick="UIC.voltarPatro()">Voltar</button><span class="sp"></span>
+        <button class="btn btn-primary" onclick="UIC.fazerPatro(${i}, '${acao}')">Confirmar</button></div>`);
+  },
+  fazerPatro(i, acao){
+    const s = C.patro[i]; if(!s) return;
+    if(acao === 'renov') s.semRenovar = !s.semRenovar;
+    else {
+      Chefe.noticia('Contrato com ' + s.nome + ' rescindido.', 'rd');
+      /* na pré-temporada a vaga abre na hora; durante o ano o contrato fica no livro, sem pagar */
+      if(C.fase === 'inverno') C.patro.splice(i, 1); else s.rompido = true;
+    }
+    UIC.salvar();
+    UIC.voltarPatro();
+  },
+  voltarPatro(){ UI.close(); UIC.render(); if(C.fase === 'inverno' && C.inv && UIC.pag !== 'patrocinadores') UIC.patrocinio(); },
   pedirPatro(i){
     const sp = C.inv.patro[i]; if(!sp) return;
     const r = Chefe.pedirMaisPatro(sp);

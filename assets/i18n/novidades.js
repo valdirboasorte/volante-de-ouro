@@ -1466,7 +1466,20 @@
     ["· {0} volta","· {0} lap","· {0} vuelta","· {0}周"],
     ["{0}, {1} voltas","{0}, {1} laps","{0}, {1} vueltas","{0}、{1}周"],
     ["Pneu de chuva","Full wet","Lluvia extrema","フルウェット"],
-    ["acervo do Volante de Ouro","Volante de Ouro collection","archivo de Volante de Ouro","Volante de Ouro所蔵"]
+    ["acervo do Volante de Ouro","Volante de Ouro collection","archivo de Volante de Ouro","Volante de Ouro所蔵"],
+    ["Cancelar a renovação","Cancel renewal","Cancelar la renovación","更新をキャンセル"],
+    ["Reativar a renovação","Restore renewal","Reactivar la renovación","更新を再開"],
+    ["Rescindir","Terminate","Rescindir","解約"],
+    ["Rescindir o contrato","Terminate the contract","Rescindir el contrato","契約を解除"],
+    ["Renovação automática","Automatic renewal","Renovación automática","自動更新"],
+    ["· sem renovação","· no renewal","· sin renovación","· 更新なし"],
+    ["sem renovação","no renewal","sin renovación","更新なし"],
+    ["O contrato acaba agora: {0} por ano deixam de entrar a partir da próxima etapa, e a vaga fica livre para outra marca na pré-temporada.","The contract ends now: {0} a year stops coming in from the next round, and the slot opens for another brand in pre-season.","El contrato termina ahora: {0} al año dejan de entrar desde la próxima fecha, y el espacio queda libre para otra marca en la pretemporada.","契約は今すぐ終了します。次戦から年{0}の収入がなくなり、枠はプレシーズンに別のブランドへ開放されます。"],
+    ["A renovação volta a valer: no fim de {0}, se a marca estiver satisfeita, o contrato continua.","Renewal is back on: at the end of {0}, if the brand is satisfied, the contract continues.","La renovación vuelve a valer: al final de {0}, si la marca está satisfecha, el contrato sigue.","更新が再び有効になります。{0}年末にブランドが満足していれば契約は続きます。"],
+    ["O contrato vale até o fim de {0} e depois acaba, mesmo com a marca satisfeita.","The contract runs until the end of {0} and then ends, even if the brand is satisfied.","El contrato vale hasta el final de {0} y después termina, aunque la marca esté satisfecha.","契約は{0}年末まで有効で、ブランドが満足していてもその後終了します。"],
+    ["{0} encerra o patrocínio no fim do contrato.","{0} ends the sponsorship at the end of the contract.","{0} termina el patrocinio al final del contrato.","{0}は契約満了でスポンサーを終了します。"],
+    ["Contrato com {0} rescindido.","Contract with {0} terminated.","Contrato con {0} rescindido.","{0}との契約を解除しました。"],
+    ["Não há espaço no aparelho para gravar a carreira na galeria de lendas. Apague um jogo em \"Jogos salvos\" para liberar espaço.","There is no space on this device to record the career in the hall of legends. Delete a game in \"Saved games\" to free up space.","No hay espacio en el dispositivo para guardar la carrera en la galería de leyendas. Borra una partida en \"Partidas guardadas\" para liberar espacio.","殿堂入りの記録を保存する空き容量がありません。「保存したゲーム」でゲームを削除して容量を空けてください。"]
   ];
   for(const [lang,column] of [['en',1],['es',2],['ja',3]]){
     const locale=window.VDO_LOCALES[lang];
