@@ -40,6 +40,8 @@
     ["Sem superlicença","No super licence","Sin superlicencia","スーパーライセンスなし"],
     ["{piloto} não tem superlicença ({0} de 40 pontos).","{piloto} has no super licence ({0} of 40 points).","{piloto} no tiene superlicencia ({0} de 40 puntos).","{piloto}はスーパーライセンスを持っていません（40点中{0}点）。"],
     ["{piloto} sem superlicença ({0} de 40 pontos)","{piloto} without a super licence ({0} of 40 points)","{piloto} sin superlicencia ({0} de 40 puntos)","{piloto}：スーパーライセンスなし（40点中{0}点）"],
+    ["Simular a temporada","Simulate the season","Simular la temporada","シーズンをシミュレート"],
+    ["Simular o resto da temporada","Simulate the rest of the season","Simular el resto de la temporada","残りのシーズンをシミュレート"],
     ["Cuidar","Manage","Cuidar","いたわる"],
     ["Forçar","Push","Forzar","プッシュ"],
     ["Economizar","Save","Ahorrar","節約"],
