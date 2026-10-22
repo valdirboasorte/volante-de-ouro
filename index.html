@@ -26406,17 +26406,24 @@ const Acerto = {
   },
   /* o engenheiro usa as saídas que sobram, com cautela: mexe nos dois ajustes que
      parecem mais longe, um pouco de cada vez, e para quando acha que está bom.
-     Quem lê o piloto com cuidado chega mais perto do ideal. */
+     Quem lê o piloto com cuidado chega mais perto do ideal. O último clique até o
+     acerto perfeito é do jogador: sozinho, o engenheiro nunca fecha os cinco ajustes
+     no ponto — quando o próximo ajuste fecharia, ele segura esse ajuste e para. */
   auto(k){
     const sea = C.temporada; if(!Acerto.ativo()) return;
     const st = Acerto.estado(sea, k);
     if(!st.fb && st.usadas < st.saidas) Acerto.saida(k);
-    let guarda = 0;
-    while(st.usadas < st.saidas && st.est < 88 && guarda++ < 12){
+    let guarda = 0, segurou = false;
+    while(!segurou && st.usadas < st.saidas && st.est < 88 && guarda++ < 12){
       const dh = Acerto.resolver(st.fb);
       const ord = dh.map((x, j) => j).sort((a, b) => Math.abs(dh[b]) - Math.abs(dh[a])).slice(0, 2);
-      ord.forEach(j => { const passo = Math.round(dh[j] * 5 * .5) || Math.sign(dh[j]); st.v[j] = clamp(st.v[j] - passo, 1, 20); });
-      Acerto.saida(k);
+      ord.forEach(j => {
+        if(segurou) return;
+        const passo = Math.round(dh[j] * 5 * .5) || Math.sign(dh[j]), antes = st.v[j];
+        st.v[j] = clamp(antes - passo, 1, 20);
+        if(st.v[j] !== antes && Acerto.qualidade(sea, k) >= 100){ st.v[j] = antes; segurou = true; }
+      });
+      if(!segurou) Acerto.saida(k);
     }
   },
   /* de volta da impressão para os ajustes: resolve o sistema linear (eliminação de Gauss) */
