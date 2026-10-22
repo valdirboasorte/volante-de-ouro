@@ -10217,9 +10217,9 @@ const Engine = {
      no fio ainda aguenta. Desafio (chave 'realista') é o jogo sem ajuda nenhuma. */
   DIFIC: {
     tranquilo:   { n:'Tranquilo',   d:'Para se divertir: carro que quebra pouco, evolução mais rápida, equipes mais pacientes, vagas pela metade do preço e um ritmo a mais em toda corrida. Ainda dá para perder.',
-                   ritmo:2.5, quebra:.5, batida:.6, dev:1.25, mercado:3, paciencia:8, lesao:.5, fio:3, custo:.5 },
+                   ritmo:3.2, quebra:.5, batida:.5, dev:1.5, mercado:5, paciencia:12, lesao:.5, fio:3, custo:.5, pisoDes:1 },
     equilibrado: { n:'Equilibrado', d:'O meio-termo: ganhar ainda exige carro e talento, mas o azar pesa menos, as vagas custam menos e a carreira anda.',
-                   ritmo:1.2, quebra:.75, batida:.8, dev:1.1, mercado:1.5, paciencia:4, lesao:.75, fio:2, custo:.7 },
+                   ritmo:1.2, quebra:.75, batida:.8, dev:1, mercado:1.5, paciencia:4, lesao:.75, fio:2, custo:.7 },
     realista:    { n:'Desafio',     d:'Sem ajuda: o carro quebra quando quebra, a F1 fecha a porta e a equipe cobra resultado.',
                    ritmo:0, quebra:1, batida:1, dev:1, mercado:0, paciencia:0, lesao:1, fio:1, custo:1 }
   },
@@ -13439,6 +13439,20 @@ const Engine = {
   },
 
   /* ---- evolução do piloto no fim do ano ---- */
+  /* quanto o ano na pista acelera o aprendizado: posição no campeonato (45%),
+     duelo com o companheiro (25%), regularidade (15%) e vitórias (15%). Vai de
+     0,86 (o fundo do grid) a 1,38 (quem domina), 1,03 no meio; sem corridas, neutro. No
+     Tranquilo um ano ruim não atrasa ninguém (piso 1) */
+  desempenhoAno(sum){
+    if(!sum || !sum.races) return { mult: 1, nota: null };
+    const n = Math.max(2, (S.season && S.season.field && S.season.field.length) || 20);
+    const q = sum.champion ? 1 : clamp(1 - ((sum.pos || n) - 1) / (n - 1), 0, 1);
+    const tm = sum.tmRaces ? sum.tmWins / sum.tmRaces : .5;
+    const reg = clamp(1 - (sum.dnfs || 0) / sum.races * 2, 0, 1);
+    const dom = clamp((sum.wins || 0) / sum.races * 2, 0, 1);
+    const nota = .45 * q + .25 * tm + .15 * reg + .15 * dom;
+    return { mult: Math.max(Engine.dif().pisoDes || 0, .8 + .6 * Math.pow(nota, 1.5)), nota };
+  },
   progress(sum){
     const d = S.driver, a = d.attr, pot = d.pot;
     const age = d.age;
@@ -13469,8 +13483,14 @@ const Engine = {
        mais de 25% para cima ou para baixo. O que mais pesa é o ritmo de
        desenvolvimento de cada um, que não se compra. */
     /* sem corridas (reserva, testes, ano fora) o desenvolvimento segue no simulador e no treino */
-    const posR = sum.pos || 99;
-    const perf = !sum.races ? 1 : sum.champion ? 1.08 : posR<=3 ? 1.04 : posR<=8 ? 1 : .94;
+    /* o ano na pista pesa: posição, duelo com o companheiro, regularidade e
+       vitórias. Quem domina aprende mais depressa; quem passa o ano no fundo,
+       menos. O título não dá ponto de talento: dá fama e mercado, mais abaixo */
+    const des = Engine.desempenhoAno(sum);
+    const perf = des.mult;
+    /* categoria mais forte ensina mais */
+    const nivelCat = S.season && S.season.isTop ? 1 : (S.ladder && S.ladder.length > 1 ? clamp((S.catIdx || 0) / (S.ladder.length - 1), 0, 1) : .5);
+    const catF = .95 + .1 * nivelCat;
     const acad = S.academy ? 1 + ((S.academy.peso || 1) - 1) * .5 : 1;
     const devB = 1 + (a.dev-55)/300;
     /* o inverno cobra: quem se dedicou à equipe evolui menos, quem só pensou
@@ -13484,18 +13504,24 @@ const Engine = {
     /* quanto do potencial se realiza: trabalho bem feito aproxima do teto,
        mas não passa dele */
     if(d.alcance != null && rate > 0){
-      const trabalho = (Object.values(treino).some(x => x > 0) ? .006 : 0) + (S.academy ? .006 : 0) + ((S.rel && S.rel.mentor) ? .005 : 0);
+      /* a estrada também conta: um ano inteiro de corridas aproxima do teto */
+      const trabalho = (Object.values(treino).some(x => x > 0) ? .006 : 0) + (S.academy ? .006 : 0) + ((S.rel && S.rel.mentor) ? .005 : 0)
+                     + (sum.races ? .005 * Math.min(1, sum.races / 12) : 0);
       d.alcance = Math.round(clamp(d.alcance + trabalho, .6, 1) * 1000) / 1000;
     }
     const alc = d.alcance != null ? d.alcance : 1;
-    const g = {};
+    const g = {}, ovr0 = Engine.ovr(a);
+    let pertoTeto = 0;
     ['pace','race','cons','wet','dev'].forEach(k=>{
       let v;
       if(rate > 0){
         const teto = pot[k] - (1 - alc) * 14;
         const gap = Math.max(0, teto - a[k]);
-        const mult = clamp(perf * acad * devB * comp * (1 + Math.min(.12, treino[k] || 0)), .75, 1.25);
-        v = gap * rate * ritmo * mult * Engine.dif().dev * R.range(.7,1.3) + R.range(-.4,.4);
+        if(gap < 2.5) pertoTeto++;
+        const mult = clamp(perf * catF * acad * devB * comp * (1 + Math.min(.12, treino[k] || 0)), .7, 1.5);
+        /* acima de 85 cada ponto custa mais: a elite não cresce como um estreante */
+        const elite = a[k] > 85 ? clamp(1 - (a[k] - 85) * .05, .45, 1) : 1;
+        v = gap * rate * ritmo * mult * elite * Engine.dif().dev * R.range(.7,1.3) + R.range(-.4,.4);
         /* o teto é teto: talento não se acumula para sempre */
         if(a[k] + v > teto) v = Math.max(0, teto - a[k]);
       } else {
@@ -13515,11 +13541,27 @@ const Engine = {
       else if(u < .04) ['pace','race','cons','wet','dev'].forEach(k => pot[k] = Math.max(a[k], pot[k] - R.int(1, 3)));
     }
     d.ovr = Engine.ovr(a);
+    /* para o balanço do ano: o geral antes e depois, e o que pesou */
+    g.ovr = [ovr0, d.ovr];
+    g.porque = [];
+    if(rate > 0){
+      g.porque.push(['fase', age < 20 ? 'formacao' : age <= d.peak ? 'auge' : 'maduro']);
+      if(des.nota != null) g.porque.push(['desempenho', Math.round((perf - 1) * 100)]);
+      if(sum.tmRaces) g.porque.push(['companheiro', sum.tmWins + '/' + sum.tmRaces]);
+      g.porque.push(['categoria', Math.round((catF - 1) * 100)]);
+      if(Object.values(treino).some(x => x > 0)) g.porque.push(['treino']);
+      if(S.academy) g.porque.push(['academia']);
+      if(S.rel && S.rel.mentor) g.porque.push(['mentor']);
+      if(Engine.dif().dev !== 1) g.porque.push(['dificuldade', Math.round((Engine.dif().dev - 1) * 100)]);
+      if(pertoTeto >= 3) g.porque.push(['teto']);
+    } else g.porque.push(['declinio']);
     d.age++;
 
     /* fama */
-    let fg = sum.wins*4 + sum.podiums*1.6 + (sum.champion?18:0);
+    /* o título faz nome: na base também (antes valia só 40%, como uma vitória) */
+    let fg = sum.wins*4 + sum.podiums*1.6;
     if(!S.season.isTop) fg *= .40;
+    if(sum.champion) fg += S.season.isTop ? 18 : 12;
     if(sum.pos && sum.pos<=5) fg += 3;
     d.fame = clamp(Math.round(d.fame + fg - 2), 0, 100);
     /* o que você entregou fora da pista também conta */
@@ -21084,6 +21126,26 @@ function retroTableHTML(results, opts){
     <tbody>${rows}</tbody></table></div>`;
 }
 
+/* "Geral: 65 → 68 (+3)" e o que pesou no ano, para o jogador entender a evolução */
+UI.porqueEvolucao = function(growth){
+  if(!growth || !growth.ovr) return '';
+  const [o0, o1] = growth.ovr, dif = o1 - o0;
+  const pct = v => `<b data-i18n-ignore>${v > 0 ? '+' : ''}${v}%</b>`;
+  const FASE = { formacao:'Idade de formação: o corpo e a cabeça ainda crescem depressa', auge:'Perto do auge: cada ano rende menos que na formação', maduro:'Depois do auge: o que resta é refinar' };
+  const linha = ([k, v]) => k === 'fase' ? `<span>${FASE[v]}</span>`
+    : k === 'desempenho' ? `<span>Desempenho na temporada</span>: ${pct(v)}`
+    : k === 'companheiro' ? `<span>Duelo com o companheiro</span>: <b data-i18n-ignore>${esc(v)}</b>`
+    : k === 'categoria' ? `<span>Nível da categoria</span>: ${pct(v)}`
+    : k === 'treino' ? '<span>O treino de inverno ajudou</span>'
+    : k === 'academia' ? '<span>A academia ajudou</span>'
+    : k === 'mentor' ? '<span>O mentor ajudou</span>'
+    : k === 'dificuldade' ? `<span>Dificuldade</span>: ${pct(v)}`
+    : k === 'teto' ? '<span>Perto do limite do seu potencial: daqui em diante, pouco a ganhar</span>'
+    : k === 'declinio' ? '<span>Fase de declínio: a idade cobra, e o treino físico segura a queda</span>' : '';
+  return `<div style="margin-top:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--s2)">
+    <div style="font-size:15px;font-weight:800"><span>Geral</span>: <b data-i18n-ignore>${o0} → ${o1} (${dif > 0 ? '+' : ''}${dif})</b></div>
+    <ul style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--dim)">${(growth.porque || []).map(x => `<li>${linha(x)}</li>`).join('')}</ul></div>`;
+};
 UI.seasonEndModal = function(sum, growth){
   const gline = k => {
     const v = growth[k];
@@ -21131,6 +21193,7 @@ UI.seasonEndModal = function(sum, growth){
               ${gline(k)}
             </div>`).join('')}
         </div>
+        ${UI.porqueEvolucao(growth)}
       </div>
       ${S.academyDropped ? `<div style="margin-top:16px;padding:13px 15px;border-radius:var(--r-sm);background:var(--s2);border-left:3px solid var(--red2)">
         <span class="lbl" style="display:block;margin-bottom:5px">Fim do vínculo com a academia</span>
