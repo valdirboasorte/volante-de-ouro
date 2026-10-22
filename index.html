@@ -13615,23 +13615,112 @@ const Engine = {
      critérios que o mundo usa para os pilotos da IA (Mundo.valorParaEquipe).
      Nos anos documentados, a escalação real do ano seguinte diz onde houve
      troca; depois dela, os contratos do mundo dizem. */
-  /* pontos de superlicença por nível do campeonato (F1, a partir de 2016) */
-  SUPERLICENCA: { 4:[40,40,40,30,20,10,8,6,4,3], 3:[30,25,20,15,12,9,7,5,3,2], 2:[25,20,15,10,8,6,4,3,2,1], 1:[12,10,7,5,3,2,1] },
-  precisaSuperlicenca(ano, sk){ return (sk || S.series) === 'f1' && ano >= 2016; },
-  superlicenca(){
-    let pts = 0;
-    (S.history || []).filter(h => h && h.year >= S.year - 2 && !h.papel).forEach(h => {
-      if(h.pos == null || !h.races) return;
-      if(h.cat === Engine.topCat()){ pts += 40; return; }
-      const idx = S.ladder.indexOf(h.cat);
-      const nv = Engine.ehKart(h.cat) ? 0 : Engine.nivelDaCat(h.cat, h.year, idx >= 0 ? idx : null, S.ladder.length);
-      const tab = Engine.SUPERLICENCA[Math.min(4, nv)];
-      if(tab && h.pos <= tab.length) pts += tab[h.pos - 1];
-    });
-    /* treinos livres de sexta, um ponto cada, até dez */
-    pts += Math.min(10, (S.fp1Hist || []).filter(a => a >= S.year - 2).length);
-    return pts;
+  /* ═══ A SUPERLICENÇA ═══
+     Desde 2016 a F1 exige 40 pontos somados nas três temporadas anteriores, pela
+     tabela que a FIA tinha em vigor no ano da licença. Cada temporada vale pelo
+     campeonato real que ela foi (campDaCat): a "Fórmula 3" do jogo é a F3 Europeia
+     de 2012 a 2018 e a F3 da FIA desde 2019.
+     Fontes (consultadas em out/2026):
+       2016 — anúncio da FIA de janeiro de 2015 (skysports.com, 7/1/2015);
+       2017 — revisão de junho de 2016 (racefans.net, 28/6/2016: F3 Europeia, GP3,
+              Fórmula V8 3.5 e Fórmula Renault 2.0);
+       2018 — revisão do Conselho Mundial de setembro de 2017 (autosport.com, 21/9/2017);
+       2019 em diante — Apêndice L da FIA (F3 da FIA, Fórmula Regional Europeia; a
+              IndyCar muda de tabela em 2026, a Super Formula e o DTM em 2025);
+       2021 a 2023 — emenda da pandemia: os três melhores de quatro anos.
+     Simplificações: campeonatos que a tabela de um período não lista não dão pontos
+     nele; a regra de completar 80% das corridas e o teste de regras não são
+     simulados (o jogo não deixa temporada pela metade); o treino livre vale 1 ponto
+     por sessão, até 10; quem já correu na F1 nos três anos segue habilitado. */
+  SL_TAB: {
+    2016: { gp2:[50,40,30,20,10,8,6,4,3,2], f3_euro_fia:[40,30,20,10,8,6,4,3,2,1], wec:[40,30,20,10,8,6,4,3,2,1], indy:[40,30,20,10,8,6,4,3,2,1],
+            gp3:[30,20,15,10,7,5,3,2,1], wsr:[30,20,15,10,7,5,3,2,1], f4:[10,7,5,2,1], f3nac:[10,7,5,2,1], frenault:[5,3,1] },
+    2017: { gp2:[50,40,30,20,10,8,6,4,3,2], f3_euro_fia:[40,30,20,10,8,6,4,3,2,1], wec:[40,30,20,10,8,6,4,3,2,1], indy:[40,30,20,10,8,6,4,3,2,1],
+            gp3:[30,20,15,10,7,5,3,2,1], wsr:[35,25,20,15,10,7,5,3,2,1], f4:[10,7,5,2,1], f3nac:[10,7,5,2,1], frenault:[10,7,5,3,1] },
+    2018: { f2:[40,40,40,30,20,10,8,6,4,3], gp2:[40,40,30,20,10,8,6,4,3,2], indy:[40,30,20,10,8,6,4,3,2,1], f3_euro_fia:[30,25,20,10,8,6,4,3,2,1],
+            fe:[30,25,20,10,8,6,4,3,2,1], wec:[30,24,20,16,12,10,8,6,4,2], gp3:[25,20,15,10,7,5,3,2,1], wsr:[20,15,10,8,6,4,3,2,1],
+            dtm:[15,12,10,7,5,3,2,1], nascar_cup:[15,12,10,7,5,3,2,1], indy_lights:[15,12,10,7,5,3,2,1], f4:[12,10,7,5,3,2,1],
+            f3nac:[10,7,5,3,1], frenault:[10,7,5,3,1], ip2000:[10,7,5,3,1], nascar_xfinity:[10,7,5,3,1], elms:[10,8,6,4,2], kart_mundial:[4,3,2,1] },
+    2019: { f2:[40,40,40,30,20,10,8,6,4,3], f3:[30,25,20,15,12,9,7,5,3,2], frec:[25,20,15,10,7,5,3,2,1], indy:[40,30,20,10,8,6,4,3,2,1],
+            fe:[30,25,20,10,8,6,4,3,2,1], wec:[30,24,20,16,12,10,8,6,4,2], dtm:[15,12,10,7,5,3,2,1], nascar_cup:[15,12,10,7,5,3,2,1],
+            indy_lights:[15,12,10,7,5,3,2,1], f3_japao:[15,12,10,7,5,3,2,1], f4:[12,10,7,5,3,2,1], f3_brit:[10,7,5,3,1], ip2000:[10,7,5,3,1],
+            nascar_xfinity:[10,7,5,3,1], elms:[10,8,6,4,2], kart_mundial:[4,3,2,1] }
   },
+  /* o grupo da tabela a que um campeonato real pertence */
+  slGrupo(id){
+    if(!id) return null;
+    if(/^f4_/.test(id)) return 'f4';
+    if(id === 'fr_eurocup' || id === 'fr_uk') return 'frenault';
+    if(/^f3_(alema|italiana|sudam|brasil)$/.test(id)) return 'f3nac';
+    return id;
+  },
+  /* pontos de uma temporada (campeonato real, ano do resultado, posição) para a licença de um ano */
+  slPontosTemporada(id, anoRes, pos, anoLic){
+    if(!id || !pos) return 0;
+    const g = Engine.slGrupo(id);
+    let T = anoLic <= 2016 ? Engine.SL_TAB[2016] : anoLic === 2017 ? Engine.SL_TAB[2017] : anoRes <= 2018 ? Engine.SL_TAB[2018] : Engine.SL_TAB[2019];
+    let tab = T[g];
+    /* até 2018 a F3 britânica e a japonesa eram "F3 nacional" */
+    if(!tab && (g === 'f3_brit' || g === 'f3_japao')) tab = T.f3nac;
+    if(anoRes >= 2019 && anoLic >= 2019){
+      if(g === 'indy' && anoRes >= 2026) tab = [40,30,25,20,15,10,8,6,3,1];
+      if(g === 'dtm' && anoRes >= 2025) tab = [6,4,2];
+    }
+    return tab && pos <= tab.length ? tab[pos - 1] : 0;
+  },
+  /* a conta inteira: temporadas = [{ ano, id, nome, pos, f1 }], fp1 = anos de cada sexta */
+  slConta(temporadas, anoLic, fp1){
+    const covid = anoLic >= 2021 && anoLic <= 2023;
+    const janela = covid ? 4 : 3;
+    const porAno = {};
+    temporadas.filter(t => t && t.ano >= anoLic - janela && t.ano <= anoLic - 1).forEach(t => {
+      const p = t.f1 ? 40 : Engine.slPontosTemporada(t.id, t.ano, t.pos, anoLic);
+      const a = porAno[t.ano] || (porAno[t.ano] = { ano: t.ano, pts: 0, itens: [] });
+      a.itens.push(Object.assign({}, t, { pts: p }));
+      a.pts += p;
+    });
+    let anos = Object.values(porAno).sort((a, b) => b.pts - a.pts);
+    if(covid) anos = anos.slice(0, 3);
+    const tr = Math.min(10, (fp1 || []).filter(a => a >= anoLic - 3 && a <= anoLic - 1).length);
+    const total = anos.reduce((s, a) => s + a.pts, 0) + tr;
+    return { total, anos: anos.sort((a, b) => a.ano - b.ano), treinos: tr, covid, anoLic, f1: temporadas.some(t => t.f1 && t.ano >= anoLic - janela) };
+  },
+  /* As temporadas reais de um piloto real nos campeonatos que dão pontos, tiradas do
+     banco histórico (dados/historico.js): por ano, o campeonato que mais vale. É o
+     que a FIA olhou de verdade — o mundo do jogo só registra o que ele mesmo simulou. */
+  SL_CAMPS: ['f2','gp2','gp3','f3','f3_euro_fia','frec','fr_eurocup','fr_uk','wsr','indy','indy_lights','ip2000','fe','wec','elms','dtm',
+             'nascar_cup','nascar_xfinity','kart_mundial','f3_brit','f3_japao','f3_alema','f3_italiana','f3_sudam','f3_brasil'],
+  _slHist: {},
+  slTemporadasReais(nome, anoLic){
+    if(!nome || typeof Hist === 'undefined' || !Hist.ok()) return [];
+    const k = nome + ':' + anoLic;
+    if(Engine._slHist[k]) return Engine._slHist[k];
+    if(!Engine._slF4) Engine._slF4 = Hist.campeonatos().map(c => c.id).filter(id => /^f4_/.test(id));
+    const camps = Engine.SL_CAMPS.concat(Engine._slF4), out = [];
+    for(let a = anoLic - 4; a <= anoLic - 1; a++){
+      let melhor = null;
+      camps.forEach(id => {
+        const t = Hist.temporada(id, a); if(!t || !t.inscritos.length) return;
+        const x = t.inscritos.find(i => i.pos && (i.name === nome || (i.p && i.p.nome === nome)));
+        if(!x) return;
+        const pts = Engine.slPontosTemporada(id, a, x.pos, anoLic);
+        if(!melhor || pts > melhor.pts) melhor = { ano: a, id, pos: x.pos, pts, nome: (Hist.camp(id) || {}).n || id };
+      });
+      if(melhor) out.push(melhor);
+    }
+    return (Engine._slHist[k] = out);
+  },
+  precisaSuperlicenca(ano, sk){ return (sk || S.series) === 'f1' && ano >= 2016; },
+  /* a sua: as temporadas da carreira, a licença do ano que vem */
+  superlicencaConta(anoLic){
+    anoLic = anoLic || S.year + 1;
+    const topo = Engine.topCat();
+    const temps = (S.history || []).filter(h => h && !h.papel && h.pos != null && h.races).map(h => ({
+      ano: h.year, nome: h.cat, pos: h.pos, f1: h.cat === topo, id: h.cat === topo ? null : campDaCat(h.cat, h.year)
+    }));
+    return Engine.slConta(temps, anoLic, S.fp1Hist);
+  },
+  superlicenca(anoLic){ return Engine.superlicencaConta(anoLic).total; },
   /* anos nas categorias de acesso de cima (o degrau logo abaixo da principal) */
   anosNoAcesso(){
     const topo = Engine.topCat();
@@ -17850,6 +17939,27 @@ const UI = {
     return out.join('');
   },
 
+  /* a superlicença no painel: quanto falta para poder correr na F1 no ano que vem */
+  linhaSuperlicenca(){
+    if(S.series !== 'f1' || S.year + 1 < 2016 || S.retired || (S.season && S.season.isTop && !S.papel)) return '';
+    const c = Engine.superlicencaConta(S.year + 1), ok = c.total >= 40;
+    return `<button class="sl-linha" onclick="UI.superlicencaModal()" style="display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:0;font:inherit;color:inherit">
+      <span class="mut">Superlicença</span><b style="color:${ok ? 'var(--green)' : 'var(--gold)'}">${c.total} de 40 pts ›</b></button>`;
+  },
+  superlicencaModal(anoLic){
+    anoLic = anoLic || S.year + 1;
+    const c = Engine.superlicencaConta(anoLic), falta = Math.max(0, 40 - c.total);
+    const linhas = c.anos.map(a => a.itens.map(t => `<tr><td>${t.ano}</td><td>${esc(t.nome)}</td><td class="ce">${t.pos}º</td><td class="pts">${t.pts}</td></tr>`).join('')).join('');
+    UI.modal(UI.head('Superlicença', `Para correr na Fórmula 1 em ${anoLic}`) + `<div class="mbd">
+      <div class="mini"><div><b>${c.total}</b><span>pontos</span></div><div><b>40</b><span>exigidos</span></div><div><b>${S.driver.age >= 18 ? 'ok' : S.driver.age}</b><span>${S.driver.age >= 18 ? 'idade' : 'anos (mínimo 18)'}</span></div></div>
+      <p style="margin:10px 0">${c.total >= 40 ? (c.f1 ? 'Você já correu na Fórmula 1: a licença continua válida.' : 'Pontos suficientes: as equipes de F1 já podem contratar você.') : `Faltam ${falta} pontos. Eles saem das três últimas temporadas, pela tabela da FIA em vigor em ${anoLic}.`}</p>
+      ${linhas ? `<div class="tbl-scroll"><table class="rt"><thead><tr><th>Ano</th><th>Campeonato</th><th class="ce">Pos.</th><th class="pts">Pts</th></tr></thead><tbody>${linhas}
+        ${c.treinos ? `<tr><td></td><td>Treinos livres na F1</td><td></td><td class="pts">${c.treinos}</td></tr>` : ''}</tbody></table></div>` : '<p class="mut">Nenhuma temporada que conta pontos nos últimos anos.</p>'}
+      ${c.covid ? '<p class="mut" style="font-size:13px">Regra da pandemia: valem os três melhores de quatro anos.</p>' : ''}
+      <p class="mut" style="font-size:13px;margin-bottom:0">A tabela da FIA mudou em 2017, 2018 e 2019. Na de hoje, a F2 dá 40 pontos aos três primeiros, a F3 dá 30 ao campeão, a Fórmula Regional 25 e a F4 nacional 12. Campeonatos fora da lista (kart nacional, Fórmula Ford, Stock Car) não dão pontos. Cada treino livre na F1 vale 1 ponto, até 10.</p>
+    </div><div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`);
+  },
+
   sideBox(){
     const sea = S.season, era = Engine.eraOf(sea.year);
     /* carreira encerrada não tem próxima etapa: tem retrospecto */
@@ -17906,6 +18016,7 @@ const UI = {
       <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Pontuação</span><b style="font-size:13px;text-align:right">${esc(sea.pts.label)}</b></div>
       <div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Confiabilidade</span><b>${Math.round(era.rel*100)}%</b></div>
       ${tm?`<div style="display:flex;justify-content:space-between;gap:10px"><span class="mut">Companheiro</span><b>${fg(tm.cc)}${esc(tm.name)}</b></div>`:''}
+      ${UI.linhaSuperlicenca()}
     </div>`;
     /* ── widget de gente ──
        Quem está com você e quem está contra, sempre à vista. Não é uma barra
@@ -24868,7 +24979,7 @@ Object.assign(Chefe, {
         const idade = idadeEm(sk, nome, ano, p);
         if(idade < 18 || idade > 38) return;
         const nivel = skillEm(sk, nome, ano, p[2]);
-        const c = { cc:p[1], orig:'outra', serie:sk, nivelSerie:nivel,
+        const c = { cc:p[1], orig:'outra', serie:sk, nivelSerie:nivel, anoSerie: ref,
                     origTxt: SERIES[sk].name + (L[nome] ? ' · ' + L[nome] : '') };
         /* quem já passou pela F1 leva a nota que tinha lá */
         const bF1 = naF1 ? Chefe.baseReal(naF1, ano) : null;
@@ -24877,6 +24988,8 @@ Object.assign(Chefe, {
         daqui.push(c);
       });
       daqui.sort((a, b) => b.skill - a.skill);
+      /* a posição estimada na própria série (pela nota): é ela que conta na superlicença */
+      daqui.forEach((c, i) => { c.posSerie = i + 1; });
       todos.push(...daqui.slice(0, 3));
     });
     todos.sort((a, b) => b.skill - a.skill);
@@ -24912,7 +25025,7 @@ Object.assign(Chefe, {
     p.eqHist = c.eqHist || null; p.strHist = c.strHist != null ? c.strHist : null;
     if(c.mid && C.W && C.W.p[c.mid]){ p.mid = c.mid; if(!p.real) p.pot = C.W.p[c.mid].pt; p.nasc = C.W.p[c.mid].nasc;
       if(!C.W.p[c.mid].r) p.regen = 1; }
-    ['orig', 'origTxt', 'serie', 'nivelSerie'].forEach(k => { if(c[k] != null) p[k] = c[k]; });
+    ['orig', 'origTxt', 'serie', 'nivelSerie', 'posSerie', 'anoSerie'].forEach(k => { if(c[k] != null) p[k] = c[k]; });
     const h = Chefe.hab(p, ano);
     p.pede = Chefe.salarioPedido(p, ano);
     p.aporte = Chefe.aportePagante(h, ano, p.nome);
@@ -25235,12 +25348,46 @@ Object.assign(Chefe, {
     return { ok:true, t:'A equipe sobe para a ' + C.cat + '. Carros novos, grid mais forte, conta maior.' };
   },
 
+  /* ═══ A SUPERLICENÇA DOS SEUS PILOTOS ═══
+     Na F1, desde 2016, só corre como titular quem tem a superlicença (Engine.slConta,
+     a mesma tabela da carreira de piloto). Quem a história põe na F1 até aquele ano
+     teve a licença; quem já correu na F1 nos três anos anteriores continua com ela.
+     Para os demais, a conta sai da trajetória do piloto no mundo do jogo; quem vem de
+     outra categoria leva os pontos da posição estimada nela no último ano. */
+  superlicenca(p, ano){
+    ano = ano || C.ano;
+    if(!p || !Chefe.ehF1() || ano < 2016) return { ok: true, livre: true };
+    const d = Mundo.doc('f1')[p.nome];
+    if(d && d.de <= ano) return { ok: true, hist: true };
+    if(p.orig === 'f1') return { ok: true, hist: true };
+    const temps = [], anos = new Set();
+    const add = (a, g, ps) => {
+      if(a == null || g == null || anos.has(a)) return;
+      anos.add(a);
+      if(+g === 0){ temps.push({ ano: a, f1: true, nome: Chefe.topoNome(a), pos: ps || 0 }); return; }
+      const cat = (Mundo.degraus(Chefe.sk(), a)[g] || {}).cat;
+      if(cat && ps) temps.push({ ano: a, nome: cat, pos: ps, id: campDaCat(cat, a) });
+    };
+    const W = C.W, rec = W && ((p.mid && W.p[p.mid]) || Mundo.porNome(W, p.nome));
+    /* piloto real: as temporadas que a história registra valem primeiro */
+    if(p.real || (rec && rec.r)) Engine.slTemporadasReais(p.nome, ano).forEach(t => {
+      if(anos.has(t.ano)) return; anos.add(t.ano); temps.push(t);
+    });
+    if(rec){ (rec.hs || []).forEach(h => add(h[0], h[1], h[3])); if(rec.psAno != null) add(rec.psAno, rec.g, rec.ps); }
+    if(p.orig === 'outra' && p.serie && p.posSerie){
+      const a = p.anoSerie || ano - 1;
+      if(!anos.has(a)){ anos.add(a); temps.push({ ano: a, nome: SERIES[p.serie] ? SERIES[p.serie].name : p.serie, pos: p.posSerie, id: p.serie === 'nascar' ? 'nascar_cup' : p.serie }); }
+    }
+    const conta = Engine.slConta(temps, ano, []);
+    return { ok: conta.total >= 40 || conta.f1, total: conta.total, conta };
+  },
   /* ═══ COMEÇAR A TEMPORADA ═══ */
   pendencias(){
     const falta = [];
     const tit = Chefe.titulares().filter(p => !p.venceu);
     if(tit.length < 2) falta.push('dois pilotos titulares com contrato');
     if(Chefe.ehF1() && !C.motor.proprio && !C.motor.nome) falta.push('um fornecedor de motor');
+    tit.forEach(p => { const sl = Chefe.superlicenca(p); if(!sl.ok) falta.push(p.nome + ' sem superlicença (' + sl.total + ' de 40 pontos)'); });
     return falta;
   },
   comecarTemporada(){
@@ -28376,6 +28523,13 @@ const UIC = {
   meta(k){ Chefe.ajustarMeta(k); UIC.salvar(); UIC.render(); UIC.preTemporada(); },
 
   /* ═══ MERCADO DE PILOTOS ═══ */
+  /* a superlicença no cartão do mercado (F1, desde 2016): quem a história já pôs na F1 não precisa de aviso */
+  slMercado(p){
+    const sl = Chefe.superlicenca(p);
+    if(sl.livre || sl.hist) return '';
+    return sl.ok ? `<br>Superlicença: ${sl.total} pontos.`
+      : `<br><b style="color:var(--gold)">Sem superlicença (${sl.total} de 40 pontos): só como reserva.</b>`;
+  },
   mercado(){
     const inv = C.inv, f1 = Chefe.ehF1();
     const atuais = C.pilotos.filter(p => p.papel === 'titular' || p.papel === 'teste');
@@ -28390,7 +28544,7 @@ const UIC = {
         <div class="ch-opts" style="margin-top:9px">
           ${p.venceu && !p.recusou ? `<button class="ch-opt" onclick="UIC.negociar('${p.id}')">Renovar</button>` : ''}
           ${p.papel === 'titular' && f1 && C.n1 !== p.id ? `<button class="ch-opt" onclick="UIC.n1('${p.id}')">Fazer nº 1</button>` : ''}
-          ${p.papel === 'teste' && Chefe.titulares().filter(x => !x.venceu).length < 2 ? `<button class="ch-opt" onclick="UIC.promover('${p.id}')">Promover a titular</button>` : ''}
+          ${p.papel === 'teste' && Chefe.titulares().filter(x => !x.venceu).length < 2 ? `<button class="ch-opt" onclick="UIC.promover('${p.id}')" ${Chefe.superlicenca(p).ok ? '' : 'disabled title="Sem superlicença"'}>Promover a titular</button>` : ''}
           ${p.papel === 'titular' && !Chefe.pilotoDe('teste') ? `<button class="ch-opt" onclick="UIC.rebaixar('${p.id}')">Passar a reserva</button>` : ''}
           <button class="ch-opt rd" onclick="UIC.dispensar('${p.id}')">${p.venceu ? 'Deixar ir' : 'Dispensar' + (multa ? ' (' + fmtD(multa) + ')' : '')}</button>
         </div></div>`;
@@ -28406,7 +28560,7 @@ const UIC = {
           · ${p.aporte ? 'traz ' + fmtD(p.aporte) + (p.pede ? ' e pede ' + fmtD(p.pede) : '') : 'pede ' + fmtD(p.pede) + ' por ano'}
           ${p.eqHist && p.orig !== 'f1' ? '<br>Na história, corre pela ' + esc(p.eqHist) + ' em ' + C.ano + '.' : ''}
           ${p.orig === 'outra' && p.nivelSerie ? '<br>Nível ' + p.nivelSerie + ' na ' + esc(SERIES[p.serie].short) + '; a leitura já está na escala da Fórmula 1.' : ''}
-          ${Chefe.ultimoAno(p) ? '<br>' + esc(Chefe.ultimoAno(p)) : ''}</div></button>
+          ${Chefe.ultimoAno(p) ? '<br>' + esc(Chefe.ultimoAno(p)) : ''}${UIC.slMercado(p)}</div></button>
         <div style="margin:-4px 0 10px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
           ${acad ? `<button class="btn btn-ghost btn-sm" ${vagasAc > 0 ? '' : 'disabled title="A academia está cheia"'} onclick="UIC.mercadoAcad(${i})">Levar para a academia</button>` : ''}
           <button class="btn btn-ghost btn-sm" onclick="UIC.fichaMercado(${i})">Ver trajetória</button></div>`;
@@ -28486,15 +28640,19 @@ const UIC = {
     if(!p) return;
     UIC._alvo = p;
     const renova = C.pilotos.indexOf(p) >= 0;
-    const vagaTit = Chefe.titulares().filter(x => !x.venceu && x !== p).length < 2;
+    const vagaTit = Chefe.titulares().filter(x => !x.venceu && x !== p).length < 2 && Chefe.superlicenca(p).ok;
     UIC._of = { sal:1, anos: Chefe.idade(p) >= 33 ? 1 : 2, n1:false, papel: renova ? p.papel : (vagaTit ? 'titular' : 'teste') };
     UIC.propostaTela();
   },
   propostaTela(){
     const p = UIC._alvo, of = UIC._of, f1 = Chefe.ehF1();
     const renova = C.pilotos.indexOf(p) >= 0;
-    const vagaTit = Chefe.titulares().filter(x => !x.venceu && x !== p).length < 2;
+    const sl = Chefe.superlicenca(p);
+    const vagaTit = Chefe.titulares().filter(x => !x.venceu && x !== p).length < 2 && sl.ok;
     const temTeste = Chefe.pilotoDe('teste') && Chefe.pilotoDe('teste') !== p;
+    const slTxt = sl.livre ? '' : sl.ok
+      ? `<p class="mut" style="font-size:14px;margin:0 0 10px">Superlicença: <b class="pos">em dia</b>${sl.total != null ? ` (${sl.total} pontos)` : ''}.</p>`
+      : `<div class="res-nar" style="margin:0 0 10px;border-left-color:var(--gold)"><b>Sem superlicença:</b> ${sl.total} de 40 pontos nas últimas temporadas. Pode assinar como reserva e testes, mas não pode correr como titular na F1 em ${C.ano}.</div>`;
     const op = (k, v, n, dis) => `<button class="ch-opt ${of[k] === v ? 'sel' : ''}" ${dis ? 'disabled' : ''} onclick="UIC._of.${k}=${typeof v === 'string' ? "'" + v + "'" : v};UIC.propostaTela()">${n}</button>`;
     const base = Math.max(p.pede, f1 ? Chefe.M1(.1e6) : 0);
     const [itx, icl] = Chefe.interesseTxt(Chefe.chanceAssinar(p, of));
@@ -28502,7 +28660,8 @@ const UIC = {
       `<div class="mbd">
         <div class="ch-linha"><span>Pede: <b>${fmtD(p.pede)}</b></span>${p.aporte ? `<span>Traz: <b class="pos">${fmtD(p.aporte)}</b> por ano</span>` : ''}
           <span>Interesse: <b class="${icl === 'rd' ? 'neg' : icl === 'gr' ? 'pos' : ''}">${itx}</b></span></div>
-        <span class="lbl" style="display:block;margin-top:12px">Função</span>
+        <div style="margin-top:12px">${slTxt}</div>
+        <span class="lbl" style="display:block">Função</span>
         <div class="ch-opts" style="margin:8px 0 12px">${op('papel', 'titular', 'Titular', !vagaTit)}${op('papel', 'teste', 'Reserva e testes', temTeste)}</div>
         ${base > 0 ? `<span class="lbl">Salário</span>
         <div class="ch-opts" style="margin:8px 0 12px">${op('sal', .85, 'Abaixo · ' + fmtD(base * .85))}${op('sal', 1, 'O pedido · ' + fmtD(base))}${op('sal', 1.3, 'Acima · ' + fmtD(base * 1.3))}</div>` : ''}
@@ -28544,6 +28703,8 @@ const UIC = {
   n1(id){ C.n1 = id; UIC.salvar(); UIC.render(); UIC.mercado(); },
   promover(id){
     const p = C.pilotos.find(x => x.id === id); if(!p) return;
+    const sl = Chefe.superlicenca(p);
+    if(!sl.ok) return UI.toast(p.nome + ' não tem superlicença (' + sl.total + ' de 40 pontos).');
     const usados = Chefe.titulares().filter(x => !x.venceu).map(x => x.carro);
     const velho = Chefe.titulares().find(x => x.venceu);
     if(velho) velho.carro = 9;

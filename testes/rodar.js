@@ -59,6 +59,7 @@ const testes = [
   ['clique duplo', 'clique-duplo.js'],
   ['save antigo abre na versão nova', 'migracao.js'],
   ['vários jogos salvos', 'saves.js'],
+  ['superlicença pela tabela real de cada ano', 'superlicenca.js'],
   ['banco histórico (escadas e grids reais)', 'historico.js'],
   ['save de antes do banco histórico', 'migracao-historico.js'],
   ['tamanho do save', 'save.js']
