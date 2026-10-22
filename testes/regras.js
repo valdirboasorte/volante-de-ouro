@@ -15,12 +15,14 @@ for(const [sk, ano] of casos){
   const sea0 = J.run('S.season');
   if(!sea0.isTop){ console.log(`  (${rot}: começou fora da principal, em ${sea0.cat})`); }
   const res = JSON.parse(J.run(`JSON.stringify((function(){
-    const sea = S.season, P = sea.pts, out = { erros:[], n:0 };
+    const sea = S.season, P0 = sea.pts, out = { erros:[], n:0 };
     const somaD = () => Object.values(sea.dstand).reduce((a, b) => a + b, 0);
     const somaC = () => Object.values(sea.cstand).reduce((a, b) => a + b, 0);
     while(sea.round < sea.calendar.length){
       const antesD = somaD(), antesC = somaC();
       const trk = sea.calendar[sea.round];
+      /* a sprint da F1 e as corridas da rodada dupla pagam a tabela delas */
+      const P = trk.pts ? Object.assign({ melhores: P0.melhores }, trk.pts) : P0;
       const rec = Engine.runRace(sea);
       Game.tally(rec);
       out.n++;
@@ -55,11 +57,11 @@ for(const [sk, ano] of casos){
     const meuSt = st.find(d => d.me);
     if(!sea.playoff && meuSt && Math.abs(meuSt.pts - ptsValidos(sea, 'ME')) > .001) out.erros.push('pontos do jogador na tabela ≠ pontos válidos');
     /* só os melhores resultados contam, onde o regulamento manda */
-    if(P.melhores) st.forEach(d => { if(d.pts > (sea.dstand[d.id] || 0) + .001) out.erros.push(d.name + ': pontos válidos acima do total'); });
+    if(P0.melhores) st.forEach(d => { if(d.pts > (sea.dstand[d.id] || 0) + .001) out.erros.push(d.name + ': pontos válidos acima do total'); });
     /* na F1 de 2025 em diante a volta mais rápida não vale ponto */
-    if(sea.year >= 2025 && S.series === 'f1' && P.fl) out.erros.push('volta mais rápida ainda pontua em ' + sea.year);
+    if(sea.year >= 2025 && S.series === 'f1' && P0.fl) out.erros.push('volta mais rápida ainda pontua em ' + sea.year);
     /* NASCAR: todo o grid pontua; desde 2014 o campeão termina entre 5000 e 5100 */
-    if(S.series === 'nascar' && P.p.length < sea.field.length) out.erros.push('só ' + P.p.length + ' de ' + sea.field.length + ' pontuam');
+    if(S.series === 'nascar' && P0.p.length < sea.field.length) out.erros.push('só ' + P0.p.length + ' de ' + sea.field.length + ' pontuam');
     if(S.series === 'nascar' && sea.year >= 2014 && sea.playoff && sea.playoff.campeao){
       const pc = Engine.ptsDe(sea, sea.playoff.campeao);
       if(pc < 5000 || pc > 5100) out.erros.push('campeão da NASCAR com ' + pc + ' pontos');

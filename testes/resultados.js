@@ -73,11 +73,13 @@ function naPrincipal(J, ano, forte){
     J.run('Engine.chanceAusencia = () => 0; Game.simSeason(); UI.limparFila(); UI.close();');
     const r = J.run(`(() => { const sea = S.season; const s = Engine.summary(sea);
       const pts = sea.results.reduce((a, x) => a + (x.pts || 0), 0);
-      const largou = sea.results.filter(x => Engine.estadoProva(x).largou).length;
-      const ab = sea.results.filter(x => Engine.estadoProva(x).abandono).length;
+      /* o resumo conta Grandes Prêmios: a sprint da F1 tem a contagem dela */
+      const gps = sea.results.filter(x => !x.sprintF1);
+      const largou = gps.filter(x => Engine.estadoProva(x).largou).length;
+      const ab = gps.filter(x => Engine.estadoProva(x).abandono).length;
       const gridOk = sea.results.every(x => !Engine.estadoProva(x).largou || posOk(x.grid));
       const fimOk = sea.results.every(x => x.dnf || posOk(x.pos));
-      return { pts, dstand: sea.dstand.ME || 0, races: s.races, largou, ab, dnfs: s.dnfs, wins: s.wins, w: sea.results.filter(x => x.pos === 1).length, gridOk, fimOk, n: sea.results.length }; })()`);
+      return { pts, dstand: sea.dstand.ME || 0, races: s.races, largou, ab, dnfs: s.dnfs, wins: s.wins, w: gps.filter(x => x.pos === 1).length, gridOk, fimOk, n: sea.results.length }; })()`);
     corridas += r.n; abandonos += r.ab;
     if(r.pts !== r.dstand || r.races !== r.largou || r.dnfs !== r.ab || r.wins !== r.w || !r.gridOk || !r.fimOk) coerente = false;
   }

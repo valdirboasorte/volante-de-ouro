@@ -3147,6 +3147,52 @@ function calendarioFds(ids, fmt, mk){
   }));
   return out;
 }
+/* ─────────────── AS SPRINTS DA FÓRMULA 1 ───────────────
+   Desde 2021, parte das etapas tem uma corrida sprint de cerca de 100 km no sábado.
+   As etapas e o formato de cada ano (formula1.com e as páginas de cada temporada):
+     2021 — "sprint qualifying" em Silverstone, Monza e Interlagos: a classificação de
+            sexta dá o grid da sprint, a chegada da sprint dá o grid do GP; 3-2-1 pontos,
+            e a pole oficial é de quem vence a sprint;
+     2022 — Imola, Áustria e Interlagos: o mesmo formato, 8-7-6-5-4-3-2-1, e a pole
+            oficial passa a ser de quem faz a classificação de sexta;
+     2023 — seis sprints (Baku, Áustria, Spa, Catar, Austin, Interlagos): a sprint tem
+            classificação própria (o shootout) e o GP volta a largar pela classificação;
+     2024 a 2026 — o mesmo formato, nas seis etapas escolhidas para cada ano.
+   A sprint não é um Grande Prêmio: não conta como largada, vitória ou pódio de GP
+   (fica numa contagem própria) e não repete os custos e as receitas da etapa. */
+const SPRINTS_F1 = {
+  2021: ['gb', 'it', 'br_int'],
+  2022: ['it_imo2', 'at_ost', 'br_int'],
+  2023: ['az', 'at_ost', 'be', 'qa', 'us_cot', 'br_int'],
+  2024: ['cn', 'us_mia', 'at_ost', 'us_cot', 'br_int', 'qa'],
+  2025: ['cn', 'us_mia', 'be', 'us_cot', 'br_int', 'qa'],
+  2026: ['cn', 'us_mia', 'ca_ste', 'gb', 'nl', 'sg']
+};
+/* o calendário da F1 do ano com as sprints: a sprint entra antes do GP da mesma etapa */
+function calendarioSprintF1(ids, ano, mk){
+  const sp = SPRINTS_F1[ano] || [];
+  const out = [];
+  let fds = 0;
+  ids.forEach(id => {
+    if(sp.indexOf(id) < 0){ out.push(mk(id, out.length)); return; }
+    const antigo = ano <= 2022;
+    out.push(Object.assign(mk(id, out.length), { fds, fdsN: 0, fdsK: 2, tipo: 'sprint', sprintF1: true, corridaN: 'Sprint',
+      gridRegra: antigo ? 'quali' : 'nova', pts: { p: ano === 2021 ? [3,2,1] : [8,7,6,5,4,3,2,1] }, dist: .33, semPole: ano !== 2022 }));
+    out.push(Object.assign(mk(id, out.length), { fds, fdsN: 1, fdsK: 2, tipo: 'principal', corridaN: 'Grande Prêmio',
+      gridRegra: antigo ? 'chegada' : 'quali', semPole: ano === 2022 }));
+    fds++;
+  });
+  /* "rodada": o número do GP; a sprint leva o do GP que vem logo depois */
+  let gp = 0;
+  out.forEach(t => { if(!t.sprintF1) gp++; t.r = t.sprintF1 ? gp + 1 : gp; });
+  return out;
+}
+/* o número da etapa e quantas o ano tem: na F1 com sprint, contam os Grandes Prêmios */
+function numEtapa(sea, rd){
+  const cal = (sea && sea.calendar) || [], t = cal[rd];
+  const sprint = cal.some(x => x.sprintF1);
+  return [sprint && t && t.r ? t.r : rd + 1, sprint ? cal.filter(x => !x.sprintF1).length : cal.length];
+}
 /* a primeira corrida do fim de semana de uma etapa (a própria, quando é corrida avulsa) */
 function rdBaseFds(sea, rd){
   const t = sea && sea.calendar && sea.calendar[rd];
@@ -9039,12 +9085,14 @@ const Engine = {
     /* na base, o fim de semana do campeonato real: rodada dupla ou tripla, com grid invertido */
     const fmtFds = isTop || Engine.ehKart(cat) ? null : formatoFds(cat, S.year, S.series);
     if(fmtFds) pts = Object.assign({}, fmtFds.corridas.find(c => c.tipo === 'principal' || c.tipo === 'corrida').pts, { label: fmtFds.label });
-    const calendar = calendarioFds(ids, fmtFds, (id, i) => {
+    const mkEtapa = (id, i) => {
       const t = TRACKS[id] || TRACKS['it'];
       return { r:i+1, id, gp:t.gp, circ:t.circ, cc:t.cc, type:t.type,
                rainP: clamp(t.rainP * era.rain, 0, .95),
                dbl: !!(pts.dblId && pts.dblId === id) };
-    });
+    };
+    /* na F1, as etapas com sprint ganham a corrida de sábado */
+    const calendar = isTop && S.series === 'f1' ? calendarioSprintF1(ids, S.year, mkEtapa) : calendarioFds(ids, fmtFds, mkEtapa);
 
     /* equipes daquela categoria naquele ano — as mesmas que apareceram nas ofertas */
     const teams = Engine.teamsFor(cat, S.year, S.series, S.catIdx, S.ladder.length);
@@ -12281,8 +12329,10 @@ const Engine = {
      A classificação do fim de semana fica guardada (para a corrida que larga por ela
      depois, e para a que inverte os primeiros dela); a chegada de cada corrida também
      (para a corrida seguinte que inverte o resultado). */
-  guardarQualiFds(sea, rd, grid){
-    const t = sea.calendar[rd]; if(!t || t.fds == null || t.gridRegra === 'nova') return;
+  /* forcar: a classificação que o jogador disputou numa etapa cuja primeira corrida tem
+     sessão própria (a sprint da F1 desde 2023): ela fica para o GP */
+  guardarQualiFds(sea, rd, grid, forcar){
+    const t = sea.calendar[rd]; if(!t || t.fds == null || (t.gridRegra === 'nova' && !forcar)) return;
     if(t.fdsN && sea.qualiFds && sea.qualiFds[t.fds]) return;
     (sea.qualiFds = sea.qualiFds || {})[t.fds] = Object.keys(grid).sort((a, b) => grid[a] - grid[b]);
   },
@@ -12313,8 +12363,12 @@ const Engine = {
       if(!g.inv) return 'grid inteiro invertido, da classificação';
       return 'grid invertido: os ' + g.inv + ' primeiros ' + (g.de === 'anterior' ? 'da corrida anterior' : 'da classificação');
     }
-    return g === 'nova' ? 'classificação própria' : t && t.fdsN ? 'grid da classificação' : '';
+    if(g === 'chegada') return 'grid da chegada da sprint';
+    if(g === 'nova') return t.sprintF1 ? 'classificação própria da sprint' : 'classificação própria';
+    return t && t.fdsN ? 'grid da classificação' : '';
   },
+  /* a classificação disputada nesta etapa vale para outra corrida (a sprint da F1 desde 2023)? */
+  qualiParaOGp(t){ return !!(t && t.sprintF1 && t.gridRegra === 'nova'); },
   /* a corrida larga com o grid invertido? (aí o primeiro do grid não fez pole) */
   gridInvertido(sea, rd){ const t = sea && sea.calendar && sea.calendar[rd]; return !!(t && t.gridRegra && typeof t.gridRegra === 'object'); },
   /* o que cada sessão de treino rendeu, acumulado no fim de semana */
@@ -12812,11 +12866,16 @@ const Engine = {
     const notas = [];
     let grid;
     let fora = {};
-    /* a corrida do fim de semana que larga pela classificação de antes (a principal da F2 depois da sprint) */
-    const daQualiFds = trk.fdsN && trk.gridRegra === 'quali' ? Engine.gridDoFds(sea, rd, campo.map(f => f.id)) : null;
+    /* a corrida do fim de semana que larga pela classificação de antes (a principal da F2
+       depois da sprint) ou pela chegada da corrida de antes (o GP da F1 em 2021-2022) */
+    const daQualiFds = trk.fdsN && (trk.gridRegra === 'quali' || trk.gridRegra === 'chegada') ? Engine.gridDoFds(sea, rd, campo.map(f => f.id)) : null;
+    /* sprint da F1 desde 2023: a classificação disputada no fim de semana é a do GP;
+       a sprint larga pela sessão dela, decidida aqui */
+    const manual = !semMim && sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid;
+    if(manual && Engine.qualiParaOGp(trk)) Engine.guardarQualiFds(sea, rd, manual, true);
     if(daQualiFds){
       grid = daQualiFds;
-    } else if(!semMim && sea.fds && sea.fds.rd === rd && sea.fds.quali && sea.fds.quali.grid){
+    } else if(manual && !Engine.qualiParaOGp(trk)){
       grid = sea.fds.quali.grid;
       fora = (sea.naoLarga && sea.naoLarga[rd]) || {};
     } else {
@@ -13009,6 +13068,7 @@ const Engine = {
     const rec = {
       r: rd+1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet, dbl:!!trk.dbl,
       corridaN: trk.corridaN || undefined, inv: Engine.gridInvertido(sea, rd) || undefined,
+      sprintF1: trk.sprintF1 || undefined, semPole: trk.semPole || undefined,
       setup: mine && sea.setup ? { asa:sea.setup.asa, susp:sea.setup.susp, motor:sea.setup.motor,
                            erro: ajuste.erro, auto: !!sea.setup.auto, filo: ajuste.filo,
                            rev: Engine.setupRevisao(sea, rd, sea.setup.resp) } : null,
@@ -13409,8 +13469,11 @@ const Engine = {
   /* ---- resumo da temporada ---- */
   summary(sea){
     /* não largou (lesionado, reserva, não classificado) não é largada nem abandono */
-    const inscr = sea.results;
+    /* a sprint da F1 não entra na conta de Grandes Prêmios (tem a sua, abaixo) */
+    const todas = sea.results;
+    const inscr = todas.filter(r => !r.sprintF1);
     const rs = inscr.filter(r => Engine.largou(r));
+    const sprints = todas.filter(r => r.sprintF1 && Engine.largou(r));
     const fin = rs.filter(r=>r.pos);
     const h2h = rs.filter(r=>r.tmGrid!=null);
     const tmWins = h2h.filter(r=> r.pos!=null && (r.tmPos==null || r.pos < r.tmPos)).length;
@@ -13418,7 +13481,8 @@ const Engine = {
     return {
       tmWins, qWins, tmRaces: h2h.length,
       year:sea.year, cat:sea.cat, team:S.team.name, teamColor:S.team.color,
-      races: rs.length, total: sea.calendar.length, inscricoes: inscr.length,
+      races: rs.length, total: sea.calendar.filter(t => !t.sprintF1).length, inscricoes: inscr.length,
+      sprints: sprints.length || undefined, sprintWins: sprints.length ? sprints.filter(r => r.pos === 1).length : undefined,
       naoLargou: inscr.length - rs.length, papel: S.papel ? S.papel.tipo : null,
       /* a pontuação oficial do campeonato: no playoff, a do playoff */
       pts: Engine.ptsDe(sea, 'ME'),
@@ -13426,7 +13490,7 @@ const Engine = {
       pos: Engine.champPos(sea,'ME') || null,
       wins: fin.filter(r=>r.pos===1).length,
       podiums: fin.filter(r=>r.pos<=3).length,
-      poles: rs.filter(r=>r.grid===1).length,
+      poles: rs.filter(r=>r.grid===1 && !r.inv && !r.semPole).length + sprints.filter(r => r.grid === 1 && !r.semPole).length,
       fls: rs.filter(r=>r.fl).length,
       dnfs: rs.filter(r=>r.dnf).length,
       best: fin.length ? Math.min(...fin.map(r=>r.pos)) : null,
@@ -18145,7 +18209,7 @@ const UI = {
     if(nx){
       const tn = {fast:'Alta velocidade', street:'Circuito de rua', tech:'Técnico', mixed:'Misto', oval:'Oval'}[nx.type];
       h += `<div class="pad" style="border-bottom:2px solid var(--s1)">
-        <span class="lbl">Próxima etapa · rodada ${nx.r} de ${sea.calendar.length}</span>
+        <span class="lbl">Próxima etapa · rodada ${numEtapa(sea, sea.round)[0]} de ${numEtapa(sea, sea.round)[1]}</span>
         <div style="display:flex;align-items:center;gap:11px;margin-top:9px">
           <span class="flag" style="font-size:30px">${flag(nx.cc)}</span>
           <div style="min-width:0">
@@ -20171,6 +20235,19 @@ const Game = {
 
   tally(rec){
     const c = S.career;
+    /* A sprint da F1 não é um Grande Prêmio: os pontos valem no campeonato e na carreira,
+       e o resto fica numa contagem própria, como na estatística oficial. A pole de 2022,
+       que a FIA deu a quem fez a classificação de sexta, é contada aqui (o 1º do grid da sprint). */
+    if(rec.sprintF1){
+      if(!Engine.largou(rec)) return;
+      const sp = c.sprints = c.sprints || { n:0, v:0, pod:0, pts:0 };
+      sp.n++; sp.pts += rec.pts || 0;
+      if(rec.pos === 1) sp.v++;
+      if(rec.pos && rec.pos <= 3) sp.pod++;
+      c.pts += rec.pts || 0;
+      if(rec.grid === 1 && !rec.semPole) c.poles++;
+      return;
+    }
     /* Não largou (lesionado, reserva no box, não classificado): é inscrição, não
        é largada nem abandono — e não entra em vitória, pódio ou volta rápida. */
     if(!Engine.largou(rec)){
@@ -20220,7 +20297,7 @@ const Game = {
     const chance = clamp(.18 + S.driver.fame/160, .18, .8);
     if(rec.pos === 1) Engine.noticia("vitoria", rec);
     else if(rec.pos && rec.pos <= 3 && R.chance(chance)) Engine.noticia("podio", rec);
-    else if(rec.grid === 1 && !rec.inv && R.chance(chance)) Engine.noticia("pole", rec);
+    else if(rec.grid === 1 && !rec.inv && !rec.semPole && R.chance(chance)) Engine.noticia("pole", rec);
     else if(rec.dnf && R.chance(chance*.7)) Engine.noticia("abandono", rec);
     /* Vitória no kart não é vitória na Fórmula 1. Os dois números existem, e
        existem separados: o de cima é a carreira profissional, o de baixo é a
@@ -20232,15 +20309,15 @@ const Game = {
       ps.gps = (ps.gps || 0) + 1; ps.pts = (ps.pts || 0) + (rec.pts || 0);
       if(rec.pos === 1) ps.wins++;
       if(rec.pos && rec.pos <= 3) ps.podiums++;
-      if(rec.grid === 1 && !rec.inv) ps.poles = (ps.poles || 0) + 1;
+      if(rec.grid === 1 && !rec.inv && !rec.semPole) ps.poles = (ps.poles || 0) + 1;
       if(rec.fl) ps.fls = (ps.fls || 0) + 1;
       if(rec.dnf) ps.dnfs = (ps.dnfs || 0) + 1;
     }
     alvo.gps++;
     alvo.pts += rec.pts;
     if(rec.fl) alvo.fls++;
-    /* largar na frente de um grid invertido não é pole */
-    if(rec.grid === 1 && !rec.inv) alvo.poles++;
+    /* largar na frente de um grid invertido não é pole (nem no GP de 2022, cuja pole foi da sexta) */
+    if(rec.grid === 1 && !rec.inv && !rec.semPole) alvo.poles++;
     if(rec.dnf) alvo.dnfs++;
     if(rec.pos === 1) alvo.wins++;
     if(rec.pos && rec.pos <= 3) alvo.podiums++;
@@ -23804,11 +23881,13 @@ const Chefe = {
     /* na base, o fim de semana do campeonato real: rodada dupla ou tripla, com grid invertido */
     const fmtFds = f1 || Engine.ehKart(C.cat) ? null : formatoFds(C.cat, ano, Chefe.sk());
     if(fmtFds) pts = Object.assign({}, fmtFds.corridas.find(c => c.tipo === 'principal' || c.tipo === 'corrida').pts, { label: fmtFds.label });
-    const calendar = calendarioFds(ids, fmtFds, (id, i) => {
+    const mkEtapa = (id, i) => {
       const t = TRACKS[id] || TRACKS.it;
       return { r:i + 1, id, gp:t.gp, circ:t.circ, cc:t.cc, type:t.type,
                rainP: clamp(t.rainP * era.rain, 0, .95), dbl:false };
-    });
+    };
+    /* na F1, as etapas com sprint ganham a corrida de sábado */
+    const calendar = f1 && Chefe.sk() === 'f1' ? calendarioSprintF1(ids, ano, mkEtapa) : calendarioFds(ids, fmtFds, mkEtapa);
     const ordem = teams.slice().sort((a, b) => b.str - a.str);
     C.temporada = {
       ano, cat:C.cat, sk:Chefe.sk(), isTop:f1, teams, field, calendar, pts,
@@ -24155,7 +24234,16 @@ const Chefe = {
 
     /* sábado: o grid é o das sessões — na corrida de grid invertido, com os primeiros invertidos */
     const inv = Engine.gridInvertido(sea, rd) && !qsEtapa.herdada ? Engine.gridDoFds(sea, rd, Object.keys(qsEtapa.grid)) : null;
-    const grid = Object.assign({}, inv || qsEtapa.grid);
+    /* sprint da F1 desde 2023: a classificação disputada é a do GP (fica guardada);
+       a sprint larga pela sessão dela, decidida aqui com o carro, o piloto e a pista */
+    let base = qsEtapa.grid;
+    if(Engine.qualiParaOGp(trk) && !qsEtapa.herdada){
+      Engine.guardarQualiFds(sea, rd, qsEtapa.grid, true);
+      const val = Chefe.valorQuali(sea, Chefe.ctxQuali(sea));
+      const ordem = corre.map(f => [f.id, val(f.id, { semJanela: true }).v]).sort((a, b) => b[1] - a[1]);
+      base = {}; ordem.forEach(([id], i) => base[id] = i + 1);
+    }
+    const grid = Object.assign({}, inv || base);
     corre.forEach(f => { if(grid[f.id] == null) grid[f.id] = Object.keys(grid).length + 1; });
     /* punição de grid do fim de semana */
     corre.forEach(f => {
@@ -24274,11 +24362,16 @@ const Chefe = {
 
     /* ── o que a corrida custou e rendeu ── */
     const livroAntes = Chefe.saldoLivro();
-    Chefe.lancar('operacao', -Chefe.M(1.05e6), true);
-    Chefe.pagarPatrocinios(sea);
-    Chefe.pagarSalarios(sea);
+    /* a sprint da F1 é parte do fim de semana do GP: operação, patrocínio, salários e o
+       objetivo do patrocinador ficam com o GP (só o estrago de uma batida entra aqui) */
+    const sprintF1 = !!trk.sprintF1;
+    if(!sprintF1){
+      Chefe.lancar('operacao', -Chefe.M(1.05e6), true);
+      Chefe.pagarPatrocinios(sea);
+      Chefe.pagarSalarios(sea);
+    }
     const nossos = finish.filter(x => x.f.teamId === 'EU');
-    try {
+    if(!sprintF1) try {
       const resumo = nossos.map(x => ({ pos: x.out ? null : x.pos, pts: x.pts, dnf: x.out ? x.dnf : null }));
       Chefe.objetivoPatro(sea); Chefe.satisfacaoPatro(sea, resumo, notas); Chefe.confiancaCorrida(sea, resumo);
     } catch(e){}
@@ -24296,12 +24389,20 @@ const Chefe = {
     nossos.forEach(x => {
       const p = x.f.pid && C.pilotos.find(q => q.id === x.f.pid);
       if(!p) return;
-      p.est.gps++; p.est.pts += x.pts;
-      if(!x.out && x.pos === 1) p.est.v++;
-      if(!x.out && x.pos <= 3) p.est.pod++;
-      if(grid[x.f.id] === 1 && !Engine.gridInvertido(sea, rd)) p.est.poles++;
+      p.est.pts += x.pts;
+      /* a sprint da F1 tem contagem própria; a pole oficial de 2022 é a da sexta (o grid da sprint) */
+      if(sprintF1){
+        p.est.spr = (p.est.spr || 0) + 1;
+        if(!x.out && x.pos === 1) p.est.sprV = (p.est.sprV || 0) + 1;
+        if(grid[x.f.id] === 1 && !trk.semPole) p.est.poles++;
+      } else {
+        p.est.gps++;
+        if(!x.out && x.pos === 1) p.est.v++;
+        if(!x.out && x.pos <= 3) p.est.pod++;
+        if(grid[x.f.id] === 1 && !Engine.gridInvertido(sea, rd) && !trk.semPole) p.est.poles++;
+      }
       const esperado = Math.max(1, sea.rankCarro * 2 - 1);
-      if(!x.out) p.moral = clamp(p.moral + (esperado - x.pos) * .6 + (x.pos === 1 ? 5 : 0), 5, 99);
+      if(!x.out) p.moral = clamp(p.moral + ((esperado - x.pos) * .6 + (x.pos === 1 ? 5 : 0)) * (sprintF1 ? .5 : 1), 5, 99);
       if(x.dnf === 'MEC') p.moral = clamp(p.moral - 2, 5, 99);
       if(x.dnf === 'ACID' && C.realismo){
         const dg = era.danger * (wet ? 1.5 : 1) * (sea.isTop ? 1 : .35);
@@ -24312,9 +24413,10 @@ const Chefe = {
         }
       }
     });
-    C.pilotos.forEach(p => { if(p.lesao > 0 && p.lesao < 999 && !lesoes.some(l => l.p === p)) p.lesao--; });
-    /* quem rodou o primeiro treino aprendeu alguma coisa */
-    if(dec.tl1){
+    /* lesão conta etapas: a sprint não é uma a mais */
+    if(!sprintF1) C.pilotos.forEach(p => { if(p.lesao > 0 && p.lesao < 999 && !lesoes.some(l => l.p === p)) p.lesao--; });
+    /* quem rodou o primeiro treino aprendeu alguma coisa (uma vez por etapa: no GP) */
+    if(dec.tl1 && !sprintF1){
       const pr = C.pilotos.find(x => x.id === dec.tl1.pid);
       if(pr && (pr.papel === 'teste' || pr.papel === 'academia')){
         pr.est.tl1 = (pr.est.tl1 || 0) + 1;
@@ -24463,8 +24565,10 @@ const Chefe = {
     if(teto && v < 0 && C.temporada) C.temporada.gastoTeto += -v;
   },
   saldoLivro(){ return Object.keys(C.livro).reduce((s, k) => s + C.livro[k], 0); },
+  /* quantas etapas pagam e cobram no ano: a sprint da F1 não é uma etapa a mais */
+  etapasPagas(sea){ return Math.max(1, sea.calendar.filter(t => !t.sprintF1).length); },
   pagarPatrocinios(sea){
-    const n = sea.calendar.length;
+    const n = Chefe.etapasPagas(sea);
     C.patro.forEach(s => { if(!s.calote) Chefe.lancar('patrocinio', s.valor / n); });
     if(C.dir && C.dir.aporte) Chefe.lancar('dono', C.dir.aporte / n);
     const pag = C.pilotos.filter(p => (p.papel === 'titular' || p.papel === 'teste') && p.aporte > 0)
@@ -24473,7 +24577,7 @@ const Chefe = {
     if(Chefe.ehF1() && C.ano >= 1985) Chefe.lancar('merch', Chefe.M(C.rep * .05e6) / n);
   },
   pagarSalarios(sea){
-    const n = sea.calendar.length;
+    const n = Chefe.etapasPagas(sea);
     const pil = C.pilotos.filter(p => p.papel === 'titular' || p.papel === 'teste').reduce((s, p) => s + (p.sal || 0), 0);
     if(pil) Chefe.lancar('salarios', -pil / n);
     const st = Object.values(C.staff).filter(Boolean).reduce((s, x) => s + x.sal, 0);
@@ -24511,7 +24615,8 @@ const Chefe = {
     extra = extra || {};
     const sea = C.temporada;
     if(!sea || C.fase !== 'temporada') return null;
-    const n = sea.calendar.length, ativos = p => p.papel === 'titular' || p.papel === 'teste';
+    /* as etapas que pagam e cobram (a sprint da F1 vai junto com o GP dela) */
+    const n = Chefe.etapasPagas(sea), ativos = p => p.papel === 'titular' || p.papel === 'teste';
     const entra = (C.patro.filter(x => !x.calote && !x.rompido).reduce((a, x) => a + x.valor, 0)
       + (C.dir && C.dir.aporte ? C.dir.aporte : 0)
       + C.pilotos.filter(p => ativos(p) && p.aporte > 0).reduce((a, p) => a + p.aporte, 0)
@@ -24522,15 +24627,16 @@ const Chefe = {
     const sai = Chefe.M(1.05e6) + fixo + reparo;
     let caixa = C.caixa + (extra.agora || 0), menor = { caixa: Infinity, gp: null };
     const etapas = [];
-    for(let r = sea.round; r < n; r++){
+    for(let r = sea.round; r < sea.calendar.length; r++){
+      if(sea.calendar[r].sprintF1) continue;
       caixa += entra - sai + (extra.porCorrida || 0);
-      etapas.push({ r: r + 1, gp: sea.calendar[r].gp, caixa });
+      etapas.push({ r: sea.calendar[r].r || r + 1, gp: sea.calendar[r].gp, caixa });
       if(caixa < menor.caixa) menor = { caixa, gp: sea.calendar[r].gp };
     }
     const nEq = sea.teams.length, pos = sea.round ? Chefe.posConstrutores(sea, 'EU') : (sea.meta || C.ultimaPos || Math.ceil(nEq / 2));
     const premio = sea.excluida ? 0 : Chefe.premio(pos, nEq);
     const melhor = sea.excluida ? 0 : Chefe.premio(Math.max(1, pos - 2), nEq), pior = sea.excluida ? 0 : Chefe.premio(Math.min(nEq, pos + 2), nEq);
-    const resta = n - sea.round;
+    const resta = etapas.length;
     const fim = caixa + premio;
     return { etapas, entra, sai, premio, fim, menor: etapas.length ? menor : null,
              min: fim - (premio - pior) - resta * Chefe.M(1.05e6) * .25, max: fim + (melhor - premio) + resta * Chefe.M(1.05e6) * .08,
@@ -27403,7 +27509,7 @@ const UIC = {
     const qs = sea.qs && sea.qs.rd === rd ? sea.qs : null;
     const acao = !qs ? (t.fdsN ? 'Ir para a largada' : 'Preparar o fim de semana') : !qs.concluida ? 'Continuar a classificação' : !qs.grid ? 'Ver o grid' : 'Ir para a largada';
     return `<section class="chx-p chx-prox" aria-label="Próxima etapa">
-      <div class="chx-prox-cab">${fg(t.cc)}<div><h2>GP ${esc(t.gp)}</h2><p>${esc(t.circ)} · ${tipo} · etapa ${rd + 1} de ${sea.calendar.length}</p></div></div>
+      <div class="chx-prox-cab">${fg(t.cc)}<div><h2>GP ${esc(t.gp)}</h2><p>${esc(t.circ)} · ${tipo} · etapa ${numEtapa(sea, rd)[0]} de ${numEtapa(sea, rd)[1]}</p></div></div>
       ${UIC.tracadoSvg(t.id, sea.ano, t.circ)}
       <dl class="chx-fatos">${fatos.map(([a, b, cl, nome]) => `<div class="${cl || ''}"><dt${nome ? ' data-i18n-ignore' : ''}>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
       <button class="btn btn-gold chx-acao" onclick="UIC.irCorrida()">${acao} →</button>
@@ -28272,7 +28378,7 @@ const UIC = {
           <span class="q-p">${k + 1}</span><span class="q-n">${esc(nome(id))}</span><span class="q-t">${esc(time(id))}</span><span class="q-d">${dif}</span></div>`;
       }).join('')}</div>
       ${Object.keys(ult.notas).filter(id => nossos.some(f => f.id === id)).map(id => ult.notas[id].map(k => `<p class="mut" style="margin:4px 0 0;font-size:14px"><b>${esc(nome(id))}:</b> ${esc(Engine.NOTA_JANELA_ELE[k])}</p>`).join('')).join('')}` : '';
-    UI.modal(UI.head('Classificação · GP ' + esc(trk.gp), `${esc(reg.fmt.n)} · etapa ${rd + 1} de ${sea.calendar.length}`) +
+    UI.modal(UI.head('Classificação · GP ' + esc(trk.gp), `${esc(reg.fmt.n)} · etapa ${numEtapa(sea, rd)[0]} de ${numEtapa(sea, rd)[1]}`) +
       `<div class="mbd">
         <div class="q-seq">${qs.sessoes.map((x, k) => `<span class="${k < qs.i ? 'feita' : k === qs.i ? 'atual' : ''}">${esc(x.n)}</span>`).join('')}</div>
         ${qs.nota ? `<div class="res-nar">${esc(qs.nota)}</div>` : ''}
@@ -29964,7 +30070,7 @@ const AoVivo = {
       </article>`;
     ov.innerHTML = `
       <header class="av-topo">
-        <div class="av-gp"><b>GP ${esc(ent.gp || '')}${ent.corridaN ? ` · <span>${esc(ent.corridaN)}</span>` : ''}${chefe && R.trk && R.trk.cc ? ` <span class="av-gp-fg">${fg(R.trk.cc)}</span>` : ''}</b><span><span>${esc(ent.circ || '')}</span> · <span>${ent.ano}</span> · <span>${esc(AoVivo.opc.serie || 'Corrida')}</span>${R.g.real ? '' : ' · <span>traçado esquemático</span>'}</span></div>
+        <div class="av-gp"><b>GP ${esc(ent.gp || '')}${ent.corridaN && ent.corridaN !== 'Grande Prêmio' ? ` · <span>${esc(ent.corridaN)}</span>` : ''}${chefe && R.trk && R.trk.cc ? ` <span class="av-gp-fg">${fg(R.trk.cc)}</span>` : ''}</b><span><span>${esc(ent.circ || '')}</span> · <span>${ent.ano}</span> · <span>${esc(AoVivo.opc.serie || 'Corrida')}</span>${R.g.real ? '' : ' · <span>traçado esquemático</span>'}</span></div>
         <div class="av-placar">
           <span class="av-volta" id="avVolta">Volta 1 de ${R.N}</span>
           <b class="av-rel" id="avRelogio">0:00</b>
