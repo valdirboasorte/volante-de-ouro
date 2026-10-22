@@ -17581,11 +17581,24 @@ function checkerHTML(){
 
 /* Armazenamento à prova de bala: abrir o arquivo direto (file:// ou data:)
    pode bloquear o localStorage. Nesse caso a partida roda na memória. */
+/* ok = o navegador deixa guardar; cheio = guarda, mas o espaço do aparelho acabou.
+   O que não coube fica na memória e vale na leitura: depois de um salvamento que
+   falhou, "Continuar" não volta para um save velho com a carreira de antes. */
 const Store = {
-  mem:{}, ok:true,
-  get(k){ try{ return localStorage.getItem(k); }catch(e){ Store.ok=false; return k in Store.mem ? Store.mem[k] : null; } },
-  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ Store.ok=false; Store.mem[k]=v; } },
-  del(k){ try{ localStorage.removeItem(k); }catch(e){ Store.ok=false; delete Store.mem[k]; } },
+  mem:{}, ok:true, cheio:false,
+  get(k){ if(k in Store.mem) return Store.mem[k]; try{ return localStorage.getItem(k); }catch(e){ Store.ok=false; return null; } },
+  set(k,v){
+    try{ localStorage.setItem(k,v); delete Store.mem[k]; return true; }
+    catch(e){ if(Store.lotado(e)) Store.cheio = true; else Store.ok = false; Store.mem[k] = v; return false; }
+  },
+  del(k){ delete Store.mem[k]; try{ localStorage.removeItem(k); }catch(e){ Store.ok=false; } },
+  lotado(e){ return !!e && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22 || e.code === 1014); },
+  /* sem espaço o jogo continua, mas o jogador precisa saber: um aviso a cada dois minutos */
+  avisarCheio(){
+    if(Date.now() - (Store._aviso || 0) < 120000) return;
+    Store._aviso = Date.now();
+    if(typeof UI !== 'undefined' && UI.toast) UI.toast('Não há espaço no aparelho para salvar: o progresso só vale até fechar o jogo. Apague um jogo em "Jogos salvos" para liberar espaço.');
+  },
   /* galeria de lendas: acrescenta sem tirar ninguém. Uma lista que não abre fica
      guardada à parte (nunca vira lista vazia por cima); sem espaço no aparelho,
      devolve false e quem chamou mantém o save da carreira */
@@ -17599,7 +17612,7 @@ const Store = {
     l.push(rec);
     if(ordem) l.sort(ordem);
     const txt = JSON.stringify(l);
-    try { localStorage.setItem(k, txt); return true; }
+    try { localStorage.setItem(k, txt); delete Store.mem[k]; return true; }
     catch(e){
       if(!Store.ok || typeof localStorage === 'undefined'){ Store.mem[k] = txt; return true; }
       return false;
@@ -17634,7 +17647,7 @@ const Saves = {
   /* grava a lista; sem espaço no aparelho, devolve false e nada muda */
   gravar(d){
     const txt = JSON.stringify(d);
-    try { localStorage.setItem(Saves.CHAVE, txt); return true; }
+    try { localStorage.setItem(Saves.CHAVE, txt); delete Store.mem[Saves.CHAVE]; return true; }
     catch(e){
       if(!Store.ok || typeof localStorage === 'undefined'){ Store.mem[Saves.CHAVE] = txt; return true; }
       return false;
@@ -17693,7 +17706,7 @@ const Saves = {
     const antes = d.ativo[modo] || null, atual = Saves.guardarAtivo(d, modo);
     const sem = 'Não há espaço no aparelho para trocar de jogo. Apague um jogo guardado e tente de novo.';
     if(!Saves.gravar(d)) return UI.toast(sem);
-    try { localStorage.setItem(Saves.ATIVO[modo], x.dado); }
+    try { localStorage.setItem(Saves.ATIVO[modo], x.dado); delete Store.mem[Saves.ATIVO[modo]]; }
     catch(e){
       if(Store.ok && typeof localStorage !== 'undefined'){
         if(atual && atual.id === antes) atual.dado = null; else if(atual) d.lista = d.lista.filter(y => y !== atual);
@@ -19289,7 +19302,13 @@ const Game = {
           json = JSON.stringify(S);
         }
       }
-      Store.set('vdo_save', json);
+      let gravou = Store.set('vdo_save', json);
+      /* sem espaço: as classificações completas das provas antigas saem antes de desistir */
+      if(!gravou && Store.cheio && S.archive && S.archive.length){
+        S.archive.forEach(a => (a.results || []).forEach(r => { if(r.top && r.top.length) r.top = []; }));
+        gravou = Store.set('vdo_save', JSON.stringify(S));
+      }
+      if(!gravou && Store.cheio){ Store.avisarCheio(); return; }
       if(toast) UI.toast(Store.ok
         ? 'Carreira salva neste aparelho.'
         : 'Salvo só nesta sessão — este navegador bloqueou o armazenamento.');
@@ -27060,7 +27079,7 @@ const UIC = {
   salvar(toast){
     if(!C) return;
     try {
-      Store.set('vdo_chefe', JSON.stringify(C));
+      if(!Store.set('vdo_chefe', JSON.stringify(C)) && Store.cheio){ Store.avisarCheio(); return; }
       if(toast) UI.toast(Store.ok ? 'Equipe salva neste aparelho.' : 'Salvo só nesta sessão — este navegador bloqueou o armazenamento.');
     } catch(e){ UI.toast('Não foi possível salvar a equipe.'); }
   },
