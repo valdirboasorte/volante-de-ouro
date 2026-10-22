@@ -37,6 +37,10 @@ aparelho.
   circuitos que existiam em cada ano.
 - **Escalações reais, ano a ano** — F1 de 1950 a 2026 e IndyCar de 1996 a 2025.
   Em 2001 o Barrichello está na Ferrari e o Alonso na Minardi, como foi.
+- **Força dos carros ano a ano** na F1, de 1950 a 2026: cada equipe anda o
+  que andou naquele ano, pela classificação real dos pilotos dela e pelas
+  vitórias (do banco histórico), na escala de forças da época. Em 2021 a
+  briga é Red Bull contra Mercedes, com Ferrari e McLaren logo atrás.
 - **Idade e fase de carreira certas** — a tabela de nascimento e estreia cobre
   521 pilotos. Senna tem 34 anos em 1994; o Alonso de 2001 é um estreante de 19,
   não o bicampeão de 2005.

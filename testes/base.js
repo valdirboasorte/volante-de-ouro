@@ -81,6 +81,8 @@ function carregar(opts){
   }
   const run = c => vm.runInContext(c, ctx);
   const E = id => document.getElementById(id);
+  /* as suítes começam muitas carreiras seguidas: guardar cada anterior só faz sentido no teste dos saves */
+  if(!opts.saves) run('if(typeof Saves !== "undefined") Saves.auto = false;');
   return { ctx, run, E, els, store };
 }
 

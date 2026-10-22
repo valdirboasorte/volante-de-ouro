@@ -18,12 +18,17 @@ function storage(initial={},options={}){
 }
 const pilot=' {"year":2026,"driver":{"name":"山田 太郎 🏁 <b>José</b>","cc":"JP"},"season":{"year":2026,"cat":"Kart Regional"},"history":[],"archive":[]} \n';
 const chief='{"ano":2005,"chefe":{"nome":"María 鈴木"},"eq":{"nome":"Équipe 日本"},"cat":"Fórmula 1"}';
-const values={vdo_save:pilot,vdo_chefe:chief,vdo_hall:' [{"name":"Álvaro 山本","from":1950,"to":1972}] ',vdo_chefe_hall:'[{"nome":"代表","eq":"競技","de":2000,"ate":2025}]',vdo_language:'ja',vdo_theme:'light',vdo_mov:'0',vdo_durcorrida:'30',vdo_velcorrida:'16'};
+const saves=JSON.stringify({v:1,ativo:{piloto:null,chefe:'s1'},lista:[{id:'s1',modo:'chefe',nome:'Équipe 日本',dado:null},{id:'s2',modo:'piloto',nome:'山田',data:1,dado:pilot}]});
+const values={vdo_save:pilot,vdo_chefe:chief,vdo_saves:saves,vdo_hall:' [{"name":"Álvaro 山本","from":1950,"to":1972}] ',vdo_chefe_hall:'[{"nome":"代表","eq":"競技","de":2000,"ate":2025}]',vdo_language:'ja',vdo_theme:'light',vdo_mov:'0',vdo_durcorrida:'30',vdo_velcorrida:'16'};
 function raw(withValues=values,changes={}){return JSON.stringify({format:'volante-de-ouro-progress',version:1,sourceOrigin:R.OLD,createdAt:'2026-10-19T12:30:00.000Z',values:withValues,...changes});}
 
 ok(html.includes('<meta name="vdo-progress-recovery" content="1">'),'marcador HTTP distingue a recuperação do fallback SPA');
 ok(!/<script[^>]+src=|<link[^>]+(?:stylesheet|href=)|<iframe|\bfetch\s*\(|XMLHttpRequest|sendBeacon|document\.cookie|innerHTML\s*=/.test(html),'página independente não carrega recursos, envia dados nem injeta HTML');
-eq(Array.from(R.KEYS),Object.keys(values),'allowlist é exatamente as nove chaves do jogo');
+eq(Array.from(R.KEYS),Object.keys(values),'allowlist é exatamente as dez chaves do jogo');
+/* os jogos guardados entram no backup, e um save quebrado dentro deles é recusado */
+error(()=>R.parse(raw({...values,vdo_saves:JSON.stringify({lista:[{id:'x',modo:'piloto',dado:'{"driver":{}}'}]})})),'invalid','save guardado inválido é recusado');
+error(()=>R.parse(raw({...values,vdo_saves:JSON.stringify({lista:[{id:'x',modo:'outro',dado:null}]})})),'invalid','modo desconhecido é recusado');
+eq(R.details('vdo_saves',saves),{key:'vdo_saves',count:1,names:['山田']},'resumo conta os jogos guardados');
 for(const origin of [R.OLD,R.VERCEL,R.OFFICIAL])ok(R.allowed(origin),'origin HTTPS autorizado');
 eq(R.VERCEL,'https://volante-de-ouro.vercel.app','Vercel autorizada pelo origin HTTPS exato');
 for(const origin of ['null','file://','http://volantedeouro.com','https://www.volantedeouro.com','https://volantedeouro.com.evil.example','https://volante-de-ouro.pages.dev:444','https://preview.volante-de-ouro.pages.dev','http://volante-de-ouro.vercel.app','https://volante-de-ouro.vercel.app:444','https://preview.volante-de-ouro.vercel.app','https://volante-de-ouro.vercel.app.evil.example']){

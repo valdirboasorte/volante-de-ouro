@@ -176,6 +176,9 @@ body[data-tela="intro"] #topBar{position:relative; background:var(--bg)}
 .iconbtn svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 .iconbtn:hover{background:var(--s2); color:var(--ink)}
 #topAcao{margin-left:8px}
+.topo-salvar{margin:0 4px; gap:6px} .topo-salvar .ico{width:16px; height:16px; flex:none} .topo-salvar[hidden]{display:none}
+#btnSalvar .ico{max-width:none}
+@media(max-width:480px){ #btnSalvar{width:32px; height:32px; min-height:0; padding:0; margin:0; justify-content:center} #btnSalvar span{display:none} #btnSalvar .ico{width:18px; height:18px} }
 .cf{background:var(--bg); flex:none; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); overflow:hidden}
 .cf i{display:block}
 .cf i.on{background:var(--accent)}
@@ -223,6 +226,19 @@ body[data-tela="intro"] .wrap{max-width:none; padding:0}
   text-decoration:underline; text-underline-offset:.25em; text-decoration-color:var(--accent)}
 .ini-continuar span{color:var(--soft)}
 @media(max-width:760px){ .ini-continuar{display:grid; gap:2px; text-align:left} }
+/* a tela dos jogos salvos */
+.sv{display:grid; gap:8px}
+.sv .lbl{margin-top:6px}
+.sv-item{display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--s2); border-radius:var(--r-sm); border-left:3px solid transparent}
+.sv-item.sv-em{border-left-color:var(--gold)}
+.sv-item.sv-apagar{border-left-color:var(--red, #e2231a)}
+.sv-tx{flex:1; min-width:0; display:grid; gap:2px}
+.sv-tx b{font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sv-modo{font-size:12px; color:var(--soft); text-transform:uppercase; letter-spacing:.04em}
+.sv-desc{font-size:13px; color:var(--soft)}
+.sv-bts{display:flex; gap:6px; flex:none}
+.sv-vazio,.sv-uso{margin:0; font-size:13px}
+@media(max-width:560px){ .sv-item{flex-direction:column; align-items:stretch} .sv-bts{justify-content:flex-end} }
 .ini-continuar:hover b{color:var(--accent)}
 .ini-nota{font-size:14px; color:var(--soft)}
 
@@ -1501,26 +1517,223 @@ input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--
   .av-info{grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr); height:auto; max-height:240px} .av-feed{display:grid}
   .av-muro{overflow:visible} .av-cartoes{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
 }
-/* celular: uma coluna, o mapa primeiro, depois os seus carros */
+/* as abas e o "mais comandos" são só do celular; no computador tudo fica à vista */
+.av-abas,.av-mais,.av-pular .ico{display:none}
+.av-vauto{white-space:nowrap}
+.av-vel button.av-vauto.on{background:var(--av-gold); color:#15110a}
+
+/* celular: a tela inteira cabe sem rolar. Em cima o placar e a velocidade, depois
+   o mapa, e embaixo uma coisa de cada vez — os seus carros, a torre ou o tempo e
+   o rádio —, cada uma rolando dentro do próprio espaço. */
 @media (max-width:820px){
-  .av-tela{display:flex; flex-direction:column; overflow-y:auto; gap:6px; padding:6px}
-  .av-topo{grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"gp placar" "ctrl ctrl"; gap:8px 10px; padding:10px 12px}
-  .av-gp{grid-area:gp} .av-placar{grid-area:placar; gap:8px; flex-direction:column; align-items:flex-end} .av-ctrl{grid-area:ctrl; justify-content:space-between}
-  .av-gp b{font-size:20px} .av-rel{font-size:20px; min-width:0} .av-volta{font-size:14px}
-  .av-bandeira{padding:5px 10px; font-size:13px}
-  .av-vel{flex:1; overflow-x:auto} .av-vel button{min-width:36px; padding:0 6px}
-  .av-pular{width:100%}
-  .av-topo{order:0} .av-mapa{order:1} .av-muro{order:2} .av-torre{order:3} .av-info{order:4}
-  .av-mapa{height:44vh; min-height:260px; flex:none}
-  .av-cam{left:8px; right:8px; justify-content:flex-start; top:8px}
-  .av-muro{flex:none}
-  .av-torre{flex:none} .av-linhas{overflow:visible}
-  .av-info{flex:none; grid-template-columns:minmax(0,1fr); height:auto; max-height:none} .av-feed{max-height:220px}
-  .av-cartoes{grid-template-columns:minmax(0,1fr)}
-  .av-seg{grid-template-columns:minmax(0,1fr)}
-  .av-seg-b button{padding:0 8px; font-size:13px}
-  .av-c-topo em{font-size:34px}
+  .av-tela{display:flex; flex-direction:column; overflow:hidden; gap:0; padding:0; height:100vh; height:100dvh}
+  .av-topo{grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"gp placar" "ctrl ctrl"; gap:6px 8px; padding:8px 8px 6px; flex:none}
+  .av-gp{grid-area:gp} .av-gp > span{display:none}
+  .av-placar{grid-area:placar; gap:8px} .av-ctrl{grid-area:ctrl; flex-wrap:nowrap; gap:6px}
+  .av-gp b{font-size:17px} .av-rel{display:none} .av-volta{font-size:14px}
+  .av-bandeira{padding:4px 9px; font-size:12px}
+  .av-play{width:38px; height:38px}
+  .av-vel{flex:1; min-width:0; overflow-x:auto; scrollbar-width:none} .av-vel::-webkit-scrollbar{display:none}
+  .av-vel{padding:2px} .av-vel button{height:32px; min-width:27px; padding:0 3px; font-size:12px; flex:1 0 auto; letter-spacing:-.02em}
+  .av-pular{width:38px; height:38px; padding:0; flex:none; display:grid; place-items:center}
+  .av-pular span{display:none} .av-pular .ico{display:block; width:18px; height:18px}
+  .av-mapa{flex:none; height:30vh; height:30dvh; min-height:170px; max-height:300px}
+  .av-cam{left:6px; right:6px; justify-content:flex-start; top:6px; flex-wrap:nowrap; overflow-x:auto}
+  .av-cam button{height:28px; padding:0 9px; font-size:12px; flex:none}
+  .av-fonte{display:none}
+  /* as abas */
+  .av-abas{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); flex:none; background:var(--av-s1); border-bottom:1px solid var(--av-s3)}
+  .av-abas button{position:relative; height:44px; font-size:14px; font-weight:800; color:var(--av-soft); border-bottom:3px solid transparent}
+  .av-abas button[aria-selected="true"]{color:var(--av-ink); border-bottom-color:var(--av-red)}
+  .av-abas button i{display:none; position:absolute; top:9px; right:12%; width:9px; height:9px; border-radius:50%; background:var(--av-red)}
+  .av-abas button.chama{color:var(--av-ink)} .av-abas button.chama i{display:block}
+  .av-topo{order:0} .av-mapa{order:1} .av-abas{order:2} .av-muro,.av-torre,.av-info{order:3}
+  .av-muro,.av-torre,.av-info{display:none; flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch}
+  .av-tela[data-aba="carros"] .av-muro{display:flex; padding:6px}
+  .av-tela[data-aba="torre"] .av-torre{display:flex}
+  .av-tela[data-aba="info"] .av-info{display:grid; grid-template-columns:minmax(0,1fr); align-content:start; height:auto; max-height:none; padding:6px}
+  .av-linhas{overflow:visible; flex:none} .av-feed{display:grid; max-height:none}
+  .av-l{height:34px}
+  /* o cartão de cada carro: o essencial à vista, o resto no "mais comandos" */
+  .av-cartoes{grid-template-columns:minmax(0,1fr); gap:6px}
+  .av-cartao{padding:10px 10px 8px; gap:8px}
+  .av-c-topo em{font-size:30px}
+  .av-c-nome b{font-size:16px}
+  .av-seg{grid-template-columns:minmax(0,1fr); gap:3px}
+  .av-seg-b button{padding:0 6px; font-size:13px; height:36px}
+  .av-box{gap:5px} .av-box > span{width:auto; margin-right:2px}
+  .av-box .av-pn{width:38px; height:38px; font-size:13px}
+  .av-cartao:not(.aberto) [data-g="trato"],.av-cartao:not(.aberto) [data-g="mistura"],.av-cartao:not(.aberto) .av-detalhe{display:none}
+  .av-mais{display:block; width:100%; height:34px; border-radius:999px; background:var(--av-s2); color:var(--av-soft); font-size:13px; font-weight:700}
+  .av-ordemeq{padding:6px 10px}
+  /* o rádio, a largada e a bandeirada aparecem por cima de qualquer aba */
   .av-radio{position:fixed; left:8px; right:8px; bottom:8px; top:auto; transform:none; width:auto; max-height:78vh; z-index:30}
+  .av-fim{position:fixed; left:8px; right:8px; bottom:8px; z-index:30}
+}
+
+/* ═══ A CENTRAL DO CHEFE NO CELULAR ═══
+   Cinco abas com a barra no pé: Corrida (classificação, o piloto escolhido e a
+   estratégia rápida), Pilotos (tudo de cada carro), Circuito (o mapa), Clima e
+   Mais (acontecimentos, classificação completa, opções). As peças são as mesmas da
+   tela do computador; aqui só mudam de lugar. No computador nada disso aparece. */
+.av-torre-top,.av-torre-cab,.av-exp,.av-circ,.av-filtros,.av-opcoes,.av-subs,.av-pilsel,.av-resumo,.av-rapida,.av-c-foto,.av-cred,.av-h,.av-gp-fg{display:none}
+@media (max-width:820px){
+  .av-tela.av-chefe{display:flex; flex-direction:column; gap:8px; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain;
+    height:100vh; height:100dvh; padding:0 0 calc(70px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch}
+  .av-chefe > *{flex:none; min-width:0}
+  .av-chefe h2{margin:0; font-size:17px; font-weight:800; letter-spacing:-.01em}
+  /* o placar fica preso no alto enquanto o resto rola */
+  .av-chefe .av-topo{position:sticky; top:0; z-index:20; padding:calc(8px + env(safe-area-inset-top)) 10px 8px; gap:4px 10px; box-shadow:0 1px 0 var(--av-s3)}
+  .av-chefe .av-gp > span{display:block; font-size:13px}
+  .av-chefe .av-gp b{font-size:19px; display:flex; align-items:center; gap:6px}
+  .av-chefe .av-gp-fg{display:inline-flex}
+  .av-chefe .av-placar{display:grid; grid-template-columns:auto auto; grid-template-areas:"v v" "r b"; justify-items:end; align-items:center; gap:4px 8px}
+  .av-chefe .av-volta{grid-area:v; font-size:17px; font-weight:800}
+  .av-chefe .av-rel{display:block; grid-area:r; font-size:14px; font-weight:700; color:var(--av-soft); min-width:0}
+  .av-chefe .av-bandeira{grid-area:b}
+  .av-chefe .av-ctrl{margin-top:4px}
+  /* a barra de baixo */
+  .av-chefe .av-nav{position:fixed; left:0; right:0; bottom:0; z-index:25; display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
+    padding:0 0 env(safe-area-inset-bottom); background:var(--av-s1); border:0; box-shadow:0 -1px 0 var(--av-s3)}
+  .av-chefe .av-nav button{height:60px; display:grid; justify-items:center; align-content:center; gap:3px; font-size:11px; font-weight:700;
+    color:var(--av-soft); border:0; border-top:2px solid transparent}
+  .av-chefe .av-nav button .ico{width:22px; height:22px}
+  .av-chefe .av-nav button[aria-selected="true"]{color:var(--av-red2); border-top-color:var(--av-red)}
+  .av-chefe .av-nav button i{top:8px; right:calc(50% - 18px)}
+  /* o rádio, a largada e a bandeirada ficam acima da barra */
+  .av-chefe .av-radio,.av-chefe .av-fim{bottom:calc(70px + env(safe-area-inset-bottom)); max-height:calc(100dvh - 190px)}
+  .av-chefe .av-luzes{position:fixed}
+
+  /* o que cada aba mostra */
+  .av-tela.av-chefe .av-torre,.av-tela.av-chefe .av-muro,.av-tela.av-chefe .av-info,
+  .av-tela.av-chefe .av-circ,.av-tela.av-chefe .av-opcoes{display:none; overflow:visible; flex:none; padding:0 8px}
+  /* o mapa fechado não some: o rádio, a largada e a bandeirada moram nele e precisam aparecer em qualquer aba */
+  .av-tela.av-chefe .av-mapa{display:block; height:0; min-height:0; max-height:none; overflow:visible; margin:0; padding:0; background:none}
+  .av-tela.av-chefe .av-mapa > svg,.av-tela.av-chefe .av-mapa > .av-cam{display:none}
+  .av-tela.av-chefe[data-aba="circuito"] .av-mapa > svg,.av-tela.av-chefe[data-aba="corrida"][data-mini="1"] .av-mapa > svg{display:block}
+  .av-tela.av-chefe[data-aba="circuito"] .av-mapa > .av-cam,.av-tela.av-chefe[data-aba="corrida"][data-mini="1"] .av-mapa > .av-cam{display:flex}
+  .av-chefe .av-mapa{order:1} .av-chefe .av-torre{order:2} .av-chefe .av-muro{order:3} .av-chefe .av-info{order:4} .av-chefe .av-circ{order:5} .av-chefe .av-opcoes{order:6}
+  .av-tela.av-chefe[data-aba="corrida"] .av-torre,.av-tela.av-chefe[data-aba="mais"][data-sub="cla"] .av-torre{display:flex}
+  .av-tela.av-chefe[data-aba="corrida"] .av-muro,.av-tela.av-chefe[data-aba="pilotos"] .av-muro{display:flex}
+  .av-tela.av-chefe[data-aba="corrida"][data-mini="1"] .av-mapa{display:grid; height:clamp(170px,30dvh,260px); overflow:hidden; margin:0 8px; background:#101215}
+  .av-tela.av-chefe[data-aba="circuito"] .av-mapa{display:grid; height:max(300px, calc(100dvh - 330px)); overflow:hidden; margin:0 8px; background:#101215}
+  .av-tela.av-chefe[data-aba="circuito"] .av-circ{display:grid}
+  .av-tela.av-chefe[data-aba="clima"] .av-info,.av-tela.av-chefe[data-aba="mais"][data-sub="ev"] .av-info{display:grid; grid-template-columns:minmax(0,1fr); height:auto; max-height:none; gap:8px}
+  .av-tela.av-chefe[data-aba="mais"][data-sub="op"] .av-opcoes{display:grid}
+  .av-chefe .av-subs{order:2}
+  .av-chefe[data-aba="mais"] .av-subs{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; margin:4px 8px 0; padding:4px; background:var(--av-s1); border-radius:999px}
+  .av-chefe .av-subs button{height:36px; border-radius:999px; font-size:13px; font-weight:700; color:var(--av-soft); min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 6px}
+  .av-chefe .av-subs button[aria-selected="true"]{background:var(--av-ink); color:#0b0c0e}
+  .av-chefe[data-aba="mais"] .av-torre{order:3} .av-chefe[data-aba="mais"] .av-torre-top{display:none}
+  .av-chefe[data-aba="clima"] .av-feed,.av-chefe[data-aba="clima"] .av-filtros{display:none}
+  .av-chefe[data-aba="mais"] .av-clima{display:none}
+  .av-chefe[data-aba="clima"] .av-h-clima{display:block; padding:6px 2px 0}
+
+  /* a classificação: cinco primeiros (e os seus) na Corrida, todos na Mais */
+  .av-chefe .av-torre{background:none; flex-direction:column}
+  .av-chefe .av-torre-top{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 2px 6px}
+  .av-chefe .av-mini-bt{display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px; border-radius:999px; background:var(--av-s2); color:var(--av-soft); font-size:13px; font-weight:700}
+  .av-chefe .av-mini-bt .ico{width:16px; height:16px}
+  .av-chefe .av-mini-bt[aria-pressed="true"]{background:var(--av-ink); color:#0b0c0e}
+  .av-chefe .av-torre-modo{padding:0 0 6px; background:none}
+  .av-chefe[data-aba="corrida"]:not([data-exp="1"]) .av-torre-modo{display:none}
+  .av-chefe .av-torre-cab{display:grid; grid-template-columns:22px 4px 40px 30px minmax(0,1fr) 24px 12px; gap:6px; padding:0 6px 4px 8px; font-size:11px; font-weight:700; color:var(--av-soft); text-transform:uppercase; letter-spacing:.03em}
+  .av-chefe .av-torre-cab span:nth-child(1){text-align:right} .av-chefe .av-torre-cab span:nth-child(2){grid-column:2/5}
+  .av-chefe .av-torre-cab span:nth-child(3){grid-column:5/6; text-align:right} .av-chefe .av-torre-cab span:nth-child(4){grid-column:6/8}
+  .av-chefe .av-linhas{background:var(--av-s1); padding:2px 0; border-radius:8px; overflow:hidden}
+  .av-chefe .av-l{height:38px; font-size:15px; padding:0 6px 0 4px}
+  .av-chefe .av-l .av-pn{width:24px; height:24px}
+  .av-chefe[data-aba="corrida"]:not([data-exp="1"]) .av-l:nth-child(n+6):not(.meu){display:none}
+  .av-chefe[data-aba="corrida"] .av-exp{display:block}
+  .av-chefe .av-exp{width:100%; height:38px; margin-top:6px; border-radius:999px; background:var(--av-s2); color:var(--av-soft); font-size:13px; font-weight:700}
+
+  /* um piloto de cada vez */
+  .av-chefe .av-muro{flex-direction:column; gap:8px}
+  .av-chefe .av-pilsel{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; padding:4px; background:var(--av-s1); border-radius:999px}
+  .av-chefe .av-pilsel button{height:42px; border-radius:999px; display:flex; align-items:center; justify-content:center; gap:8px; color:var(--av-soft); font-size:15px; min-width:0}
+  .av-chefe .av-pilsel button b{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .av-chefe .av-pilsel button em{font-style:normal; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; opacity:.85}
+  .av-chefe .av-pilsel button[aria-selected="true"]{background:var(--av-red); color:#fff}
+  .av-chefe .av-cartao:not(.sel-m){display:none}
+  .av-tela.av-chefe .av-cartao{border-top:0; border-radius:10px; padding:12px; gap:10px}
+  .av-chefe .av-cartao > *{order:6}
+  .av-chefe .av-c-topo{order:0} .av-chefe .av-pneu{order:1} .av-chefe .av-resumo{order:2} .av-chefe .av-estr{order:3} .av-chefe .av-rapida{order:4} .av-chefe .av-comandos{order:5} .av-chefe .av-cred{order:9}
+  .av-chefe .av-c-foto{display:block; flex:none}
+  .av-chefe .av-c-foto .rosto{width:52px; height:52px}
+  .av-chefe .av-c-topo s{display:none}
+  .av-chefe .av-resumo{display:block; margin:0; font-size:14px; color:var(--av-soft)}
+  .av-chefe .av-resumo b.am{color:var(--av-gold)} .av-chefe .av-resumo b.rd{color:#ff6b6b}
+  .av-tela.av-chefe .av-mais,.av-chefe .av-ordem:empty{display:none}
+  .av-tela.av-chefe .av-cartao [data-g="trato"],.av-tela.av-chefe .av-cartao [data-g="mistura"]{display:grid}
+  .av-tela.av-chefe .av-cartao .av-detalhe{display:block}
+  .av-chefe .av-cred{display:block; margin:0; font-size:11px; color:#7d848d}
+  .av-chefe .av-cred a{color:inherit}
+  /* na aba Corrida: o essencial e a estratégia rápida, que recolhe */
+  .av-chefe[data-aba="corrida"] .av-rapida{display:flex; align-items:center; justify-content:center; gap:6px; height:38px; border-radius:999px; background:var(--av-red); color:#fff; font-size:14px; font-weight:800}
+  .av-chefe[data-aba="corrida"] .av-rapida::after{content:''; width:7px; height:7px; border:solid currentColor; border-width:2px 2px 0 0; transform:rotate(-45deg) translate(-1px,1px)}
+  .av-chefe[data-aba="corrida"][data-rapida="0"] .av-rapida{background:var(--av-s2); color:var(--av-ink)}
+  .av-chefe[data-aba="corrida"][data-rapida="0"] .av-rapida::after{transform:rotate(135deg) translate(-1px,1px)}
+  .av-tela.av-chefe[data-aba="corrida"][data-rapida="0"] .av-comandos{display:none}
+  .av-tela.av-chefe[data-aba="corrida"] .av-detalhe,.av-tela.av-chefe[data-aba="corrida"] .av-box,.av-tela.av-chefe[data-aba="corrida"] .av-cred,.av-chefe[data-aba="corrida"] .av-ordemeq{display:none}
+  .av-chefe .av-seg-b button{height:38px}
+  .av-chefe .av-box{background:var(--av-s2); border-radius:10px; padding:8px}
+  .av-chefe .av-box .av-pn{width:40px; height:40px}
+
+  /* o circuito */
+  .av-tela.av-chefe .av-mapa{border-radius:10px}
+  .av-chefe .av-circ{gap:6px; background:var(--av-s1); border-radius:10px; padding:12px; margin:0 8px}
+  .av-chefe .av-circ div{display:grid; gap:3px}
+  .av-chefe .av-circ b{font-size:17px; display:flex; align-items:center; gap:6px}
+  .av-chefe .av-circ span{font-size:13px; color:var(--av-soft)}
+  .av-chefe .av-circ p{margin:0; font-size:13px; color:#8a919b}
+
+  /* o clima e os acontecimentos */
+  .av-chefe .av-clima{border-radius:10px; padding:14px; gap:12px}
+  .av-chefe .av-ceu .ico{width:38px; height:38px}
+  .av-chefe .av-ceu b{font-size:19px}
+  .av-chefe .av-clima dd{font-size:20px}
+  .av-chefe .av-filtros{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:2px 0}
+  .av-chefe .av-filtros::-webkit-scrollbar{display:none}
+  .av-chefe .av-filtros button{flex:none; height:34px; padding:0 14px; border-radius:999px; background:var(--av-s2); color:var(--av-soft); font-size:13px; font-weight:700}
+  .av-chefe .av-filtros button[aria-pressed="true"]{background:var(--av-red); color:#fff}
+  .av-chefe .av-feed{border-radius:10px; padding:4px; max-height:none}
+  .av-chefe .av-feed .ev{padding:8px; border-left:3px solid var(--av-s3)}
+  .av-chefe .av-feed .ev:first-child{background:none}
+  .av-chefe .av-feed .ev.ultrapassagem{border-left-color:var(--av-gold)}
+  .av-chefe .av-feed .ev.boxes,.av-chefe .av-feed .ev.lenta{border-left-color:var(--av-ink)}
+  .av-chefe .av-feed .ev.batida,.av-chefe .av-feed .ev.quebra,.av-chefe .av-feed .ev.punicao,.av-chefe .av-feed .ev.toque,.av-chefe .av-feed .ev.furo{border-left-color:#ff453a}
+  .av-chefe .av-opcoes{gap:8px; margin-top:4px}
+  .av-chefe .av-opcoes > p{margin:0; font-size:13px; line-height:1.45; color:var(--av-soft)}
+  .av-chefe .av-op-pular{display:flex; align-items:center; gap:12px; text-align:left; padding:12px 14px; background:var(--av-s1); border-radius:10px; color:var(--av-ink)}
+  .av-chefe .av-op-pular .ico{width:22px; height:22px; flex:none}
+  .av-chefe .av-op-pular span{display:grid; gap:2px} .av-chefe .av-op-pular small{font-size:13px; color:var(--av-soft)}
+}
+/* o treino e a classificação ao vivo no celular: a mesma central, com os seus carros
+   e os tempos na aba Sessão, o acerto na sua aba (treino) e o mapa com as voltas no Circuito */
+@media (max-width:820px){
+  .av-tela.ss-tela.av-chefe .av-placar{grid-template-areas:"r b"}
+  .av-tela.ss-tela.av-chefe .av-muro{order:2; padding:0 8px} .av-tela.ss-tela.av-chefe .av-torre{order:3}
+  .av-tela.ss-tela.av-chefe[data-aba="corrida"] .ss-acerto{display:none}
+  .av-tela.ss-tela.av-chefe[data-aba="pilotos"] .av-torre{display:none}
+  .av-tela.ss-tela.av-chefe[data-aba="circuito"] .av-info{display:grid; grid-template-columns:minmax(0,1fr); height:auto; max-height:none; order:5}
+  .av-chefe.ss-tela .ss-torre-cab{padding:6px 2px}
+  .av-chefe.ss-tela .ss-l{height:36px; font-size:15px; padding:0 8px 0 6px}
+  .av-chefe.ss-tela .ss-cartao{border-radius:10px; padding:12px}
+  .av-chefe.ss-tela .ss-cartao dl{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .av-chefe.ss-tela .ss-acoes .btn{flex:1 1 auto; min-height:42px}
+  .av-chefe.ss-tela .ss-acerto{border-radius:10px}
+  .av-chefe.ss-tela .av-feed{border-radius:10px}
+}
+/* tablet em pé: a mesma central, numa coluna centrada */
+@media (min-width:600px) and (max-width:820px){
+  .av-tela.av-chefe > section,.av-tela.av-chefe > aside,.av-tela.av-chefe > .av-subs{width:calc(100% - 16px); max-width:680px; align-self:center; margin-left:auto; margin-right:auto; box-sizing:border-box}
+  .av-tela.av-chefe > .av-topo{padding-left:max(10px, calc(50% - 340px)); padding-right:max(10px, calc(50% - 340px))}
+}
+@media (max-width:360px){
+  .av-chefe .av-gp b{font-size:17px}
+  .av-chefe .av-l{font-size:14px}
+  .av-chefe .av-nav button{font-size:10px}
+  .av-chefe .av-seg-b button{padding:0 4px; font-size:12px}
 }
 
 /* ═══ O MODO CHEFE: A FOLHA DE CRONOMETRAGEM ═══
@@ -1994,6 +2207,8 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
   </select>
   <button class="iconbtn" id="btnMov" onclick="UI.alternarMovimento()" aria-pressed="true" title="Animações" aria-label="Animações">
     <svg viewBox="0 0 24 24"><path d="M3 7h11M7 12h14M3 17h9"/></svg></button>
+  <button class="btn btn-ghost btn-sm topo-salvar" id="btnSalvar" onclick="Saves.abrir()" title="Salvar agora e ver os outros jogos salvos" aria-label="Salvar o jogo" hidden>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"/></svg> <span>Salvar</span></button>
   <button class="iconbtn" onclick="UI.toggleTheme()" title="Tema claro ou escuro" aria-label="Tema claro ou escuro" id="btnTheme">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg></button>
   <button class="btn btn-primary btn-sm" id="topAcao" onclick="Abertura.comecar()">Começar em 1988</button>
@@ -2027,6 +2242,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
         <div class="ini-cont">
           <button class="ini-continuar" id="btnContinue" onclick="Game.continueSave()" style="display:none"><b>Continuar carreira</b> <span id="contDesc"></span></button>
           <button class="ini-continuar" id="btnChefeCont" onclick="UIC.continuar()" style="display:none"><b>Continuar como chefe</b> <span id="chefeContDesc"></span></button>
+          <button class="ini-continuar" id="btnSaves" onclick="Saves.abrir()" style="display:none"><b>Jogos salvos</b> <span id="savesDesc"></span></button>
         </div>
         <button class="ini-apoio" id="abApoio" onclick="Doacao.pagina()" hidden>Apoie o projeto</button>
       </div>
@@ -9210,7 +9426,8 @@ const Engine = {
     const s0 = ref.length > 2 ? sd(ref) : 0, s1 = bruto.length > 2 ? sd(bruto) : 0;
     return (Engine._escalaFut[k] = s0 > 0 && s1 > 0 ? clamp(s0 / s1, .8, 1.8) : 1);
   },
-  resolveTeam(t, i, year, sk){
+  /* o nome e a força de época de uma equipe naquele ano, sem mais nada */
+  nomeForcaEpoca(t, year){
     const de = t[3] || 0, ate = t[4] || 9999;
     if(year < de || year > ate) return null;
     let nome = t[0], forca = t[2];
@@ -9220,6 +9437,78 @@ const Engine = {
       nome = r[0];
       if(r[3]) forca = r[3];
     }
+    return { nome, forca };
+  },
+  /* ── a força de cada ano, pelo que aconteceu de verdade ──
+     A força de época é uma só para a década inteira; na F1, cada ano documentado
+     usa o resultado real dos pilotos de cada equipe (dados/historico.js): os dois
+     melhores de cada uma na classificação final e as vitórias. A escala continua
+     a da época — o melhor carro do ano recebe a força mais alta dela, o pior a mais
+     baixa —, e a ordem e as distâncias passam a ser as daquele ano. Equipe sem
+     inscrição encontrada fica com a força de época. */
+  _forcaReal: {},
+  forcaReal(sk, year){
+    const k = sk + year;
+    if(k in Engine._forcaReal) return Engine._forcaReal[k];
+    Engine._forcaReal[k] = null;
+    if(sk !== 'f1' || year > Engine.HORIZONTE || typeof Hist === 'undefined' || !Hist.ok()) return null;
+    const t = Hist.temporada('f1', year);
+    if(!t || !t.inscritos.length || !t.inscritos.some(x => x.pos)) return null;
+    const ativas = [];
+    eraOfSeries(year, sk).teams.forEach(tt => { const r = Engine.nomeForcaEpoca(tt, year); if(r) ativas.push(r); });
+    if(ativas.length < 3) return null;
+    const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const res = ativas.map(a => new RegExp('(^|[^a-z0-9])' + norm(a.nome).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)'));
+    /* a equipe de uma inscrição: a que aparece primeiro no nome do inscrito
+       ("Red Bull Racing Renault" é a Red Bull); sem ela, o construtor do carro
+       ("Minardi-Ferrari M191" é a Minardi, não a Ferrari) */
+    const achar = (txt, ate) => {
+      const a = norm(txt); let m = -1, at = 1e9;
+      res.forEach((re, j) => { const x = re.exec(a); if(x && x.index < at && (ate == null || x.index < ate)){ at = x.index; m = j; } });
+      return m;
+    };
+    const daInscricao = x => {
+      const e = achar(x.eq); if(e >= 0) return e;
+      const c = String(x.carro || '').split(' · ')[0], h = c.indexOf('-');
+      return achar(c, h < 0 ? null : h);
+    };
+    const PTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+    const pts = p => !p ? 0 : p <= 10 ? PTS[p - 1] : Math.max(0, 30 - p) * .03;
+    /* quem correu sem marcar nada também conta: é o fundo do grid daquele ano */
+    const pos = ativas.map(() => []), correu = ativas.map(() => false), dono = {};
+    t.inscritos.forEach(x => {
+      const j = daInscricao(x); if(j < 0) return;
+      correu[j] = true;
+      if(x.pos) pos[j].push(x.pos);
+      if(!(x.p.i in dono)) dono[x.p.i] = j;
+    });
+    const vit = ativas.map(() => 0);
+    const V = typeof HIST_V !== 'undefined' && HIST_V.f1 && HIST_V.f1[year];
+    if(V) V.forEach(w => [].concat(w).forEach(p => { if(typeof p === 'number' && p in dono) vit[dono[p]] += 1 / [].concat(w).length; }));
+    const nv = V ? V.length : 0;
+    const sc = ativas.map((a, j) => {
+      const l = pos[j].sort((x, y) => x - y);
+      if(!correu[j]) return null;
+      return pts(l[0]) + pts(l[1]) + (nv ? 20 * vit[j] / nv : 0);
+    });
+    const com = ativas.map((a, j) => j).filter(j => sc[j] != null);
+    if(com.length < 3) return null;
+    const max = Math.max(...com.map(j => sc[j])) || 1;
+    const eps = com.map(j => ativas[j].forca).sort((a, b) => b - a);
+    const hi = eps[0], lo = eps[eps.length - 1];
+    /* metade pela posição no ano (a escala da época), metade pela distância real */
+    const ordem = com.slice().sort((a, b) => sc[b] - sc[a]);
+    const out = {};
+    ordem.forEach((j, n) => { out[ativas[j].nome] = (eps[n] + lo + (hi - lo) * Math.sqrt(sc[j] / max)) / 2; });
+    return (Engine._forcaReal[k] = out);
+  },
+  resolveTeam(t, i, year, sk){
+    const ne = Engine.nomeForcaEpoca(t, year);
+    if(!ne) return null;
+    let nome = ne.nome, forca = ne.forca;
+    const real = Engine.forcaReal(sk, year);
+    const ehReal = !!(real && real[nome] != null);
+    if(ehReal) forca = real[nome];
     /* com o tempo, a hierarquia herdada do último ano documentado se dilui:
        ninguém é dono do topo para sempre */
     if(year > Engine.HORIZONTE){
@@ -9242,7 +9531,8 @@ const Engine = {
       const media = era.teams.reduce((a,x)=>a+x[2],0) / era.teams.length;
       forca = media + (forca - media) * esp;
     }
-    const j = [-2,-1,-1,0,0,1,1,2][seedOf(sk+'t'+year+'_'+i) % 8] * (esp < 1 ? .5 : 1);
+    /* a força tirada do ano real já é a daquele ano: sem o sorteio que varia a de época */
+    const j = ehReal ? 0 : [-2,-1,-1,0,0,1,1,2][seedOf(sk+'t'+year+'_'+i) % 8] * (esp < 1 ? .5 : 1);
     return { id:'t'+i, name:nome, color:t[1], str: clamp(Math.round(forca + j), 45, 99) };
   },
 
@@ -17034,6 +17324,159 @@ const Store = {
   del(k){ try{ localStorage.removeItem(k); }catch(e){ Store.ok=false; delete Store.mem[k]; } }
 };
 
+/* ═══ VÁRIOS JOGOS SALVOS ═══
+   O jogo em andamento de cada modo continua em vdo_save (piloto) e vdo_chefe
+   (chefe), como sempre: o salvamento automático, o "Continuar" e o backup não
+   mudam. Os outros jogos ficam guardados em vdo_saves. Começar uma carreira nova
+   guarda a anterior sozinho, e carregar um jogo guarda o atual antes de trocar:
+   nenhuma carreira se perde. O jogo carregado fica ligado ao seu espaço (ativo),
+   sem cópia dobrada: enquanto está em andamento, o dado mora só no save de sempre,
+   e volta para o espaço dele na troca seguinte. */
+const Saves = {
+  CHAVE: 'vdo_saves',
+  ATIVO: { piloto: 'vdo_save', chefe: 'vdo_chefe' },
+  ler(){
+    let d = null;
+    try { d = JSON.parse(Store.get(Saves.CHAVE) || 'null'); } catch(e){ d = null; }
+    if(!d || typeof d !== 'object' || !Array.isArray(d.lista)) d = { v: 1, lista: [], ativo: {} };
+    d.ativo = d.ativo && typeof d.ativo === 'object' ? d.ativo : {};
+    /* espaço ligado a um jogo que acabou (aposentadoria, demissão final): não há o que guardar */
+    ['piloto', 'chefe'].forEach(m => {
+      const id = d.ativo[m]; if(!id) return;
+      if(!Store.get(Saves.ATIVO[m])){ d.lista = d.lista.filter(x => x.id !== id || x.dado); d.ativo[m] = null; }
+    });
+    d.lista = d.lista.filter(x => x && x.id && Saves.ATIVO[x.modo] && (x.dado || Object.values(d.ativo).indexOf(x.id) >= 0));
+    return d;
+  },
+  /* grava a lista; sem espaço no aparelho, devolve false e nada muda */
+  gravar(d){
+    const txt = JSON.stringify(d);
+    try { localStorage.setItem(Saves.CHAVE, txt); return true; }
+    catch(e){
+      if(!Store.ok || typeof localStorage === 'undefined'){ Store.mem[Saves.CHAVE] = txt; return true; }
+      return false;
+    }
+  },
+  /* nome e situação de um jogo, a partir do save */
+  resumo(modo, raw){
+    try {
+      const s = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if(modo === 'piloto') return { nome: s.driver.name, desc: `${s.season ? s.season.cat + ' ' + s.season.year : s.year} · ${s.team ? s.team.name : ''} · ${s.driver.age} anos` };
+      return { nome: s.eq.nome, desc: `${s.cat} ${s.ano} · chefe ${s.chefe.nome}` };
+    } catch(e){ return { nome: '?', desc: '' }; }
+  },
+  novoId(){ return 's' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); },
+  /* o jogo em andamento vai para o espaço dele (ou para um espaço novo) */
+  guardarAtivo(d, modo){
+    const raw = Store.get(Saves.ATIVO[modo]); if(!raw) return null;
+    const r = Saves.resumo(modo, raw);
+    let x = d.ativo[modo] && d.lista.find(y => y.id === d.ativo[modo]);
+    if(!x){ x = { id: Saves.novoId(), modo }; d.lista.push(x); }
+    Object.assign(x, { nome: r.nome, desc: r.desc, data: Date.now(), dado: raw });
+    return x;
+  },
+  /* antes de começar uma carreira nova: a anterior fica guardada. false = sem espaço (não começa) */
+  /* os testes começam centenas de carreiras seguidas e desligam isto (testes/base.js) */
+  auto: true,
+  antesDeNovo(modo){
+    if(!Saves.auto) return true;
+    const d = Saves.ler();
+    const x = Saves.guardarAtivo(d, modo);
+    d.ativo[modo] = null;
+    if(!Saves.gravar(d)){
+      UI.toast('Não há espaço no aparelho para guardar a carreira anterior. Apague um jogo em "Jogos salvos" e tente de novo.');
+      Saves.abrir();
+      return false;
+    }
+    if(x) UI.toast(`${x.nome}: guardado em "Jogos salvos".`);
+    return true;
+  },
+  /* uma carreira terminou de vez (o save some): o espaço ligado a ela também */
+  encerrou(modo){
+    const d = Saves.ler(), id = d.ativo[modo];
+    if(!id) return;
+    d.lista = d.lista.filter(x => x.id !== id); d.ativo[modo] = null; Saves.gravar(d);
+  },
+  /* troca o jogo em andamento por um guardado */
+  carregar(id){
+    const d = Saves.ler(), x = d.lista.find(y => y.id === id);
+    if(!x || !x.dado) return;
+    const modo = x.modo;
+    if(modo === 'piloto' && typeof S !== 'undefined' && S && S.season && !S.retired) Game.save();
+    if(modo === 'chefe' && typeof C !== 'undefined' && C) UIC.salvar();
+    /* 1) o jogo atual vai para o espaço dele, e o escolhido continua guardado;
+       2) o escolhido entra no lugar do atual; 3) só então a cópia dobrada sai.
+       Se faltar espaço em qualquer passo, nada se perde: o jogo atual segue onde estava. */
+    const antes = d.ativo[modo] || null, atual = Saves.guardarAtivo(d, modo);
+    const sem = 'Não há espaço no aparelho para trocar de jogo. Apague um jogo guardado e tente de novo.';
+    if(!Saves.gravar(d)) return UI.toast(sem);
+    try { localStorage.setItem(Saves.ATIVO[modo], x.dado); }
+    catch(e){
+      if(Store.ok && typeof localStorage !== 'undefined'){
+        if(atual && atual.id === antes) atual.dado = null; else if(atual) d.lista = d.lista.filter(y => y !== atual);
+        d.ativo[modo] = antes; Saves.gravar(d);
+        return UI.toast(sem);
+      }
+      Store.set(Saves.ATIVO[modo], x.dado);
+    }
+    x.dado = null; d.ativo[modo] = id;
+    Saves.gravar(d);
+    UI.close();
+    if(modo === 'piloto') Game.continueSave(); else UIC.continuar();
+    UI.toast(`${x.nome} carregado.`);
+  },
+  /* uma cópia do jogo em andamento, para voltar a este ponto depois */
+  copiar(modo){
+    if(modo === 'piloto' && S && S.season) Game.save();
+    if(modo === 'chefe' && C) UIC.salvar();
+    const raw = Store.get(Saves.ATIVO[modo]); if(!raw) return;
+    const d = Saves.ler(), r = Saves.resumo(modo, raw);
+    d.lista.push({ id: Saves.novoId(), modo, nome: r.nome, desc: r.desc + ' · cópia', data: Date.now(), dado: raw });
+    UI.toast(Saves.gravar(d) ? 'Cópia guardada em "Jogos salvos".' : 'Não há espaço no aparelho para mais uma cópia.');
+    Saves.abrir();
+  },
+  apagar(id, ok){
+    const d = Saves.ler(), x = d.lista.find(y => y.id === id); if(!x) return;
+    if(!ok) return Saves.abrir(id);
+    d.lista = d.lista.filter(y => y.id !== id);
+    Saves.gravar(d); UI.toast(`${x.nome} apagado.`); Saves.abrir();
+  },
+  /* o que a tela de saves mostra: os jogos em andamento e os guardados, os mais recentes primeiro */
+  jogos(){
+    const d = Saves.ler(), em = [];
+    ['piloto', 'chefe'].forEach(m => { const raw = Store.get(Saves.ATIVO[m]); if(raw) em.push(Object.assign({ modo: m, tam: raw.length }, Saves.resumo(m, raw))); });
+    const guard = d.lista.filter(x => x.dado).sort((a, b) => (b.data || 0) - (a.data || 0));
+    return { em, guard, total: (Store.get(Saves.CHAVE) || '').length + em.reduce((a, x) => a + x.tam, 0) };
+  },
+  tamanho(n){ return n > 1e6 ? (n / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' MB' : Math.max(1, Math.round(n / 1e3)) + ' KB'; },
+  abrir(apagando){
+    const { em, guard, total } = Saves.jogos();
+    const tela = document.body && document.body.dataset ? document.body.dataset.tela : '';
+    const naTela = m => (m === 'piloto' && tela === 'career' && S) || (m === 'chefe' && tela === 'chefe' && C);
+    const MODO = { piloto: 'Piloto', chefe: 'Chefe de equipe' };
+    const quando = t => t ? new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+    const cartaoEm = x => `<div class="sv-item sv-em"><div class="sv-tx"><span class="sv-modo">${MODO[x.modo]} · <span>em andamento</span></span>
+        <b data-i18n-ignore>${esc(x.nome)}</b><span class="sv-desc">${esc(x.desc)}</span></div>
+      <div class="sv-bts">${naTela(x.modo)
+        ? `<button class="btn btn-primary btn-sm" onclick="UI.salvarJogo(true)">Salvar agora</button><button class="btn btn-ghost btn-sm" onclick="Saves.copiar('${x.modo}')">Guardar uma cópia</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="UI.close();${x.modo === 'piloto' ? 'Game.continueSave()' : 'UIC.continuar()'}">Continuar</button>`}</div></div>`;
+    const cartao = x => apagando === x.id
+      ? `<div class="sv-item sv-apagar"><div class="sv-tx"><b>Apagar este jogo?</b><span class="sv-desc"><span data-i18n-ignore>${esc(x.nome)}</span> · <span>Não dá para desfazer.</span></span></div>
+          <div class="sv-bts"><button class="btn btn-ghost btn-sm" onclick="Saves.abrir()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="Saves.apagar('${x.id}', true)">Apagar</button></div></div>`
+      : `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">${MODO[x.modo]} · <span>${quando(x.data)}</span> · <span>${Saves.tamanho(x.dado.length)}</span></span>
+          <b data-i18n-ignore>${esc(x.nome)}</b><span class="sv-desc">${esc(x.desc)}</span></div>
+        <div class="sv-bts"><button class="btn btn-primary btn-sm" onclick="Saves.carregar('${x.id}')">Jogar</button><button class="btn btn-ghost btn-sm" onclick="Saves.apagar('${x.id}')">Apagar</button></div></div>`;
+    UI.modal(UI.head('Jogos salvos', 'Tudo fica só neste aparelho. Começar uma carreira nova guarda a anterior aqui.') +
+      `<div class="mbd sv">
+        ${em.length ? `<span class="lbl">Em andamento</span>${em.map(cartaoEm).join('')}` : ''}
+        <span class="lbl">Guardados</span>
+        ${guard.length ? guard.map(cartao).join('') : '<p class="mut sv-vazio">Nenhum jogo guardado ainda. Quando você começar uma carreira nova, a atual aparece aqui.</p>'}
+        <p class="mut sv-uso">Espaço usado pelos jogos: ${Saves.tamanho(total)}. O navegador costuma reservar cerca de 5 MB por site.</p>
+      </div>
+      <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`);
+  }
+};
+
 const UI = {
   eraSel: ERAS.length-1,
   style: 'equilibrado',
@@ -17087,6 +17530,14 @@ const UI = {
     UI.toast(on ? 'Animações ligadas.' : 'Animações desligadas.');
   },
 
+  /* salva agora o modo que está na tela; da tela de saves, ela continua aberta e atualizada */
+  salvarJogo(daLista){
+    const tela = document.body.dataset.tela;
+    if(tela === 'chefe' && typeof C !== 'undefined' && C) UIC.salvar(true);
+    else if(tela === 'career' && typeof S !== 'undefined' && S) Game.save(true);
+    if(daLista) Saves.abrir();
+  },
+
   toggleTheme(){
     const cur = document.documentElement.getAttribute('data-theme');
     const t = cur==='dark' ? 'light' : 'dark';
@@ -17100,6 +17551,8 @@ const UI = {
   show(name){
     if(name === 'new') setTimeout(()=>{ try{ UI.modoGrid(); }catch(e){} }, 0);
     if(el('topAcao')) el('topAcao').style.display = name === 'intro' ? '' : 'none';
+    /* salvar fica no alto da tela, nos dois modos, enquanto há um jogo aberto */
+    if(el('btnSalvar')) el('btnSalvar').hidden = !((name === 'career' && typeof S !== 'undefined' && S) || (name === 'chefe' && typeof C !== 'undefined' && C));
     if(name !== 'apoio' && document.body.dataset.tela === 'apoio' && typeof Doacao !== 'undefined') Doacao.saiu();
     document.body.dataset.tela = name;
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
@@ -18532,6 +18985,11 @@ const Game = {
   },
   checkSave(){
     try{ UIC.checar(); }catch(e){}
+    /* os jogos guardados, além dos dois em andamento */
+    try{
+      const n = Saves.jogos().guard.length, b = el('btnSaves');
+      if(b){ b.style.display = n ? 'flex' : 'none'; el('savesDesc').textContent = n === 1 ? '1 jogo guardado' : n + ' jogos guardados'; }
+    }catch(e){}
     let raw; try{ raw = Store.get('vdo_save'); }catch(e){ return; }
     if(!raw){ el('btnContinue').style.display='none'; return; }
     try{
@@ -18571,6 +19029,7 @@ const Game = {
   startScenario(id){
     const sc = SCENARIOS.find(x => x.id === id);
     if(!sc) return;
+    if(!Saves.antesDeNovo('piloto')) return;
     Game.beginReal({
       sk: sc.sk, year: sc.year, teamName: sc.team, num: sc.num, style: sc.style,
       name: sc.drv.name, cc: sc.drv.cc, age: sc.drv.age, attr: sc.drv.attr,
@@ -18604,6 +19063,7 @@ const Game = {
     const era = eraOfSeries(year, sk);
     const p = era.pilots.find(x => x[0] === name);
     if(!p) return;
+    if(!Saves.antesDeNovo('piloto')) return;
     const sk2 = skillEm(sk, name, year, p[2]);
     /* a equipe corresponde ao posto do piloto no grid daquele ano:
        quem é o melhor do grid não começa no fundo */
@@ -18677,6 +19137,7 @@ const Game = {
     if(name.length < 2) return UI.toast('Escolha um sobrenome (mínimo 2 letras).');
     if(!(num >= 1 && num <= 99)) return UI.toast('O número precisa ser entre 1 e 99.');
     if(!UI.country) return UI.toast('Escolha uma nacionalidade da lista.');
+    if(!Saves.antesDeNovo('piloto')) return;
 
     const anoEscolhido = UI.year || ERAS[UI.eraSel].y;
     let sk = (anoEscolhido >= SERIES[UI.serie].from) ? UI.serie : 'f1';
@@ -22144,6 +22605,7 @@ const Cenario = {
   /* começa o cenário: a equipe, o ano e as condições iniciais */
   iniciar(id, chefe){
     const d = CHEFE_CENARIOS.find(x => x.id === id); if(!d) return false;
+    if(!Saves.antesDeNovo('chefe')) return false;
     if(d.criar) Chefe.novo({ modo:'criar', sk:d.sk, ano:d.ano, fin:'proprio', chefe, realismo:true, eq:{ nome:d.criar.nome, cor:d.criar.cor, cc:d.criar.cc } });
     else {
       const era = eraOfSeries(d.ano, d.sk);
@@ -25418,8 +25880,23 @@ const Fotos = {
       const cid = typeof campDaCat === 'function' ? campDaCat(cat, a) : 'f1';
       const t = cid && Hist.temporada(cid, a); if(!t || !t.inscritos.length) continue;
       const com = t.inscritos.filter(i => i.carro && FOTOS.k[Fotos.chave(i.carro)]);
-      const x = com.find(i => (nomes || []).indexOf(i.name) >= 0 && (Fotos.daEquipe(i.eq, eq) || Fotos.daEquipe(i.carro, eq)))
-        || com.find(i => Fotos.daEquipe(i.eq, eq) || Fotos.daEquipe(i.carro, eq));
+      /* no carro vale só o construtor, antes do hífen do motor: "Minardi-Ferrari M191"
+         é Minardi, não Ferrari; "Talbot-Lago T26C" continua Talbot-Lago */
+      const onde = (txt, nome) => {
+        const b = Fotos.norm(nome);
+        const x = b && new RegExp('(^|[^a-z0-9])' + b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').exec(Fotos.norm(txt));
+        return x ? x.index : -1;
+      };
+      const daEq = i => {
+        const c = Fotos.chave(i.carro), h = c.indexOf('-'), k = onde(c, eq);
+        if(k >= 0 && (h < 0 || k < h)) return true;
+        /* pelo inscrito, desde que o construtor do carro não venha antes no nome:
+           "Vodafone McLaren Mercedes" é a McLaren, não a Mercedes */
+        const e = onde(i.eq, eq); if(e < 0) return false;
+        const cons = c.split(/[\s-]/)[0], ce = cons ? onde(i.eq, cons) : -1;
+        return ce < 0 || ce >= e;
+      };
+      const x = com.find(i => (nomes || []).indexOf(i.name) >= 0 && daEq(i)) || com.find(daEq);
       if(x){ const k = Fotos.chave(x.carro); return Object.assign(Fotos.info(FOTOS.k[k]), { chassi: k, ano: a }); }
       /* sem o chassi no banco (IndyCar, NASCAR, Fórmula E...): a foto da página da equipe */
       const e = FOTOS.e && t.inscritos.find(i => i.eq && FOTOS.e[i.eq] && ((nomes || []).indexOf(i.name) >= 0 || Fotos.daEquipe(i.eq, eq)));
@@ -26003,6 +26480,11 @@ const Sessao = {
     let d = ''; for(let i = 0; i < g.n; i += 2) d += (i ? 'L' : 'M') + g.x[i].toFixed(1) + ' ' + (-g.y[i]).toFixed(1); d += 'Z';
     S.u = u;
     const titulo = S.tipo === 'treino' ? 'Treino livre' : S.ses.n;
+    /* no celular, a sessão usa a mesma central da corrida do chefe: o placar em cima e
+       as abas no pé — a sessão (seus carros e tempos), o acerto (só no treino) e o circuito */
+    ov.classList.add('av-chefe');
+    ov.dataset.aba = 'corrida';
+    const abas = [['corrida', 'Sessão', 'bandeira']].concat(S.tipo === 'treino' ? [['pilotos', 'Acerto', 'chave']] : [], [['circuito', 'Circuito', 'mapa']]);
     ov.innerHTML = `
       <header class="av-topo">
         <div class="av-gp"><b>GP ${esc(S.trk.gp)}</b><span><span>${esc(titulo)}</span> · <span>${esc(S.trk.circ)}</span> · <span>${S.sea.ano}</span></span></div>
@@ -26010,7 +26492,7 @@ const Sessao = {
         <div class="av-ctrl">
           <button class="av-play" id="ssPlay" aria-label="Pausar">${ico('pausa')}</button>
           <div class="av-vel" role="group" aria-label="Velocidade">${Sessao.VELS.map(v => `<button data-v="${v}" class="${v === Sessao.vel ? 'on' : ''}">${v}×</button>`).join('')}</div>
-          <button class="av-pular" id="ssFim">Até o fim da sessão</button>
+          <button class="av-pular" id="ssFim" aria-label="Até o fim da sessão">${ico('avancar')}<span>Até o fim da sessão</span></button>
         </div>
       </header>
       <section class="av-torre" aria-label="Tempos da sessão"><div class="ss-torre-cab"><span>Tempos</span><b>${S.tipo === 'quali' && S.ses.passam ? 'passam ' + S.ses.passam : ''}</b></div><div class="av-linhas" id="ssLinhas"></div></section>
@@ -26023,14 +26505,22 @@ const Sessao = {
         <div class="av-fim" id="ssFimBox" hidden></div>
       </section>
       <aside class="av-info ss-info" id="ssInfo"></aside>
-      <section class="av-muro ss-muro" aria-label="Os seus carros" id="ssMuro"></section>`;
+      <section class="av-muro ss-muro" aria-label="Os seus carros" id="ssMuro"></section>
+      <nav class="av-abas av-nav" role="tablist" aria-label="Áreas da sessão" style="grid-template-columns:repeat(${abas.length},minmax(0,1fr))">
+        ${abas.map(([k, n, ic]) => `<button role="tab" data-aba="${k}" aria-selected="${k === 'corrida'}">${ico(ic)}<span>${n}</span><i></i></button>`).join('')}
+      </nav>`;
+    ov.querySelector('.av-nav').addEventListener('click', e => { const b = e.target.closest('[data-aba]'); if(b) Sessao.mudarAba(b.dataset.aba); });
     ov.querySelector('.av-vel').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; Sessao.vel = +b.dataset.v; try{ Store.set('vdo_velsessao', String(Sessao.vel)); }catch(x){} ov.querySelectorAll('.av-vel button').forEach(x => x.classList.toggle('on', x === b)); });
     el('ssPlay').onclick = () => { Sessao.pausa = !Sessao.pausa; el('ssPlay').innerHTML = ico(Sessao.pausa ? 'tocar' : 'pausa'); };
     el('ssFim').onclick = () => { Sessao.terminar(S); Sessao.painel(); Sessao.encerrada(); };
     el('ssMuro').addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
       if(b.dataset.sair != null){ if(!Sessao.sair(+b.dataset.sair)) UI.toast(S.tipo === 'treino' ? 'Não há mais saídas para este carro.' : 'Não dá mais tempo de abrir uma volta.'); }
-      if(b.dataset.ver != null) Sessao.sel = +b.dataset.ver;
+      if(b.dataset.ver != null){
+        Sessao.sel = +b.dataset.ver;
+        /* no celular, o botão Acerto leva à aba do acerto */
+        if(typeof matchMedia === 'function' && matchMedia('(max-width:820px)').matches) Sessao.mudarAba('pilotos');
+      }
       Sessao.muro(true);
     });
     el('ssMuro').addEventListener('input', e => {
@@ -26039,6 +26529,12 @@ const Sessao = {
       if(r.nextElementSibling) r.nextElementSibling.textContent = Math.round(+r.value);
     });
     Sessao.painel(); Sessao.muro(true);
+  },
+  mudarAba(k){
+    const ov = el('sessao'); if(!ov) return;
+    ov.dataset.aba = k;
+    ov.querySelectorAll('.av-nav [data-aba]').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === k ? 'true' : 'false'));
+    try { ov.scrollTop = 0; } catch(e){}
   },
   quadro(ts){
     const S = Sessao.S; if(!S || !el('sessao')) return;
@@ -26149,9 +26645,12 @@ const UIC = {
   TENT_PIL: 6, TENT_STAFF: 4,
   aba: 'drv',
 
-  salvar(){
+  salvar(toast){
     if(!C) return;
-    try { Store.set('vdo_chefe', JSON.stringify(C)); } catch(e){ UI.toast('Não foi possível salvar a equipe.'); }
+    try {
+      Store.set('vdo_chefe', JSON.stringify(C));
+      if(toast) UI.toast(Store.ok ? 'Equipe salva neste aparelho.' : 'Salvo só nesta sessão — este navegador bloqueou o armazenamento.');
+    } catch(e){ UI.toast('Não foi possível salvar a equipe.'); }
   },
   /* o cartão de continuar na abertura */
   checar(){
@@ -26289,6 +26788,7 @@ const UIC = {
     if(n.modo === 'assumir' && n.idx == null){ UI.toast('Escolha a equipe que vai comandar.'); return; }
     if(n.modo !== 'assumir' && (n.nome || '').trim().length < 2){ UI.toast('A equipe precisa de um nome.'); return; }
     n.realismo = el('chnRisco').checked;
+    if(!Saves.antesDeNovo('chefe')) return;
     Chefe.novo({ modo:n.modo, sk:n.sk || 'f1', ano:n.ano, idx:n.idx, cat:n.cat, realismo:n.realismo, fin:n.fin,
       chefe:{ nome:chefe, cc: el('chnChefePais').value || 'BR' },
       eq:{ nome:(n.nome || '').trim(), cor:n.cor, cc:n.cc } });
@@ -26489,7 +26989,7 @@ const UIC = {
     const credRet = retratos.length ? `<span class="cred-ret">Retratos: ${retratos.map(([p, f], k) => `<span data-ret="${esc(p.id)}">${k ? '; ' : ''}<a href="${esc(f.pagina)}" target="_blank" rel="noopener noreferrer">${esc(Engine.sobrenome(p.nome))}</a> (${esc(f.autor)}, ${esc(f.lic)})</span>`).join('')}, via Wikimedia Commons</span>` : '';
     return `<section class="chx-capa" style="--tc:${esc(C.eq.cor)}" aria-label="A equipe">
       <img src="${esc(foto.src)}" alt="${esc(foto.alt)}" decoding="async"${foto.externa ? ` referrerpolicy="no-referrer" onerror="UIC.fotoFalhou(this, true)"` : ''}>
-      <div class="chx-capa-tx"><h2>${esc(C.eq.nome)}</h2>${foto.chassi ? `<p><span data-i18n-ignore>${esc(foto.chassi)}</span>${foto.anoCarro && foto.anoCarro !== C.ano ? ` · <span>o último carro real, de ${foto.anoCarro}</span>` : ''}</p>` : `<p>${esc(C.cat)} · ${inverno ? 'pré-temporada de ' + C.ano : 'temporada ' + C.ano}</p>`}</div>
+      <div class="chx-capa-tx"><h2>${esc(C.eq.nome)}</h2>${foto.chassi ? `<p><span data-i18n-ignore>${esc(foto.chassi)}</span>${foto.anoCarro && foto.anoCarro !== C.ano ? ` · <span>${C.ano > Engine.HORIZONTE ? 'o último carro real, de ' + foto.anoCarro : 'foto do carro de ' + foto.anoCarro}</span>` : ''}</p>` : `<p>${esc(C.cat)} · ${inverno ? 'pré-temporada de ' + C.ano : 'temporada ' + C.ano}</p>`}</div>
       <div class="chx-capa-pe"><div class="chx-pilotos">${tit.slice(0, 2).map((p, k) => UIC.cartaoPiloto(p, k)).join('') || '<p class="chx-pil-vazio">Nenhum piloto titular sob contrato.</p>'}</div>
         <p class="chx-credito"><span class="carro">${foto.credito}</span>${credRet ? ' · ' + credRet : ''}</p></div>
     </section>`;
@@ -29007,6 +29507,9 @@ const AoVivo = {
     AoVivo.fechar();
     AoVivo.opc = opc || {}; AoVivo.aoFim = aoFim; AoVivo.pausa = false; AoVivo.acabou = false;
     try{ const v = +Store.get('vdo_velcorrida'); if(AoVivo.VELS.indexOf(v) >= 0) AoVivo.vel = v; }catch(e){}
+    /* a velocidade automática: escolha guardada no aparelho; sem escolha, ligada no celular */
+    let va = null; try{ va = Store.get('vdo_velauto'); }catch(e){}
+    AoVivo.auto = va != null ? va === '1' : (typeof innerWidth === 'number' && innerWidth <= 820);
     const ov = document.createElement('div');
     ov.id = 'aovivo'; ov.className = 'av-tela';
     ov.innerHTML = '<div class="av-carregando"><b>Grid formado</b><span>os carros saem para a volta de apresentação</span></div>';
@@ -29040,11 +29543,28 @@ const AoVivo = {
     const comp = R.regras.secos.concat(R.regras.chuva);
     const gestao = !!ent.gestao, energia = gestao && R.regras.energia;
     if(!AoVivo.cam || (AoVivo.cam.indexOf('i:') === 0 && !meus.some(s => 'i:' + s.i === AoVivo.cam))) AoVivo.cam = 'geral';
+    /* No celular fica uma coisa de cada vez. No modo piloto, três abas embaixo do mapa;
+       no modo chefe, a central inteira se reorganiza em cinco abas com a barra no pé
+       (corrida, pilotos, circuito, clima e mais). É a mesma corrida e o mesmo estado:
+       a troca de aba só mostra outra parte da tela. */
+    const chefe = !!AoVivo.opc.chefe;
+    ov.classList.toggle('av-chefe', chefe);
+    AoVivo.aba = chefe ? 'corrida' : meus.length ? 'carros' : 'torre';
+    ov.dataset.aba = AoVivo.aba;
+    if(AoVivo.selM == null || !meus.some(s => s.i === AoVivo.selM)) AoVivo.selM = meus[0] ? meus[0].i : null;
+    AoVivo.expandida = false; AoVivo.filtroEv = AoVivo.filtroEv || 'todos'; AoVivo.sub = AoVivo.sub || 'ev';
+    ov.dataset.sub = AoVivo.sub;
+    if(AoVivo.mini) ov.dataset.mini = '1';
+    if(AoVivo.rapida === false) ov.dataset.rapida = '0';
+    const foto = s => chefe && typeof Fotos !== 'undefined' ? Fotos.piloto(s.c.nome) : null;
+    const tipoPista = { fast:'circuito rápido', street:'circuito de rua', tech:'circuito técnico', mixed:'circuito misto', oval:'oval' }[R.trk && R.trk.type] || '';
     const seg = (g0, rot, itens) => `<div class="av-seg" data-g="${g0}"><span class="av-seg-n">${rot}</span><div class="av-seg-b" role="group" aria-label="${esc(rot)}">${itens}</div></div>`;
-    const cartao = s => `<article class="av-cartao" id="avC${s.i}" data-i="${s.i}">
-        <header class="av-c-topo"><s style="background:${esc(s.c.cor)}"></s>
+    const cartao = s => `<article class="av-cartao${s.i === AoVivo.selM ? ' sel-m' : ''}" id="avC${s.i}" data-i="${s.i}">
+        <header class="av-c-topo"><s style="background:${esc(s.c.cor)}"></s>${chefe ? `<span class="av-c-foto">${Fotos.rosto(s.c.nome, s.c.cor, 'md')}</span>` : ''}
           <div class="av-c-nome"><b>${esc(s.c.nome)}</b><span id="avCV${s.i}"></span></div><em id="avCP${s.i}"></em></header>
         <div class="av-pneu" id="avCPn${s.i}"></div>
+        ${chefe ? `<p class="av-resumo" id="avCR${s.i}"></p>
+        <button class="av-rapida" data-rapida="1" aria-expanded="${AoVivo.rapida !== false}">Estratégia rápida</button>` : ''}
         <div class="av-comandos">
           ${seg('modo', 'Ritmo', (gestao ? `<button data-auto="1" class="av-auto">Auto</button>` : '') + Gp.modosDe(R).map(k => `<button data-modo="${k}"${Gp.MODOS[k].curto ? ` aria-label="${Gp.MODOS[k].n}" title="${Gp.MODOS[k].n}"` : ''}>${Gp.MODOS[k].curto || Gp.MODOS[k].n}</button>`).join(''))}
           ${gestao ? seg('trato', 'Pneus', Object.keys(Gp.TRATO).map(k => `<button data-trato="${k}">${Gp.TRATO[k].n}</button>`).join('')) : ''}
@@ -29053,10 +29573,12 @@ const AoVivo = {
         <div class="av-estr" id="avCE${s.i}"></div>
         <div class="av-box"><span>Box</span>${comp.map(c => `<button data-pit="${c}" class="av-pn ${c}" title="Parar e pôr ${Gp.COMP[c].n}" aria-label="Parar e pôr ${Gp.COMP[c].n}">${c}</button>`).join('')}<button data-pit="" class="av-cancela">Cancelar</button></div>
         <div class="av-ordem" id="avCO${s.i}"></div>
+        <button class="av-mais" data-mais="1" aria-expanded="false">Mais comandos e previsões</button>
+        ${foto(s) ? `<p class="av-cred"><span>Foto:</span> <a href="${esc(foto(s).pagina)}" target="_blank" rel="noopener noreferrer" data-i18n-ignore>${esc(foto(s).autor)}, ${esc(foto(s).lic)}</a> <span>via Wikimedia Commons</span></p>` : ''}
       </article>`;
     ov.innerHTML = `
       <header class="av-topo">
-        <div class="av-gp"><b>GP ${esc(ent.gp || '')}</b><span><span>${esc(ent.circ || '')}</span> · <span>${ent.ano}</span> · <span>${esc(AoVivo.opc.serie || 'Corrida')}</span>${R.g.real ? '' : ' · <span>traçado esquemático</span>'}</span></div>
+        <div class="av-gp"><b>GP ${esc(ent.gp || '')}${chefe && R.trk && R.trk.cc ? ` <span class="av-gp-fg">${fg(R.trk.cc)}</span>` : ''}</b><span><span>${esc(ent.circ || '')}</span> · <span>${ent.ano}</span> · <span>${esc(AoVivo.opc.serie || 'Corrida')}</span>${R.g.real ? '' : ' · <span>traçado esquemático</span>'}</span></div>
         <div class="av-placar">
           <span class="av-volta" id="avVolta">Volta 1 de ${R.N}</span>
           <b class="av-rel" id="avRelogio">0:00</b>
@@ -29064,15 +29586,18 @@ const AoVivo = {
         </div>
         <div class="av-ctrl">
           <button class="av-play" id="avPlay" aria-label="Pausar">${ico('pausa')}</button>
-          <div class="av-vel" role="group" aria-label="Velocidade">${AoVivo.VELS.map(v => `<button data-v="${v}" class="${v === AoVivo.vel ? 'on' : ''}">${v}×</button>`).join('')}</div>
-          <button class="av-pular" id="avPular" title="A equipe assume as paradas até a bandeirada">Simular até o fim</button>
+          <div class="av-vel" role="group" aria-label="Velocidade"><button data-v="auto" class="av-vauto${AoVivo.auto ? ' on' : ''}" title="Corre rápido e desacelera sozinha quando a equipe chama para o box, no safety car e na última volta">Auto</button>${AoVivo.VELS.map(v => `<button data-v="${v}" class="${!AoVivo.auto && v === AoVivo.vel ? 'on' : ''}">${v}×</button>`).join('')}</div>
+          <button class="av-pular" id="avPular" title="A equipe assume as paradas até a bandeirada" aria-label="Simular até o fim">${ico('avancar')}<span>Simular até o fim</span></button>
         </div>
       </header>
       <section class="av-torre" aria-label="Torre de tempos">
+        ${chefe ? `<div class="av-torre-top"><h2>Classificação</h2><button class="av-mini-bt" aria-pressed="${!!AoVivo.mini}">${ico('mapa')}<span>Minimapa</span></button></div>` : ''}
         <div class="av-torre-modo" role="group" aria-label="O que a torre mostra">
           ${[['int', 'Intervalo'], ['lider', 'Líder'], ['pneu', 'Pneus'], ['voltas', 'Voltas']].map(([k, n]) => `<button data-m="${k}" class="${AoVivo.modoTorre === k ? 'on' : ''}">${n}</button>`).join('')}
         </div>
+        ${chefe ? `<div class="av-torre-cab" aria-hidden="true"><span>#</span><span>Piloto</span><span id="avTorreCol">Intervalo</span><span>Pneu</span></div>` : ''}
         <div class="av-linhas" id="avLinhas"></div>
+        ${chefe ? `<button class="av-exp" aria-expanded="false">Ver todos os ${R.carros.length}</button>` : ''}
       </section>
       <section class="av-mapa" aria-label="Mapa do circuito">
         <div class="av-cam" role="group" aria-label="Câmera">
@@ -29093,17 +29618,73 @@ const AoVivo = {
         <div class="av-radio" id="avRadio" hidden></div>
         <div class="av-fim" id="avFim" hidden></div>
       </section>
+      ${chefe ? `<section class="av-circ" aria-label="O circuito">
+        <div><b>${R.trk && R.trk.cc ? fg(R.trk.cc) + ' ' : ''}${esc(ent.circ || '')}</b>
+        <span>${R.g && R.g.L ? `<span>volta de ${(R.g.L / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} km</span> · ` : ''}<span>${R.N} voltas</span>${tipoPista ? ` · <span>${tipoPista}</span>` : ''}</span>
+        ${R.g.fonte ? `<span>Traçado: ${esc(R.g.fonte)}${R.g.real ? '' : ' · esquemático'}</span>` : ''}</div>
+        <p>Os botões em cima do mapa seguem o líder ou um carro seu. O piloto tocado na classificação fica destacado aqui.</p></section>` : ''}
+      ${chefe ? `<nav class="av-abas av-nav" role="tablist" aria-label="Áreas da corrida">
+        ${[['corrida', 'Corrida', 'bandeira'], ['pilotos', meus.length > 1 ? 'Pilotos' : 'Piloto', 'pessoas'], ['circuito', 'Circuito', 'mapa'], ['clima', 'Clima', 'sol'], ['mais', 'Mais', 'maisp']].map(([k, n, ic]) =>
+          `<button role="tab" data-aba="${k}" aria-selected="${AoVivo.aba === k}">${ico(ic)}<span>${n}</span><i></i></button>`).join('')}
+      </nav>` : `<nav class="av-abas" role="tablist" aria-label="O que mostrar embaixo do mapa">
+        ${[['carros', meus.length ? (meus.length > 1 ? 'Seus carros' : 'Seu carro') : 'Corrida'], ['torre', 'Torre'], ['info', 'Tempo e rádio']].map(([k, n]) =>
+          `<button role="tab" data-aba="${k}" aria-selected="${AoVivo.aba === k}">${n}<i></i></button>`).join('')}
+      </nav>`}
+      ${chefe ? `<div class="av-subs" role="tablist" aria-label="O que ver em Mais">${[['ev', 'Acontecimentos'], ['cla', 'Classificação'], ['op', 'Opções']].map(([k, n]) =>
+        `<button role="tab" data-sub="${k}" aria-selected="${AoVivo.sub === k}">${n}</button>`).join('')}</div>` : ''}
       <aside class="av-info">
+        ${chefe ? '<h2 class="av-h av-h-clima">Condições atuais</h2>' : ''}
         <div class="av-clima" id="avClima"></div>
+        ${chefe ? `<div class="av-filtros" role="group" aria-label="Filtrar os acontecimentos">${AoVivo.FILTROS.map(([k, n]) => `<button data-f="${k}" aria-pressed="${AoVivo.filtroEv === k}">${n}</button>`).join('')}</div>` : ''}
         <div class="av-feed" id="avFeed" aria-live="polite"></div>
       </aside>
+      ${chefe ? `<section class="av-opcoes" aria-label="Opções da corrida">
+        <button class="av-op-pular">${ico('avancar')}<span><b>Simular até o fim</b><small>A equipe assume as paradas até a bandeirada</small></span></button>
+        <p>A velocidade Auto corre a 16× e desacelera sozinha quando a equipe chama um carro seu para o box, com safety car, chuva e na última volta.</p>
+      </section>` : ''}
       <section class="av-muro" aria-label="Os seus carros">
+        ${chefe && meus.length > 1 ? `<div class="av-pilsel" role="tablist" aria-label="Escolher o piloto">${meus.map(s => `<button role="tab" data-sel="${s.i}" aria-selected="${s.i === AoVivo.selM}"><b>${esc(Engine.sobrenome(s.c.nome))}</b><em id="avPS${s.i}"></em></button>`).join('')}</div>` : ''}
         ${gestao && meus.length > 1 ? `<div class="av-ordemeq"><span>Ordem de equipe</span><div class="av-seg-b" role="group" aria-label="Ordem de equipe">
           <button data-oe="livre">Corrida livre</button><button data-oe="manter">Manter posições</button></div></div>` : ''}
         <div class="av-cartoes">${meus.map(cartao).join('') || '<p class="av-so">Você assiste: nenhum carro seu está na pista.</p>'}</div>
       </section>`;
     ov.querySelector('.av-torre-modo').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.modoTorre = b.dataset.m; ov.querySelectorAll('.av-torre-modo button').forEach(x => x.classList.toggle('on', x === b)); AoVivo.painel(); });
-    ov.querySelector('.av-vel').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.vel = +b.dataset.v; try{ Store.set('vdo_velcorrida', String(AoVivo.vel)); }catch(x){} ov.querySelectorAll('.av-vel button').forEach(x => x.classList.toggle('on', x === b)); });
+    ov.querySelector('.av-vel').addEventListener('click', e => {
+      const b = e.target.closest('button'); if(!b) return;
+      AoVivo.auto = b.dataset.v === 'auto';
+      if(!AoVivo.auto) AoVivo.vel = +b.dataset.v;
+      try{ Store.set('vdo_velauto', AoVivo.auto ? '1' : '0'); if(!AoVivo.auto) Store.set('vdo_velcorrida', String(AoVivo.vel)); }catch(x){}
+      ov.querySelectorAll('.av-vel button').forEach(x => x.classList.toggle('on', x === b));
+      AoVivo.marcarVel();
+    });
+    ov.querySelector('.av-abas').addEventListener('click', e => { const b = e.target.closest('[data-aba]'); if(b) AoVivo.mudarAba(b.dataset.aba); });
+    if(chefe){
+      const ps = ov.querySelector('.av-pilsel');
+      if(ps) ps.addEventListener('click', e => { const b = e.target.closest('[data-sel]'); if(b) AoVivo.escolherPiloto(+b.dataset.sel); });
+      ov.querySelector('.av-exp').addEventListener('click', e => {
+        AoVivo.expandida = !AoVivo.expandida; ov.dataset.exp = AoVivo.expandida ? '1' : '';
+        e.currentTarget.setAttribute('aria-expanded', AoVivo.expandida ? 'true' : 'false');
+        e.currentTarget.textContent = AoVivo.expandida ? 'Mostrar só os cinco primeiros' : 'Ver todos os ' + R.carros.length;
+      });
+      ov.querySelector('.av-mini-bt').addEventListener('click', e => {
+        AoVivo.mini = !AoVivo.mini; ov.dataset.mini = AoVivo.mini ? '1' : '';
+        e.currentTarget.setAttribute('aria-pressed', AoVivo.mini ? 'true' : 'false');
+        AoVivo.remedir();
+      });
+      ov.querySelector('.av-filtros').addEventListener('click', e => {
+        const b = e.target.closest('[data-f]'); if(!b) return;
+        AoVivo.filtroEv = b.dataset.f;
+        ov.querySelectorAll('.av-filtros [data-f]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+        AoVivo._feedK = null; AoVivo.painel();
+      });
+      ov.querySelector('.av-op-pular').addEventListener('click', () => AoVivo.simularFim());
+      ov.querySelector('.av-subs').addEventListener('click', e => {
+        const b = e.target.closest('[data-sub]'); if(!b) return;
+        AoVivo.sub = ov.dataset.sub = b.dataset.sub;
+        ov.querySelectorAll('.av-subs [data-sub]').forEach(x => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+        try { ov.scrollTop = 0; } catch(x){}
+      });
+    }
     ov.querySelector('.av-cam').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.cam = b.dataset.cam; AoVivo.marcarCam(); });
     const oe = ov.querySelector('.av-ordemeq');
     if(oe) oe.addEventListener('click', e => { const b = e.target.closest('[data-oe]'); if(!b || !meus[0]) return; Gp.comandar(R, meus[0].i, { ordemEq: b.dataset.oe }); AoVivo.cartoes(); });
@@ -29112,6 +29693,12 @@ const AoVivo = {
     ov.querySelectorAll('.av-cartao').forEach(c => c.addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
       const i = +c.dataset.i;
+      if(b.dataset.mais){ const ab = c.classList.toggle('aberto'); b.setAttribute('aria-expanded', ab ? 'true' : 'false'); b.textContent = ab ? 'Menos comandos' : 'Mais comandos e previsões'; return; }
+      if(b.dataset.rapida){
+        AoVivo.rapida = AoVivo.rapida === false; ov.dataset.rapida = AoVivo.rapida ? '' : '0';
+        ov.querySelectorAll('[data-rapida]').forEach(x => x.setAttribute('aria-expanded', AoVivo.rapida ? 'true' : 'false'));
+        return;
+      }
       if(b.dataset.auto) Gp.comandar(R, i, { auto: true });
       if(b.dataset.modo) Gp.comandar(R, i, { modo: b.dataset.modo });
       if(b.dataset.trato) Gp.comandar(R, i, { trato: b.dataset.trato });
@@ -29123,7 +29710,11 @@ const AoVivo = {
     el('avLinhas').addEventListener('click', e => { const r = e.target.closest('[data-i]'); if(!r) return; AoVivo.sel = AoVivo.sel === +r.dataset.i ? null : +r.dataset.i; AoVivo.painel(); });
     AoVivo.svg = el('avSvg');
     AoVivo.carrosEl = [...ov.querySelectorAll('.av-carro')];
-    AoVivo._medir = () => { const b = AoVivo.svg && AoVivo.svg.getBoundingClientRect ? AoVivo.svg.getBoundingClientRect() : null; AoVivo.aspecto = b && b.width > 0 && b.height > 0 ? b.width / b.height : 1.5; };
+    AoVivo._medir = () => {
+      AoVivo.movel = typeof matchMedia === 'function' && matchMedia('(max-width:820px)').matches;
+      const b = AoVivo.svg && AoVivo.svg.getBoundingClientRect ? AoVivo.svg.getBoundingClientRect() : null;
+      if(b && b.width > 0 && b.height > 0) AoVivo.aspecto = b.width / b.height; else if(!AoVivo.aspecto) AoVivo.aspecto = 1.5;
+    };
     AoVivo._medir();
     addEventListener('resize', AoVivo._medir);
     AoVivo.marcarCam();
@@ -29135,6 +29726,59 @@ const AoVivo = {
     AoVivo.raf = requestAnimationFrame(AoVivo.quadro);
     AoVivo._vis = () => { if(document.hidden && !AoVivo.pausa) AoVivo.alternar(); };
     document.addEventListener('visibilitychange', AoVivo._vis);
+  },
+  /* A velocidade automática corre a 16× e desacelera nos momentos em que há o que
+     decidir: a equipe chamou um carro seu para o box, um carro seu está nos boxes,
+     safety car ou chuva acabaram de começar, algo aconteceu com um carro seu, ou é a
+     última volta. A tela só lê a corrida: a velocidade não muda o resultado. */
+  VEL_AUTO: 16,
+  /* os filtros dos acontecimentos (aba Mais, no celular do modo chefe) */
+  FILTROS: [['todos', 'Todos'], ['ultra', 'Ultrapassagens'], ['box', 'Pit stops'], ['inc', 'Incidentes'], ['band', 'Bandeiras']],
+  TIPOS_EV: { ultra: ['ultrapassagem', 'largou'], box: ['boxes', 'lenta', 'pneuLargada', 'sugestao'],
+    inc: ['batida', 'quebra', 'erro', 'toque', 'furo', 'punicao', 'falha'], band: ['sc', 'vsc', 'verde', 'bandeira', 'chuva', 'parou'] },
+  /* o modo chefe no celular: a tela que está à vista decide o que precisa ser desenhado */
+  chefeMovel(){ return !!(AoVivo.opc && AoVivo.opc.chefe && AoVivo.movel); },
+  mapaVisivel(){ return !AoVivo.chefeMovel() || AoVivo.aba === 'circuito' || (AoVivo.aba === 'corrida' && AoVivo.mini); },
+  momento(){
+    const R = AoVivo.R; if(!R) return null;
+    const meus = R.carros.filter(s => s.c.ctrl && s.estado !== 3 && s.estado !== 4);
+    if(meus.some(s => s.sugestao && s.estado === 0 && !s.parar && !R.bandeira)) return 'box';
+    if(meus.some(s => s.estado === 1 || s.estado === 2 || s.estado === 5)) return 'boxes';
+    const rec = R.eventos.slice(-12).filter(e => R.t - e.t < 25);
+    if(rec.some(e => e.tipo === 'sc' || e.tipo === 'vsc' || e.tipo === 'chuva' || e.tipo === 'parou')) return 'pista';
+    if(rec.some(e => e.a != null && R.carros[e.a] && R.carros[e.a].c.ctrl && /batida|quebra|furo|toque|falha|punicao|lenta/.test(e.tipo))) return 'seu';
+    if(R.lider && R.lider.voltas >= R.N - 1) return 'fim';
+    return null;
+  },
+  velAgora(){
+    if(!AoVivo.auto) return AoVivo.vel;
+    const m = AoVivo.momento();
+    return m === 'box' || m === 'seu' ? 2 : m ? 4 : AoVivo.VEL_AUTO;
+  },
+  /* o botão Auto mostra a velocidade em que está agora */
+  marcarVel(){
+    const b = el('aovivo') && el('aovivo').querySelector ? el('aovivo').querySelector('.av-vauto') : null; if(!b) return;
+    const t = AoVivo.auto ? 'Auto ' + AoVivo.velAgora() + '×' : 'Auto';
+    if(b.textContent !== t) b.textContent = t;
+  },
+  mudarAba(k){
+    const ov = el('aovivo'); if(!ov) return;
+    AoVivo.aba = k; ov.dataset.aba = k;
+    ov.querySelectorAll('.av-abas [data-aba]').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === k ? 'true' : 'false'));
+    /* cada aba começa do alto, e o mapa que reaparece é medido de novo */
+    if(AoVivo.chefeMovel()) try { ov.scrollTop = 0; } catch(e){}
+    AoVivo.painel(); AoVivo.cartoes(); AoVivo.remedir();
+  },
+  /* o mapa mudou de tamanho (aba, minimapa): mede o quadro para a câmera não distorcer */
+  remedir(){
+    if(typeof requestAnimationFrame === 'function') requestAnimationFrame(() => { if(AoVivo._medir) AoVivo._medir(); });
+  },
+  /* no celular do modo chefe, um piloto de cada vez: a troca é imediata e não muda nada na corrida */
+  escolherPiloto(i){
+    const ov = el('aovivo'); if(!ov) return;
+    AoVivo.selM = i;
+    ov.querySelectorAll('.av-pilsel [data-sel]').forEach(b => b.setAttribute('aria-selected', +b.dataset.sel === i ? 'true' : 'false'));
+    ov.querySelectorAll('.av-cartao').forEach(c => c.classList.toggle('sel-m', +c.dataset.i === i));
   },
   marcarCam(){
     const ov = el('aovivo'); if(!ov || !ov.querySelectorAll) return;
@@ -29151,15 +29795,15 @@ const AoVivo = {
        real e continua liso. A tela só lê a corrida: em qualquer velocidade,
        a mesma semente e as mesmas ordens dão o mesmo resultado. */
     if(!AoVivo.pausa && !AoVivo._largada && !R.pergunta && !R.fim){
-      AoVivo.alvo = (AoVivo.alvo == null ? R.t : AoVivo.alvo) + dt * AoVivo.vel;
+      AoVivo.alvo = (AoVivo.alvo == null ? R.t : AoVivo.alvo) + dt * AoVivo.velAgora();
       let guarda = 0;
       while(R.t < AoVivo.alvo && !R.fim && !R.pergunta && guarda++ < 200000){
         for(const c of R.carros){ c.sAnt = c.s; c.ladoAnt = c.lado; }
         Gp.passo(R);
       }
     } else AoVivo.alvo = null;
-    AoVivo.mover(dt);
-    if(ts - AoVivo.ultUI > 250){ AoVivo.painel(); AoVivo.cartoes(); AoVivo.ultUI = ts; }
+    if(AoVivo.mapaVisivel()) AoVivo.mover(dt);
+    if(ts - AoVivo.ultUI > 250){ AoVivo.painel(); AoVivo.cartoes(); AoVivo.marcarVel(); AoVivo.ultUI = ts; }
     if(R.pergunta && !AoVivo._perguntando) AoVivo.radio();
     if(R.fim && !AoVivo.acabou) AoVivo.bandeirada();
     AoVivo.raf = requestAnimationFrame(AoVivo.quadro);
@@ -29247,6 +29891,21 @@ const AoVivo = {
         <div><dt>Chuva agora</dt><dd>${Math.round(chuva * 100)}%</dd></div></dl>
       <p class="av-prev">${pv ? (pv.chuva > 0 ? `Radar: chuva em cerca de ${Math.max(1, Math.round(pv.min))} min` : `Radar: a chuva para em cerca de ${Math.max(1, Math.round(pv.min))} min`) : 'Radar: sem mudança à vista'}</p>`;
     /* os acontecimentos */
+    const col = el('avTorreCol');
+    if(col) col.textContent = { int: 'Intervalo', lider: 'Para o líder', pneu: 'Voltas · uso', voltas: 'Última volta' }[AoVivo.modoTorre] || 'Intervalo';
+    /* no celular do modo chefe, a aba Mais guarda a corrida inteira, filtrada; no resto, os últimos nove */
+    if(AoVivo.chefeMovel()){
+      const f = AoVivo.filtroEv, tipos = AoVivo.TIPOS_EV[f];
+      const k = R.eventos.length + ':' + f;
+      if(AoVivo._feedK !== k){
+        AoVivo._feedK = k;
+        const evs = R.eventos.filter(e => e.tipo !== 'chamado' && (!tipos || tipos.indexOf(e.tipo) >= 0)).slice(-120).reverse();
+        el('avFeed').innerHTML = evs.map(e => `<p class="ev ${e.tipo}"><span>V${e.volta || ''}</span>${esc(AoVivo.texto(e))}</p>`).join('')
+          || `<p class="ev"><span></span>${f === 'todos' ? 'Luzes apagadas.' : 'Nada deste tipo até agora.'}</p>`;
+      }
+      return;
+    }
+    AoVivo._feedK = null;
     const evs = R.eventos.filter(e => e.tipo !== 'chamado').slice(-9).reverse();
     el('avFeed').innerHTML = evs.map(e => `<p class="ev ${e.tipo}"><span>V${e.volta || ''}</span>${esc(AoVivo.texto(e))}</p>`).join('') || '<p class="ev"><span></span>Luzes apagadas.</p>';
   },
@@ -29330,6 +29989,10 @@ const AoVivo = {
     const torre = Gp.torre(R);
     const ov = el('aovivo');
     if(ov && ov.querySelectorAll) ov.querySelectorAll('[data-oe]').forEach(b => b.classList.toggle('on', b.dataset.oe === R.ordemEq));
+    /* no celular: a aba dos seus carros avisa quando a equipe chama para o box */
+    const chefe = !!(AoVivo.opc && AoVivo.opc.chefe);
+    const aba = ov && ov.querySelector ? ov.querySelector(chefe ? '.av-abas [data-aba="pilotos"]' : '.av-abas [data-aba="carros"]') : null;
+    if(aba) aba.classList.toggle('chama', (chefe ? AoVivo.aba !== 'pilotos' && AoVivo.aba !== 'corrida' : AoVivo.aba !== 'carros') && AoVivo.momento() === 'box');
     R.carros.filter(s => s.c.ctrl).forEach(s => {
       const l = torre.find(x => x.s === s), k = torre.indexOf(l);
       const C = Gp.COMP[s.pneu.c], gasto = Math.min(1, s.pneu.gasto);
@@ -29337,6 +30000,22 @@ const AoVivo = {
       /* 3 = abandonou, 4 = recebeu a bandeirada (5 é só a saída dos boxes) */
       const fora = s.estado === 3 || s.estado === 4;
       pe.textContent = s.estado === 3 ? 'Fora' : `${k + 1}º`;
+      const ps = el('avPS' + s.i); if(ps && ps.textContent !== pe.textContent) ps.textContent = pe.textContent;
+      /* o resumo do modo chefe no celular: a próxima parada e o estado do carro, numa linha */
+      const rs = el('avCR' + s.i);
+      if(rs){
+        const cp = c => Gp.COMP[c] ? Gp.COMP[c].n.toLowerCase() : c;
+        const partes = [];
+        if(!fora){
+          if(s.parar) partes.push(`<b class="am">Box chamado: ${esc(cp(s.parar))}</b>`);
+          else if(s.plano && s.plano[0]) partes.push(`<span>Próxima parada: volta ${s.plano[0].volta} · ${esc(cp(s.plano[0].c))}</span>`);
+          else partes.push('<span>Sem parada planejada</span>');
+          if(s.furo) partes.push('<b class="rd">Pneu furado</b>');
+          else if(s.dano > 0) partes.push('<b class="rd">Carro danificado</b>');
+        }
+        const h = partes.join(' · ');
+        if(rs._h !== h){ rs._h = h; rs.innerHTML = h; }
+      }
       const comb = s.carga != null ? `<span class="av-comb" title="${R.regras.energia.tipo === 'bateria' ? 'Energia' : 'Combustível'}">${ico('raio')} ${Math.max(0, Math.round(s.carga * 1000) / 10).toLocaleString('pt-BR')}%</span>${s.economia ? '<span class="av-comb">economizando</span>' : ''}`
         : R.regras.tanque < Infinity ? `<span class="av-comb" title="Combustível no tanque">${ico('raio')} ${Math.round(s.comb * 100)}%</span>` : '';
       el('avCPn' + s.i).innerHTML = `<span class="av-pn ${s.pneu.c}">${s.pneu.c}</span>
@@ -29361,7 +30040,7 @@ const AoVivo = {
         el('avCE' + s.i).innerHTML = fora ? '' : box ? `<p class="av-plano">${s.estado === 1 ? 'Entrando nos boxes.' : s.estado === 2 ? 'Nos boxes: trocando os pneus.' : 'Saindo dos boxes.'}</p>`
           : (s.parar ? `<p class="av-chamado">Você chamou o box nesta volta para pôr ${Gp.COMP[s.parar].n.toLowerCase()}.</p>` : '')
             + (sg ? `<div class="av-sug">${ico('radio')}<span><b>Rádio:</b> ${esc(AoVivo.fraseBox(sg.por, sg.c))}</span><button data-pit="${sg.c}">Parar: ${Gp.COMP[sg.c].n}</button></div>` : '')
-            + AoVivo.previsaoHtml(R, s);
+            + `<div class="av-detalhe">${AoVivo.previsaoHtml(R, s)}</div>`;
       }
       const atras = Gp.podeCeder(R, s.i), ordemEl = el('avCO' + s.i);
       const oHtml = atras && !R.ordemEquipe ? `<button data-ceder="${atras.i}" class="av-ceder">Ordem de equipe: deixar ${esc(Engine.sobrenome(atras.c.nome))} passar</button>` : '';
@@ -29546,6 +30225,9 @@ addEventListener('click', e => {
 });
 addEventListener('keydown', e => { if(e.key === 'Escape') UI.menuTopo(false); });
 ICONES.pausa = 'M8 5v14M16 5v14';
+ICONES.avancar = 'M5 5l7 7-7 7M13 5l7 7-7 7';
+ICONES.mapa = 'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14';
+ICONES.maisp = 'M5 12h.01M12 12h.01M19 12h.01';
 ICONES.tocar = 'M7 4l13 8-13 8z';
 </script>
 
