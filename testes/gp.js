@@ -24,9 +24,7 @@ const gridValido = g => { const v = Object.values(g).sort((a, b) => a - b); retu
 }
 
 const J = H.carregar({ silencioso: true });
-/* na F1 (estreia aos 28): cada etapa é um fim de semana inteiro, de treino a corrida.
-   Na F2 a segunda corrida herda o fim de semana da primeira (testes/rodada-dupla.js). */
-H.novaCarreira(J, { era: 7, ano: 2023, idade: 28, rapido: false });
+H.novaCarreira(J, { era: 7, ano: 2023, idade: 24, rapido: false });
 
 /* ── a corrida ao vivo ── */
 J.run(`_ent = () => { const sea = S.season; const M = Engine.montarCorrida(sea);
