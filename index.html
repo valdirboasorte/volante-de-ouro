@@ -1864,6 +1864,7 @@ button.chx-chip{transition:background .15s var(--ease-out)}
 .chx-fatos-2 div{grid-template-columns:minmax(0,1fr); gap:4px; align-content:start}
 .chx-fatos-2 dd{font-size:22px; font-weight:800; font-stretch:72%; line-height:1}
 .chx-acao{width:100%; justify-content:center; margin-top:auto; border-radius:0; min-height:54px; font-size:17px}
+.chx-acao2{width:100%; justify-content:center; border-radius:0; min-height:46px; margin-top:6px}
 .chx-tarefas{display:grid}
 .chx-tarefa{display:grid; grid-template-columns:22px minmax(0,1fr) auto; gap:12px; align-items:center; padding:11px 0; text-align:left; box-shadow:inset 0 -1px 0 var(--regua);
   transition:background .15s var(--ease-out), transform .12s var(--ease-out)}
@@ -27037,6 +27038,7 @@ const UIC = {
       ${UIC.tracadoSvg(t.id, sea.ano, t.circ)}
       <dl class="chx-fatos">${fatos.map(([a, b, cl, nome]) => `<div class="${cl || ''}"><dt${nome ? ' data-i18n-ignore' : ''}>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl>
       <button class="btn btn-gold chx-acao" onclick="UIC.irCorrida()">${acao} →</button>
+      <button class="btn btn-ghost chx-acao2" onclick="UIC.simularResto()">${rd ? 'Simular o resto da temporada' : 'Simular a temporada'}</button>
     </section>`;
   },
   ladoFim(){

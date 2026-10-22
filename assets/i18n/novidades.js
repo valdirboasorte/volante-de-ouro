@@ -16,6 +16,8 @@
     ["{0} encerrada","{0} finished","{0} finalizada","{0}年終了"],
     ["Ataque máximo","Maximum attack","Ataque máximo","全開アタック"],
     ["Auto","Auto","Auto","オート"],
+    ["Simular a temporada","Simulate the season","Simular la temporada","シーズンをシミュレート"],
+    ["Simular o resto da temporada","Simulate the rest of the season","Simular el resto de la temporada","残りのシーズンをシミュレート"],
     ["Cuidar","Manage","Cuidar","いたわる"],
     ["Forçar","Push","Forzar","プッシュ"],
     ["Economizar","Save","Ahorrar","節約"],
