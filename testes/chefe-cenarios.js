@@ -25,7 +25,9 @@ const temporada = J => J.run(`(() => { Chefe.comecarTemporada(); const sea = C.t
 {
   const estados = new Set();
   let checou = false;
-  for(const seed of [1, 2, 3, 4]){
+  /* lotes até aparecerem os dois desfechos (no máximo 20): com sementes fixas, qualquer
+     sorteio novo em outra parte do jogo troca qual lote dá título, mas não a variedade */
+  for(let seed = 1; seed <= 20 && (seed <= 4 || estados.size < 2); seed++){
     const J = H.carregar({ silencioso:true, seed });
     J.run(`Cenario.iniciar('brawn09', { nome:'T', cc:'BR' })`);
     if(!checou){

@@ -29,3 +29,10 @@ ferramentas/historico/*.log
 # Traçados do OpenStreetMap: respostas baixadas e registro das rodadas (o importador refaz)
 ferramentas/pistas-osm/cache/
 ferramentas/pistas-osm/*.log
+
+# Mapas do Wikimedia Commons: respostas e SVGs baixados (o importador refaz)
+ferramentas/pistas-svg/cache/
+
+# Notas de trabalho e caches locais
+.worker-progress.md
+.impeccable/hook.cache.json

@@ -39,9 +39,10 @@ J.run(`globalThis._corrida = (tipo, desdobra, passo) => {
   for(let v = 1; v <= 4; v++){ ate(L0 + v); serie.push(espalhado()); }
   const ordemDepois = R.carros.filter(s => s.estado === 0 && s !== ret).sort((a, b) => b.s - a.s).map(s => s.i).join(',');
   const ordemAntesSemRet = ordemAntes.split(',').filter(x => +x !== ret.i).join(',');
-  const verde = R.eventos.some(e => e.tipo === 'verde');
   const deficit1 = R.lider.s - ret.s;
   ate(L0 + 6);
+  /* o recolhimento sai no passo seguinte ao líder fechar a volta combinada: olha depois da janela */
+  const verde = R.eventos.some(e => e.tipo === 'verde' && R.sc && R.sc.fim && e.t >= R.sc.desde);
   return { serie: serie.map(x => Math.round(x)), ordemIgual: ordemAntesSemRet === ordemDepois, verde, deficit0: Math.round(deficit0), deficit1: Math.round(deficit1), L: Math.round(L) };
 };`);
 

@@ -345,6 +345,20 @@ hierarquia herdada se dilui com o tempo — em quarenta anos simulados, seis
 equipes diferentes têm o melhor carro. Nas categorias de base, a forma de cada
 estrutura muda de um ano para o outro.
 
+**A Fórmula 1 de cada carreira.** Até 2026 o grid é o real, e nada muda antes
+de 2030. A partir daí, todo ano há 12% de chance de uma equipe ser vendida e
+correr com outro nome e outra cor: Racing Bulls e Haas são as mais prováveis,
+depois Alpine e Williams. Red Bull, Ferrari, Mercedes e McLaren nunca são
+vendidas, e uma equipe que acabou de trocar de dono fica seis anos sem ser
+vendida de novo. O comprador é uma fábrica (Porsche, Lamborghini, Ford, BMW,
+Toyota...) ou um grupo privado (Hitech, Prema, Andretti...), e o dono novo
+investe no carro nos primeiros anos. Em 2030, 2034, 2038 e assim por diante há
+20% de chance de uma equipe nova entrar, que sofre nos dois primeiros anos, até
+o limite de 13 equipes (26 carros). Cada carreira tem a sua história, presa ao
+nome do piloto e ao ano de início: recarregar o jogo não muda nada. Se a sua
+equipe for vendida, você continua no mesmo carro com o nome novo. O começo da
+temporada e o jornal avisam as vendas e as estreias.
+
 Saves feitos antes do mundo existir abrem normalmente: o mundo nasce do último
 grid salvo, e quem estava nele continua.
 
@@ -824,11 +838,98 @@ treinos traz o que o piloto sente em cinco áreas (equilíbrio, retas, zebras,
 freadas, pneus) e a estimativa do engenheiro; ler o piloto e mexer nos ajustes
 certos aproxima do ideal. O número de saídas depende do simulador e do diretor
 técnico (menos duas se o carro foi cedido no primeiro treino). "Deixar com o
-engenheiro" usa as saídas que sobram com cautela (em média, de 74% para 92%);
-quem ajusta na mão pode chegar a 100%. Com 70% o acerto não ajuda nem
+engenheiro" usa as saídas que sobram com cautela (em média, de 74% para 92%).
+Ele só sabe o que o piloto contou e o que ele mesmo estimou, como você: não
+mexe no que o piloto mal sente e para quando acha que está bom, e quem ajusta
+na mão com cuidado chega a 100%. Com 70% o acerto não ajuda nem
 atrapalha; acima disso rende no sábado e no domingo, e o câmber errado gasta
 mais pneu. O acerto que correu fica guardado para a mesma pista no ano
 seguinte.
+
+### Manager 2.1: décadas de carreira
+
+A atualização veio do relato de um jogador que levou uma carreira de chefe de
+1950 a 2022 e foi campeão quase todo ano, de 1970 em diante. A auditoria, com
+a causa de cada problema, está em `MANAGER_BALANCE_AUDIT.md`. Em resumo:
+
+- **Lendas e recordes.** A carreira de chefe agora se encerra por vontade
+  própria ("Encerrar a carreira", na pré-temporada) e entra na galeria de
+  lendas numa seção própria, com temporadas, títulos de construtores e de
+  pilotos, vitórias, pódios, poles, pontos, equipes, categorias e reputação
+  final, tudo tirado das temporadas jogadas. Na tela do chefe, "Recordes"
+  mostra os números da carreira, por equipe e por categoria. Antes, a galeria
+  nem lia as carreiras de chefe, e só a venda, a falência ou a demissão as
+  gravavam.
+- **O carro tem fronteira.** Cada área do carro tem retorno decrescente perto
+  do melhor carro que existiu naquele ano (o da história, inclusive o da
+  própria equipe; depois de 2026, a melhor rival gerida). Dá para ter o melhor
+  carro, não um carro cinco pontos à frente de todos por décadas. As peças da
+  temporada seguem a mesma regra.
+- **O regulamento novo tem conceito.** Nos anos de regulamento novo da F1, o
+  carro nasce de um sorteio de conceito em torno do trabalho (diretor técnico e
+  verba guardada para o regulamento), com uma incerteza que diminui com um
+  staff melhor, mas nunca some. Uma equipe do meio pode acertar em cheio, e uma
+  grande pode errar.
+- **O mercado de pilotos tem contrato.** Quem a história mantém na mesma rival
+  no ano seguinte está sob contrato: tirar ele de lá é mais difícil e custa uma
+  rescisão paga à rival. Uma estrela não aceita dividir o box com outra, a não
+  ser como nº 1, e dar o nº 1 a quem chega derruba a moral de quem já estava.
+- **Dinheiro não é infinito.** O dono da equipe assumida cobre uma falência,
+  mas desconta a conta do aporte dos anos seguintes, e um segundo socorro em
+  menos de quatro anos custa o cargo. Gastar sempre no máximo deixou de ser a
+  melhor estratégia: nas carreiras simuladas, o chefe que gasta sem olhar o
+  caixa quebra várias vezes e é demitido.
+- **Moral com efeito.** A moral pesa na consistência (erro e batida), na
+  chance de renovar e no pedido de saída quando uma rival liga, sem mexer
+  quase nada na velocidade. A ficha do piloto mostra o que pesou: resultados
+  acima ou abaixo do carro, ordem de equipe, contrato, aumento, rebaixamento.
+- **Pilotos envelhecem do seu jeito.** Até o último ano que a história
+  registra, a nota é a da história. Depois disso (um Senna que continua depois
+  de 1994, ou qualquer um depois de 2026), o declínio é de cada um e cresce com
+  a idade, sem o teto de 9 pontos que deixava um Senna de 44 anos com 89.
+- **Academia com contrato.** Quem sobe da academia assina dois anos, com
+  salário de estreante da categoria (na base, como sempre, ninguém recebe) e
+  multa de rescisão.
+- **Staff com carreira.** O mercado tem elite de vez em quando (nada garante),
+  e o staff criado pelo jogo tem idade: o jovem evolui, o veterano perde um
+  pouco e se aposenta. Antes, ninguém do mercado passava de 82.
+- **Patrocínio pelo preço de hoje.** A renovação é negociada pelo valor de
+  mercado do ano (época, categoria e reputação de agora), com a satisfação
+  puxando para cima ou para baixo, e a reputação vale cada vez menos no alto.
+- **Teto de gastos explicado.** No primeiro ano com teto vem o aviso. O painel
+  das finanças, também no inverno, mostra o limite, o que já contou, o que fica
+  fora (salários dos pilotos, motor, academia), a projeção até o fim do ano,
+  o alerta perto do limite e as consequências. A punição de túnel por estouro
+  vale só no ano seguinte (antes, ficava para sempre).
+- **Peças planejáveis.** O projeto diz em que GP a peça pode estar no carro, a
+  tela mostra o que pedem as próximas cinco etapas e as horas de túnel que vão
+  expirar, e dá para fabricar às pressas (80% mais caro, com risco de unidade
+  com defeito). Projeto inacabado atravessa o inverno; com regulamento novo,
+  vira conhecimento da peça. Um túnel grande dá mais uma vaga de projeto.
+- **Classificação com leitura.** Antes de sair, a equipe lê a evolução da
+  pista, o tráfego, o risco de bandeira e o de chuva, com o erro de previsão
+  da época. É isso que decide a janela de saída.
+- **Treinos com cinco programas.** Além de classificação, equilíbrio e ritmo de
+  corrida, há a avaliação de pneus (o plano de pneus fica muito mais certo, sem
+  ritmo) e o teste de configuração (duas saídas a mais para o acerto).
+- **Comandos e automação.** Os comandos de corrida já tinham custo e ganho; o
+  que faltava era a falha do acaso, que agora cai mais em quem forçou o motor.
+  O automático usa o mesmo motor e as mesmas informações que você (o plano de
+  pneus estimado, o desgaste e as distâncias da torre), sem bônus nenhum. Ele
+  é bom porque decide a cada volta; um comando fixo a corrida inteira sai
+  sempre pior, e quem decide bem nos momentos certos chega no nível dele.
+- **Convites e sociedade.** O chefe contratado com nome no paddock recebe
+  convites no inverno, de equipes maiores e de outras categorias, e leva a
+  carreira junto. O dono pode recomprar a participação vendida, pela avaliação
+  da equipe e mais caro do que vendeu, e os sócios levam a parte deles do lucro
+  todo ano até a recompra.
+
+O que as carreiras simuladas mostram (`node testes/chefe-longo.js completo`):
+uma equipe grande, jogada com competência, ainda constrói dinastias (o recorde
+foi 15 títulos seguidos nas sementes testadas, contra cerca de 50 no relato),
+mas elas acabam: regulamento novo, contratos e dinheiro cobram. A equipe
+pequena raramente é campeã, o chefe que gasta sem olhar o caixa é demitido e
+quem joga ao acaso quase nunca ganha.
 
 ### Limitações conhecidas
 
@@ -866,6 +967,15 @@ seguinte.
 - No primeiro ano de uma equipe assumida, fundada ou promovida o carro é o
   daquela temporada: o plano de desenvolvimento só pode melhorar, não refaz
   o carro do zero no primeiro inverno.
+- Antes de 2027 as rivais não reagem às suas contratações nem ao seu domínio:
+  a força delas é a da história. O conceito do regulamento novo vale para a
+  sua equipe; as rivais seguem a história até 2026, e depois disso não há
+  regulamento novo inventado.
+- A moral não faz um piloto recusar ordem de equipe durante a corrida; ela
+  pesa na consistência, na renovação e no pedido de saída.
+- Os convites são só para o chefe contratado (quem é dono da equipe vende
+  antes de sair), e a classificação não tem jogos de pneus contados: os
+  compostos de cada época valem na corrida.
 
 ## O regulamento do fim de semana
 
@@ -992,6 +1102,23 @@ anacronismo nas escadas de 1950, 1960, 1975, 1985, 1995, 2005, 2015 e 2026, o
 grid real aparecendo na carreira, a escolha de campeonato de estreia e um save
 de antes do banco abrindo e seguindo sem piloto duplicado).
 
+O Manager 2.1 acrescentou cinco arquivos: `chefe-lendas.js` (galeria e
+recordes do chefe), `manager-21.js` (as correções e o equilíbrio, item por
+item, com medições de mesma semente), `chefe-longo.js` (onze cenários de
+carreira, de 1 a 73 temporadas; `node testes/chefe-longo.js completo` roda
+três sementes até o fim), `idiomas-manager21.js` (as telas novas nos três
+idiomas) e `compat-21.js` (um save gravado pela versão anterior, guardado em
+`testes/fixtures`, abre e segue).
+
+A atualização da comunidade (o que mudou está em `COMUNIDADE_AUDIT.md`)
+acrescentou um arquivo por fase:
+- `comunidade.js`: contratos, Fórmula E na chuva, rolagem, dificuldade e idade;
+- `comunidade2.js`: campeonato ao vivo, setores, clima, corrida avulsa e som;
+- `comunidade3.js`: ficha do piloto, foco do ano, carro, rumo do desenvolvimento, lesão e rivais;
+- `comunidade4.js`: dinheiro do piloto, patrocínio por país e instalações do chefe;
+- `comunidade5.js`: largada com um toque, piloto que vira chefe e interface;
+- `fase6.js`: dois saves gravados antes dessas mudanças, uma carreira longa com tudo ligado e as fórmulas. Mesma semente e piloto melhor somam mais; mesma semente e mesmas escolhas dão a mesma temporada.
+
 Também conferem a porta da categoria principal (campeão da F2 sem vaga, grid
 todo contratado, rápido promovido, campeão tardio contra jovem excepcional,
 reserva e testes sem promoção garantida, substituição de titular machucado e
@@ -1107,19 +1234,37 @@ cada versão com o ano em que entrou em uso) vêm do
 com a cópia da licença em `ferramentas/terceiros/f1c`. A escala é ajustada ao
 comprimento oficial e o sentido de corrida foi conferido.
 
-Outros 127 traçados (149 circuitos do jogo, contando os que aparecem com outro
+Outros 154 traçados (180 circuitos do jogo, contando os que aparecem com outro
 nome) vêm do **OpenStreetMap — © colaboradores do OpenStreetMap, dados sob a
 licença ODbL** ([openstreetmap.org/copyright](https://www.openstreetmap.org/copyright)).
-`ferramentas/pistas-osm.mjs` localiza cada circuito pela Wikipedia, baixa as
-vias de corrida pela API Overpass (pedidos em lote, com pausa e cache), monta o
-anel e só aceita o que confere com o comprimento oficial; o resultado fica em
-`dados/tracados.js` e o que deu certo ou não, em
-`ferramentas/pistas-osm/RELATORIO.md`. O mapa mostra a fonte e o que é
-aproximado (linha de chegada, boxes, sentido quando a via não indica mão única).
+`ferramentas/pistas-osm.mjs` faz o trabalho e grava o resultado em `dados/tracados.js`; o que deu certo ou não fica em
+`ferramentas/pistas-osm/RELATORIO.md`. Para cada circuito, a ferramenta:
+- acha o lugar pela Wikipedia; o kartódromo que ela não acha é procurado pelo nome no próprio mapa, em volta da cidade;
+- baixa as vias de corrida e as pistas de kart pela API Overpass, em lotes, com pausa e cache;
+- monta o anel e só aceita o que confere com o comprimento oficial;
+- se o anel não fecha, tenta de novo sem o sentido do mapa e depois juntando pontas a poucos metros.
 
-Os 98 circuitos que ainda não têm traçado real — ruas montadas para uma corrida,
-circuitos de estrada antigos e os kartódromos genéricos do jogo — correm num
-traçado esquemático, e o jogo diz por quê.
+O mapa do jogo mostra a fonte e o que é aproximado: linha de chegada, boxes e o sentido quando a via não indica mão única.
+
+Dezoito circuitos que o mapa não tem como pista ganham um **traçado aproximado** (`dados/tracados-aprox.js`, gerado por `ferramentas/pistas-aprox.mjs`), sempre no comprimento oficial:
+- estradas fechadas, passando pelas coordenadas dos lugares da volta: Reims, Pescara, Targa Florio, Mille Miglia, AVUS;
+- aeródromos, na forma de pista de pouso com retorno pela pista de táxi;
+- ovais que já não existem: as milhas de terra, Langhorne, Texas World, o oval de Jacarepaguá, o Coliseum.
+
+O jogo mostra esses traçados como aproximados.
+
+Os kartódromos municipais que o jogo inventa usam a forma de um kartódromo real como modelo, com o tamanho de um kartódromo local, e o mapa diz qual.
+
+Vinte e três circuitos de rua e de estrada que o mapa não tem como pista são **copiados dos mapas publicados na Wikimedia Commons**: Caesars Palace, Adelaide, Phoenix, Dallas, Valência, Aintree, Bremgarten, Rouen, Pau, Porto, Riverside, Ain-Diab, Yeongam, Meadowlands e os da Fórmula E (Tempelhof, EUR, Brooklyn, ExCeL, Marraquexe, Buenos Aires, Diriyah, São Paulo, Moscou). O resultado fica em `dados/tracados-svg.js`, e o relatório com o arquivo e a licença de cada um, em `ferramentas/pistas-svg/RELATORIO.md`. Cada mapa tem o seu autor e a sua licença, guardados no registro e mostrados na tela da corrida. A maioria é CC BY-SA, que vale também para esse arquivo de dados.
+
+`ferramentas/pistas-svg.mjs`:
+- acha o mapa no artigo do circuito na Wikipedia, ou procura o SVG na própria Commons;
+- lê o desenho e fica com o caminho fechado da pista;
+- escala para o comprimento oficial.
+
+Cinco mapas foram conferidos e recusados porque o caminho escolhido não era a pista (Toronto, Surfers Paradise, Belle Isle, Punta del Este, Modena). Eles continuam esquemáticos, em vez de mostrar um traçado errado.
+
+Os 23 circuitos que ainda correm num traçado esquemático não têm mapa vetorial publicado (só imagem) nem pista no OpenStreetMap: Nivelles, Chimay, Caen, Bari, Posillipo, Pedralbes, Monsanto, Vancouver, Nashville, Kristianstad, Salvador, Pampulha, Hong Kong, Paris, Tóquio, Miami, Jacarta, além dos cinco recusados e de dois kartódromos que o mapa não desenha bem. O jogo diz por quê.
 
 **Fotos e filme** (`assets/credits.json` tem título, autor, licença e página
 de cada um; `assets/eras` e `assets/cartoes` guardam versões reduzidas):
@@ -1425,9 +1570,10 @@ o canonical permanece único, pois não há URLs de idioma separadas.
 - [`robots.txt`](robots.txt) permite rastrear o conteúdo e referencia o sitemap.
 - [`sitemap.xml`](sitemap.xml) contém só a raiz oficial. Âncoras como `#apoie`,
   carreiras e telas internas não são páginas independentes.
-- A navegação por teclado inclui um atalho ao conteúdo. A preferência de
-  movimento reduzido do sistema é respeitada sem alterar a configuração salva
-  do jogador.
+- A navegação por teclado inclui um atalho ao conteúdo. As animações do menu
+  e do site vêm ligadas mesmo quando o sistema pede movimento reduzido; quem
+  preferir desliga no botão ao lado do tema ou no rodapé, e a escolha fica
+  guardada no aparelho.
 - O roadmap público da prévia de 20/10/2026 foi retirado em 21/10/2026: não há
   seção nem link de roadmap no menu ou no rodapé.
 

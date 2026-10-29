@@ -1,4 +1,5 @@
-/* A escolha explícita do jogador prevalece sobre o movimento reduzido do sistema.
+/* As animações vêm ligadas por padrão, mesmo com o movimento reduzido do sistema;
+   só a escolha explícita do jogador ("desligar") as desliga.
    Exercita os scripts reais, antes do primeiro desenho e depois dos cliques.
    Uso: node testes/movimento.js */
 'use strict';
@@ -18,7 +19,7 @@ function classes(element, ligado, message){
   eq(element.classList.contains('mov'), ligado, message + ': classe mov');
   eq(element.classList.contains('sem-mov'), !ligado, message + ': classe sem-mov');
 }
-function esperado(reduzido, pref){ return pref === '1' || (pref !== '0' && !reduzido); }
+function esperado(reduzido, pref){ return pref !== '0'; }
 
 eq(inicio.length > 0, true, 'script inicial encontrado no head');
 for(const reduzido of [false, true]) for(const pref of [undefined, '0', '1']){

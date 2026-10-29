@@ -141,8 +141,12 @@ function equipe(sk, ano, pos, seed){
     return { q100, base, exato, depois, usadas: st.usadas, saidas, qAntes, qDepois, fb1: st1.fb && st1.fb.length, est: st1.est }; })()`);
   ok(r.q100 === 100, 'no acerto ideal, 100%');
   ok(r.exato, 'a impressão do piloto, sem ruído, aponta exatamente o que mudar');
-  ok(r.depois > r.base && r.usadas >= 1 && r.usadas <= r.saidas && r.depois < 100, `o engenheiro usa ${r.usadas} das ${r.saidas} saídas e melhora o acerto sem chegar à perfeição (${r.base.toFixed(0)}% → ${r.depois.toFixed(0)}%)`);
+  ok(r.depois > r.base && r.usadas >= 1 && r.usadas <= r.saidas, `o engenheiro usa ${r.usadas} das ${r.saidas} saídas e melhora o acerto (${r.base.toFixed(0)}% → ${r.depois.toFixed(0)}%)`);
   ok(r.qDepois > r.qAntes, 'acerto melhor rende mais na classificação');
+  /* em muitos fins de semana: o engenheiro, sem ver o ideal, fica bom e quase nunca perfeito */
+  const m = JSON.parse(J.run(`(() => { const q = []; for(let i = 0; i < 12 && C.temporada.round < C.temporada.calendar.length; i++){ Acerto.auto(0); q.push(Acerto.qualidade(C.temporada, 0)); Chefe.correr(); }
+    return JSON.stringify({ media: q.reduce((a, b) => a + b, 0) / q.length, perfeitos: q.filter(x => x >= 99.9).length, n: q.length }); })()`));
+  ok(m.media >= 85 && m.media <= 97 && m.perfeitos < m.n / 2, `em ${m.n} fins de semana o engenheiro deixa o acerto em ${m.media.toFixed(1)}% na média (${m.perfeitos} perfeitos): bom, mas o ajuste fino fica para o jogador`);
   ok(r.fb1 === 5 && r.est != null, 'cada saída traz o que o piloto sente nas cinco áreas e a estimativa do engenheiro');
 }
 

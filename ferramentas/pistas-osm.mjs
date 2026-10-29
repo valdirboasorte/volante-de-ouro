@@ -129,7 +129,51 @@ function faixa(id, t){
 
 /* ── 1. o lugar e o comprimento oficial ── */
 const km = s => { const m = String(s).replace(/,/g, '.').match(/[\d.]+/); return m ? parseFloat(m[0]) : null; };
+/* o comprimento oficial quando o artigo dá o de outro traçado (o Bugatti não é a Sarthe) */
+const COMP = { fr_bug: 4185, br_bsb: 5476, us_atl: 4088, kr: 5615, br_car: 3000, br_vlc: 3443, br_mog: 3443 };
+/* folga no comprimento para quem tem variantes de traçado no mapa */
+const TOL = { us_atl: .2, kr: .2, br_bsb: .25, br_car: .3, br_vlc: .2, br_mog: .2 };
+/* o nome que o OSM usa, para achar o lugar quando a Wikipedia e o buscador não acham */
+const NOME_OSM = {
+  kt_zue: 'Zuera', kt_sal: 'Salbris', kt_oca: 'Ocala', kt_fra: 'Franciacorta', kt_cas2: 'Castelletto', kt_sie: 'Siena|Pista Siena',
+  kt_amp: 'Ampfing', kt_hah: 'Hahn', kt_ang: 'Angerville', kt_ost: 'Ostricourt', kt_var: 'Varennes', kt_row: 'Rowrah', kt_kim: 'Kimbolton',
+  kt_pit: 'Pittsburgh', kt_nor: 'Norway|New Castle', kt_dou: 'Dousman', kt_lem: 'Alain Prost', kt_int: 'Interlagos|Ayrton Senna',
+  kt_bir: 'Birigui', kt_ald: 'Aldeia', kb_bh: 'RMBH|Betim|Belo Horizonte', kt_ar_zar: 'Z.rate', kt_ar_evi: 'Evita', kt_ar_car: 'Caroya',
+  kt_ar_rio: 'R.o Cuarto', br_car: 'Caruaru', br_bsb: 'Nelson Piquet', br_vlc: 'Velo ?Citt', br_mog: 'Velo ?Citt', be_niv: 'Nivelles',
+  us_atl: 'Road Atlanta', kr: 'Korea International|Yeongam', fr_bug: 'Bugatti'
+};
+/* a cidade de cada um (o OSM acha o kartódromo em volta, num raio de 20 km) */
+const PERTO = {
+  kt_zue: [41.85, -0.79], kt_sal: [47.43, 2.05], kt_oca: [29.19, -82.14], kt_fra: [45.51, 9.99], kt_cas2: [45.07, 9.09], kt_sie: [43.27, 11.38],
+  kt_amp: [48.26, 12.41], kt_hah: [49.32, 12.18], kt_ang: [48.31, 2.01], kt_ost: [50.45, 3.02], kt_var: [46.31, 3.40], kt_row: [54.56, -3.45],
+  kt_kim: [52.30, -0.39], kt_pit: [40.85, -80.33], kt_nor: [40.78, -86.76], kt_dou: [43.01, -88.47], kt_lem: [47.95, 0.21], kt_int: [-23.70, -46.70],
+  kt_bir: [-21.28, -50.33], kt_ald: [-23.47, -46.88], kb_bh: [-19.95, -44.15], kt_ar_zar: [-34.10, -59.02], kt_ar_evi: [-34.72, -58.54],
+  kt_ar_car: [-31.02, -64.08], kt_ar_rio: [-33.12, -64.35], br_car: [-8.28, -35.98], br_bsb: [-15.77, -47.90], br_vlc: [-22.38, -46.95],
+  br_mog: [-22.38, -46.95], be_niv: [50.61, 4.33], fr_bug: [47.953, 0.213], us_atl: [34.15, -83.81], kr: [34.73, 126.42]
+};
+async function porNomeOSM(id, t){
+  const c = PERTO[id]; if(!c) return null;
+  const kart = kartId(id), rx = NOME_OSM[id] ? new RegExp(NOME_OSM[id], 'i') : null;
+  const q = `[out:json][timeout:60];(nwr(around:20000,${c[0]},${c[1]})["sport"~"karting|motor",i];way(around:20000,${c[0]},${c[1]})["highway"="raceway"];);out center tags 80;`;
+  const j = await overpass(q);
+  const d = e => Math.hypot(e.lat - c[0], (e.lon - c[1]) * Math.cos(c[0] * Math.PI / 180));
+  const els = (j.elements || []).map(e => ({ lat: e.lat != null ? e.lat : e.center && e.center.lat, lon: e.lon != null ? e.lon : e.center && e.center.lon,
+    nome: (e.tags && e.tags.name) || '', kart: !!(e.tags && /kart/i.test((e.tags.sport || '') + ' ' + (e.tags.name || ''))) })).filter(e => e.lat != null);
+  if(!els.length) return null;
+  const pelo = rx ? els.filter(e => rx.test(e.nome)) : [];
+  const tipo = kart ? els.filter(e => e.kart) : els.filter(e => !e.kart);
+  const e = (pelo.length ? (kart ? pelo.filter(x => x.kart).concat(pelo) : pelo) : tipo.sort((a, b) => d(a) - d(b)))[0];
+  if(!e) return null;
+  return { lat: e.lat, lon: e.lon, titulo: 'osm:' + (e.nome || t.circ).slice(0, 80), L: COMP[id] || null, via: 'osm-perto' };
+}
 async function lugar(id, t){
+  if(NOME_OSM[id] && (kartId(id) || COMP[id])){ const o = await porNomeOSM(id, t); if(o) return o; }
+  const r = await lugarBusca(id, t);
+  if(r && COMP[id]) r.L = COMP[id];
+  if(r) return r;
+  return porNomeOSM(id, t);
+}
+async function lugarBusca(id, t){
   const q = BUSCA[id] || `${t.circ} ${t.type === 'oval' ? 'Speedway' : kartId(id) ? 'kart' : 'circuit'}`;
   const langs = t.cc === 'BR' ? ['pt', 'en'] : ['en'];
   for(const lang of langs){
@@ -184,19 +228,20 @@ function metros(lat0, lon0){
   const c = Math.cos(lat0 * Math.PI / 180);
   return (lat, lon) => [(lon - lon0) * Math.PI / 180 * R0 * c, (lat - lat0) * Math.PI / 180 * R0];
 }
-function aneis(ways, alvo, kart, proj, faixaL){
+function aneis(ways, alvo, kart, proj, faixaL, junta){
   /* vias que não são a pista: boxes, acesso, área de serviço */
   const ruim = w => { const t = w.tags || {}; const n = (t.name || '') + ' ' + (t.ref || '');
     /* só o que é de fato pit lane ou acesso: "Paddock Hill Bend" é curva de Brands Hatch */
     return /\bpit\b|pit ?lane|pitlane|pit road|boxengasse|boxenstra|voie des stands|corsia box|drag ?strip|dragstrip|\bacesso\b|service road/i.test(n)
-      || /pit/.test(t.raceway || '') || t.service || t.area === 'yes'; };
+      || /pit/.test(t.raceway || '') || (t.service && t.service !== 'raceway') || t.area === 'yes'; };
   const ehKart = w => { const t = w.tags || {}; return t.sport === 'karting' || /kart/i.test(t.name || ''); };
   let usar = ways.filter(w => !ruim(w));
-  if(kart){ const k = usar.filter(ehKart); if(k.length) usar = k; }
-  else usar = usar.filter(w => !ehKart(w));
+  /* kartódromo: qualquer via serve e o tamanho decide (o de Franciacorta está marcado como
+     automobilismo, e o marcado como kart ali é a pista mirim de 346 m) */
+  if(!kart) usar = usar.filter(w => !ehKart(w));
   /* nós compartilhados viram cruzamentos (pela coordenada: vale para vias e
      para os trechos de uma relação de rota, que vêm sem o número do nó) */
-  const nk = g => g.lat.toFixed(6) + ',' + g.lon.toFixed(6);
+  const nk = junta ? (g => g.lat.toFixed(4) + ',' + g.lon.toFixed(4)) : (g => g.lat.toFixed(6) + ',' + g.lon.toFixed(6));
   usar.forEach(w => { w.chaves = w.geometry.map(nk); });
   const uso = new Map();
   usar.forEach(w => w.chaves.forEach((nd, i) => uso.set(nd, (uso.get(nd) || 0) + (i === 0 || i === w.chaves.length - 1 ? 2 : 1))));
@@ -248,7 +293,8 @@ function redondeza(a){
   let A = 0; for(let i = 0; i < p.length; i++){ const q = p[(i + 1) % p.length]; A += p[i][0] * q[1] - q[0] * p[i][1]; }
   return 4 * Math.PI * Math.abs(A / 2) / (a.L * a.L);
 }
-function escolher(achados, alvo, faixaL, oval){
+function escolher(achados, alvo, faixaL, oval, tol){
+  tol = tol || .12;
   const bons = achados.filter(a => a.L >= faixaL[0] * .85);
   if(!bons.length) return null;
   /* num oval, o comprimento da Wikipedia muitas vezes é o do misto (Motegi, Daytona)
@@ -267,7 +313,7 @@ function escolher(achados, alvo, faixaL, oval){
   if(alvo){
     bons.sort((a, b) => Math.abs(a.L - alvo) - Math.abs(b.L - alvo));
     const m = bons[0];
-    return Math.abs(m.L - alvo) / alvo <= .12 ? Object.assign(m, { conf: 'comprimento oficial confere (' + Math.round(m.L) + ' m contra ' + Math.round(alvo) + ' m)' }) : null;
+    return Math.abs(m.L - alvo) / alvo <= tol ? Object.assign(m, { conf: 'comprimento oficial confere (' + Math.round(m.L) + ' m contra ' + Math.round(alvo) + ' m)' }) : null;
   }
   bons.sort((a, b) => b.L - a.L);
   const m = bons.find(a => a.L <= faixaL[1]);
@@ -330,7 +376,8 @@ const dist = (a, b) => { const c = Math.cos(a.lat * Math.PI / 180); return Math.
 const TAM = +process.env.GRUPO || 12;
 for(let k = 0; k < lista.length; k += TAM){
   const grupo = lista.slice(k, k + TAM);
-  const q = '[out:json][timeout:180];(' + grupo.map(id => `way(around:${Math.round(lugares[id].raio)},${lugares[id].lat},${lugares[id].lon})["highway"="raceway"];`).join('') + ');out body geom;';
+  const q = '[out:json][timeout:180];(' + grupo.map(id => `way(around:${Math.round(lugares[id].raio)},${lugares[id].lat},${lugares[id].lon})["highway"="raceway"];`
+    + (kartId(id) ? `way(around:${Math.round(lugares[id].raio)},${lugares[id].lat},${lugares[id].lon})["leisure"="track"]["sport"~"karting|motor"];` : '')).join('') + ');out body geom;';
   let els = [];
   try { els = ((await overpass(q)).elements || []).filter(e => e.type === 'way' && e.geometry); }
   catch(e){ console.log('grupo', k, 'falhou:', e.message); }
@@ -345,17 +392,29 @@ for(const id of lista){
     let ws = viasDe[id] || [];
     const proj = metros(lg.lat, lg.lon);
     let achados = ws.length ? aneis(ws, lg.L, kartId(id), proj, fx) : [];
-    let m = escolher(achados, lg.L, fx, t.type === 'oval'), via = 'vias de corrida';
+    let m = escolher(achados, lg.L, fx, t.type === 'oval', TOL[id]), via = 'vias de corrida';
+    /* um trecho com a mão única marcada ao contrário quebra o anel: tenta sem o sentido */
+    if(!m && ws.length){
+      const semMao = ws.map(w => Object.assign({}, w, { tags: Object.assign({}, w.tags, { oneway: 'no' }) }));
+      const a3 = aneis(semMao, lg.L, kartId(id), proj, fx), m3 = escolher(a3, lg.L, fx, t.type === 'oval', TOL[id]);
+      if(m3){ m = m3; achados = a3; via = 'vias de corrida, sem o sentido do mapa'; }
+      /* trechos que no mapa não se tocam por poucos metros: junta pontos a ~11 m */
+      if(!m){
+        const a4 = aneis(semMao, lg.L, kartId(id), proj, fx, true), m4 = escolher(a4, lg.L, fx, t.type === 'oval', TOL[id]);
+        if(m4){ m = m4; achados = a4; via = 'vias de corrida, juntando pontas a ~11 m'; }
+      }
+    }
     if(!m && process.env.ROTAS){
       const rs = await rotas(lg.lat, lg.lon, Math.max(lg.raio, 6000), chaveDe(BUSCA[id] || lg.titulo));
       if(rs.length){
         const a2 = aneis(rs, lg.L, false, proj, fx);
-        const m2 = escolher(a2, lg.L, fx, t.type === 'oval');
+        const m2 = escolher(a2, lg.L, fx, t.type === 'oval', TOL[id]);
         if(m2){ m = m2; ws = rs; achados = a2; via = 'relação de rota'; }
       }
     }
     if(!ws.length){ log.push([id, t.circ, `sem vias de corrida no OSM perto de ${lg.titulo}`]); console.log(id, '— sem vias'); continue; }
-    if(!m){ log.push([id, t.circ, `${ws.length} vias, ${achados.length} anéis, nenhum confere${lg.L ? ' com ' + Math.round(lg.L) + ' m' : ''} (${lg.titulo})`]); console.log(id, '— sem anel'); continue; }
+    if(!m){ log.push([id, t.circ, `${ws.length} vias, ${achados.length} anéis, nenhum confere${lg.L ? ' com ' + Math.round(lg.L) + ' m' : ''} (${lg.titulo})`]);
+      console.log(id, '— sem anel', process.env.DEPURA ? [...new Set(achados.map(a => Math.round(a.L)))].sort((x, y) => Math.abs(x - (lg.L || 0)) - Math.abs(y - (lg.L || 0))).slice(0, 8).join(' ') : ''); continue; }
     /* sem mão única no anel, o sentido é suposição: oval anti-horário; o resto, horário */
     const comMao = m.cam.some(e => /yes|1|-1/.test(String(((ws.find(w => w.id === e.w) || {}).tags || {}).oneway || '')));
     const cod = codificar(m.cam);
@@ -371,7 +430,8 @@ for(const id of ids){
   const al = ALIAS[id];
   if(!al) continue;
   const t = TRACKS[id];
-  if(PISTAS_REAIS[al] || (saida[al] && !saida[al].alias)){ saida[id] = { alias: al }; log.push([id, t.circ, 'mesmo circuito de ' + al]); }
+  /* apelido de apelido vale: o jogo segue a corrente (Velo Città → Mogi Guaçu → Velocitta) */
+  if(PISTAS_REAIS[al] || saida[al]){ saida[id] = { alias: al }; log.push([id, t.circ, 'mesmo circuito de ' + al]); }
   else log.push([id, t.circ, 'mesmo circuito de ' + al + ', que ainda não tem traçado']);
 }
 const ok = Object.keys(saida).filter(k => saida[k] && !saida[k].alias).length, al = Object.keys(saida).filter(k => saida[k] && saida[k].alias).length;

@@ -75,5 +75,5 @@ Tests run in Node against a fake DOM (`node testes/rodar.js`).
 ## Accessibility & Inclusion
 
 - Portuguese, English, Spanish and Japanese.
-- Animations follow the game's own motion switch and the reduced-motion setting.
+- Animations are on by default (even with the system's reduced-motion setting) and follow the game's own motion switch.
 - Text is never conveyed only by colour, for example tyre compounds carry letters.

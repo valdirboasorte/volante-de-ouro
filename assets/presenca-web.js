@@ -1,4 +1,4 @@
-/* Segue o sistema sem substituir a escolha explícita de animações no site. */
+/* Quando a preferência do sistema muda, reaplica a escolha do jogador (as animações vêm ligadas). */
 (function(){
   'use strict';
   function init(){

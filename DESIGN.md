@@ -312,7 +312,7 @@ Bandeira e GP em título condensado, o traçado real do circuito em traço `tint
 - **Do** marcar o que é do jogador com a cor da equipe e a seleção e o destaque com `tinta`.
 - **Do** creditar na tela toda foto do Commons (autor, licença, link) e cair no monograma na cor da equipe ou na foto da era quando não houver foto livre.
 - **Do** usar algarismos tabulares em todo número comparável.
-- **Do** manter as transições curtas e com `--ease-out` (cor em 150ms, toque em 120ms com `scale(.97)`), com hover só em `(hover:hover) and (pointer:fine)`, e desligá-las com a chave de movimento do jogo (`.sem-mov`) e com o movimento reduzido.
+- **Do** manter as transições curtas e com `--ease-out` (cor em 150ms, toque em 120ms com `scale(.97)`), com hover só em `(hover:hover) and (pointer:fine)`, e desligá-las com a chave de movimento do jogo (`.sem-mov`). Elas vêm ligadas por padrão, mesmo com o movimento reduzido do sistema; a chave do jogo é quem desliga.
 
 ### Don't:
 - **Don't** usar vidro, desfoque de fundo ou visual 3D; o dono rejeitou.

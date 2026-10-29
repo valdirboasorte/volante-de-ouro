@@ -71,6 +71,10 @@ function carregar(opts){
   if(!opts.semHistorico && fs.existsSync(FOTARQ)) vm.runInContext(fs.readFileSync(FOTARQ, 'utf8'), ctx, { filename:'fotos.js' });
   const TRACARQ = require('path').join(__dirname, '..', 'dados', 'tracados.js');
   if(!opts.semHistorico && fs.existsSync(TRACARQ)) vm.runInContext(fs.readFileSync(TRACARQ, 'utf8'), ctx, { filename:'tracados.js' });
+  const APROXARQ = require('path').join(__dirname, '..', 'dados', 'tracados-aprox.js');
+  if(!opts.semHistorico && fs.existsSync(APROXARQ)) vm.runInContext(fs.readFileSync(APROXARQ, 'utf8'), ctx, { filename:'tracados-aprox.js' });
+  const SVGARQ = require('path').join(__dirname, '..', 'dados', 'tracados-svg.js');
+  if(!opts.semHistorico && fs.existsSync(SVGARQ)) vm.runInContext(fs.readFileSync(SVGARQ, 'utf8'), ctx, { filename:'tracados-svg.js' });
   if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
