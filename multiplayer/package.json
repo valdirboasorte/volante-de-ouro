@@ -6,7 +6,8 @@
   "scripts": {
     "motor": "node ferramentas/gerar-motor.mjs",
     "dev": "node ferramentas/gerar-motor.mjs && wrangler dev --port 8787 --ip 127.0.0.1",
-    "testes": "node testes/rodar.mjs"
+    "testes": "node testes/rodar.mjs",
+    "publicar": "node ferramentas/gerar-motor.mjs && wrangler deploy -c wrangler.producao.jsonc"
   },
   "devDependencies": {
     "wrangler": "4.156.0"

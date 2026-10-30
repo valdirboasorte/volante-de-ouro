@@ -11,7 +11,13 @@
    jogador recebe só a regras.vista dele. Regra de ouro daqui: um await que não é de
    storage (criptografia, por exemplo) NÃO segura as outras chamadas da sala, então nunca
    fica entre conferir uma condição e ocupar/mudar o estado; muda-se tudo de forma
-   síncrona e só então se espera o storage. */
+   síncrona e só então se espera o storage.
+
+   Corridas ao vivo (Fase 5, corrida-mp.js): quando os dois ficam prontos numa rodada que tem
+   corrida com humano, a sala prepara as corridas (o processamento numa cópia do mundo, que só
+   recolhe a entrada de cada corrida), passa para 'corrida' e roda cada uma no relógio da sala,
+   com as ordens dos jogadores. Quando todas chegam ao fim, a rodada é processada de verdade com
+   as chegadas guardadas. Uma sala com config.aoVivo === false corre tudo pelo caminho rápido. */
 import { DurableObject } from 'cloudflare:workers';
 import { VERSAO_JOGO, criarMotor } from './gerado/motor-jogo.js';
 import { ambienteFalso } from './pagina-falsa.js';
@@ -19,6 +25,7 @@ import { regrasTeste } from './regras-teste.js';
 import { criarRegrasChefe } from './regras-chefe.js';
 import { criarRegrasPiloto } from './regras-piloto.js';
 import { criarRnd } from './aleatorio.js';
+import { ligarCorridas, desligarCorridas, Corrida, LARGADA_MS } from './corrida-mp.js';
 
 const MAX_JOGADORES = 2;              // pensado para crescer: nada abaixo assume 2
 const MAX_NOME = 24;
@@ -42,6 +49,12 @@ const ESPERA_TENTATIVA_MS = 1500;     // nova tentativa depois de uma falha no p
 const ESPERA_TETO_MS = 600000;        // e no máximo 10 min entre tentativas
 const ESPERA_RECUPERAR_MS = 300;      // processamento que ficou pendente quando a sala acordou
 const FALHAS_AVISO = 5;
+const TIQUE_MS = 100;                 // o relógio da corrida ao vivo
+const MARCA_MS = 200;                 // o andamento (passo liberado) para as telas
+const SOMA_MS = 2000;                 // a conferência do estado
+const SALVAR_MS = 2000;               // o passo da corrida guardado, para refazer depois de um reinício
+const VIGIA_MS = 10000;               // o alarme que retoma a corrida se a sala reiniciar
+const FORA_MS = 15000;                // desconectado por mais que isso, a equipe assume as paradas dele
 
 const enc = new TextEncoder();
 
@@ -91,13 +104,16 @@ export class Sala extends DurableObject {
     this.regrasPiloto = null;
     this.falharProximo = false;       // só no desenvolvimento: a próxima rodada falha uma vez
     this.limites = new Map();         // slot -> { ini, n, violacoes }; some ao hibernar, sem problema
+    this.corridas = null;             // as corridas ao vivo da rodada (chave -> Corrida), só em memória
+    this.relogio = null;
+    this.tiqueando = false;
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('{"t":"ping"}', '{"t":"pong"}'));
     ctx.blockConcurrencyWhile(async () => {
       const guardado = await ctx.storage.get(['sala', 'mundo']);
       this.sala = guardado.get('sala') || null;
       this.mundo = guardado.get('mundo') || null;
       /* a sala caiu (ou foi reiniciada) no meio de um processamento: agenda para terminar */
-      if(this.sala && this.sala.partida && this.sala.partida.estado === 'processing')
+      if(this.sala && this.sala.partida && (this.sala.partida.estado === 'processing' || this.sala.partida.estado === 'corrida'))
         await ctx.storage.setAlarm(Date.now() + ESPERA_RECUPERAR_MS);
     });
   }
@@ -271,6 +287,7 @@ export class Sala extends DurableObject {
     await this.salvar();
     this.enviar(servidor, { t: 'estado', v: this.sala.v, voce: { slot: jogador.slot }, sala: this.vista() });
     this.enviarVista(servidor, jogador.slot);
+    this.enviarCorridaInicio(servidor);
     this.difundir({ t: 'jogadores', v: this.sala.v, jogadores: this.vista().jogadores });
     return new Response(null, { status: 101, webSocket: cliente, headers: { 'Sec-WebSocket-Protocol': PROTOCOLO } });
   }
@@ -321,6 +338,9 @@ export class Sala extends DurableObject {
     if(msg.t === 'iniciar') return this.iniciar(ws, slot, id);
     if(msg.t === 'acao') return this.acao(ws, slot, msg, id);
     if(msg.t === 'pronto') return this.pronto(ws, slot, msg, id);
+    if(msg.t === 'corrida') return this.ordemCorrida(ws, slot, msg, id);
+    if(msg.t === 'velocidade') return this.velocidadeCorrida(ws, slot, msg, id);
+    if(msg.t === 'corridaSync'){ this.enviarCorridaInicio(ws); return this.enviar(ws, { t: 'ok', id }); }
     if(msg.t === '__falhar' && this.env.DESENVOLVIMENTO === '1'){
       this.falharProximo = true;      // só no desenvolvimento: a próxima rodada falha uma vez
       return this.enviar(ws, { t: 'ok', id });
@@ -371,7 +391,7 @@ export class Sala extends DurableObject {
     s.acoesVistas = s.acoesVistas || [];
     const vista = id === undefined ? null : s.acoesVistas.find(a => a.chave === chave && a.conteudo === conteudo);
     if(vista) return this.enviar(ws, vista.resposta);
-    if(p.estado === 'processing') return this.erro(ws, 'processando', id);
+    if(p.estado === 'processing' || p.estado === 'corrida') return this.erro(ws, 'processando', id);
     if(msg.rodada !== p.rodada) return this.erro(ws, 'rodada', id);
     if(p.prontos[slot]) return this.erro(ws, 'pronto', id);
     const def = typeof msg.tipo === 'string' && Object.hasOwn(regras.acoes, msg.tipo) ? regras.acoes[msg.tipo] : null;
@@ -407,7 +427,7 @@ export class Sala extends DurableObject {
   async pronto(ws, slot, msg, id){
     const s = this.sala, p = s.partida;
     if(!p) return this.erro(ws, 'estado', id);
-    if(p.estado === 'processing') return this.erro(ws, 'processando', id);
+    if(p.estado === 'processing' || p.estado === 'corrida') return this.erro(ws, 'processando', id);
     if(msg.rodada !== p.rodada) return this.erro(ws, 'rodada', id);
     if(typeof msg.pronto !== 'boolean') return this.erro(ws, 'dados', id);
     if(!!p.prontos[slot] === msg.pronto) return this.enviar(ws, { t: 'ok', id });   // nada mudou
@@ -440,10 +460,23 @@ export class Sala extends DurableObject {
     if(!p || p.estado !== 'processing') return;
     const N = p.rodada;
     const regras = this.regrasDe(p.regras);
+    const aoVivo = regras.nome !== 'teste' && this.aoVivo();
     let r;
     try{
       if(this.falharProximo){ this.falharProximo = false; throw new Error('falha de teste'); }
-      r = regras.processar(structuredClone(this.mundo), N, criarRnd(s.codigo, N));
+      if(aoVivo && !p.corridaPronta){
+        const x = this.comCorridas(regras, N, 'preparar');
+        if(x.ctl.defs.length) return await this.comecarCorrida(x.ctl.defs, N);
+        /* sem corrida com humano nesta rodada: o que saiu da preparação já é a rodada */
+        r = x.r;
+      }
+      else if(aoVivo){
+        const x = this.comCorridas(regras, N, 'concluir', p.corridaPronta ? await this.resultadosDaCorrida() : {});
+        r = x.r;
+        if(x.ctl.divergencias.length || x.ctl.faltas.length)
+          log('erro', s.codigo, { motivo: 'corrida', rodada: N, divergencias: x.ctl.divergencias, faltas: x.ctl.faltas });
+      }
+      else r = regras.processar(structuredClone(this.mundo), N, criarRnd(s.codigo, N));
     }catch(e){
       p.falhas++;
       log(p.falhas > FALHAS_AVISO ? 'erro' : 'falha', s.codigo, { motivo: 'processamento', rodada: N, falhas: p.falhas, erro: textoErro(e) });
@@ -460,8 +493,12 @@ export class Sala extends DurableObject {
     for(const j of s.jogadores) p.prontos[j.slot] = false;
     p.estado = 'planning';
     p.falhas = 0;
+    const tinhaCorrida = !!p.corridaPronta;
+    delete p.corridaPronta; delete p.corrida;
+    this.corridas = null;
     s.v++;
     await this.salvarTudo();
+    if(tinhaCorrida) await this.ctx.storage.delete(['corridaDefs', 'corridaEst']);
     log('processada', s.codigo, { rodada: N });
     this.difundir({ t: 'rodada', v: s.v, rodada: N, resultado: r.resultado });
     this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
@@ -469,7 +506,183 @@ export class Sala extends DurableObject {
   }
 
   async alarm(){
+    const p = this.sala && this.sala.partida;
+    if(p && p.estado === 'corrida'){
+      if(!this.relogio || !this.corridas) await this.retomarCorrida();
+      else await this.ctx.storage.setAlarm(Date.now() + VIGIA_MS);
+      return;
+    }
     await this.processar();
+  }
+
+  /* ── corridas ao vivo (Fase 5) ── */
+  aoVivo(){ const c = this.sala.config; return !c || c.aoVivo !== false; }
+
+  /* a rodada processada com os ganchos das corridas: 'preparar' recolhe as corridas (numa cópia do
+     mundo, descartada); 'concluir' usa as chegadas guardadas */
+  comCorridas(regras, N, modo, resultados){
+    const s = this.sala, J = this.motor();
+    const ctl = ligarCorridas(J, modo, resultados);
+    try{ return { ctl, r: regras.processar(structuredClone(this.mundo), N, criarRnd(s.codigo, N)) }; }
+    finally{ desligarCorridas(J); }
+  }
+
+  estadoCorrida(){ return { vel: this.corridaVel, corridas: [...this.corridas.values()].map(c => c.salvo()) }; }
+  publicoCorrida(agora){ return { t: 'corridaEstado', vel: this.corridaVel, corridas: [...this.corridas.values()].map(c => c.publico(agora)) }; }
+
+  async comecarCorrida(defs, N){
+    const s = this.sala, p = s.partida, J = this.motor(), agora = Date.now();
+    this.corridas = new Map();
+    for(const d of defs){ const c = new Corrida(J, d); c.prazo = agora + LARGADA_MS; this.corridas.set(d.chave, c); }
+    this.corridaVel = VELOCIDADES.includes(s.config && s.config.velocidade) ? s.config.velocidade : 8;
+    p.estado = 'corrida';
+    p.corrida = { rodada: N, n: defs.length };
+    p.falhas = 0;
+    s.v++;
+    await this.ctx.storage.put({ sala: s, corridaDefs: defs, corridaEst: this.estadoCorrida() });
+    log('corrida', s.codigo, { rodada: N, corridas: defs.length });
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+    for(const w of this.ctx.getWebSockets()) this.enviarCorridaInicio(w);
+    this.ligarRelogio();
+  }
+
+  /* depois de um reinício: a entrada e o registro refazem cada corrida até o passo guardado */
+  async retomarCorrida(){
+    const s = this.sala, p = s.partida;
+    const g = await this.ctx.storage.get(['corridaDefs', 'corridaEst']);
+    const defs = g.get('corridaDefs'), est = g.get('corridaEst');
+    if(!defs || !est){
+      /* sem a corrida guardada: a rodada segue pelo caminho rápido */
+      log('erro', s.codigo, { motivo: 'corrida', erro: 'sem estado para retomar' });
+      p.estado = 'processing'; p.corridaPronta = true;
+      await this.salvar();
+      return this.processar();
+    }
+    const J = this.motor(), agora = Date.now();
+    this.corridas = new Map();
+    this.corridaVel = est.vel || 8;
+    for(const d of defs){
+      const c = new Corrida(J, d, (est.corridas || []).find(x => x.chave === d.chave));
+      if(c.fase === 'largada' || c.fase === 'pergunta') c.prazo = Math.max(c.prazo, agora + 5000);
+      c.relogio = agora;
+      this.corridas.set(d.chave, c);
+    }
+    log('corridaRetomada', s.codigo, { rodada: p.rodada });
+    for(const w of this.ctx.getWebSockets()) this.enviarCorridaInicio(w);
+    this.ligarRelogio();
+  }
+
+  ligarRelogio(){
+    if(this.relogio) return;
+    this.ultMarca = 0; this.ultSoma = Date.now(); this.ultSalvo = Date.now();
+    this.relogio = setInterval(() => {
+      this.tique().catch(e => log('erro', this.sala && this.sala.codigo, { motivo: 'tique', erro: textoErro(e) }));
+    }, TIQUE_MS);
+    this.ctx.storage.setAlarm(Date.now() + VIGIA_MS);
+  }
+  desligarRelogio(){ if(this.relogio){ clearInterval(this.relogio); this.relogio = null; } }
+
+  /* desconectado há mais de FORA_MS: a equipe assume as paradas dele; de volta, devolve */
+  conferirAusentes(c, agora){
+    const novas = [];
+    for(const slot of c.def.slots){
+      const f = c.fora[slot] || (c.fora[slot] = { desde: null, aplicado: false });
+      if(this.conectado(slot)){
+        f.desde = null;
+        if(f.aplicado){ f.aplicado = false; c.meus(slot).forEach(i => { const e = c.ordemDaSala(i, { equipe: false }); if(e) novas.push(e); }); }
+      } else {
+        if(f.desde == null) f.desde = agora;
+        if(!f.aplicado && agora - f.desde > FORA_MS){ f.aplicado = true; c.meus(slot).forEach(i => { const e = c.ordemDaSala(i, { equipe: true }); if(e) novas.push(e); }); }
+      }
+    }
+    return novas;
+  }
+
+  async tique(){
+    if(this.tiqueando || !this.corridas) return;
+    this.tiqueando = true;
+    try{
+      const s = this.sala, p = s && s.partida, agora = Date.now();
+      if(!p || p.estado !== 'corrida'){ this.desligarRelogio(); return; }
+      let mudou = false;
+      for(const c of this.corridas.values()){
+        if(c.fase === 'fim') continue;
+        const novas = c.fase === 'correndo' ? this.conferirAusentes(c, agora) : [];
+        const mud = c.avancar(agora, this.corridaVel);
+        for(const e of novas.concat(mud.novas)) this.difundir({ t: 'corridaLog', k: c.def.chave, e });
+        if(novas.length || mud.novas.length || mud.fase) mudou = true;
+        if(mud.soma) c.ultimaSoma = mud.soma;
+      }
+      if(mudou || agora - this.ultMarca >= MARCA_MS){ this.ultMarca = agora; this.difundir(this.publicoCorrida(agora)); }
+      if(agora - this.ultSoma >= SOMA_MS){
+        this.ultSoma = agora;
+        for(const c of this.corridas.values()) if(c.ultimaSoma){ this.difundir(Object.assign({ t: 'corridaSoma', k: c.def.chave }, c.ultimaSoma)); c.ultimaSoma = null; }
+      }
+      const todas = [...this.corridas.values()].every(c => c.fase === 'fim');
+      if(mudou || todas || agora - this.ultSalvo >= SALVAR_MS){ this.ultSalvo = agora; await this.ctx.storage.put('corridaEst', this.estadoCorrida()); }
+      if(todas) await this.fimDasCorridas();
+    } finally { this.tiqueando = false; }
+  }
+
+  /* todas na bandeirada: a rodada é processada com as chegadas */
+  async fimDasCorridas(){
+    const s = this.sala, p = s.partida;
+    if(!p || p.estado !== 'corrida') return;
+    this.desligarRelogio();
+    p.estado = 'processing'; p.corridaPronta = true;
+    s.v++;
+    await this.ctx.storage.put({ sala: s, corridaEst: this.estadoCorrida() });
+    log('corridaFim', s.codigo, { rodada: p.rodada });
+    this.difundir({ t: 'corridaFim', rodada: p.rodada });
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+    await this.processar();
+  }
+
+  async resultadosDaCorrida(){
+    const g = await this.ctx.storage.get(['corridaDefs', 'corridaEst']);
+    const defs = g.get('corridaDefs') || [], est = g.get('corridaEst') || { corridas: [] }, out = {};
+    for(const d of defs){
+      const c = est.corridas.find(x => x.chave === d.chave);
+      out[d.chave] = { ent: d.ent, res: c ? c.res : null, notas: c ? c.notas : null };
+    }
+    return out;
+  }
+
+  enviarCorridaInicio(ws){
+    const p = this.sala && this.sala.partida;
+    if(!p || p.estado !== 'corrida' || !this.corridas) return;
+    const agora = Date.now();
+    this.enviar(ws, { t: 'corridaInicio', rodada: p.rodada, vel: this.corridaVel, corridas: [...this.corridas.values()].map(c => c.inicio(agora)) });
+  }
+
+  /* uma ordem do jogador para a corrida: registrada e mandada a todos antes de qualquer passo novo */
+  async ordemCorrida(ws, slot, msg, id){
+    const p = this.sala.partida;
+    if(!p || p.estado !== 'corrida' || !this.corridas) return this.erro(ws, 'estado', id);
+    const c = typeof msg.k === 'string' ? this.corridas.get(msg.k) : null;
+    if(!c) return this.erro(ws, 'corrida', id);
+    if(typeof msg.tipo !== 'string') return this.erro(ws, 'tipo', id);
+    const agora = Date.now();
+    let r;
+    try{ r = c.ordem(slot, msg.tipo, msg.dados, agora); }
+    catch(e){ log('erro', this.sala.codigo, { motivo: 'ordem', erro: textoErro(e) }); return this.erro(ws, 'interno', id); }
+    if(r.erro) return this.erro(ws, r.erro, id);
+    if(r.e) this.difundir({ t: 'corridaLog', k: c.def.chave, e: r.e });
+    this.enviar(ws, { t: 'ok', id, resultado: r.e ? { n: r.e.n, passo: r.e.passo } : null });
+    this.difundir(this.publicoCorrida(agora));
+    await this.ctx.storage.put('corridaEst', this.estadoCorrida());
+  }
+
+  /* a velocidade da transmissão: qualquer um que está correndo muda para todos (não muda o resultado) */
+  async velocidadeCorrida(ws, slot, msg, id){
+    const p = this.sala.partida;
+    if(!p || p.estado !== 'corrida' || !this.corridas) return this.erro(ws, 'estado', id);
+    if(![...this.corridas.values()].some(c => c.def.slots.map(String).includes(String(slot)))) return this.erro(ws, 'corrida', id);
+    if(!VELOCIDADES.includes(msg.v)) return this.erro(ws, 'dados', id);
+    this.corridaVel = msg.v;
+    this.enviar(ws, { t: 'ok', id });
+    this.difundir(this.publicoCorrida(Date.now()));
+    await this.ctx.storage.put('corridaEst', this.estadoCorrida());
   }
 
   async configurar(ws, slot, msg, id){
@@ -482,10 +695,12 @@ export class Sala extends DurableObject {
          no lobby e validados pelo motor (o ano precisa ter equipes naquela série). Mudar um deles
          apaga as escolhas de equipe. */
       if(c.velocidade !== undefined && !VELOCIDADES.includes(c.velocidade)) return this.erro(ws, 'config', id);
+      if(c.aoVivo !== undefined && typeof c.aoVivo !== 'boolean') return this.erro(ws, 'config', id);
       if(c.sk !== undefined && !SERIES_CHEFE.includes(c.sk)) return this.erro(ws, 'config', id);
       if(c.ano !== undefined && !(Number.isInteger(c.ano) && c.ano >= 1900 && c.ano <= 2100)) return this.erro(ws, 'config', id);
       const novo = Object.assign({}, s.config);
       if(c.velocidade !== undefined) novo.velocidade = c.velocidade;
+      if(c.aoVivo !== undefined) novo.aoVivo = c.aoVivo;
       if(c.sk !== undefined) novo.sk = c.sk;
       if(c.ano !== undefined) novo.ano = c.ano;
       if(novo.sk !== s.config.sk || novo.ano !== s.config.ano){
@@ -500,10 +715,12 @@ export class Sala extends DurableObject {
       /* sala de piloto: velocidade, série e ano, todos opcionais (só o que veio muda); série e ano só no
          lobby. O ano precisa ter uma era do jogo e existir na série. Os pilotos escolhidos ficam. */
       if(c.velocidade !== undefined && !VELOCIDADES.includes(c.velocidade)) return this.erro(ws, 'config', id);
+      if(c.aoVivo !== undefined && typeof c.aoVivo !== 'boolean') return this.erro(ws, 'config', id);
       if(c.serie !== undefined && !SERIES_PILOTO.includes(c.serie)) return this.erro(ws, 'config', id);
       if(c.ano !== undefined && !Number.isInteger(c.ano)) return this.erro(ws, 'config', id);
       const novo = Object.assign({}, s.config);
       if(c.velocidade !== undefined) novo.velocidade = c.velocidade;
+      if(c.aoVivo !== undefined) novo.aoVivo = c.aoVivo;
       if(c.serie !== undefined) novo.serie = c.serie;
       if(c.ano !== undefined) novo.ano = c.ano;
       if(novo.serie !== s.config.serie || novo.ano !== s.config.ano){

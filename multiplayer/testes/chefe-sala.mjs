@@ -72,7 +72,8 @@ export async function fase1({ base, versao, estado }){
   Object.assign(E, { codigo: A.codigo, fichaA: A.ficha, fichaB: B.ficha, nomeA, nomeB });
   checar('1 sala de chefe: configuração padrão (velocidade 8, f1, 2024, sem equipes) e regras ainda vazias',
     eq(A.sala && A.sala.config, { velocidade: 8, sk: 'f1', ano: 2024, equipes: {} }), A.sala && A.sala.config);
-  r = await pedir(a, { t: 'configurar', config: { ano: 2024 } });
+  /* as rodadas daqui correm pelo caminho rápido; a corrida ao vivo tem o teste dela (corrida-sala.mjs) */
+  r = await pedir(a, { t: 'configurar', config: { ano: 2024, aoVivo: false } });
   checar('1 o anfitrião configura o ano 2024 → ok (só o campo enviado muda)', r && r.t === 'ok', r);
   r = await pedir(b, { t: 'configurar', config: { ano: 2019 } });
   checar('1 o convidado configura → erro anfitriao', r && r.t === 'erro' && r.codigo === 'anfitriao', r);

@@ -216,7 +216,23 @@ export function corrida(J, mundo){
     /* sem ordem de equipe no multiplayer por enquanto: ela só valeria para um dos dois lados */
     dec: Object.assign({}, MA.dec, { ordem: 'livre' })
   });
-  const recA = em(FA, () => J.Chefe.correr({ montagem: M }));
+  /* corrida ao vivo (Fase 5): de quem é cada carro, com o ritmo e o pneu de largada que cada
+     equipe deixou combinados (o que UIC.largar põe na entrada da corrida) */
+  if(J.mpCorridas){
+    const MODO = { ataque: 'atacar', poupar: 'poupar' };
+    const modos = {}, pneus = {};
+    for(const [sea, Mx] of [[sA, MA], [sB, MB]]){
+      const fds = sea.fds && sea.fds.rd === sea.round && sea.fds.efeitos && sea.fds.efeitos.modo;
+      const esc = sea.pneusLargada && sea.pneusLargada.rd === sea.round ? sea.pneusLargada.carros || {} : {};
+      sea.field.filter(f => f.teamId === 'EU').forEach(f => {
+        modos[f.id] = MODO[(Mx.dec.estr || {})[f.carro]] || fds || 'normal';
+        if(esc[f.id]) pneus[f.id] = esc[f.id];
+      });
+    }
+    J.mpCorridas.contexto = { modo: 'chefe', donos: { EU: h, EU2: g }, modos, pneus };
+  }
+  let recA;
+  try { recA = em(FA, () => J.Chefe.correr({ montagem: M })); } finally { if(J.mpCorridas) J.mpCorridas.contexto = null; }
   J.C = FA; J.UI.limparFila();
   absorver(J, mundo, h, FA, { compartilhado: true });
   /* a mesma chegada, aplicada à economia e aos pilotos do convidado */

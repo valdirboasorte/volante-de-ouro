@@ -2697,7 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261030-piloto" defer></script>
+<script src="assets/multiplayer.js?v=20261031-aovivo" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -13643,6 +13643,8 @@ const Engine = {
   },
   runRace(sea, vivo, semMim){
     const M = (vivo && vivo.montagem) || Engine.montarCorrida(sea, semMim);
+    /* multiplayer: a corrida ao vivo do servidor devolve a chegada desta montagem */
+    if(!(vivo && vivo.finish) && Engine.mpCorrida){ const v = Engine.mpCorrida(sea, M); if(v) vivo = Object.assign({}, vivo, v); }
     const { rd, trk, era, wet, ajuste, grid, running, out, notas, perf } = M;
     let finish, flId = null, houveSC;
     /* com a chegada pronta (corrida ao vivo); só a montagem (multiplayer) corre pelo caminho de sempre */
@@ -17623,6 +17625,8 @@ const Gp = {
     /* ordem de equipe: "livre" ou "manter" (os seus carros não disputam entre si);
        o nº 1 recebe passagem sozinho, na simulação, quando o outro está logo à frente */
     R.ordemEq = 'livre';
+    /* multiplayer: duas equipes humanas na mesma corrida, cada uma com a sua ordem */
+    if(ent.mpEquipes) R.ordemEqDe = {};
     R.n1 = ent.n1 != null ? R.carros.findIndex(s => s.c.id === ent.n1 && s.c.ctrl) : -1;
     return R;
   },
@@ -17635,8 +17639,14 @@ const Gp = {
 
   /* ── comandos de quem está no muro ── */
   comandar(R, i, cmd){
-    if(cmd.ordemEq && (cmd.ordemEq === 'livre' || cmd.ordemEq === 'manter')){ R.ordemEq = cmd.ordemEq; R.evento('ordemEq', i, null, { k: cmd.ordemEq }); return; }
+    if(cmd.ordemEq && (cmd.ordemEq === 'livre' || cmd.ordemEq === 'manter')){
+      if(R.ordemEqDe){ const s0 = R.carros[i]; if(!s0 || !s0.c.ctrl) return; R.ordemEqDe[s0.c.eq] = cmd.ordemEq; }
+      else R.ordemEq = cmd.ordemEq;
+      R.evento('ordemEq', i, null, { k: cmd.ordemEq }); return;
+    }
     const s = R.carros[i]; if(!s || s.estado === 3 || s.estado === 4) return;
+    /* multiplayer: quem saiu da partida deixa as paradas com a equipe */
+    if(cmd.equipe !== undefined && s.c.ctrl) s.equipeDecide = !!cmd.equipe;
     if(cmd.modo && Gp.MODOS[cmd.modo] && Gp.modosDe(R).indexOf(cmd.modo) >= 0){ s.modo = cmd.modo; s.auto = false; if(s.modosUsados) s.modosUsados.add(cmd.modo); }
     if(cmd.trato && Gp.TRATO[cmd.trato] && s.trato){ s.trato = cmd.trato; s.auto = false; }
     if(cmd.mistura && Gp.MISTURA[cmd.mistura] && s.mistura && R.regras.energia){ s.mistura = cmd.mistura; s.auto = false; }
@@ -17649,7 +17659,7 @@ const Gp = {
     if(cmd.ceder != null){
       const j = R.carros[cmd.ceder], L = R.g.L;
       const perto = j && ((s.s - j.s) % L + L) % L < j.v * 1.2 + 12;
-      if(!j || j.estado !== 0 || s.estado !== 0 || R.frente[j.i] !== s || !perto) return 'longe';
+      if(!j || (R.ordemEqDe && j.c.eq !== s.c.eq) || j.estado !== 0 || s.estado !== 0 || R.frente[j.i] !== s || !perto) return 'longe';
       j.passe = { alvo: s, ate: R.t + 35, lado: 1, ordem: true }; j.ladoAlvo = 3.4; s.ladoAlvo = -1.4;
       R.ordemEquipe = { pelo: j.c.id, cedeu: s.c.id };
       R.evento('ordem', i, j.i);
@@ -17659,7 +17669,7 @@ const Gp = {
   podeCeder(R, i){
     const s = R.carros[i], L = R.g.L;
     if(!s || s.estado !== 0) return null;
-    return R.carros.find(j => j !== s && j.c.ctrl && j.estado === 0 && R.frente[j.i] === s && ((s.s - j.s) % L + L) % L < j.v * 1.2 + 12) || null;
+    return R.carros.find(j => j !== s && j.c.ctrl && (!R.ordemEqDe || j.c.eq === s.c.eq) && j.estado === 0 && R.frente[j.i] === s && ((s.s - j.s) % L + L) % L < j.v * 1.2 + 12) || null;
   },
   responder(R, k){
     const q = R.pergunta; if(!q) return;
@@ -17726,7 +17736,7 @@ const Gp = {
       else return;
       R.evento(R.sc.tipo === 'SC' ? 'sc' : 'vsc', por, null, { motivo });
       /* a equipe avisa na hora se vale aproveitar a neutralização */
-      if(!R.equipeDecide) st.forEach(s => { if(s.c.ctrl && s.estado === 0 && !s.parar) Gp.sugerir(R, s, Gp.quererParar(R, s, true)); });
+      st.forEach(s => { if(s.c.ctrl && !(R.equipeDecide || s.equipeDecide) && s.estado === 0 && !s.parar) Gp.sugerir(R, s, Gp.quererParar(R, s, true)); });
     };
     /* um acontecimento por volta do líder, no máximo */
     if(lider && lider.voltas !== R._evVolta && lider.voltas >= 1 && !R.bandeira){
@@ -17799,7 +17809,7 @@ const Gp = {
         } else if(!lapando && !s.passe && s.ladoAlvo !== 0 && !s.azulPor && s.estado === 0) s.ladoAlvo = 0;
         seguindo = !lapando && gap < 40;
         const zona = R.zonaDe[idx];
-        const manter = R.ordemEq === 'manter' && s.c.ctrl && a.c.ctrl;
+        const manter = (R.ordemEqDe ? R.ordemEqDe[s.c.eq] === 'manter' && s.c.eq === a.c.eq : R.ordemEq === 'manter') && s.c.ctrl && a.c.ctrl;
         if(!livre && !manter && !emSC && !emVSC && !sendoLapado && !lapando && zona >= 0 && s.ultimaZona !== zona + 1000 * s.voltas && a.estado === 0 && gap < s.v * .55 + 4){
           s.ultimaZona = zona + 1000 * s.voltas;
           const z = R.seco.zonas[zona];
@@ -17929,7 +17939,7 @@ const Gp = {
         s.ruido = 1 + (rnd() - .5) * .006 * (1.35 - (s.c.cons || 60) / 100);
         Gp.porVolta(R, s, emSC || emVSC);
         /* o rádio fala no começo da volta: dá tempo de decidir antes da entrada dos boxes */
-        if(s.c.ctrl && !R.equipeDecide && s.estado === 0 && !R.bandeira && !s.parar) Gp.sugerir(R, s, Gp.quererParar(R, s, emSC || emVSC));
+        if(s.c.ctrl && !(R.equipeDecide || s.equipeDecide) && s.estado === 0 && !R.bandeira && !s.parar) Gp.sugerir(R, s, Gp.quererParar(R, s, emSC || emVSC));
         if(s.estado === 0 || s.estado === 5){
           if(R.bandeira){ s.estado = 4; s.fim = tc; }
           else if(s.voltas >= R.N){ R.bandeira = { t: tc }; s.estado = 4; s.fim = tc; R.evento('bandeira', s.i); }
@@ -17996,9 +18006,9 @@ const Gp = {
       const pane = R.regras.energia.pane;
       const gasto = s.trato ? Math.max(1, ((Gp.MODOS[s.modo] || Gp.MODOS.normal).comb || 1) * ((Gp.MISTURA[s.mistura] || Gp.MISTURA.normal).comb || 1)) : 1;
       const precisa = (R.N - s.voltas) / R.N + (gasto - 1) / R.N;
-      s.economia = (!pane || s.auto || R.equipeDecide) && s.carga < precisa * (pane ? .97 : .985);
+      s.economia = (!pane || s.auto || R.equipeDecide || s.equipeDecide) && s.carga < precisa * (pane ? .97 : .985);
     }
-    if(s.ia && (s.auto || R.equipeDecide)) Gp.iaRitmo(R, s, neutro);
+    if(s.ia && (s.auto || R.equipeDecide || s.equipeDecide)) Gp.iaRitmo(R, s, neutro);
   },
   /* ── a IA de corrida ──
      Cada muro tem o seu jeito, fixo pela equipe: agressividade (atacar, ataque
@@ -18134,10 +18144,11 @@ const Gp = {
   /* A largada do jogador: a reação medida nas luzes vale para cada carro seu,
      somada ao jeito de largar de cada piloto. Soltar com as luzes acesas é
      queimar a largada: 5 s de punição. Só vale antes de a corrida andar. */
-  largar(R, reac, queimou){
+  largar(R, reac, queimou, so){
     if(!R || R.t > 0) return false;
     R.carros.forEach(s => {
-      if(!s.c.ctrl || s.estado !== 0) return;
+      /* so: no multiplayer, cada jogador larga só os carros dele */
+      if(!s.c.ctrl || s.estado !== 0 || (so && so.indexOf(s.i) < 0)) return;
       if(queimou){
         s.atraso = .02; s.reacao = 0; s.penal += 5;
         R.evento('punicao', s.i, null, { seg: 5, motivo: 'queimar a largada' });
@@ -18243,7 +18254,7 @@ const Gp = {
     const q = Gp.quererParar(R, s, neutro);
     /* o seu carro não para sozinho: a equipe chama no rádio e quem decide é você.
        Só quando você manda simular até o fim o muro assume as paradas. */
-    if(s.c.ctrl && !R.equipeDecide){ Gp.sugerir(R, s, q); return null; }
+    if(s.c.ctrl && !(R.equipeDecide || s.equipeDecide)){ Gp.sugerir(R, s, q); return null; }
     if(!q) return null;
     /* trocar para chuva ou para seco: cada equipe reage com o seu atraso */
     if((q.por === 'chuva' || q.por === 'seco') && R.rnd() >= (s.c.ctrl ? .8 : .55)) return null;
@@ -25957,6 +25968,8 @@ const Chefe = {
   },
   correr(vivo){
     const M = (vivo && vivo.montagem) || Chefe.montar();
+    /* multiplayer: a corrida ao vivo do servidor devolve a chegada desta montagem */
+    if(!(vivo && vivo.finish) && Chefe.mpCorrida){ const v = Chefe.mpCorrida(M); if(v) vivo = Object.assign({}, vivo, v); }
     const { sea, rd, trk, era, dec, wet, grid, running, out, notas, corre } = M;
     let finish, flId = null, houveSC, ordemUsada = null;
     /* com a chegada pronta (corrida ao vivo); só a montagem (multiplayer) corre pelo caminho de sempre */
@@ -32136,6 +32149,12 @@ UI.centralCorrida = (rec, aoFim, opc) => Central.abrir(rec, aoFim, opc);
 const AoVivo = {
   R: null, aoFim: null, opc: null, raf: 0, ult: 0, ultUI: 0, pausa: false, vel: 16, modoTorre: 'int', sel: null,
   VELS: [1, 2, 4, 8, 16, 32, 64],
+  /* multiplayer (Fase 5): numa corrida com um amigo (AoVivo.opc.mp, de assets/multiplayer.js) o
+     servidor roda a corrida oficial e esta tela roda a mesma, só até o passo que ele liberou. Os
+     carros "seus" são os do jogador desta tela (os do outro também são humanos no motor), e as
+     ordens vão para o servidor, que as devolve com o passo em que valem para todos. */
+  eMeu(s){ const mp = AoVivo.opc && AoVivo.opc.mp; return mp ? mp.meus.has(s.i) : !!s.c.ctrl; },
+  comandar(R, i, cmd){ const mp = AoVivo.opc && AoVivo.opc.mp; return mp ? mp.comandar(R, i, cmd) : Gp.comandar(R, i, cmd); },
 
   abrir(ent, opc, aoFim){
     /* sem tela (os testes rodam o jogo no Node): a mesma corrida, de uma vez até a bandeirada */
@@ -32150,6 +32169,8 @@ const AoVivo = {
     /* a velocidade automática: escolha guardada no aparelho; sem escolha, ligada no celular */
     let va = null; try{ va = Store.get('vdo_velauto'); }catch(e){}
     AoVivo.auto = va != null ? va === '1' : (typeof innerWidth === 'number' && innerWidth <= 820);
+    /* no multiplayer a velocidade é a da sala */
+    if(AoVivo.opc.mp){ AoVivo.auto = false; AoVivo.vel = AoVivo.opc.mp.vel(); }
     const ov = document.createElement('div');
     ov.id = 'aovivo'; ov.className = 'av-tela';
     ov.innerHTML = '<div class="av-carregando"><b>Grid formado</b><span>os carros saem para a volta de apresentação</span></div>';
@@ -32159,7 +32180,7 @@ const AoVivo = {
     addEventListener('keydown', AoVivo._tecla);
     setTimeout(() => {
       if(!el('aovivo')) return;
-      try{ AoVivo.R = Gp.criar(ent); }
+      try{ AoVivo.R = AoVivo.opc.R || Gp.criar(ent); }
       catch(e){ console.error(e); AoVivo.fechar(); return aoFim && aoFim(null); }
       AoVivo.montar();
       Som.motor(true);
@@ -32180,7 +32201,7 @@ const AoVivo = {
     for(let i = 0; i < g.n; i += 2) d += (i ? 'L' : 'M') + g.x[i].toFixed(1) + ' ' + (-g.y[i]).toFixed(1);
     d += 'Z';
     const chN = Pista.ponto(g, 0, 9), chS = Pista.ponto(g, 0, -9);
-    const meus = R.carros.filter(s => s.c.ctrl);
+    const meus = R.carros.filter(s => AoVivo.eMeu(s));
     const comp = R.regras.secos.concat(R.regras.chuva);
     const gestao = !!ent.gestao, energia = gestao && R.regras.energia;
     if(!AoVivo.cam || (AoVivo.cam.indexOf('i:') === 0 && !meus.some(s => 'i:' + s.i === AoVivo.cam))) AoVivo.cam = 'geral';
@@ -32249,8 +32270,8 @@ const AoVivo = {
           <path d="${d}" class="av-zebra" style="stroke-width:${(u * 3.4).toFixed(1)}"/>
           <path d="${d}" class="av-asfalto" style="stroke-width:${(u * 2.6).toFixed(1)}"/>
           <line x1="${chN.x.toFixed(1)}" y1="${(-chN.y).toFixed(1)}" x2="${chS.x.toFixed(1)}" y2="${(-chS.y).toFixed(1)}" class="av-chegada" style="stroke-width:${(u * .9).toFixed(1)}"/>
-          <g id="avCarros">${R.carros.map(s => `<g class="av-carro${s.c.ctrl ? ' meu' : ''}" data-i="${s.i}">
-            <circle r="${(u * (s.c.ctrl ? 1.55 : 1.2)).toFixed(1)}" fill="${esc(s.c.cor)}" stroke-width="${(u * .36).toFixed(1)}"/>
+          <g id="avCarros">${R.carros.map(s => `<g class="av-carro${AoVivo.eMeu(s) ? ' meu' : ''}" data-i="${s.i}">
+            <circle r="${(u * (AoVivo.eMeu(s) ? 1.55 : 1.2)).toFixed(1)}" fill="${esc(s.c.cor)}" stroke-width="${(u * .36).toFixed(1)}"/>
             <g class="av-rot" transform="translate(${(u * 2).toFixed(1)} ${(-u * 2).toFixed(1)})">
               <rect x="0" y="${(-u * 1.9).toFixed(1)}" width="${(u * 7.6).toFixed(1)}" height="${(u * 2.6).toFixed(1)}"/>
               <text x="${(u * .7).toFixed(1)}" y="${(-u * .1).toFixed(1)}" style="font-size:${(u * 1.9).toFixed(1)}px">${esc(Central.sigla(s.c.nome))}</text>
@@ -32292,8 +32313,13 @@ const AoVivo = {
         <div class="av-cartoes">${meus.map(cartao).join('') || '<p class="av-so">Você assiste: nenhum carro seu está na pista.</p>'}</div>
       </section>`;
     ov.querySelector('.av-torre-modo').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.modoTorre = b.dataset.m; ov.querySelectorAll('.av-torre-modo button').forEach(x => x.classList.toggle('on', x === b)); AoVivo.painel(); });
+    if(AoVivo.opc.mp){
+      const pl = el('avPlay'); if(pl) pl.style.display = 'none';
+      ov.querySelectorAll('.av-vel [data-v]').forEach(b => { if(b.dataset.v === 'auto' || +b.dataset.v > 16) b.hidden = true; });
+    }
     ov.querySelector('.av-vel').addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
+      if(AoVivo.opc.mp){ const v = +b.dataset.v; if(v) AoVivo.opc.mp.velocidade(v); return; }
       AoVivo.auto = b.dataset.v === 'auto';
       if(!AoVivo.auto) AoVivo.vel = +b.dataset.v;
       try{ Store.set('vdo_velauto', AoVivo.auto ? '1' : '0'); if(!AoVivo.auto) Store.set('vdo_velcorrida', String(AoVivo.vel)); }catch(x){}
@@ -32330,7 +32356,7 @@ const AoVivo = {
     }
     ov.querySelector('.av-cam').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; AoVivo.cam = b.dataset.cam; AoVivo.marcarCam(); });
     const oe = ov.querySelector('.av-ordemeq');
-    if(oe) oe.addEventListener('click', e => { const b = e.target.closest('[data-oe]'); if(!b || !meus[0]) return; Gp.comandar(R, meus[0].i, { ordemEq: b.dataset.oe }); AoVivo.cartoes(); });
+    if(oe) oe.addEventListener('click', e => { const b = e.target.closest('[data-oe]'); if(!b || !meus[0]) return; AoVivo.comandar(R, meus[0].i, { ordemEq: b.dataset.oe }); AoVivo.cartoes(); });
     el('avPlay').onclick = () => AoVivo.alternar();
     el('avPular').onclick = () => AoVivo.simularFim();
     ov.querySelectorAll('.av-cartao').forEach(c => c.addEventListener('click', e => {
@@ -32342,12 +32368,12 @@ const AoVivo = {
         ov.querySelectorAll('[data-rapida]').forEach(x => x.setAttribute('aria-expanded', AoVivo.rapida ? 'true' : 'false'));
         return;
       }
-      if(b.dataset.auto) Gp.comandar(R, i, { auto: true });
-      if(b.dataset.modo) Gp.comandar(R, i, { modo: b.dataset.modo });
-      if(b.dataset.trato) Gp.comandar(R, i, { trato: b.dataset.trato });
-      if(b.dataset.mistura) Gp.comandar(R, i, { mistura: b.dataset.mistura });
-      if(b.dataset.pit !== undefined) Gp.comandar(R, i, { parar: b.dataset.pit || null });
-      if(b.dataset.ceder !== undefined && Gp.comandar(R, i, { ceder: +b.dataset.ceder }) === 'longe') UI.toast('O companheiro precisa estar colado atrás para a ordem valer.');
+      if(b.dataset.auto) AoVivo.comandar(R, i, { auto: true });
+      if(b.dataset.modo) AoVivo.comandar(R, i, { modo: b.dataset.modo });
+      if(b.dataset.trato) AoVivo.comandar(R, i, { trato: b.dataset.trato });
+      if(b.dataset.mistura) AoVivo.comandar(R, i, { mistura: b.dataset.mistura });
+      if(b.dataset.pit !== undefined) AoVivo.comandar(R, i, { parar: b.dataset.pit || null });
+      if(b.dataset.ceder !== undefined && AoVivo.comandar(R, i, { ceder: +b.dataset.ceder }) === 'longe') UI.toast('O companheiro precisa estar colado atrás para a ordem valer.');
       AoVivo.cartoes();
     }));
     el('avLinhas').addEventListener('click', e => { const r = e.target.closest('[data-i]'); if(!r) return; AoVivo.sel = AoVivo.sel === +r.dataset.i ? null : +r.dataset.i; AoVivo.painel(); });
@@ -32362,12 +32388,14 @@ const AoVivo = {
     addEventListener('resize', AoVivo._medir);
     AoVivo.marcarCam();
     AoVivo.ult = performance.now();
-    AoVivo._largada = false;
-    if(R.t === 0 && meus.length && R.largadaJogador == null) AoVivo.luzes();
-    if(R.t === 0 && !R.eventos.some(e => e.tipo === 'pneuLargada')) R.carros.filter(s => s.c.ctrl).forEach(s => R.evento('pneuLargada', s.i, null, { c: s.pneu.c }));
+    /* no multiplayer a largada é do servidor: as luzes para quem ainda não reagiu, e espera os dois */
+    const mp = AoVivo.opc.mp;
+    AoVivo._largada = !!(mp && mp.esperandoLargada());
+    if(mp ? mp.mostrarLuzes(R) : (R.t === 0 && meus.length && R.largadaJogador == null)) AoVivo.luzes();
+    if(R.t === 0 && !R.eventos.some(e => e.tipo === 'pneuLargada')) R.carros.filter(s => AoVivo.eMeu(s)).forEach(s => R.evento('pneuLargada', s.i, null, { c: s.pneu.c }));
     AoVivo.painel(); AoVivo.cartoes();
     AoVivo.raf = requestAnimationFrame(AoVivo.quadro);
-    AoVivo._vis = () => { if(document.hidden && !AoVivo.pausa) AoVivo.alternar(); };
+    AoVivo._vis = () => { if(document.hidden && !AoVivo.pausa && !AoVivo.opc.mp) AoVivo.alternar(); };
     document.addEventListener('visibilitychange', AoVivo._vis);
   },
   /* A velocidade automática corre a 16× e desacelera nos momentos em que há o que
@@ -32384,16 +32412,17 @@ const AoVivo = {
   mapaVisivel(){ return !AoVivo.chefeMovel() || AoVivo.aba === 'circuito' || (AoVivo.aba === 'corrida' && AoVivo.mini); },
   momento(){
     const R = AoVivo.R; if(!R) return null;
-    const meus = R.carros.filter(s => s.c.ctrl && s.estado !== 3 && s.estado !== 4);
+    const meus = R.carros.filter(s => AoVivo.eMeu(s) && s.estado !== 3 && s.estado !== 4);
     if(meus.some(s => s.sugestao && s.estado === 0 && !s.parar && !R.bandeira)) return 'box';
     if(meus.some(s => s.estado === 1 || s.estado === 2 || s.estado === 5)) return 'boxes';
     const rec = R.eventos.slice(-12).filter(e => R.t - e.t < 25);
     if(rec.some(e => e.tipo === 'sc' || e.tipo === 'vsc' || e.tipo === 'chuva' || e.tipo === 'parou')) return 'pista';
-    if(rec.some(e => e.a != null && R.carros[e.a] && R.carros[e.a].c.ctrl && /batida|quebra|furo|toque|falha|punicao|lenta/.test(e.tipo))) return 'seu';
+    if(rec.some(e => e.a != null && R.carros[e.a] && AoVivo.eMeu(R.carros[e.a]) && /batida|quebra|furo|toque|falha|punicao|lenta/.test(e.tipo))) return 'seu';
     if(R.lider && R.lider.voltas >= R.N - 1) return 'fim';
     return null;
   },
   velAgora(){
+    if(AoVivo.opc && AoVivo.opc.mp) return AoVivo.opc.mp.vel();
     if(!AoVivo.auto) return AoVivo.vel;
     const m = AoVivo.momento();
     return m === 'box' || m === 'seu' ? 2 : m ? 4 : AoVivo.VEL_AUTO;
@@ -32437,12 +32466,19 @@ const AoVivo = {
        carros são desenhados entre os dois últimos passos, então 1× é tempo
        real e continua liso. A tela só lê a corrida: em qualquer velocidade,
        a mesma semente e as mesmas ordens dão o mesmo resultado. */
+    /* multiplayer: as ordens que valem no passo em que a corrida está (rádio, largada, pular) */
+    const mp = AoVivo.opc && AoVivo.opc.mp;
+    if(mp) mp.quadro(R);
     if(!AoVivo.pausa && !AoVivo._largada && !R.pergunta && !R.fim){
       AoVivo.alvo = (AoVivo.alvo == null ? R.t : AoVivo.alvo) + dt * AoVivo.velAgora();
+      /* e a tela só anda até o passo que o servidor liberou */
+      if(mp) AoVivo.alvo = mp.limitar(AoVivo.alvo);
       let guarda = 0;
       while(R.t < AoVivo.alvo && !R.fim && !R.pergunta && guarda++ < 200000){
+        if(mp && !mp.antes(R)) break;
         for(const c of R.carros){ c.sAnt = c.s; c.ladoAnt = c.lado; }
         Gp.passo(R);
+        if(mp) mp.depois(R);
       }
     } else AoVivo.alvo = null;
     if(AoVivo.mapaVisivel()) AoVivo.mover(dt);
@@ -32468,7 +32504,7 @@ const AoVivo = {
       const p = Pista.ponto(g, sv, lv * 1.6 + (s.estado === 1 || s.estado === 2 || s.estado === 5 ? g.ladoBox * u * 1.6 : 0));
       onde[s.i] = p;
       n.setAttribute('transform', `translate(${p.x.toFixed(1)} ${(-p.y).toFixed(1)}) scale(${k.toFixed(3)})`);
-      const mostra = s.c.ctrl || top.has(s.i) || AoVivo.sel === s.i || (perto && s.estado !== 3);
+      const mostra = AoVivo.eMeu(s) || top.has(s.i) || AoVivo.sel === s.i || (perto && s.estado !== 3);
       n.classList.toggle('rotulo', mostra);
       n.classList.toggle('fora', s.estado === 3);
       n.classList.toggle('sel', AoVivo.sel === s.i);
@@ -32506,7 +32542,7 @@ const AoVivo = {
       const K = Gp.campeonatoAgora(R), eqs = AoVivo.modoTorre === 'constr';
       const lista = eqs ? K.equipes : K.pilotos;
       el('avLinhas').innerHTML = `<p class="av-prov">${eqs ? 'Construtores' : 'Campeonato'} com os pontos desta corrida, se terminasse agora</p>` + lista.map(x => {
-        const meu = eqs ? R.carros.some(s => s.c.ctrl && s.c.eq === x.n) : R.carros.some(s => s.c.ctrl && s.c.id === x.id);
+        const meu = eqs ? R.carros.some(s => AoVivo.eMeu(s) && s.c.eq === x.n) : R.carros.some(s => AoVivo.eMeu(s) && s.c.id === x.id);
         return `<div class="av-l av-camp${meu ? ' meu' : ''}${!eqs && !x.corre ? ' fora' : ''}">
           <b>${x.pos}</b><s style="background:${esc(x.cor)}"></s>
           <span class="n"${eqs ? ' data-i18n-ignore' : ''}>${esc(eqs ? x.n : Central.sigla(x.n))}</span>
@@ -32523,7 +32559,7 @@ const AoVivo = {
         : m === 'lider' ? (l.dif || '') : (l.pos === 1 ? 'Líder' : (l.voltasAtras ? l.dif : (l.int || l.dif || '')));
       const ganho = s.estado === 3 ? 0 : s.c.grid - l.pos;
       const roxo = m === 'voltas' && melhorGeral === s.i;
-      return `<div class="av-l${s.c.ctrl ? ' meu' : ''}${s.estado === 3 ? ' fora' : ''}${AoVivo.sel === s.i ? ' sel' : ''}" data-i="${s.i}">
+      return `<div class="av-l${AoVivo.eMeu(s) ? ' meu' : ''}${s.estado === 3 ? ' fora' : ''}${AoVivo.sel === s.i ? ' sel' : ''}" data-i="${s.i}">
         <b>${s.estado === 3 ? '' : l.pos}</b><s style="background:${esc(s.c.cor)}"></s>
         <span class="n">${esc(Central.sigla(s.c.nome))}</span>
         ${m === 'voltas' ? `<i class="g">${s.setUlt ? AoVivo.setoresHtml(s) : ''}</i>` : `<i class="g ${ganho > 0 ? 'sobe' : ganho < 0 ? 'cai' : ''}">${ganho > 0 ? '▲' + ganho : ganho < 0 ? '▼' + (-ganho) : ''}</i>`}
@@ -32576,7 +32612,7 @@ const AoVivo = {
     const agora = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const ini = AoVivo._alertaIdx || 0;
     for(let k = ini; k < R.eventos.length; k++){
-      const e = R.eventos[k], meu = i => i != null && R.carros[i] && R.carros[i].c.ctrl;
+      const e = R.eventos[k], meu = i => i != null && R.carros[i] && AoVivo.eMeu(R.carros[i]);
       if(AoVivo.ALERTA[e.tipo] || (AoVivo.ALERTA_MEU[e.tipo] && (meu(e.a) || meu(e.b)))){
         a.textContent = AoVivo.texto(e); a.dataset.tipo = e.tipo; a.classList.add('on'); AoVivo._alertaAte = agora + 6000;
         if(e.tipo === 'sugestao' || (AoVivo.ALERTA_MEU[e.tipo] && e.tipo !== 'lenta')) Som.radio(); else Som.alerta();
@@ -32678,7 +32714,7 @@ const AoVivo = {
     const chefe = !!(AoVivo.opc && AoVivo.opc.chefe);
     const aba = ov && ov.querySelector ? ov.querySelector(chefe ? '.av-abas [data-aba="pilotos"]' : '.av-abas [data-aba="carros"]') : null;
     if(aba) aba.classList.toggle('chama', (chefe ? AoVivo.aba !== 'pilotos' && AoVivo.aba !== 'corrida' : AoVivo.aba !== 'carros') && AoVivo.momento() === 'box');
-    R.carros.filter(s => s.c.ctrl).forEach(s => {
+    R.carros.filter(s => AoVivo.eMeu(s)).forEach(s => {
       const l = torre.find(x => x.s === s), k = torre.indexOf(l);
       const C = Gp.COMP[s.pneu.c], gasto = Math.min(1, s.pneu.gasto);
       const pe = el('avCP' + s.i); if(!pe) return;
@@ -32747,7 +32783,7 @@ const AoVivo = {
   },
   luzes(){
     const R = AoVivo.R, ov = el('aovivo'); if(!R || !ov) return;
-    const meus = R.carros.filter(s => s.c.ctrl);
+    const meus = R.carros.filter(s => AoVivo.eMeu(s));
     AoVivo._largada = true; AoVivo._luzes = true;
     const modo = AoVivo.modoLargada(), toque = modo === 'toque';
     const box = document.createElement('div');
@@ -32782,14 +32818,14 @@ const AoVivo = {
     };
     const fim = (queimou, reac) => {
       est = 'fim'; limpar(); bt.classList.remove('segurando'); bt.disabled = true; el('avLargAuto').hidden = true;
-      Gp.largar(R, reac, queimou);
+      if(AoVivo.opc.mp) AoVivo.opc.mp.largar(queimou ? { queimou: true } : { reac }); else Gp.largar(R, reac, queimou);
       if(queimou){ Som.queimou(); tx.className = 'av-luzes-tx ruim'; tx.textContent = 'Largada queimada: 5 s de punição.'; }
       else {
         const v = reac < .18 ? 'Largada perfeita.' : reac < .25 ? 'Ótima largada.' : reac < .35 ? 'Boa largada.' : reac < .5 ? 'Largada lenta.' : 'Dormiu nas luzes.';
         tx.className = 'av-luzes-tx' + (reac >= .35 ? ' ruim' : '');
         tx.innerHTML = `<span>Reação:</span> <b>${String(reac.toFixed(3)).replace('.', ',')} s</b> · <span>${v}</span>`;
       }
-      timers.push(setTimeout(sair, 1500));
+      timers.push(setTimeout(AoVivo.opc.mp ? () => AoVivo.opc.mp.aguardarLargada(sair, tx) : sair, 1500));
     };
     const acender = () => {
       if(est !== 'espera') return;
@@ -32837,7 +32873,11 @@ const AoVivo = {
     const kd = e => { if((e.key === ' ' || e.key === 'Enter') && !e.repeat){ e.preventDefault(); segurar(); } };
     const ku = e => { if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); soltar(); } };
     addEventListener('keydown', kd); addEventListener('keyup', ku);
-    el('avLargAuto').onclick = () => { if(est === 'fim') return; R.largadaJogador = 'auto'; sair(); };
+    el('avLargAuto').onclick = () => {
+      if(est === 'fim') return;
+      if(AoVivo.opc.mp){ est = 'fim'; limpar(); bt.disabled = true; el('avLargAuto').hidden = true; AoVivo.opc.mp.largar({ auto: true }); return AoVivo.opc.mp.aguardarLargada(sair, tx); }
+      R.largadaJogador = 'auto'; sair();
+    };
     /* trocar o jeito de largar antes da largada: a sequência recomeça no jeito novo */
     box.querySelectorAll('[data-modo]').forEach(b => b.onclick = () => {
       if(est === 'fim' || est === 'acesas' || est === 'apagadas' || b.dataset.modo === modo) return;
@@ -32852,7 +32892,7 @@ const AoVivo = {
   /* antes da luz verde: o pneu de largada de cada carro seu */
   largada(){
     const R = AoVivo.R, box = el('avRadio'); if(!R || !box) return;
-    const meus = R.carros.filter(s => s.c.ctrl), ops = Gp.opcoesLargada(R);
+    const meus = R.carros.filter(s => AoVivo.eMeu(s)), ops = Gp.opcoesLargada(R);
     if(!meus.length || ops.length < 2 || R.t > 0){ AoVivo._largada = false; return; }
     AoVivo._largada = true;
     const pista = R.w < .12 ? 'Pista seca' : R.w < .38 ? 'Pista úmida' : R.w < .72 ? 'Pista molhada' : 'Pista encharcada';
@@ -32894,9 +32934,15 @@ const AoVivo = {
     const R = AoVivo.R, q = R.pergunta, box = el('avRadio'); if(!q || !box) return;
     AoVivo._perguntando = true;
     box.hidden = false;
+    const mp = AoVivo.opc && AoVivo.opc.mp;
+    if(mp && !AoVivo.eMeu(R.carros[q.i])){
+      box.innerHTML = `<p class="av-radio-tit">${ico('radio')} Rádio</p><p>O outro jogador está respondendo o rádio. A corrida espera.</p>`;
+      box.onclick = null; return;
+    }
     box.innerHTML = `<p class="av-radio-tit">${ico('radio')} Rádio</p><p>${esc(q.txt)}</p>
       <div>${q.opcoes.map(o => `<button data-k="${o.k}"><b>${esc(o.n)}${o.tag ? ` <em class="av-tag">${esc(o.tag)}</em>` : ''}</b><span>${esc(o.d)}</span></button>`).join('')}</div>`;
     box.onclick = e => { const b = e.target.closest('button'); if(!b) return;
+      if(mp){ mp.responder(R, b.dataset.k); box.innerHTML = `<p class="av-radio-tit">${ico('radio')} Rádio</p><p>Resposta enviada.</p>`; box.onclick = null; return; }
       Gp.responder(R, b.dataset.k); box.hidden = true; box.innerHTML = ''; AoVivo._perguntando = false; AoVivo.cartoes(); };
   },
   bandeirada(){
@@ -32904,7 +32950,7 @@ const AoVivo = {
     Som.motor(false); Som.bandeira();
     AoVivo.painel(); AoVivo.cartoes();
     const ord = Gp.ordem(R), v = ord[0];
-    const meus = R.carros.filter(s => s.c.ctrl);
+    const meus = R.carros.filter(s => AoVivo.eMeu(s));
     const box = el('avFim'); if(!box) return;
     box.hidden = false;
     box.innerHTML = `<p class="av-fim-tit">Bandeirada</p>
@@ -32915,12 +32961,15 @@ const AoVivo = {
   },
   simularFim(){
     const R = AoVivo.R; if(!R) return;
+    /* no multiplayer, pular para o fim é um pedido: vale quando todos pedirem */
+    if(AoVivo.opc && AoVivo.opc.mp) return AoVivo.opc.mp.pular();
     AoVivo._largada = false;
     if(R.pergunta) Gp.responder(R, R.pergunta.padrao);
     const box = el('avRadio'); if(box){ box.hidden = true; box.innerHTML = ''; } AoVivo._perguntando = false;
     Gp.terminar(R);
   },
   alternar(){
+    if(AoVivo.opc && AoVivo.opc.mp) return;
     AoVivo.pausa = !AoVivo.pausa;
     Som.motor(!AoVivo.pausa && !AoVivo.acabou);
     const b = el('avPlay'); if(b){ b.innerHTML = ico(AoVivo.pausa ? 'tocar' : 'pausa'); b.setAttribute('aria-label', AoVivo.pausa ? 'Continuar' : 'Pausar'); }

@@ -1,18 +1,31 @@
 /* Multiplayer: as salas, as rodadas do chefe (Fase 3) e as da carreira de piloto (Fase 4).
    Cria uma sala ou entra com o código de um amigo, mostra quem está nela e se está
    conectado, e volta sozinho para a sala depois de uma queda ou de fechar o jogo.
-   As corridas ao vivo chegam na Fase 5. O servidor (pasta multiplayer/)
+   As corridas ao vivo (Fase 5) rodam no servidor e nas duas telas. O servidor (pasta multiplayer/)
    é a autoridade: esta página só faz pedidos e mostra o que ele responde.
 
    A ficha que identifica o jogador fica no localStorage (vdo_mp). É uma identidade de
    teste, não uma conta: quem tiver a ficha ocupa a vaga, e limpar os dados do site a
-   perde. Por enquanto o botão só aparece com o servidor local (127.0.0.1); em outra
-   origem, só quando VDO_MP_SERVIDOR for definido.
+   perde. O botão aparece com o servidor local (127.0.0.1) e, no site oficial (servidor em
+   mp.volantedeouro.com), por enquanto só para quem abriu o link com ?mp=1: o aparelho lembra
+   (?mp=0 esquece). Com ABERTO_A_TODOS, aparece para todo mundo. Em outra origem, só quando
+   VDO_MP_SERVIDOR for definido.
    Para testar dois jogadores no mesmo navegador: ?mpperfil=2 usa outra ficha. */
 (function(){
   'use strict';
   const local = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
-  const SERVIDOR = local ? 'http://127.0.0.1:8787' : String(window.VDO_MP_SERVIDOR || '');
+  const oficial = /^(www\.)?volantedeouro\.com$/.test(location.hostname);
+  const SERVIDOR = local ? 'http://127.0.0.1:8787' : String(window.VDO_MP_SERVIDOR || (oficial ? 'https://mp.volantedeouro.com' : ''));
+  /* em teste: no site oficial, o botão só para quem tem o link (?mp=1) */
+  const ABERTO_A_TODOS = false;
+  const comLink = (() => {
+    const q = new URLSearchParams(location.search).get('mp');
+    try {
+      if(q === '1') localStorage.setItem('vdo_mp_ver', '1');
+      if(q === '0') localStorage.removeItem('vdo_mp_ver');
+      return localStorage.getItem('vdo_mp_ver') === '1';
+    } catch(e){ return q === '1'; }
+  })();
   const perfil = (new URLSearchParams(location.search).get('mpperfil') || '').replace(/[^a-z0-9]/gi, '').slice(0, 8);
   const CHAVE = 'vdo_mp' + (perfil ? '_' + perfil : '');
   const TITULO_SALA = 'Sala multiplayer', TITULO_ENTRADA = 'Multiplayer';
@@ -53,7 +66,11 @@
     proposta: 'Escolha uma proposta antes de seguir.',
     serie: 'Propostas de outra série não valem no multiplayer.',
     carreira: 'A sua carreira acabou.',
-    fase: 'Isso não vale nesta fase.'
+    fase: 'Isso não vale nesta fase.',
+    corrida: 'Você não está nesta corrida.',
+    carro: 'Esse carro não é seu.',
+    repetida: 'A sua largada já foi registrada.',
+    fim: 'A corrida já acabou.'
   };
   const TELAS = new Set([TITULO_SALA, 'Partida multiplayer', 'Resultado da rodada']);
   const erroTxt = c => ERROS[c] || ERROS.servidor;
@@ -63,11 +80,24 @@
   const codigoBonito = c => String(c || '').replace(/^(.{4})(.{4})$/, '$1-$2');
   const id = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
 
+  /* a soma do estado da corrida: igual à de multiplayer/src/corrida-mp.js (somaDe) */
+  function somaCorrida(R){
+    let h = 0x811c9dc5;
+    const mexe = v => { const t = String(v); for(let i = 0; i < t.length; i++){ h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193); } h ^= 124; h = Math.imul(h, 0x01000193); };
+    mexe(Math.round(R.t * 4)); mexe(Math.round(R.w * 1e4)); mexe(R.sc ? R.sc.tipo + (R.sc.fim ? 1 : 0) : '-');
+    for(const s of R.carros){
+      mexe(Math.round(s.s * 100)); mexe(Math.round(s.v * 100)); mexe(s.estado); mexe(s.voltas); mexe(s.paradas);
+      mexe(s.pneu.c); mexe(Math.round(s.pneu.gasto * 1e5)); mexe(s.modo); mexe(Math.round((s.comb || 0) * 1e5));
+    }
+    return (h >>> 0).toString(36);
+  }
+
   const MP = {
     /* fora | conectando | conectado | reconectando | outra-aba | perdida */
     con: 'fora', sala: null, voce: null, v: -1, ws: null, tentativas: 0, falhas: 0, _pend: {}, versao: null,
 
-    disponivel(){ return !!SERVIDOR && typeof WebSocket === 'function' && !!(window.crypto && crypto.subtle); },
+    /* quem já tem uma sala guardada continua vendo o botão, mesmo sem o link */
+    disponivel(){ return !!SERVIDOR && (local || ABERTO_A_TODOS || comLink || !!ler()) && typeof WebSocket === 'function' && !!(window.crypto && crypto.subtle); },
 
     /* o mesmo hash que multiplayer/ferramentas/gerar-motor.mjs calcula dos scripts sem atributo */
     async versaoDaPagina(){
@@ -168,6 +198,11 @@
         const m2 = el('modal');
         if(UI.aberta() && m2 && TELAS.has(m2.dataset.titulo)) MP._verResultado = true;
         else { MP._verResultado = true; UI.toast('Rodada processada.'); }
+      } else if(m.t === 'corridaInicio'){ return MP.corridaInicio(m);
+      } else if(m.t === 'corridaLog'){ return MP.corridaLog(m);
+      } else if(m.t === 'corridaEstado'){ return MP.corridaEstado(m);
+      } else if(m.t === 'corridaSoma'){ return MP.corridaSoma(m);
+      } else if(m.t === 'corridaFim'){ if(MP.cor) MP.cor.fim = true; return MP.barra();
       } else if(m.t === 'ok' || m.t === 'erro'){
         const p = m.id && MP._pend[m.id];
         if(p){ delete MP._pend[m.id]; p.fim(m.t === 'ok' ? { ok: true, resultado: m.resultado } : { erro: m.codigo, detalhe: m.detalhe }); }
@@ -224,6 +259,7 @@
       UIC._M = null; UIC.pag = 'visao';
       UI.limparFila(); UI.close(); UI.show('chefe'); UIC.render();
       MP.barra();
+      MP.verCorrida();
     },
     sairDoChefe(){
       MP._chefe = false; MP._aposVista = null; MP._rodadaNova = null;
@@ -241,7 +277,7 @@
       const depois = MP._aposVista, nova = MP._rodadaNova;
       MP._aposVista = null; MP._rodadaNova = null;
       if(depois){ try { depois(); } catch(e){ console.error(e); } }
-      if(nova) MP.mostrarRodada(nova);
+      if(nova) MP.rodadaDepoisDaCorrida(nova, () => MP.mostrarRodada(nova));
     },
     /* a rodada processada, pelas telas do jogo: o resultado da corrida, os testes de
        pré-temporada ou o inverno do ano novo */
@@ -280,19 +316,203 @@
       const eu = MP.voce ? MP.voce.slot : (ler() || {}).slot;
       const pronto = slot => !!(p.prontos && p.prontos[slot]);
       const outros = s.jogadores.filter(j => j.slot !== eu);
-      const souPronto = pronto(eu), outrosProntos = outros.every(j => pronto(j.slot)), proc = p.estado === 'processing';
+      const souPronto = pronto(eu), outrosProntos = outros.every(j => pronto(j.slot)), proc = p.estado === 'processing' || p.estado === 'corrida';
       const piloto = p.regras === 'piloto';
       const fase = { inverno: 'pré-temporada', temporada: 'temporada', balanco: 'balanço do ano', mercado: 'propostas' }[MP.vista && MP.vista.fase] || '';
       const sea = piloto ? (typeof S !== 'undefined' && S && S.season) : (typeof C !== 'undefined' && C && C.temporada);
       const prox = MP.vista && MP.vista.fase === 'temporada' && sea && sea.calendar[sea.round];
-      const estado = proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? 'Aguardando o adversário…'
+      const voltas = p.estado === 'corrida' && MP.cor ? Object.values(MP.cor.corridas).filter(c => c.N)
+        .map(c => `<span data-i18n-ignore>${esc(c.serie || '')}</span> <span>volta</span> ${Math.min(c.volta || 1, c.N)}/${c.N}`).join(' · ') : '';
+      const estado = p.estado === 'corrida' ? `<span>Corrida ao vivo</span>${voltas ? ': ' + voltas : ''}`
+        : proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? 'Aguardando o adversário…'
         : !souPronto && outrosProntos ? 'O adversário já está pronto.' : 'Tome as suas decisões no seu ritmo.';
       b.innerHTML = `<span class="mp-b-t"><b>Multiplayer</b> · <span>Rodada</span> ${p.rodada}${fase ? ` · <span>${fase}</span>` : ''}${prox ? ` · <span>GP ${esc(prox.gp)}</span>` : ''}</span>
         <span class="mp-b-e" role="status">${estado}</span>
         <span class="mp-b-j">${outros.map(j => `<span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span> <span data-i18n-ignore>${esc(j.nome)}</span>: <span>${pronto(j.slot) ? 'pronto' : 'decidindo'}</span>`).join(' ')}</span>
         ${souPronto ? `<button class="btn btn-ghost btn-sm" onclick="MP.pronto(false)"${proc ? ' disabled' : ''}>Cancelar prontidão</button>`
                     : `<button class="btn btn-primary btn-sm" onclick="${piloto ? 'MP.pilotoPronto()' : 'MP.chefePronto()'}"${proc || MP.con !== 'conectado' ? ' disabled' : ''}>Pronto para avançar</button>`}
+        ${p.estado === 'corrida' && MP.cor && MP.cor.minha && !MP.cor.aberta ? '<button class="btn btn-gold btn-sm" onclick="MP.verCorrida()">Ver a corrida</button>' : ''}
         <button class="btn btn-ghost btn-sm" onclick="MP.abrirPartida()">Sala</button>`;
+    },
+
+    /* ── a corrida ao vivo (Fase 5) ──
+       O servidor roda a corrida oficial; esta tela roda a mesma corrida (a entrada e as ordens que
+       ele manda, no passo em que valem) e só anda até o passo que ele liberou. As ordens daqui vão
+       para ele e voltam pelo registro, com o passo. A soma de conferência dele confere a desta tela;
+       se elas não baterem, a tela refaz a corrida com o registro inteiro. */
+    meuSlot(){ return MP.voce ? MP.voce.slot : (ler() || {}).slot; },
+    corridaInicio(m){
+      const eu = MP.meuSlot();
+      if(!MP.cor || MP.cor.rodada !== m.rodada) MP.cor = { rodada: m.rodada, corridas: {}, aberta: false, tela: null, refeitas: 0 };
+      MP.cor.vel = m.vel;
+      (m.corridas || []).forEach(c => { MP.cor.corridas[c.k] = c; });
+      const minha = (m.corridas || []).find(c => Object.values(c.donos).map(String).includes(String(eu)));
+      MP.cor.minha = minha ? minha.k : null;
+      MP.barra();
+      if(!minha) return;
+      const t = MP.cor.tela;
+      /* a mesma corrida já na tela (o servidor mandou de novo depois de uma queda): só junta o que faltava */
+      if(t && t.k === minha.k && MP.cor.aberta && !t.refazer){
+        minha.log.forEach(e => MP.corridaEntrada(t, e));
+        t.liberado = Math.max(t.liberado, minha.liberado);
+        return MP.corridaFase(t, minha);
+      }
+      if(MP._piloto || MP._chefe) MP.abrirCorrida(minha);
+      else UI.toast('A corrida ao vivo começou: abra a sala do multiplayer.');
+    },
+    /* volta para a corrida que está na pista (a sala manda tudo de novo); false se não há corrida */
+    verCorrida(){
+      const p = MP.sala && MP.sala.partida;
+      if(!p || p.estado !== 'corrida' || (MP.cor && MP.cor.aberta)) return false;
+      if(MP.cor) MP.cor.tela = null;
+      MP.enviar('corridaSync');
+      return true;
+    },
+    abrirCorrida(c){
+      const eu = MP.meuSlot();
+      const t = MP.cor.tela = { k: c.k, R: Gp.criar(JSON.parse(JSON.stringify(c.ent))), passo: 0, fila: [], vistos: new Set(),
+        liberado: c.liberado, fase: c.fase, somas: {}, somasServ: {}, donos: c.donos,
+        meus: new Set(Object.keys(c.donos).filter(i => String(c.donos[i]) === String(eu)).map(Number)),
+        largadaEnviada: (c.largadas || []).map(String).includes(String(eu)), pediuPular: (c.votos || []).map(String).includes(String(eu)) };
+      c.log.forEach(e => MP.corridaEntrada(t, e));
+      /* quem chega no meio da corrida alcança o servidor de uma vez */
+      MP.corridaAndar(t, c.passo);
+      MP.cor.aberta = true;
+      UI.limparFila(); UI.close();
+      AoVivo.abrir(c.ent, { serie: c.serie, chefe: c.chefe, R: t.R, mp: MP.adaptador(t) }, () => MP.corridaFechou());
+      MP.barra();
+    },
+    corridaEntrada(t, e){
+      if(!e || t.vistos.has(e.n)) return;
+      t.vistos.add(e.n);
+      /* uma ordem para um passo que esta tela já passou não deveria existir: refaz com o registro */
+      if(e.passo < t.passo){ t.refazer = true; MP.enviar('corridaSync'); return; }
+      t.fila.push(e);
+    },
+    /* as ordens do passo em que a corrida está, na ordem em que o servidor registrou */
+    corridaPendentes(t){
+      if(!t.fila.length) return;
+      const R = t.R, agora = t.fila.filter(e => e.passo <= t.passo).sort((a, b) => a.n - b.n);
+      if(!agora.length) return;
+      t.fila = t.fila.filter(e => e.passo > t.passo);
+      const tinha = !!R.pergunta;
+      for(const e of agora){
+        const d = e.dados || {};
+        if(e.tipo === 'comandar') Gp.comandar(R, d.i, d.cmd);
+        else if(e.tipo === 'responder') Gp.responder(R, d.k);
+        else if(e.tipo === 'largar') Gp.largar(R, d.reac, !!d.queimou, d.so);
+        else if(e.tipo === 'terminar') Gp.terminar(R);
+      }
+      if(((tinha && !R.pergunta) || R.fim) && AoVivo.R === R){
+        const box = el('avRadio'); if(box && AoVivo._perguntando){ box.hidden = true; box.innerHTML = ''; box.onclick = null; }
+        AoVivo._perguntando = false;
+        if(R.fim) AoVivo._largada = false;
+      }
+    },
+    corridaDepois(t){
+      t.passo++;
+      if(t.passo % 64 === 0){
+        t.somas[t.passo] = somaCorrida(t.R);
+        delete t.somas[t.passo - 64 * 40];
+        MP.corridaConferir(t, t.passo);
+      }
+    },
+    corridaAndar(t, ate){
+      const R = t.R; let g = 0;
+      MP.corridaPendentes(t);
+      while(t.passo < Math.min(ate, t.liberado) && !R.fim && g++ < 400000){
+        MP.corridaPendentes(t);
+        if(R.fim || R.pergunta) break;
+        Gp.passo(R); MP.corridaDepois(t);
+      }
+    },
+    corridaConferir(t, p){
+      const a = t.somas[p], b = t.somasServ[p];
+      if(a === undefined || b === undefined) return;
+      delete t.somas[p]; delete t.somasServ[p];
+      if(a === b) return;
+      console.warn('[multiplayer] a corrida desta tela se afastou da oficial no passo ' + p);
+      if(MP.cor.refeitas < 2){ MP.cor.refeitas++; t.refazer = true; MP.enviar('corridaSync'); }
+      else if(!MP.cor.avisou){ MP.cor.avisou = true; UI.toast('A sua tela se afastou da corrida oficial. O resultado que vale é o do servidor.'); }
+    },
+    corridaLog(m){ const t = MP.cor && MP.cor.tela; if(t && t.k === m.k) MP.corridaEntrada(t, m.e); },
+    corridaSoma(m){ const t = MP.cor && MP.cor.tela; if(!t || t.k !== m.k) return; t.somasServ[m.passo] = m.soma; MP.corridaConferir(t, m.passo); },
+    corridaEstado(m){
+      if(!MP.cor) return;
+      MP.cor.vel = m.vel;
+      (m.corridas || []).forEach(c => { MP.cor.corridas[c.k] = Object.assign(MP.cor.corridas[c.k] || {}, c); });
+      const t = MP.cor.tela, c = t && (m.corridas || []).find(x => x.k === t.k);
+      if(c){ t.liberado = Math.max(t.liberado, c.liberado); MP.corridaFase(t, c); }
+      const ov = el('aovivo');
+      if(ov && MP.cor.aberta) ov.querySelectorAll('.av-vel [data-v]').forEach(b => b.classList.toggle('on', +b.dataset.v === m.vel));
+      /* a barra de quem não está na pista mostra a volta (uma vez por segundo basta) */
+      const agora = Date.now();
+      if(!MP.cor.aberta && agora - (MP._barraEm || 0) > 1000){ MP._barraEm = agora; MP.barra(); }
+    },
+    corridaFase(t, c){
+      const antes = t.fase; t.fase = c.fase;
+      if(antes === 'largada' && c.fase !== 'largada' && AoVivo.R === t.R){
+        AoVivo._largada = false;
+        if(t.aoLargar){ const f = t.aoLargar; t.aoLargar = null; f(); }
+        /* as luzes ainda na tela (o prazo da largada acabou): fecham como a largada automática */
+        else if(el('avLuzes')){ const b = el('avLargAuto'); if(b && b.onclick) b.onclick(); }
+      }
+      const pb = el('avPular');
+      if(pb && c.votos) pb.classList.toggle('on', c.votos.map(String).includes(String(MP.meuSlot())));
+    },
+    /* a tela da corrida fechou ("Ver o resultado"): o resultado da rodada, se já chegou */
+    corridaFechou(){
+      if(!MP.cor) return;
+      MP.cor.aberta = false; MP.cor.tela = null;
+      const nova = MP.cor.rodadaPendente;
+      if(nova){ const f = MP.cor.mostrar; MP.cor = null; return f(); }
+      MP.barra();
+      UI.toast('A rodada fecha quando todas as corridas da sala acabarem.');
+    },
+    rodadaDepoisDaCorrida(nova, mostrar){
+      if(MP.cor && MP.cor.aberta){ MP.cor.rodadaPendente = nova; MP.cor.mostrar = mostrar; return; }
+      MP.cor = null;
+      mostrar();
+    },
+    /* o que a tela da corrida (AoVivo) pede: os carros desta tela, o relógio e as ordens */
+    adaptador(t){
+      return {
+        meus: t.meus,
+        quadro(){ MP.corridaPendentes(t); },
+        limitar(alvo){
+          /* o lugar certo é um pouco antes do liberado: a próxima marca do servidor chega antes de a tela parar */
+          const lib = t.liberado * Gp.DT, vel = (MP.cor && MP.cor.vel) || 8, ideal = lib - vel * .4;
+          if(ideal - alvo > vel * 3) alvo = ideal;                       // muito atrás (aba escondida, rede): pula
+          else if(ideal - alvo > vel * .3) alvo += (ideal - alvo) * .04;  // um pouco atrás: alcança aos poucos
+          return Math.min(alvo, lib);
+        },
+        antes(R){ MP.corridaPendentes(t); return !R.fim && !R.pergunta && t.passo < t.liberado; },
+        depois(){ MP.corridaDepois(t); },
+        vel(){ return (MP.cor && MP.cor.vel) || 8; },
+        velocidade(v){ MP.enviar('velocidade', { v }).then(r => { if(r.erro) UI.toast(erroTxt(r.erro)); }); },
+        comandar(R, i, cmd){
+          if(!t.meus.has(i)) return;
+          if(cmd.ceder != null){ const j = Gp.podeCeder(R, i); if(!j || j.i !== cmd.ceder) return 'longe'; }
+          MP.ordemCorrida(t, 'comandar', { i, cmd });
+        },
+        responder(R, k){ MP.ordemCorrida(t, 'responder', { k }); },
+        pular(){
+          t.pediuPular = !t.pediuPular;
+          MP.ordemCorrida(t, 'pular', { quer: t.pediuPular });
+          UI.toast(t.pediuPular ? 'Você pediu para pular até o fim. A corrida pula quando todos pedirem.' : 'Pedido para pular cancelado.');
+        },
+        largar(d){ if(t.fase !== 'largada' || t.largadaEnviada) return; t.largadaEnviada = true; MP.ordemCorrida(t, 'largada', d); },
+        esperandoLargada(){ return t.fase === 'largada'; },
+        mostrarLuzes(){ return t.fase === 'largada' && !t.largadaEnviada && t.meus.size > 0; },
+        aguardarLargada(sair, tx){
+          if(t.fase !== 'largada') return sair();
+          t.aoLargar = sair;
+          if(tx){ tx.className = 'av-luzes-tx'; tx.textContent = 'Esperando o outro jogador largar…'; }
+        }
+      };
+    },
+    ordemCorrida(t, tipo, dados){
+      MP.enviar('corrida', { k: t.k, tipo, dados }).then(r => { if(r.erro && r.erro !== 'fim') UI.toast(erroTxt(r.erro)); });
     },
     /* ── o modo piloto com um amigo ── (o mesmo esquema do chefe, com a carreira S) */
     pilotoAtivo(){ return !!MP._piloto && typeof S !== 'undefined' && !!S && S === MP._S && !!(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'piloto'); },
@@ -302,7 +522,7 @@
       S = MP._S = MP.vista.S;
       UI.limparFila(); UI.close(); UI.show('career'); UI.render();
       MP.barra();
-      MP.inverno();
+      if(!MP.verCorrida()) MP.inverno();
     },
     /* a pré-temporada (o servidor já resolveu, como no modo rápido) explica uma lesão ou uma moral
        baixa antes da primeira corrida: o resumo aparece uma vez por ano em cada aparelho */
@@ -327,7 +547,7 @@
       const depois = MP._aposVista, nova = MP._rodadaNova;
       MP._aposVista = null; MP._rodadaNova = null;
       if(depois){ try { depois(); } catch(e){ console.error(e); } }
-      if(nova) MP.mostrarRodadaPiloto(nova);
+      if(nova) MP.rodadaDepoisDaCorrida(nova, () => MP.mostrarRodadaPiloto(nova));
     },
     /* a rodada processada: a sua corrida, pela tela de resultado do jogo (quem não correu fica sabendo) */
     mostrarRodadaPiloto(r){
@@ -468,8 +688,8 @@
         ? `<div class="sv-item sv-apagar"><div class="sv-tx"><b>Sair da sala?</b><span class="sv-desc">A sua vaga fica livre para outra pessoa.</span></div>
             <div class="sv-bts"><button class="btn btn-ghost btn-sm" onclick="MP.abrir()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.sair(true)">Sair</button></div></div>`
         : '';
-      UI.modal(UI.head(TITULO_SALA, s && s.modo === 'chefe' ? 'Teste: chefe de equipe com um amigo. As corridas ao vivo chegam na próxima etapa.'
-        : s && s.modo === 'piloto' ? 'Teste: carreira de piloto com um amigo. As corridas ao vivo chegam na próxima etapa.'
+      UI.modal(UI.head(TITULO_SALA, s && s.modo === 'chefe' ? 'Teste: chefe de equipe com um amigo.'
+        : s && s.modo === 'piloto' ? 'Teste: carreira de piloto com um amigo.'
         : 'Teste: por enquanto a sala junta os jogadores. As rodadas e as corridas chegam nas próximas etapas.') +
         `<div class="mbd sv mp">
           ${corpo}
@@ -484,6 +704,10 @@
           <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Velocidade das corridas</span>
             ${souAnf ? `<div class="mp-vels">${VELS.map(n => `<button class="btn btn-sm ${n === vel ? 'btn-primary' : 'btn-ghost'}" onclick="MP.velocidade(${n})"${MP.con === 'conectado' ? '' : ' disabled'}>${n}×</button>`).join('')}</div>`
                      : `<b>${vel}×</b>`}</div></div>` : ''}
+          ${s && s.modo !== 'teste' ? `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">Corridas</span>
+            ${souAnf ? `<div class="mp-vels">${[[true, 'Ao vivo'], [false, 'Rápidas']].map(([v, n]) => `<button class="btn btn-sm ${(s.config.aoVivo !== false) === v ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar({ aoVivo: ${v} })"${MP.con === 'conectado' ? '' : ' disabled'}>${n}</button>`).join('')}</div>`
+                     : `<b>${s.config.aoVivo !== false ? 'Ao vivo' : 'Rápidas'}</b>`}
+            <span class="sv-desc">${s.config.aoVivo !== false ? 'Os dois assistem e comandam a mesma corrida, no relógio da sala.' : 'A corrida é calculada na hora, sem transmissão.'}</span></div></div>` : ''}
           ${s && s.modo === 'chefe' ? MP.configChefe(s, souAnf, eu) : ''}
           ${s && s.modo === 'piloto' ? MP.configPiloto(s, souAnf, eu) : ''}
           ${MP.linhaConexao()}

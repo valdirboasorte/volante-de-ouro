@@ -59,6 +59,8 @@ async function novaSala(base, versao, nomeA, nomeB){
   const B = r.json || {};
   const b = ligar(await abrir(base, A.codigo, B.ficha), A.codigo, 1);
   await esperar(b, m => m.t === 'estado');
+  /* as rodadas daqui correm pelo caminho rápido; a corrida ao vivo tem o teste dela (corrida-sala.mjs) */
+  await pedir(a, { t: 'configurar', config: { aoVivo: false } });
   return { A, B, a, b };
 }
 async function iniciarCom(a, b, pa, pb){

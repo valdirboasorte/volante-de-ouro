@@ -70,6 +70,7 @@ async function main(){
     const turnos = await import(pathToFileURL(path.join(AQUI, 'turnos.mjs')).href);
     const chefe = await import(pathToFileURL(path.join(AQUI, 'chefe-sala.mjs')).href);
     const piloto = await import(pathToFileURL(path.join(AQUI, 'piloto-sala.mjs')).href);
+    const corrida = await import(pathToFileURL(path.join(AQUI, 'corrida-sala.mjs')).href);
     const { VERSAO_JOGO } = await import(pathToFileURL(path.join(RAIZ, 'src', 'gerado', 'motor-jogo.js')).href);
     const ctx = { base: BASE, versao: VERSAO_JOGO, estado: {} };
 
@@ -78,6 +79,7 @@ async function main(){
     await esperarPronto(servidor);
     await salas.fase1(ctx);
     await piloto.fase1(ctx);
+    await corrida.fase1(ctx);         // deixa uma corrida na pista para o reinício
     await chefe.fase1(ctx);           // antes dos turnos: a sala travada deles não pode esperar um minuto
     await turnos.fase1(ctx);          // termina com uma rodada travada em processing: derrubar logo
 
@@ -88,6 +90,7 @@ async function main(){
     await turnos.fase2(ctx);
     await chefe.fase2(ctx);
     await piloto.fase2(ctx);
+    await corrida.fase2(ctx);
     await salas.fase2(ctx);
   }catch(e){
     console.log('  ✗ o teste parou: ' + (e && e.stack || e));

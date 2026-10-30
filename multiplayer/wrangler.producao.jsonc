@@ -1,0 +1,26 @@
+/* O servidor do multiplayer no ar (produção): o mesmo Worker do desenvolvimento, sem as rotas e
+   mensagens de teste, aceitando só o site oficial. Publicar exige o plano Workers Paid e a
+   autorização do dono do projeto: npm run publicar (depois de npx wrangler login).
+   O endereço mp.volantedeouro.com é um domínio próprio do Worker na zona volantedeouro.com
+   (a Cloudflare cria o registro DNS na primeira publicação). */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "volante-mp",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "durable_objects": {
+    "bindings": [{ "name": "SALAS", "class_name": "Sala" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Sala"] }],
+  "routes": [{ "pattern": "mp.volantedeouro.com", "custom_domain": true }],
+  "workers_dev": false,
+  "vars": {
+    /* só o site oficial abre salas */
+    "ORIGENS": "https://volantedeouro.com,https://www.volantedeouro.com",
+    "VIABILIDADE": "0",
+    "DESENVOLVIMENTO": "0"
+  },
+  /* criação de salas por IP: 10 por minuto */
+  "ratelimits": [{ "name": "LIMITE_SALAS", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }],
+  "observability": { "enabled": true }
+}

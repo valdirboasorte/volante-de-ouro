@@ -19,6 +19,7 @@
    Fica de fora por enquanto: os acontecimentos fora da pista, as conversas, os pedidos e o
    sábado jogado na mão (o grid sai da classificação calculada), e o reserva no carro de um
    piloto humano machucado numa temporada dividida (o carro fica parado). */
+import { criarRnd } from './aleatorio.js';
 
 /* o que é do mundo; o resto da raiz é do piloto */
 export const MUNDO = ['mundos', 'gridMem', 'gridMemEra', 'gridMemSerie', 'gridFem'];
@@ -198,10 +199,31 @@ export function pilotosDa(mundo, chave){
   return [mundo.anfitriao, mundo.convidado].filter(s => mundo.pilotos[s].chaveTemporada === chave);
 }
 
+/* corrida ao vivo (Fase 5): quem é dono de cada carro humano nesta corrida, e o que o carro do
+   outro humano leva do lado dele. Sem a sala pedindo corridas ao vivo (J.mpCorridas), nada muda. */
+function donosDaCorrida(J, donos, extras){
+  if(J.mpCorridas) J.mpCorridas.contexto = donos ? { modo: 'piloto', donos, extras: extras || {} } : null;
+}
+/* o que a montagem da corrida tira da carreira de quem é o 'ME' (Gp.entrada), para o carro dele
+   na corrida do outro lado: pneu usado e modo do fim de semana, a ficha, a largada nata */
+function extrasDoCarro(J, sea){
+  const E = J.Engine, x = {};
+  const pu = E.efeitoFds(sea, 'pneuUsado'), md = E.efeitoFds(sea, 'modo');
+  if(pu) x.pneu0 = pu;
+  if(md) x.modo = md;
+  const fv = E.fichaVivo && E.fichaVivo();
+  if(fv){ x.pneuMult = fv.pneu; x.ataque = fv.ataque; x.defesa = fv.defesa; }
+  x.largadaNata = !!(E.temTraco && E.temTraco('largada'));
+  const esc = sea.pneusLargada && sea.pneusLargada.rd === sea.round ? sea.pneusLargada.carros || {} : {};
+  if(esc.ME) x.pneuIni = esc.ME;
+  return x;
+}
+
 /* uma etapa de quem está sozinho na categoria: o mesmo caminho do "simular uma etapa" do jogo */
 function etapaSozinho(J, mundo, slot){
   return agir(J, mundo, slot, (J, S) => {
-    J.Game.simSeason(false, true);
+    donosDaCorrida(J, { ME: slot });
+    try { J.Game.simSeason(false, true); } finally { donosDaCorrida(J, null); }
     const r = S.season.results; return r[r.length - 1] || null;
   });
 }
@@ -234,6 +256,7 @@ function etapaDupla(J, mundo){
   seaB.mpGravar = {};
   const MB = J.Engine.montarCorrida(seaB, !bCorre);
   const grav = seaB.mpGravar; delete seaB.mpGravar;
+  const extrasB = bCorre ? extrasDoCarro(J, seaB) : null;
   /* o lado do anfitrião: a corrida de verdade */
   const FA = perspectiva(mundo, h), seaA = FA.season;
   J.S = FA;
@@ -244,7 +267,9 @@ function etapaDupla(J, mundo){
   if(bCorre && grav && (grav.q != null)) seaA.mpLinhas = { ME2: grav };
   else if(linhaB) linhaB.ausente = true;
   const MA = J.Engine.montarCorrida(seaA, aMachucado);
-  const recA = J.Engine.runRace(seaA, { montagem: MA }, aMachucado);
+  donosDaCorrida(J, Object.assign({ ME: h }, bCorre ? { ME2: g } : {}), extrasB ? { ME2: extrasB } : null);
+  let recA;
+  try { recA = J.Engine.runRace(seaA, { montagem: MA }, aMachucado); } finally { donosDaCorrida(J, null); }
   delete seaA.mpLinhas;
   if(linhaB){ if(ausenteAntes === undefined) delete linhaB.ausente; else linhaB.ausente = ausenteAntes; }
   depoisDaCorrida(J, FA, recA, aMachucado);
@@ -267,16 +292,22 @@ export function rodadaDeCorridas(J, mundo){
   const recs = {};
   const tamanho = c => mundo.temporadas[c].sea.calendar.length;
   const nmax = Math.max(...Object.keys(mundo.temporadas).map(tamanho));
-  for(const chave of Object.keys(mundo.temporadas)){
+  /* cada categoria com o seu sorteio, tirado antes de qualquer corrida: o que uma corrida gasta
+     de sorteio não muda a montagem da outra (a corrida ao vivo prepara e conclui a rodada em
+     duas passadas, e as duas precisam montar as mesmas corridas) */
+  const sementes = Object.keys(mundo.temporadas).map(() => Math.floor(J.amb.Math.random() * 4294967296));
+  Object.keys(mundo.temporadas).forEach((chave, k) => {
     const alvo = Math.min(tamanho(chave), Math.floor((mundo.t + 1) * tamanho(chave) / nmax));
     let guarda = 0;
     while(mundo.temporadas[chave].sea.round < alvo && guarda++ < 5){
       const quem = pilotosDa(mundo, chave);
-      if(quem.length === 2) Object.assign(recs, etapaDupla(J, mundo));
-      else if(quem.length === 1) recs[quem[0]] = etapaSozinho(J, mundo, quem[0]);
-      else break;
+      if(!quem.length) break;
+      comSemente(J, criarRnd('etapa:' + sementes[k], mundo.temporadas[chave].sea.round), () => {
+        if(quem.length === 2) Object.assign(recs, etapaDupla(J, mundo));
+        else recs[quem[0]] = etapaSozinho(J, mundo, quem[0]);
+      });
     }
-  }
+  });
   mundo.t++;
   return recs;
 }

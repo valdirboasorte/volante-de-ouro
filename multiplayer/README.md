@@ -4,9 +4,9 @@ O servidor das partidas com amigos: um Worker da Cloudflare na frente e um Durab
 Object (`Sala`) por partida, com o motor do jogo rodando sem tela. O servidor é a
 autoridade: os navegadores mandam pedidos e mostram o que ele responde.
 
-**Nada disso está publicado.** Roda só no seu computador com `wrangler dev`. Publicar
-exige o plano Workers Paid (o motor não cabe nos 10 ms de CPU do plano gratuito) e a
-sua autorização.
+**Ainda não está publicado.** Roda no seu computador com `wrangler dev`. Publicar exige o
+plano Workers Paid (o motor não cabe nos 10 ms de CPU do plano gratuito) e a sua
+autorização. Os passos estão em [Publicar](#publicar).
 
 ## Fases
 
@@ -16,7 +16,7 @@ sua autorização.
 | 2 | Rodadas: pronto, espera, processamento único (com regras de teste) | feita |
 | 3 | Modo chefe com duas equipes humanas | feita (local; as corridas ainda pelo caminho rápido) |
 | 4 | Modo piloto com dois pilotos humanos | feita (local; as corridas ainda pelo caminho rápido) |
-| 5 | Corridas ao vivo no servidor | a fazer |
+| 5 | Corridas ao vivo no servidor | feita (local, pronta para publicar) |
 | 6 | Robustez e testes com dois aparelhos | a fazer |
 
 ## Rodar
@@ -254,6 +254,124 @@ categoria dele, em que ele é o `'ME'` e o outro humano, se correr ali, é o `'M
 
   Também explicou um "não largou" na primeira corrida: era uma lesão da pré-temporada, legítima,
   que o jogador não tinha como ver.
+
+## Corridas ao vivo (Fase 5)
+
+A corrida do jogo (`Gp`) é determinística: o passo dela (`Gp.passo`, 0,25 s de prova) só lê a
+própria corrida. Não usa `Math.random` (tem gerador próprio, semeado na entrada), relógio ou
+carreira. A mesma entrada (`Gp.entrada`, só dados) com as mesmas ordens nos mesmos passos dá a
+mesma corrida no servidor e em cada navegador. Daí o **passo travado** (`src/corrida-mp.js`):
+
+- **Preparar e concluir.** Com os dois prontos, a sala processa a rodada numa cópia do mundo
+  com os ganchos do motor ligados (`Engine.mpCorrida` no piloto, `Chefe.mpCorrida` no chefe).
+  Cada corrida com carro humano vira uma definição: a entrada e o dono de cada carro humano.
+  A sala passa para `corrida` e roda cada corrida no relógio dela. No fim, processa a rodada de
+  novo, com a mesma semente, e cada corrida devolve a chegada ao vivo. Cada categoria tem a sua
+  semente, e por isso a montagem das corridas é a mesma nas duas passadas (a entrada é
+  conferida). Sem corrida com humano, o que saiu da preparação já é a rodada.
+- **Ordens.** Box, ritmo, trato do pneu, mistura e ordem de equipe:
+  - o servidor confere o dono do carro e a lista fechada de cada comando;
+  - a ordem vale num passo que nenhuma tela alcançou: as telas só andam até o passo
+    **liberado**, que fica 0,8 s (tempo real) à frente da corrida oficial;
+  - todas aplicam a ordem nesse passo, na ordem em que o servidor registrou.
+- **Rádio.** A corrida para no passo da pergunta, no servidor e nas telas. Vale a resposta do
+  dono do carro, ou a padrão depois de 20 s; o outro jogador vê que a corrida espera.
+- **Largada.** Cada jogador reage às próprias luzes e larga só os carros dele
+  (`Gp.largar(..., so)`). A sala espera os dois por até 45 s; quem não reagiu larga com a
+  reação sorteada da corrida.
+- **Velocidade.** É da sala (1× a 16×), e qualquer um que está correndo muda. Ela não muda o
+  resultado.
+- **Pular para o fim.** Só com o voto de todos os humanos daquela corrida.
+- **Quem cai.**
+  - Desconectado por mais de 15 s, a equipe assume as paradas dele (`equipe` no comando, por
+    carro); na volta, devolve.
+  - A tela que volta recebe a entrada e o registro inteiro e refaz a corrida até o passo liberado.
+- **Conferência.** A cada 64 passos o servidor manda uma soma do estado, e a tela compara com a
+  dela. Se não bater, a tela pede tudo de novo e refaz (até duas vezes). Depois disso avisa que
+  o resultado que vale é o do servidor.
+- **Reinício do servidor.** A entrada, o registro e o passo ficam guardados (o passo a cada
+  2 s). Um alarme retoma a corrida refazendo-a com o registro, e as telas recebem tudo de novo.
+- **Ganchos no `index.html`**, todos inertes no single-player:
+  - `Engine.runRace` e `Chefe.correr` aceitam a chegada do servidor;
+  - `Gp` com duas equipes humanas: a ordem de equipe é de cada uma (`ent.mpEquipes`), e
+    "ceder" só vale entre carros da mesma equipe;
+  - `Gp.largar` aceita só alguns carros, e cada carro pode deixar as paradas com a equipe;
+  - a tela da corrida (`AoVivo`) com `opc.mp`:
+    - os carros "seus" são os do jogador (`AoVivo.eMeu`), e as ordens passam por `AoVivo.comandar`;
+    - o relógio só anda até o passo liberado;
+    - não tem pausa, velocidade automática nem 32×/64×.
+  - `node testes/ouro.js` deu as 16 carreiras idênticas depois de cada gancho.
+- **Na sala:** "Corridas: Ao vivo / Rápidas" (`config.aoVivo`, padrão ao vivo). No modo rápido a
+  corrida é calculada na hora, como nas Fases 3 e 4.
+
+**Ainda de fora:**
+- A classificação e o treino ao vivo (`Sessao`): o sábado continua calculado.
+- Assistir à corrida do outro quando cada um está numa categoria: quem não corre vê a volta na
+  barra da partida.
+- O "nº 1 automático" do chefe (a ordem sai na hora certa sozinha). A ordem de equipe na mão
+  vale.
+- Uma tela num navegador cuja matemática de ponto flutuante difere da do servidor (o Safari usa
+  outra biblioteca para seno, cosseno e logaritmo) pode se afastar aos poucos. A conferência
+  pega, e o resultado oficial é sempre o do servidor. Fica para medir na Fase 6, com aparelhos
+  de verdade.
+
+## O que foi testado na Fase 5
+
+- **`node testes/corrida-mp.mjs`: 27 verificações, todas passando.** Sem servidor:
+  - piloto com os dois na mesma corrida;
+  - chefe com duas equipes;
+  - uma corrida inteira de chefe com uma pergunta de rádio.
+
+  Em cada uma, a corrida do servidor e duas telas, uma colada no liberado e outra atrás:
+  - mesmo resultado e as mesmas somas de conferência (339 na corrida de 56 voltas com 46
+    ordens e rádio);
+  - ordem para o carro do outro recusada;
+  - "manter posições" de uma equipe não vale para a outra;
+  - a corrida refeita do estado salvo no meio é a mesma;
+  - a rodada concluída com a chegada ao vivo não diverge da preparada.
+- **`npm run testes`.** A sala de piloto ao vivo por WebSocket (`testes/corrida-sala.mjs`):
+  - largada com reação e automática;
+  - ordens e recusas (carro do outro, comando inválido, velocidade fora da lista);
+  - a tela que cai e volta com o registro inteiro;
+  - o voto dos dois para pular;
+  - a rodada processada com a chegada que a tela refaz.
+
+  Depois de reiniciar o servidor, uma corrida que estava na pista volta, segue andando e a
+  rodada é processada uma vez só. As salas por turnos das Fases 3 e 4 rodam com
+  `aoVivo: false`.
+- **No navegador, com duas abas (Gil Matos e Hana Sato, 20 anos, Fórmula Regional 2024):**
+  - os dois prontos abriram a corrida nas duas telas;
+  - Hana segurou e soltou nas luzes (queimou: 5 s só para ela), Gil largou no automático;
+  - "Atacar" do Gil e o box da Hana chegaram à outra tela;
+  - a Hana mudou a sala para 16×;
+  - na última volta, um furo do Gil parou as duas telas: ele respondeu, e a Hana viu "o outro
+    jogador está respondendo";
+  - na bandeirada, o top 10 das duas telas e o oficial do servidor foram idênticos, sem
+    nenhuma correção;
+  - "Ver o resultado" abriu a tela de resultado da rodada (7º, 6 pontos).
+
+## Publicar
+
+O servidor de produção usa `wrangler.producao.jsonc`:
+- endereço `https://mp.volantedeouro.com` (domínio próprio do Worker na zona do site);
+- só o site oficial abre salas;
+- sem as rotas e mensagens de teste.
+
+A página já aponta para esse endereço quando roda em volantedeouro.com. Por enquanto o botão
+**Multiplayer** só aparece para quem abrir `https://volantedeouro.com/?mp=1`: o aparelho
+lembra, e `?mp=0` esquece. Para abrir a todos, `ABERTO_A_TODOS = true` em
+`assets/multiplayer.js`.
+
+```bash
+cd multiplayer
+npx wrangler login     # uma vez: liga este computador à conta da Cloudflare (o dono aprova no navegador)
+npm run publicar       # gera o motor e publica o Worker com wrangler.producao.jsonc
+```
+
+Depois, o site (Cloudflare Pages, a partir da branch `main`) precisa da versão da página igual
+à do motor publicado. As duas saem do mesmo `index.html`: publique o Worker e o site a partir do
+mesmo commit. `npx wrangler deploy --dry-run -c wrangler.producao.jsonc` confere a configuração
+sem publicar (1,7 MB comprimido).
 
 ## Como o motor roda no servidor
 
