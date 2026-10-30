@@ -892,9 +892,16 @@
         padding:10px 16px;background:var(--s1);border-top:1px solid var(--line);font-size:14px}
       .mp-barra .mp-b-e{flex:1;min-width:160px;color:var(--soft)}
       .mp-barra .mp-dot{display:inline-block;vertical-align:middle}
-      body.mp-com-barra{padding-bottom:64px}`;
+      body.mp-com-barra{padding-bottom:64px}
+      .ini-mp{margin-top:12px}`;
     document.head.appendChild(st);
-    const b = el('btnMP'); if(b) b.hidden = false;
+    /* o botão fica fora do bloco "Continuar", que some quando o aparelho não tem save do jogo solo */
+    const b = el('btnMP');
+    if(b){
+      b.hidden = false;
+      const cont = b.closest('.ini-cont');
+      if(cont && cont.parentNode){ const w = document.createElement('div'); w.className = 'ini-mp'; cont.parentNode.insertBefore(w, cont.nextSibling); w.appendChild(b); }
+    }
     /* sair da tela da partida por qualquer botão (o menu, "Sair") desliga o modo e tira a barra */
     const mostrar = UI.show;
     UI.show = function(nome){
