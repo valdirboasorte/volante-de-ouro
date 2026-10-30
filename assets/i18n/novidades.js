@@ -1979,6 +1979,7 @@
     ["Corrida ao vivo", "Live race", "Carrera en vivo", "ライブレース"],
     ["Você já escolheu a hora da classificação.", "You already chose when to go out in qualifying.", "Ya elegiste cuándo salir en la clasificación.", "予選に出るタイミングはもう選びました。"],
     ["Suas salas", "Your rooms", "Tus salas", "あなたのルーム"],
+    ["Continuar", "Continue", "Continuar", "続ける"],
     ["Abrir", "Open", "Abrir", "開く"],
     ["Outra sala", "Another room", "Otra sala", "別のルーム"],
     ["Apagar esta sala?", "Delete this room?", "¿Borrar esta sala?", "このルームを削除しますか？"],

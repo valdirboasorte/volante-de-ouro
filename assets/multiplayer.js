@@ -831,12 +831,13 @@
         <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="MP.voltarAoGerenciamento()">Voltar ao gerenciamento</button></div>`);
     },
     listaSalas(){
+      const atual = ler(); if(atual && !lerLista().some(x => x.codigo === atual.codigo)) naLista(atual);
       const l = lerLista(); if(!l.length) return '';
       return `<span class="lbl">Suas salas</span>` + l.map(g => MP._apagar === g.codigo
         ? `<div class="sv-item sv-apagar"><div class="sv-tx"><b><span>Apagar esta sala?</span> <span data-i18n-ignore>${esc(codigoBonito(g.codigo))}</span></b><span class="sv-desc">Ela some deste aparelho. Se a partida ainda não começou, a vaga fica livre.</span></div>
             <div class="sv-bts"><button class="btn btn-ghost btn-sm" onclick="MP._apagar=null;MP.abrirEntrada()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.apagarSala('${g.codigo}', true)">Apagar</button></div></div>`
         : `<div class="sv-item"><div class="sv-tx"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b><span class="sv-desc">${g.modo ? `<span>${esc(MODOS[g.modo] || g.modo)}</span> · ` : ''}<span data-i18n-ignore>${esc(g.nome || '')}</span></span></div>
-            <div class="sv-bts"><button class="btn btn-primary btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button><button class="btn btn-ghost btn-sm" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div></div>`).join('');
+            <div class="sv-bts">${atual && atual.codigo === g.codigo ? '<button class="btn btn-primary btn-sm" onclick="MP.abrir()">Continuar</button>' : `<button class="btn btn-primary btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button>`}<button class="btn btn-ghost btn-sm" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div></div>`).join('');
     },
     abrirEntrada(){
       let nome = ''; try { nome = localStorage.getItem('vdo_mp_nome') || ''; } catch(e){}
@@ -899,6 +900,8 @@
     const b = el('btnMP');
     if(b){
       b.hidden = false;
+      /* o botão da abertura leva às salas (continuar, abrir outra ou criar uma nova), nunca direto para a partida */
+      b.onclick = () => MP.abrirEntrada();
       const cont = b.closest('.ini-cont');
       if(cont && cont.parentNode){ const w = document.createElement('div'); w.className = 'ini-mp'; cont.parentNode.insertBefore(w, cont.nextSibling); w.appendChild(b); }
     }
