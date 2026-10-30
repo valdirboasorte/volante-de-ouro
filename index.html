@@ -2287,6 +2287,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
           <button class="ini-continuar" id="btnContinue" onclick="Game.continueSave()" style="display:none"><b>Continuar carreira</b> <span id="contDesc"></span></button>
           <button class="ini-continuar" id="btnChefeCont" onclick="UIC.continuar()" style="display:none"><b>Continuar como chefe</b> <span id="chefeContDesc"></span></button>
           <button class="ini-continuar" id="btnSaves" onclick="Saves.abrir()" style="display:none"><b>Jogos salvos</b> <span id="savesDesc"></span></button>
+          <button class="ini-continuar" id="btnMP" onclick="MP.abrir()" hidden><b>Multiplayer</b> <span id="mpDesc"><span>Sala com um amigo</span> · <span>teste</span></span></button>
         </div>
         <button class="ini-apoio" id="abApoio" onclick="Doacao.pagina()" hidden>Apoie o projeto</button>
       </div>
@@ -2696,6 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
+<script src="assets/multiplayer.js?v=20261029-salas" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -25035,6 +25037,8 @@ const Chefe = {
     era.teams.forEach((t, i) => {
       const r = Engine.resolveTeam(t, i, ano, Chefe.sk());
       if(!r || Chefe.ehNossa(t, r, ano)) return;
+      /* multiplayer: a equipe do outro jogador entra pela mão dele, não pela história */
+      if(C && C.mpOutras && C.mpOutras.some(o => o.nome === r.name)) return;
       out.push(r);
     });
     return out;
@@ -25103,7 +25107,7 @@ const Chefe = {
     if(rd !== Math.floor(n / 3) && rd !== Math.floor(2 * n / 3)) return [];
     const feitos = [];
     sea.teams.forEach(t => {
-      const g = C.ia.eq[t.name]; if(!g || t.id === 'EU') return;
+      const g = C.ia.eq[t.name]; if(!g || t.id === 'EU' || t.humana) return;
       const rnd = Chefe.iaSorte('pacote:' + Chefe.sk() + ':' + t.name + ':' + sea.ano + ':' + rd);
       if(rnd() >= .3 + .4 * g.agr + (g.orc - .7) * .3) return;
       const u = rnd(), tier = u < .18 ? 'otimo' : u < .62 ? 'bom' : u < .88 ? 'morno' : 'ruim';
@@ -25206,7 +25210,10 @@ const Chefe = {
 
   /* os nomes que são seus e não podem correr por outra equipe */
   reservados(){
-    return new Set(C.pilotos.filter(p => p.papel !== 'emprestado').map(p => p.nome));
+    const s = new Set(C.pilotos.filter(p => p.papel !== 'emprestado').map(p => p.nome));
+    /* multiplayer: os pilotos da outra equipe humana também não correm por mais ninguém */
+    (C.mpOutras || []).forEach(o => (o.reservados || []).forEach(n => s.add(n)));
+    return s;
   },
 
   /* quem está em atividade na Fórmula 1 naquele ano */
@@ -25406,15 +25413,17 @@ const Chefe = {
     const ano = C.ano, f1 = Chefe.ehTopo();
     const era = eraOfSeries(ano, Chefe.sk());
     const eu = { id:'EU', name:C.eq.nome, color:C.eq.cor, str: Chefe.forca(), nossa:true };
+    /* multiplayer: a outra equipe humana, com a força do carro dela */
+    const humanas = (C.mpOutras || []).map(o => ({ id: o.id, name: o.nome, color: o.cor, str: o.str, humana: true }));
     let teams, field;
     if(f1){
       const ia = Chefe.equipesIA(ano);
       const grid = Chefe.montarGrid(ano, ia);
-      teams = ia.concat([eu]);
+      teams = ia.concat([eu], humanas);
       field = grid.map((p, k) => ({ id:'d' + k, name:p.nome, cc:p.cc, teamId:p.teamId, skill:p.skill }));
     } else {
       const ia = Chefe.equipesJunior(ano);
-      teams = ia.concat([eu]);
+      teams = ia.concat([eu], humanas);
       field = Chefe.gridJunior(ano, ia);
     }
     field.forEach(f => Chefe.perfilar(f, ano));
@@ -25446,6 +25455,8 @@ const Chefe = {
     };
     C.temporada.field.forEach(f => { if(f.teamId === 'EU') f.teamId = 'EU'; });
     Chefe.escalar(C.temporada);
+    /* multiplayer: os carros da outra equipe humana, com os pilotos que ela escalou */
+    (C.mpOutras || []).forEach(o => (o.carros || []).forEach(f => C.temporada.field.push(Object.assign({}, f, { teamId: o.id, nosso: false }))));
   },
 
   /* quem pilota os seus dois carros neste fim de semana */
@@ -25849,7 +25860,8 @@ const Chefe = {
     const M = (vivo && vivo.montagem) || Chefe.montar();
     const { sea, rd, trk, era, dec, wet, grid, running, out, notas, corre } = M;
     let finish, flId = null, houveSC, ordemUsada = null;
-    if(vivo){
+    /* com a chegada pronta (corrida ao vivo); só a montagem (multiplayer) corre pelo caminho de sempre */
+    if(vivo && vivo.finish){
       /* a chegada que a pista deu, com a ordem de equipe que você deu (se deu) */
       finish = vivo.finish; flId = vivo.flId; houveSC = vivo.sc;
       if(vivo.ordem){
@@ -25971,7 +25983,7 @@ const Chefe = {
       t:(sea.teams.find(t => t.id === x.f.teamId) || {}).name, me:x.f.teamId === 'EU',
       pos:x.out ? null : x.pos, dnf:x.out ? x.dnf : null }));
     /* a corrida contada metro a metro (quando não foi comandada): só a descrição */
-    const provaEnt = vivo ? null : Engine.descreverProva(sea, rd, finish, flId, wet, houveSC, Chefe.sk());
+    const provaEnt = vivo && vivo.finish ? null : Engine.descreverProva(sea, rd, finish, flId, wet, houveSC, Chefe.sk());
 
     const rec = {
       r: rd + 1, gp:trk.gp, circ:trk.circ, cc:trk.cc, type:trk.type, wet,
@@ -25985,6 +25997,8 @@ const Chefe = {
       venc: finish[0] && !finish[0].out ? finish[0].f.name : null
     };
     if(provaEnt) Object.defineProperty(rec, 'provaEnt', { value: provaEnt, enumerable: false, configurable: true });
+    /* a chegada inteira, para o multiplayer aplicar a mesma corrida à outra equipe (fora do save) */
+    Object.defineProperty(rec, 'chegada', { value: { finish, flId, sc: houveSC }, enumerable: false, configurable: true });
     if(vivo && vivo.crono) rec.crono = vivo.crono;
     sea.results.push(rec);
     try { Acerto.guardar(sea, rd); } catch(e){}
@@ -26389,7 +26403,8 @@ Object.assign(Chefe, {
      Três portas: assumir uma equipe que existiu, fundar uma e já largar na
      Fórmula 1, ou fundar uma na base e subir degrau por degrau. */
   novo(o){
-    C = { v:Chefe.V, modo:o.modo, ano:o.ano, inicio:o.ano, chefe:o.chefe, realismo:o.realismo !== false, seq:0,
+    /* seq: o multiplayer começa o contador do convidado longe, para os ids das duas equipes não se cruzarem */
+    C = { v:Chefe.V, modo:o.modo, ano:o.ano, inicio:o.ano, chefe:o.chefe, realismo:o.realismo !== false, seq:o.seq || 0,
           eq:{ nome:'', cor:'#8a8f98', cc:'GB', linhagem:null, real:false, fundada:o.ano },
           sk: SERIES[o.sk] ? o.sk : 'f1', topo:true, cat:'Fórmula 1', escada:[], caixa:0, livro:{}, rep:20, part:100, dir:null,
           carro:{ aero:40, chassi:40, motor:50, confiab:55 }, motor:{ nome:null, proprio:false, ate:o.ano },
@@ -26758,6 +26773,8 @@ Object.assign(Chefe, {
     const strDe = {};
     Chefe.equipesIA(ano).forEach(t => strDe[t.name] = t.str);
     const nossos = new Set(C.pilotos.map(p => p.nome));
+    /* multiplayer: os pilotos da outra equipe humana não estão à venda */
+    (C.mpOutras || []).forEach(o => (o.reservados || []).forEach(n => nossos.add(n)));
     const W = Chefe.garantirMundo(ano);
     /* quem está na Fórmula 1 não aparece de novo como piloto de outro lugar */
     const vistos = new Set(nossos);
@@ -28895,8 +28912,17 @@ const UIC = {
   TENT_PIL: 6, TENT_STAFF: 4,
   aba: 'drv',
 
+  /* ═══ MULTIPLAYER ═══
+     Numa partida de chefe com um amigo (assets/multiplayer.js), a equipe que está na tela
+     é uma cópia do que o servidor mandou: cada decisão vai para ele, que a aplica e devolve
+     a equipe atualizada. Nada é salvo no aparelho, e o save do modo chefe fica intacto. */
+  emMP(){ return typeof MP !== 'undefined' && !!MP.chefeAtivo && MP.chefeAtivo(); },
+  mp(tipo, dados, depois){ if(!UIC.emMP()) return false; MP.chefeAcao(tipo, dados, depois); return true; },
+  mpPronto(){ if(!UIC.emMP()) return false; MP.chefePronto(); return true; },
+  mpIndisponivel(){ if(!UIC.emMP()) return false; UI.toast('Indisponível no multiplayer por enquanto.'); return true; },
+
   salvar(toast){
-    if(!C) return;
+    if(!C || UIC.emMP()) return;
     try {
       if(!Store.set('vdo_chefe', JSON.stringify(C)) && Store.cheio){ Store.avisarCheio(); return; }
       if(toast) UI.toast(Store.ok ? 'Equipe salva neste aparelho.' : 'Salvo só nesta sessão — este navegador bloqueou o armazenamento.');
@@ -28920,7 +28946,7 @@ const UIC = {
       UI.show('chefe'); UIC.render();
     } catch(e){ UI.toast('Não consegui abrir a equipe salva.'); }
   },
-  sair(){ UIC.salvar(); UI.limparFila(); UI.close(); UI.show('intro'); Game.checkSave(); },
+  sair(){ if(UIC.emMP()) return MP.sairDoChefe(); UIC.salvar(); UI.limparFila(); UI.close(); UI.show('intro'); Game.checkSave(); },
 
   /* ═══ A FICHA DA EQUIPE ═══ */
   abrir(){
@@ -29184,6 +29210,8 @@ const UIC = {
     if(!C || !C.temporada || C.fase !== 'temporada') return;
     const sea = C.temporada, qs = sea.qs && sea.qs.rd === sea.round ? sea.qs : null;
     UIC.pagina('corrida');
+    /* no multiplayer o fim de semana é só de decisões: sábado e domingo rodam no servidor */
+    if(UIC.emMP()) return UIC.preCorrida();
     if(qs) UIC.fimDeSemana();
   },
 
@@ -29555,6 +29583,7 @@ const UIC = {
     </div>`;
   },
   dpComecar(){
+    if(UIC.mp('pecasProjetar', { parte: UIC._dp, foco: UIC._df, nivel: UIC._di }, () => UIC.pagina('desenvolvimento'))) return;
     const r = Pecas.projetar(UIC._dp, UIC._df, UIC._di);
     if(!r.ok){ UI.toast(r.motivo || 'Não deu para começar o projeto.'); return; }
     UIC.salvar(); UIC.pagina('desenvolvimento');
@@ -29584,12 +29613,13 @@ const UIC = {
     return `<p class="chx-nota"><span>Túnel: ${P.horas} h usadas (os projetos em andamento já contam), ${livres} h livres.</span> <span>No ritmo de agora (${Math.round(ritmo)} h por etapa) o ano fecha em ${proj} h${expira ? `, e ${expira} h expiram sem uso: as horas não passam para o ano que vem` : ''}.</span></p>`;
   },
   dpFabricar(eid, q, rapido){
+    if(UIC.mp('pecasFabricar', { eid, q, rapido: !!rapido }, () => UIC.pagina('desenvolvimento'))) return;
     const r = Pecas.fabricar(eid, q, rapido);
     if(!r.ok){ UI.toast(r.motivo || 'Não deu para fabricar.'); return; }
     UIC.salvar(); UIC.pagina('desenvolvimento');
   },
-  dpArquivar(pid){ Pecas.arquivar(pid); UIC.salvar(); UIC.pagina('desenvolvimento'); },
-  dpPrio(k){ const P = Pecas.P(); if(!P) return; P.prio = k; Pecas.montar(); UIC.salvar(); UIC.pagina('desenvolvimento'); },
+  dpArquivar(pid){ if(UIC.mp('pecasArquivar', { pid }, () => UIC.pagina('desenvolvimento'))) return; Pecas.arquivar(pid); UIC.salvar(); UIC.pagina('desenvolvimento'); },
+  dpPrio(k){ if(UIC.mp('pecasPrio', { k }, () => UIC.pagina('desenvolvimento'))) return; const P = Pecas.P(); if(!P) return; P.prio = k; Pecas.montar(); UIC.salvar(); UIC.pagina('desenvolvimento'); },
 
   /* ═══ O ACERTO NOS TREINOS ═══ */
   acHtml(f){
@@ -29613,9 +29643,14 @@ const UIC = {
       <details class="ac-ajuda"><summary>O que cada ajuste faz</summary><ul>${Acerto.PARAM.map(p => `<li><b>${esc(p.n)}.</b> ${esc(p.d)}</li>`).join('')}</ul></details>
     </div>`;
   },
-  acMudar(k, j, v, inp){ Acerto.mudar(k, j, v); if(inp && inp.nextElementSibling) inp.nextElementSibling.textContent = Math.round(+v); },
-  acSaida(k){ if(Acerto.saida(k)){ UIC.salvar(); UIC.preCorrida(); } },
-  acAuto(k){ Acerto.auto(k); UIC.salvar(); UIC.preCorrida(); },
+  acMudar(k, j, v, inp){
+    if(inp && inp.nextElementSibling) inp.nextElementSibling.textContent = Math.round(+v);
+    /* no multiplayer o controle deslizante manda só o valor final, não cada passo */
+    if(UIC.emMP()){ clearTimeout(UIC._acT); UIC._acT = setTimeout(() => UIC.mp('acertoMudar', { k, j, v: +v }), 400); return; }
+    Acerto.mudar(k, j, v);
+  },
+  acSaida(k){ if(UIC.mp('acertoSaida', { k }, () => UIC.preCorrida())) return; if(Acerto.saida(k)){ UIC.salvar(); UIC.preCorrida(); } },
+  acAuto(k){ if(UIC.mp('acertoAuto', { k }, () => UIC.preCorrida())) return; Acerto.auto(k); UIC.salvar(); UIC.preCorrida(); },
   pg_desenvolvimento(){
     if(C.fase === 'inverno' && C.inv){ UIC.desenv(); return null; }
     if(Pecas.ativo() && C.fase === 'temporada') return UIC.pg_desenvolvimentoPecas();
@@ -30161,13 +30196,14 @@ const UIC = {
   /* o fim de semana retoma de onde parou: decisões, classificação, preparação */
   fimDeSemana(){
     const sea = C.temporada; if(!sea || !sea.calendar[sea.round]) return;
+    if(UIC.emMP()) return UIC.preCorrida();
     const qs = sea.qs && sea.qs.rd === sea.round ? sea.qs : null;
     if(!qs) return UIC.preCorrida();
     if(!qs.concluida) return UIC.quali();
     if(!qs.grid) return UIC.gridFinal();
     return UIC.prepCorrida();
   },
-  irQuali(){ const sea = C.temporada; Chefe.qualiDaEtapa(sea); UIC.salvar(); UIC.quali(); },
+  irQuali(){ if(UIC.mpPronto()) return; const sea = C.temporada; Chefe.qualiDaEtapa(sea); UIC.salvar(); UIC.quali(); },
   janela(carro, k){ const qs = C.temporada.qs; if(!qs || qs.concluida) return; qs.janelas[carro] = k; UIC.salvar(); UIC.quali(); },
   rodarSessao(){
     if(!UI.aberta()) return;
@@ -30176,15 +30212,18 @@ const UIC = {
   },
   /* a sessão da classificação ao vivo; no fim, o resultado volta para a janela da classificação */
   sessaoAoVivo(){
+    if(UIC.mpIndisponivel()) return;
     const qs = C.temporada && C.temporada.qs; if(!qs || qs.concluida) return;
     Sessao.abrir('quali', () => { UIC.salvar(); UIC.quali(); });
   },
   /* o treino livre ao vivo: cada saída traz o que o piloto sente; o acerto muda entre as saídas */
   treinoAoVivo(){
+    if(UIC.mpIndisponivel()) return;
     if(!C || !C.temporada || C.fase !== 'temporada') return;
     Sessao.abrir('treino', () => { UIC.salvar(); if(UIC.pag === 'corrida') UIC.pagina('corrida'); else UIC.preCorrida(); });
   },
   simularQuali(){
+    if(UIC.mpPronto()) return;
     const sea = C.temporada;
     Chefe.gridDaEtapa(sea); UIC.salvar(); UIC.gridFinal();
   },
@@ -30343,6 +30382,7 @@ const UIC = {
       </div>`;
   },
   dec(g, k, v){
+    if(UIC.mp('dec', { g, k, v }, () => UIC.preCorrida())) return;
     if(g === 'fds'){ const f = C.temporada.fds; if(f && f.evento && !f.resolvido) f.evento.escolha = v; return UIC.preCorrida(); }
     if(g === 'tl1'){ C.decisao.tl1 = v === 'nao' ? null : { carro: +v.split(':')[0], pid: v.split(':')[1] }; return UIC.preCorrida(); }
     if(g === 'treino' || g === 'acerto'){
@@ -30359,6 +30399,7 @@ const UIC = {
     UIC.preCorrida();
   },
   largar(){
+    if(UIC.mpPronto()) return;
     /* clique duplo não corre duas corridas */
     if(!UI.aberta() || !C || C.fase !== 'temporada' || C.temporada.round >= C.temporada.calendar.length) return;
     /* a mesma rodada larga uma vez só, mesmo com o clique repetido */
@@ -30428,6 +30469,7 @@ const UIC = {
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close()">Fechar</button></div>`);
   },
   simularResto(){
+    if(UIC.mpIndisponivel()) return;
     const sea = C.temporada;
     UI.modal(UI.head('Simular o resto do ano?', 'As decisões de corrida atuais valem para todas as etapas') +
       `<div class="mbd"><p class="mut" style="margin:0">Faltam ${sea.calendar.length - sea.round} corridas. Os acontecimentos do caminho ficam sem a sua decisão — o box resolve do jeito mais prudente.</p></div>
@@ -30462,9 +30504,13 @@ const UIC = {
         <button class="btn btn-gold" onclick="UIC.levarPacote()">Levar para a pista</button></div>`);
   },
   levarPacote(){
+    if(UIC.mp('pacote', { area: UIC._pa, nivel: UIC._pn }, r => UIC.respostaPacote(r))) return;
     const r = Chefe.levarPacote(UIC._pa, UIC._pn);
     if(!r){ UI.close(); return; }
     UIC.salvar();
+    UIC.respostaPacote(r);
+  },
+  respostaPacote(r){
     const txt = { otimo:'Funcionou melhor do que o túnel prometia. Os pilotos sentiram na primeira volta.',
       bom:'Funcionou como o previsto. Um passo à frente.', morno:'Mal se nota no cronômetro. O dinheiro foi, o ganho não veio.',
       ruim:'O carro ficou pior. A correlação entre túnel e pista falhou, e o pacote volta para a fábrica.' }[r.tier];
@@ -30486,9 +30532,13 @@ const UIC = {
       </div>`);
   },
   eventoOp(i){
+    if(UIC.mp('evento', { i }, r => UIC.respostaEvento(r))) return;
     const r = Chefe.resolverEvento(i);
     UIC.salvar();
-    if(!r){ UI.close(); return; }
+    UIC.respostaEvento(r);
+  },
+  respostaEvento(r){
+    if(!r || !r.titulo){ UI.close(); return; }
     UI.modal(UI.head(esc(r.titulo), UIC.tierTxt(r.tier), false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${UIC.tierCor(r.tier)}">${esc(r.txt)}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);
@@ -30496,6 +30546,8 @@ const UIC = {
 
   /* ═══ FIM DO ANO ═══ */
   fimTemporada(){
+    /* no multiplayer o balanço já foi feito no servidor, junto com a última corrida */
+    if(UIC.emMP()){ UIC.render(); return UIC.balanco(); }
     if(C.fase === 'temporada') Chefe.fimDeTemporada();
     UIC.salvar(); UIC.render();
     UIC.balanco();
@@ -30550,6 +30602,8 @@ const UIC = {
     const b = C.balanco;
     if(b && b.estouro) return UI.depois(() => UIC.teto(), 150);
     if(b && b.falencia) return UI.depois(() => UIC.falencia(), 150);
+    /* no multiplayer o ano vira no servidor, quando os dois estiverem prontos */
+    if(UIC.mpPronto()) return;
     if(C.vendida) return UI.depois(() => UIC.fimCarreira('venda'), 150);
     if(b && b.aval && b.aval.demitido) return UI.depois(() => UIC.demitido(), 150);
     Chefe.proximoAno();
@@ -30565,8 +30619,12 @@ const UIC = {
         <button class="dil" onclick="UIC.tetoOp('maquiar')"><b>Maquiar as contas</b><span>Se passar, passou. Se não passar, é escândalo, multa pesada e perda de pontos.</span></button></div>`);
   },
   tetoOp(op){
+    if(UIC.mp('teto', { op }, r => UIC.respostaTeto(r.t))) return;
     const t = Chefe.resolverTeto(op);
     UIC.salvar();
+    UIC.respostaTeto(t);
+  },
+  respostaTeto(t){
     UI.modal(UI.head('Teto de gastos', 'O veredito', false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0">${esc(t)}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.aposBalanco()">Seguir</button></div>`);
@@ -30575,6 +30633,10 @@ const UIC = {
     const f = C && C.balanco && C.balanco.falencia;
     if(!f) return;
     if(C.modo === 'assumir' && C.dir && C.dir.dono !== 'conselho'){
+      /* no multiplayer o servidor faz o socorro do dono na virada do ano */
+      if(UIC.emMP()) return UI.modal(UI.head('O rombo', 'A diretoria vai pagar a conta', false) +
+        `<div class="mbd"><div class="res-nar" style="margin-top:0">O dono cobre a dívida na virada do ano, e a conta volta descontada do aporte dos próximos anos.</div></div>
+        <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.mpPronto()">Seguir</button></div>`);
       const so = Chefe.socorroDono();
       UIC.salvar();
       UI.modal(UI.head('O rombo', 'A diretoria pagou a conta', false) +
@@ -30588,9 +30650,14 @@ const UIC = {
         <button class="dil" onclick="UIC.falOp('fechar')"><b>Fechar as portas</b><span>A equipe deixa de existir. A sua carreira de chefe termina aqui.</span></button></div>`);
   },
   falOp(op){
+    if(op === 'fechar' && UIC.mpIndisponivel()) return;
     if(op === 'fechar') return UIC.fimCarreira('falencia');
+    if(UIC.mp('falencia', { op }, () => UIC.respostaResgate())) return;
     const pct = Chefe.resgatar();
     UIC.salvar();
+    UIC.respostaResgate();
+  },
+  respostaResgate(){
     UI.modal(UI.head('Resgate', 'A equipe sobrevive', false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0">A dívida foi paga. Você agora tem ${C.part}% da ${esc(C.eq.nome)}.${C.dir && C.dir.dono === 'conselho' ? ' Existe um conselho acima de você.' : ''}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.aposBalanco()">Seguir</button></div>`);
@@ -30648,15 +30715,20 @@ const UIC = {
     inv.msgs = [];
   },
   saidaOp(op){
+    if(UIC.mp('saida', { i: 0, op }, r => UIC.respostaSaida(r.t))) return;
     const d = C.inv.decisoes[0];
     const t = Chefe.resolverSaida(d, op);
     UIC.salvar(); UIC.render();
+    UIC.respostaSaida(t);
+  },
+  respostaSaida(t){
     UI.modal(UI.head('Proposta pelo seu piloto', 'Decidido', false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0">${esc(t)}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.inverno()">Seguir</button></div>`);
   },
   comecar(){
     if(!C || C.fase !== 'inverno') return;
+    if(UIC.mpPronto()) return;
     const falta = Chefe.pendencias();
     if(falta.length){ UI.toast('Falta ' + falta.join(' e ') + '.'); return; }
     if(C.inv && C.inv.decisoes.length) return UIC.inverno();
@@ -30689,7 +30761,7 @@ const UIC = {
       </div>
       <div class="mft"><span class="sp"></span>${meta ? '' : '<button class="btn btn-primary" onclick="UI.close()">Para a primeira corrida</button>'}</div>`);
   },
-  meta(k){ Chefe.ajustarMeta(k); UIC.salvar(); UIC.render(); UIC.preTemporada(); },
+  meta(k){ if(UIC.mp('meta', { k }, () => UIC.preTemporada())) return; Chefe.ajustarMeta(k); UIC.salvar(); UIC.render(); UIC.preTemporada(); },
 
   /* ═══ MERCADO DE PILOTOS ═══ */
   /* a superlicença no cartão do mercado (F1, desde 2016): quem a história já pôs na F1 não precisa de aviso */
@@ -30846,8 +30918,13 @@ const UIC = {
   },
   proposta(){
     const p = UIC._alvo, of = UIC._of;
+    if(UIC.mp('negociar', { piloto: C.pilotos.indexOf(p) >= 0 ? { id: p.id } : { mercado: p.nome }, oferta: of },
+      r => UIC.respostaProposta(Object.assign({}, p, { ate: r.ate != null ? r.ate : p.ate }), r))) return;
     const r = Chefe.negociar(p, of);
     UIC.salvar(); UIC.render();
+    UIC.respostaProposta(p, r);
+  },
+  respostaProposta(p, r){
     if(r.ok){
       UI.modal(UI.head(esc(p.nome), 'Assinado', false) +
         `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:var(--green)">${esc(p.nome)} ${r.t === 'otimo' ? 'aceitou na hora.' : 'aceitou.'} Contrato até ${p.ate}.</div></div>
@@ -30867,12 +30944,14 @@ const UIC = {
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.mercado()">Voltar ao mercado</button></div>`);
   },
   aceitarContra(){
+    if(UIC.mp('aceitarContra', {}, () => UIC.mercado())) return;
     const p = UIC._alvo;
     Chefe.assinar(p, Object.assign({}, UIC._of, { salFixo: UIC._contra }), 1);
     UIC.salvar(); UIC.render(); UIC.mercado();
   },
-  n1(id){ C.n1 = id; UIC.salvar(); UIC.render(); UIC.mercado(); },
+  n1(id){ if(UIC.mp('n1', { id }, () => UIC.mercado())) return; C.n1 = id; UIC.salvar(); UIC.render(); UIC.mercado(); },
   promover(id){
+    if(UIC.mp('promover', { id }, () => UIC.mercado())) return;
     const p = C.pilotos.find(x => x.id === id); if(!p) return;
     const sl = Chefe.superlicenca(p);
     if(!sl.ok) return UI.toast(p.nome + ' não tem superlicença (' + sl.total + ' de 40 pontos).');
@@ -30883,12 +30962,14 @@ const UIC = {
     UIC.salvar(); UIC.render(); UIC.mercado();
   },
   rebaixar(id){
+    if(UIC.mp('rebaixar', { id }, () => UIC.mercado())) return;
     const p = C.pilotos.find(x => x.id === id); if(!p) return;
     p.papel = 'teste'; if(C.n1 === id) C.n1 = null;
     Chefe.mexerMoral(p, -12, 'rebaixado a reserva');
     UIC.salvar(); UIC.render(); UIC.mercado();
   },
   dispensar(id){
+    if(UIC.mp('dispensar', { id }, () => UIC.mercado())) return;
     const p = C.pilotos.find(x => x.id === id); if(!p) return;
     Chefe.dispensar(p);
     UIC.salvar(); UIC.render(); UIC.mercado();
@@ -30923,6 +31004,7 @@ const UIC = {
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
   },
   escolherMotor(nome){
+    if(UIC.mp('motor', { nome, anos: UIC.mAnos }, r => UIC.respostaMotor(r))) return;
     const atual = C.motor;
     if(!atual.proprio && atual.nome && atual.nome !== nome && atual.ate >= C.ano){
       const m = Chefe.motorInfo(atual.nome);
@@ -30930,6 +31012,9 @@ const UIC = {
     }
     const r = Chefe.escolherMotor(nome, UIC.mAnos);
     UIC.salvar(); UIC.render();
+    UIC.respostaMotor(r);
+  },
+  respostaMotor(r){
     UI.modal(UI.head('Motor', r.ok ? 'Contrato fechado' : 'Não deu', false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${r.ok ? 'var(--green)' : 'var(--red)'}">${esc(r.t)}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.motores()">Voltar</button></div>`);
@@ -30958,7 +31043,7 @@ const UIC = {
       </div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`, true);
   },
-  nivel(a, i){ C.plano[a] = i; UIC.salvar(); UIC.desenv(); },
+  nivel(a, i){ if(UIC.mp('plano', { area: a, nivel: i }, () => UIC.desenv())) return; C.plano[a] = i; UIC.salvar(); UIC.desenv(); },
 
   /* ═══ ENGENHARIA ═══ */
   engenharia(){
@@ -30983,14 +31068,18 @@ const UIC = {
   },
   contratarStaff(i, m){
     const s = C.inv.staffMerc[i]; if(!s) return;
+    if(UIC.mp('staff', { nome: s.nome, m }, r => UIC.respostaStaff(s, r))) return;
     const r = Chefe.contratarStaff(s, m);
     UIC.salvar(); UIC.render();
+    UIC.respostaStaff(s, r);
+  },
+  respostaStaff(s, r){
     UI.modal(UI.head(esc(s.nome), r.ok ? 'Contratado' : 'Recusou', false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${r.ok ? 'var(--green)' : 'var(--red)'}">${r.ok
         ? esc(s.nome) + ' começa a trabalhar na segunda-feira.' : 'Preferiu ficar onde está. A sua equipe ainda não convence gente desse nível — ou o dinheiro não convenceu.'}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.engenharia()">Voltar</button></div>`);
   },
-  renovarStaff(k){ Chefe.renovarStaff(k); UIC.salvar(); UIC.render(); UIC.engenharia(); },
+  renovarStaff(k){ if(UIC.mp('renovarStaff', { k }, () => UIC.engenharia())) return; Chefe.renovarStaff(k); UIC.salvar(); UIC.render(); UIC.engenharia(); },
 
   /* ═══ INSTALAÇÕES ═══ */
   instalacoes(){
@@ -31015,8 +31104,8 @@ const UIC = {
       `<div class="mbd"><p class="mut" style="font-size:14px;margin:0 0 12px">Obra leva um ano. O que você constrói agora aparece no carro do ano que vem — e a conta de manutenção sobe para sempre.</p><p class="mut" style="font-size:14px;margin:0 0 12px">Depois de cinco anos o equipamento fica para trás e perde efeito. Modernizar custa menos que construir e também leva um ano.</p>${ks.map(card).join('')}</div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);
   },
-  construir(k){ Chefe.construir(k); UIC.salvar(); UIC.render(); UIC.instalacoes(); },
-  modernizar(k){ Chefe.modernizar(k); UIC.salvar(); UIC.render(); UIC.instalacoes(); },
+  construir(k){ if(UIC.mp('construir', { k }, () => UIC.instalacoes())) return; Chefe.construir(k); UIC.salvar(); UIC.render(); UIC.instalacoes(); },
+  modernizar(k){ if(UIC.mp('modernizar', { k }, () => UIC.instalacoes())) return; Chefe.modernizar(k); UIC.salvar(); UIC.render(); UIC.instalacoes(); },
   /* a idade da instalação, o quanto ela já perdeu e o botão de modernizar */
   idadeInstal(k){
     const nv = C.instal[k] || 0; if(!nv) return '';
@@ -31065,6 +31154,7 @@ const UIC = {
   },
   fazerPatro(i, acao){
     const s = C.patro[i]; if(!s) return;
+    if(UIC.mp('patroContrato', { nome: s.nome, acao: acao === 'renov' ? 'renov' : 'romper' }, () => UIC.voltarPatro())) return;
     if(acao === 'renov') s.semRenovar = !s.semRenovar;
     else {
       Chefe.noticia('Contrato com ' + s.nome + ' rescindido.', 'rd');
@@ -31077,12 +31167,16 @@ const UIC = {
   voltarPatro(){ UI.close(); UIC.render(); if(C.fase === 'inverno' && C.inv && UIC.pag !== 'patrocinadores') UIC.patrocinio(); },
   pedirPatro(i){
     const sp = C.inv.patro[i]; if(!sp) return;
+    if(UIC.mp('patroPedir', { nome: sp.nome }, r => UIC.respostaPedirPatro(sp, r))) return;
     const r = Chefe.pedirMaisPatro(sp);
     UIC.salvar();
+    UIC.respostaPedirPatro(sp, r);
+  },
+  respostaPedirPatro(sp, r){
     UI.modal(UI.head(esc(sp.nome), r.titulo, false) + `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${r.cor}">${esc(r.t)}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UIC.patrocinio()">Voltar</button></div>`);
   },
-  aceitarPatro(i){ const s = C.inv.patro[i]; if(s) Chefe.aceitarPatro(s); UIC.salvar(); UIC.render(); UIC.patrocinio(); },
+  aceitarPatro(i){ const s = C.inv.patro[i]; if(s && UIC.mp('patroAceitar', { nome: s.nome }, () => UIC.patrocinio())) return; if(s) Chefe.aceitarPatro(s); UIC.salvar(); UIC.render(); UIC.patrocinio(); },
 
   /* ═══ ACADEMIA ═══ */
   academia(){
@@ -31118,10 +31212,12 @@ const UIC = {
   acadNivel(i){ if(C.fase !== 'inverno' && i !== C.acad) return UI.toast('O tamanho da academia muda no inverno, quando o orçamento do ano é fechado.'); C.acad = i; UIC.salvar(); UIC.academia(); },
   contratarJr(i){
     const p = C.inv.olheiros[i]; if(!p) return;
+    if(UIC.mp('academia', { nome: p.nome }, () => { UIC.render(); UIC.academia(); })) return;
     if(!Chefe.levarParaAcademia(p)) return UI.toast('A academia está cheia. Mais investimento abre mais vagas.');
     UIC.salvar(); UIC.render(); UIC.academia();
   },
   acad(id, para){
+    if(UIC.mp('academiaPapel', { id, para }, () => { UIC.render(); UIC.academia(); })) return;
     const p = C.pilotos.find(x => x.id === id); if(!p) return;
     if(para === 'fora'){ Chefe.dispensar(p); }
     else if(para === 'emprestado'){ p.papel = 'emprestado'; p.ate = C.ano; Chefe.noticia(p.nome + ' é emprestado para correr na ' + Chefe.topoNome() + ' por outra equipe.', ''); }

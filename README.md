@@ -1050,6 +1050,15 @@ Se preferir servir por HTTP (para testar o comportamento de PWA, por exemplo):
 npx serve .
 ```
 
+## Multiplayer (em construção)
+
+A pasta `multiplayer/` tem o servidor das partidas com amigos: um Worker da Cloudflare e
+um Durable Object por sala, com o motor do jogo rodando sem tela. O servidor é quem
+decide os resultados. Por enquanto existem as salas (código de convite, entrada,
+reconexão) e ainda não as rodadas nem as corridas. Nada está publicado: o botão
+**Multiplayer** só aparece com o servidor local. Como rodar e o que já foi testado estão
+em [multiplayer/README.md](multiplayer/README.md).
+
 ## Publicar
 
 O projeto é estático. Qualquer hospedagem de site serve — Vercel, Netlify,

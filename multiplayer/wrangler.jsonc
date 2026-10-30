@@ -1,0 +1,24 @@
+/* Servidor do multiplayer: um Worker na frente e um Durable Object (Sala) por partida.
+   Desenvolvimento: npm run dev (gera o motor e sobe em http://127.0.0.1:8787).
+   Produção ainda não existe: ver multiplayer/README.md antes de qualquer deploy. */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "volante-mp",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "durable_objects": {
+    "bindings": [{ "name": "SALAS", "class_name": "Sala" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Sala"] }],
+  "vars": {
+    /* origens das páginas que podem abrir salas (o jogo servido localmente) */
+    "ORIGENS": "http://127.0.0.1:4338,http://localhost:4338",
+    /* rota de medição do motor, só no desenvolvimento */
+    "VIABILIDADE": "1",
+    /* mensagens e campos só de teste (__falhar, falhas na vista); nunca em produção */
+    "DESENVOLVIMENTO": "1"
+  },
+  /* criação de salas por IP: 10 por minuto */
+  "ratelimits": [{ "name": "LIMITE_SALAS", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }],
+  "observability": { "enabled": true }
+}

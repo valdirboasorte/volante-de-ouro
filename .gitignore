@@ -36,3 +36,8 @@ ferramentas/pistas-svg/cache/
 # Notas de trabalho e caches locais
 .worker-progress.md
 .impeccable/hook.cache.json
+
+# Multiplayer: estado local do wrangler, segredos de desenvolvimento e o motor gerado
+multiplayer/.wrangler/
+multiplayer/.dev.vars
+multiplayer/src/gerado/

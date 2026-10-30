@@ -23,6 +23,9 @@
 /ferramentas/*
   X-Robots-Tag: noindex
 
+/multiplayer/*
+  X-Robots-Tag: noindex
+
 # Host-specific headers do not affect the official custom domain.
 # Redirects still run first; the existing account rule is unchanged.
 https://:project.pages.dev/*

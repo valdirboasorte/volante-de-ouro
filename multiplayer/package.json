@@ -1,0 +1,14 @@
+{
+  "name": "volante-de-ouro-multiplayer",
+  "private": true,
+  "description": "Servidor do multiplayer do Volante de Ouro: um Worker e um Durable Object por sala, com o motor do jogo rodando sem tela.",
+  "type": "module",
+  "scripts": {
+    "motor": "node ferramentas/gerar-motor.mjs",
+    "dev": "node ferramentas/gerar-motor.mjs && wrangler dev --port 8787 --ip 127.0.0.1",
+    "testes": "node testes/rodar.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.156.0"
+  }
+}
