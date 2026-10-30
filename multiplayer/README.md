@@ -4,9 +4,10 @@ O servidor das partidas com amigos: um Worker da Cloudflare na frente e um Durab
 Object (`Sala`) por partida, com o motor do jogo rodando sem tela. O servidor é a
 autoridade: os navegadores mandam pedidos e mostram o que ele responde.
 
-**Ainda não está publicado.** Roda no seu computador com `wrangler dev`. Publicar exige o
-plano Workers Paid (o motor não cabe nos 10 ms de CPU do plano gratuito) e a sua
-autorização. Os passos estão em [Publicar](#publicar).
+**Publicado em 31/10/2026, em teste:** o servidor está em `https://mp.volantedeouro.com`
+(plano Workers Paid: o motor não cabe nos 10 ms de CPU do plano gratuito). No site, o botão
+Multiplayer só aparece com o link `https://volantedeouro.com/?mp=1`. Para desenvolver, o
+mesmo servidor roda no seu computador com `wrangler dev`. Ver [Publicar](#publicar).
 
 ## Fases
 
@@ -16,7 +17,7 @@ autorização. Os passos estão em [Publicar](#publicar).
 | 2 | Rodadas: pronto, espera, processamento único (com regras de teste) | feita |
 | 3 | Modo chefe com duas equipes humanas | feita (local; as corridas ainda pelo caminho rápido) |
 | 4 | Modo piloto com dois pilotos humanos | feita (local; as corridas ainda pelo caminho rápido) |
-| 5 | Corridas ao vivo no servidor | feita (local, pronta para publicar) |
+| 5 | Corridas ao vivo no servidor | feita e publicada (botão só com o link ?mp=1) |
 | 6 | Robustez e testes com dois aparelhos | a fazer |
 
 ## Rodar
@@ -351,6 +352,14 @@ mesma corrida no servidor e em cada navegador. Daí o **passo travado** (`src/co
   - "Ver o resultado" abriu a tela de resultado da rodada (7º, 6 pontos).
 
 ## Publicar
+
+**A primeira publicação (31/10/2026):** o Worker `volante-mp` e o site saíram do commit
+a0855fe (versão da página 35c65ecb68f256da). Conferido no ar:
+- uma origem estranha é recusada, e a rota de teste não existe;
+- sem o link, o botão some; com `?mp=1`, a sala é criada, a corrida ao vivo abre em 1,7 s e a
+  rodada é processada com a mesma chegada da tela.
+
+No Windows, se o PowerShell recusar o `npx` (política de execução de scripts), use `npx.cmd`.
 
 O servidor de produção usa `wrangler.producao.jsonc`:
 - endereço `https://mp.volantedeouro.com` (domínio próprio do Worker na zona do site);
