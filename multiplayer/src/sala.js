@@ -6,7 +6,8 @@
 
    Rodadas (Fase 2): cada jogador planeja em segredo (ação), marca pronto, e quando todos
    estão prontos a sala processa a rodada UMA vez (processar). As regras vêm de regrasDe():
-   'teste' (modo piloto, por enquanto) e 'chefe' (modo chefe, com o motor do jogo). O mundo (segredos incluídos) nunca vai inteiro para ninguém: cada
+   'chefe' e 'piloto' (os dois modos, com o motor do jogo) e 'teste' (um jogo mínimo só para os
+   testes de turnos, aceito na criação só com DESENVOLVIMENTO). O mundo (segredos incluídos) nunca vai inteiro para ninguém: cada
    jogador recebe só a regras.vista dele. Regra de ouro daqui: um await que não é de
    storage (criptografia, por exemplo) NÃO segura as outras chamadas da sala, então nunca
    fica entre conferir uma condição e ocupar/mudar o estado; muda-se tudo de forma
@@ -16,6 +17,7 @@ import { VERSAO_JOGO, criarMotor } from './gerado/motor-jogo.js';
 import { ambienteFalso } from './pagina-falsa.js';
 import { regrasTeste } from './regras-teste.js';
 import { criarRegrasChefe } from './regras-chefe.js';
+import { criarRegrasPiloto } from './regras-piloto.js';
 import { criarRnd } from './aleatorio.js';
 
 const MAX_JOGADORES = 2;              // pensado para crescer: nada abaixo assume 2
@@ -31,6 +33,10 @@ const RE_FICHA = /^ficha\.([0-9a-f]{64})$/;
 const ABERTO = 1;                     // WebSocket.OPEN
 const SERIES_CHEFE = ['f1', 'indy'];
 const CONFIG_CHEFE = () => ({ velocidade: 8, sk: 'f1', ano: 2024, equipes: {} });
+const SERIES_PILOTO = ['f1', 'indy'];
+const CONFIG_PILOTO = () => ({ velocidade: 8, serie: 'f1', ano: 2024, pilotos: {} });
+const IDADE_MIN = 14, IDADE_MAX = 30;
+const RE_CC = /^[A-Z]{2}$/;
 const MAX_ACOES_VISTAS = 200;         // ids de ação lembrados para não repetir uma ação reenviada
 const ESPERA_TENTATIVA_MS = 1500;     // nova tentativa depois de uma falha no processamento
 const ESPERA_TETO_MS = 600000;        // e no máximo 10 min entre tentativas
@@ -82,6 +88,7 @@ export class Sala extends DurableObject {
     this.mundo = null;                // o mundo das regras (segredos incluídos); só nesta classe
     this.motorJ = null;               // o motor do jogo: criado na primeira vez que precisa, só em memória
     this.regrasChefe = null;
+    this.regrasPiloto = null;
     this.falharProximo = false;       // só no desenvolvimento: a próxima rodada falha uma vez
     this.limites = new Map();         // slot -> { ini, n, violacoes }; some ao hibernar, sem problema
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('{"t":"ping"}', '{"t":"pong"}'));
@@ -110,6 +117,7 @@ export class Sala extends DurableObject {
 
   regrasDe(nome){
     if(nome === 'chefe') return this.regrasChefe || (this.regrasChefe = criarRegrasChefe(() => this.motor()));
+    if(nome === 'piloto') return this.regrasPiloto || (this.regrasPiloto = criarRegrasPiloto(() => this.motor()));
     return regrasTeste;
   }
 
@@ -191,7 +199,8 @@ export class Sala extends DurableObject {
   async criar(corpo){
     const nome = limparNome(corpo.nome);
     if(!nome) return resposta({ erro: 'nome' }, 400);
-    if(!MODOS.includes(corpo.modo)) return resposta({ erro: 'modo' }, 400);
+    /* 'teste' (as regras mínimas dos testes de turnos) só existe no desenvolvimento */
+    if(!MODOS.includes(corpo.modo) && !(corpo.modo === 'teste' && this.env.DESENVOLVIMENTO === '1')) return resposta({ erro: 'modo' }, 400);
     if(corpo.versao !== VERSAO_JOGO) return resposta({ erro: 'versao', versaoServidor: VERSAO_JOGO }, 409);
     /* o hash vem antes da conferência: uma espera de criptografia não segura as outras
        chamadas da sala (só as de storage seguram), então conferir e ocupar não podem
@@ -201,7 +210,7 @@ export class Sala extends DurableObject {
     const agora = Date.now();
     this.sala = {
       codigo: corpo.codigo, modo: corpo.modo, versao: VERSAO_JOGO, criada: agora, estado: 'lobby',
-      anfitriao: 0, v: 1, config: corpo.modo === 'chefe' ? CONFIG_CHEFE() : { velocidade: 8 },
+      anfitriao: 0, v: 1, config: corpo.modo === 'chefe' ? CONFIG_CHEFE() : corpo.modo === 'piloto' ? CONFIG_PILOTO() : { velocidade: 8 },
       jogadores: [{ slot: 0, nome, fichaHash, entrou: agora, visto: agora }]
     };
     await this.salvar();
@@ -307,6 +316,7 @@ export class Sala extends DurableObject {
 
     if(msg.t === 'configurar') return this.configurar(ws, slot, msg, id);
     if(msg.t === 'escolherEquipe') return this.escolherEquipe(ws, slot, msg, id);
+    if(msg.t === 'escolherPiloto') return this.escolherPiloto(ws, slot, msg, id);
     if(msg.t === 'sair') return this.sair(ws, slot, id);
     if(msg.t === 'iniciar') return this.iniciar(ws, slot, id);
     if(msg.t === 'acao') return this.acao(ws, slot, msg, id);
@@ -328,7 +338,8 @@ export class Sala extends DurableObject {
     if(s.jogadores.length !== MAX_JOGADORES) return this.erro(ws, 'jogadores', id);
     const chefe = s.modo === 'chefe';
     if(chefe && !s.jogadores.every(j => Number.isInteger(s.config.equipes && s.config.equipes[j.slot]))) return this.erro(ws, 'equipes', id);
-    const regras = this.regrasDe(chefe ? 'chefe' : 'teste');
+    if(s.modo === 'piloto' && !s.jogadores.every(j => s.config.pilotos && s.config.pilotos[j.slot])) return this.erro(ws, 'pilotos', id);
+    const regras = this.regrasDe(s.modo);
     try{
       this.mundo = regras.iniciar(s.jogadores.map(j => ({ slot: j.slot, nome: j.nome })),
         { config: s.config, codigo: s.codigo, anfitriao: s.anfitriao });
@@ -485,6 +496,26 @@ export class Sala extends DurableObject {
         novo.equipes = {};
       }
       s.config = novo;
+    }else if(s.modo === 'piloto'){
+      /* sala de piloto: velocidade, série e ano, todos opcionais (só o que veio muda); série e ano só no
+         lobby. O ano precisa ter uma era do jogo e existir na série. Os pilotos escolhidos ficam. */
+      if(c.velocidade !== undefined && !VELOCIDADES.includes(c.velocidade)) return this.erro(ws, 'config', id);
+      if(c.serie !== undefined && !SERIES_PILOTO.includes(c.serie)) return this.erro(ws, 'config', id);
+      if(c.ano !== undefined && !Number.isInteger(c.ano)) return this.erro(ws, 'config', id);
+      const novo = Object.assign({}, s.config);
+      if(c.velocidade !== undefined) novo.velocidade = c.velocidade;
+      if(c.serie !== undefined) novo.serie = c.serie;
+      if(c.ano !== undefined) novo.ano = c.ano;
+      if(novo.serie !== s.config.serie || novo.ano !== s.config.ano){
+        if(s.estado !== 'lobby') return this.erro(ws, 'estado', id);
+        let ok = false;
+        try{
+          const J = this.motor(), era = J.Engine.eraOf(novo.ano, 'f1');
+          ok = novo.ano >= J.ERAS[0].y && novo.ano <= 2100 && !!era && J.ERAS.includes(era) && novo.ano >= J.SERIES[novo.serie].from;
+        }catch(e){ ok = false; }
+        if(!ok) return this.erro(ws, 'config', id);
+      }
+      s.config = novo;
     }else{
       if(!VELOCIDADES.includes(c.velocidade)) return this.enviar(ws, { t: 'erro', codigo: 'config', id });
       s.config = { velocidade: c.velocidade };
@@ -517,11 +548,41 @@ export class Sala extends DurableObject {
     this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
   }
 
+  /* o piloto de cada jogador, no lobby da sala de piloto: nome, país (sigla), idade e estilo. O nome
+     (2 a 24 caracteres: o formulário do jogo pede ao menos 2 letras) não repete o do outro piloto. */
+  async escolherPiloto(ws, slot, msg, id){
+    const s = this.sala;
+    if(s.modo !== 'piloto') return this.erro(ws, 'modo', id);
+    if(s.estado !== 'lobby') return this.erro(ws, 'estado', id);
+    const p = msg.piloto;
+    if(!p || typeof p !== 'object' || Array.isArray(p)) return this.erro(ws, 'piloto', id);
+    const jogador = s.jogadores.find(j => j.slot === slot);
+    if(p.nome !== undefined && p.nome !== null && typeof p.nome !== 'string') return this.erro(ws, 'piloto', id);
+    const nome = limparNome(p.nome) || limparNome(jogador && jogador.nome);
+    const estilo = p.estilo === undefined || p.estilo === null ? 'equilibrado' : p.estilo;
+    let ok = nome.length >= 2 && typeof p.cc === 'string' && RE_CC.test(p.cc) && Number.isInteger(p.idade)
+      && p.idade >= IDADE_MIN && p.idade <= IDADE_MAX && typeof estilo === 'string';
+    try{
+      const J = this.motor();
+      ok = ok && Object.keys(J.STYLES).includes(estilo) && J.COUNTRIES.some(c => c.cc === p.cc);
+    }catch(e){ ok = false; }
+    if(!ok) return this.erro(ws, 'piloto', id);
+    s.config.pilotos = s.config.pilotos || {};
+    const igual = x => x.nome.toLocaleLowerCase() === nome.toLocaleLowerCase();
+    if(Object.entries(s.config.pilotos).some(([k, v]) => Number(k) !== slot && igual(v))) return this.erro(ws, 'piloto', id);
+    s.config.pilotos[slot] = { nome, cc: p.cc, idade: p.idade, estilo };
+    s.v++;
+    await this.salvar();
+    this.enviar(ws, { t: 'ok', id });
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+  }
+
   async sair(ws, slot, id){
     const s = this.sala;
     if(s.estado !== 'lobby') return this.enviar(ws, { t: 'erro', codigo: 'estado', id });
     s.jogadores = s.jogadores.filter(j => j.slot !== slot);
     if(s.config && s.config.equipes) delete s.config.equipes[slot];
+    if(s.config && s.config.pilotos) delete s.config.pilotos[slot];
     this.limites.delete(slot);
     this.enviar(ws, { t: 'ok', id });
     for(const w of this.ctx.getWebSockets('slot:' + slot)) this.fecharSeguro(w, 1000, 'saiu');

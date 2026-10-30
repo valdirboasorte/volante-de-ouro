@@ -2697,7 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261029-salas" defer></script>
+<script src="assets/multiplayer.js?v=20261030-piloto" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -9229,6 +9229,8 @@ const Engine = {
       const carrosPorNome = {}; byStr.forEach(t => carrosPorNome[t.name] = cap[t.id]);
       /* um dos carros é o seu — a não ser que o seu papel seja reserva ou testes */
       if(!S.papel && cap[S.team.id] != null) cap[S.team.id] = Math.max(0, cap[S.team.id] - 1);
+      /* multiplayer: o outro piloto humano, nesta mesma categoria, também tem o carro dele */
+      (S.mpOutros || []).forEach(o => { if(o.aqui && !o.papel && cap[o.teamId] != null) cap[o.teamId] = Math.max(0, cap[o.teamId] - 1); });
 
       /* lista de assentos, do melhor carro para o pior — o total por equipe é fixo */
       const slots = [];
@@ -9251,6 +9253,8 @@ const Engine = {
       /* Se você assumiu um piloto real, ele sai do grid: quem está no volante
          é você. Nada de dois Sennas na mesma equipe. */
       const euSou = S.real ? S.driver.name : null;
+      /* multiplayer: o outro piloto humano nunca é escalado pela IA */
+      const outrosHumanos = new Set((S.mpOutros || []).map(o => o.name));
       /* a escalação real daquele ano, quando existe */
       const escala = lineupOf(S.series, S.year);
       /* Passado o último ano documentado, quem já devia ter parado para de
@@ -9263,14 +9267,14 @@ const Engine = {
            lá: contratos que seguem, renovações, quem trocou de equipe e os
            estreantes que vieram de baixo. */
         Wtopo = Engine.garantirMundo();
-        pool = Mundo.topoDe(Wtopo, S.year).filter(r => r.n !== euSou && r.n !== S.driver.name)
+        pool = Mundo.topoDe(Wtopo, S.year).filter(r => r.n !== euSou && r.n !== S.driver.name && !outrosHumanos.has(r.n))
           .map(r => ({ name:r.n, cc:r.cc, skill:Math.round(r.h), titular:true, eqMundo:r.eq, mid:r.id }));
       } else {
         /* titular é quem a escalação real põe no carro; o substituto de uma corrida
            não tira o lugar de quem correu o ano inteiro */
         const tits = escala ? titularesReais(S.series, S.year, carrosPorNome) : null;
         pool = era.pilots
-          .filter(p => dist(p) === 0 && p[0] !== euSou)
+          .filter(p => dist(p) === 0 && p[0] !== euSou && !outrosHumanos.has(p[0]))
           .map(p=>({name:p[0], cc:p[1], skill:skillEm(S.series,p[0],S.year,p[2]),
                     titular: !!(tits && tits.has(p[0]))}));
       }
@@ -9281,7 +9285,7 @@ const Engine = {
         /* no máximo dois anos de distância: quem parou de correr há muito
            tempo não volta nem para completar o grid — um nome anônimo é
            mais honesto do que um campeão aposentado */
-        const perto = era.pilots.filter(p => dist(p) > 0 && dist(p) <= 1 && p[0] !== euSou)
+        const perto = era.pilots.filter(p => dist(p) > 0 && dist(p) <= 1 && p[0] !== euSou && !outrosHumanos.has(p[0]))
           .sort((a,b) => dist(a) - dist(b) || a[2] - b[2])
           .slice(0, slots.length - pool.length)
           .map(p => ({ name:p[0], cc:p[1], titular:false,
@@ -9455,7 +9459,7 @@ const Engine = {
       const gJr = Mundo.degrauDe(S.series, S.year, cat, S.catIdx, S.ladder.length);
       /* campeonato só de mulheres: o grid real e, completando, pilotas que seguem de um ano para o outro */
       const cFem = (() => { const id = campDaCat(cat, S.year); const c = id && typeof Hist !== 'undefined' && Hist.ok() && Hist.camp(id); return c && c.fem ? c : null; })();
-      const recs = cFem ? Engine.gridFeminino(cFem, cat, n) : Mundo.gridDe(W, gJr, S.year, { n, cat, cc:S.driver.cc, excluir: new Set([S.driver.name]) });
+      const recs = cFem ? Engine.gridFeminino(cFem, cat, n) : Mundo.gridDe(W, gJr, S.year, { n, cat, cc:S.driver.cc, excluir: new Set([S.driver.name].concat((S.mpOutros || []).map(o => o.name))) });
       const reaisAno = new Set((elencoReal(cat, S.year) || []).map(x => x.name));
       const equipeDe = {};
       const hsJr = recs.map(r => r.h);
@@ -9482,6 +9486,7 @@ const Engine = {
       teams.forEach(t => { for(let k=0; k<porEquipe; k++) vagasJr.push(t.id); });
       const meuTime = vagasJr.indexOf(S.team ? S.team.id : 'x');
       if(meuTime >= 0) vagasJr.splice(meuTime, 1);
+      (S.mpOutros || []).forEach(o => { if(!o.aqui) return; const k = vagasJr.indexOf(o.teamId); if(k >= 0) vagasJr.splice(k, 1); });
       field.forEach((f,i)=>{ f.teamId = vagasJr[Math.min(i, vagasJr.length-1)]; });
       /* Onde se sabe onde o piloto realmente correu, é para lá que ele vai:
          em 2024 o Bortoleto estava na Invicta e o Hadjar na Campos. A
@@ -9495,6 +9500,7 @@ const Engine = {
         const vagas = {};
         teams.forEach(t => vagas[t.id] = Math.max(porEquipe, Math.min(4, reaisPor[t.id] || 0)));
         if(S.team && vagas[S.team.id] != null) vagas[S.team.id]--;
+        (S.mpOutros || []).forEach(o => { if(o.aqui && vagas[o.teamId] != null) vagas[o.teamId]--; });
         const sobra = [];
         field.forEach(f => {
           const alvo = porNome[equipeDe[f.name]];
@@ -9517,6 +9523,13 @@ const Engine = {
     /* reserva, testes ou sem equipe: você está no paddock, não no grid — até ser chamado */
     if(S.papel){ me.ausente = true; me.reserva = true; }
     field.push(me);
+    /* multiplayer: o outro piloto humano, quando corre nesta mesma categoria */
+    (S.mpOutros || []).forEach(o => {
+      if(!o.aqui) return;
+      const f = { id: o.id, name: o.name, cc: o.cc, teamId: o.teamId, humano: true, skill: o.skill, qb: 0, rb: 0, rel: 0 };
+      if(o.papel){ f.ausente = true; f.reserva = true; }
+      field.push(f);
+    });
 
     const teammate = field.find(f=>!f.isMe && f.teamId===S.team.id) || null;
 
@@ -13478,11 +13491,11 @@ const Engine = {
       Engine.definirCandidatos(sea);
       /* a sua forma do ano: sai do moral, da relação com a equipe e do acaso.
          Não aparece em lugar nenhum — você descobre correndo. */
-      sea.minhaForma = R.gauss() * 1.45 * perf.variancia
-                     + (S.driver.morale - 60) / 45
-                     + ((S.teamRel || 50) - 50) / 60;
+      sea.minhaForma = Engine.formaDoAno(perf);
       sea._perfilado = true;
     }
+    /* multiplayer: a temporada é dividida, e a forma do ano é de cada piloto */
+    if(sea.minhaForma == null) sea.minhaForma = Engine.formaDoAno(perf);
     /* o que você vale nesta categoria, neste traçado, nesta idade */
     const meuFator = sea.isTop ? Engine.fatorCategoria(S.series, trk.type) : { total:0 };
 
@@ -13498,13 +13511,18 @@ const Engine = {
       fora = (sea.naoLarga && sea.naoLarga[rd]) || {};
     } else {
       const qual = campo.map(f=>{
+        /* multiplayer: o outro piloto humano foi calculado do lado dele */
+        const fixo = sea.mpLinhas && sea.mpLinhas[f.id];
+        if(fixo) return { f, v: fixo.q };
         const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
         const bruto = f.isMe
           ? Engine.meSkill(wet).q + tr.q + Engine.extraQ(sea, rd) + meuFator.total + (sea.minhaForma || 0)
           : f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0)
             + (wet ? R.gauss()*3 : 0);
         const sk = Engine.compSkill(bruto, sea);
-        return { f, v: W.car*car + W.skill*sk + R.gauss()*noise };
+        const vq = W.car*car + W.skill*sk + R.gauss()*noise;
+        if(f.isMe && sea.mpGravar) sea.mpGravar.q = vq;
+        return { f, v: vq };
       }).sort((a,b)=>b.v-a.v);
       const corte = Engine.cortarGrid(sea, rd, qual.map(q => q.f));
       fora = corte.fora;
@@ -13526,6 +13544,16 @@ const Engine = {
       grid.ME = para;
       if(para > de) notas.push('punicaoGrid');
     }
+    if(sea.mpGravar) sea.mpGravar.pun = punGrid;
+    /* multiplayer: a punição de grid do outro piloto humano, que ele sofreu do lado dele */
+    Object.keys(sea.mpLinhas || {}).forEach(id => {
+      const pun = sea.mpLinhas[id].pun || 0;
+      if(pun <= 0 || grid[id] == null) return;
+      const de = grid[id], para = Math.min(Object.keys(grid).length, de + pun);
+      grid = Object.assign({}, grid);
+      Object.keys(grid).forEach(x => { if(grid[x] > de && grid[x] <= para) grid[x]--; });
+      grid[id] = para;
+    });
 
     /* ── corrida ── */
     let passW = trk.type==='street' ? .62 : trk.type==='fast' ? .20 : .36;
@@ -13535,6 +13563,14 @@ const Engine = {
     const running = [];
 
     campo.forEach(f => {
+      /* multiplayer: o domingo do outro piloto humano também veio do lado dele; aqui só entra a largada */
+      const fixo = sea.mpLinhas && sea.mpLinhas[f.id];
+      if(fixo){
+        const g = grid[f.id];
+        if(fixo.fora) out.push({ f, grid:g, dnf: fixo.fora.dnf, fracFora: fixo.fora.fracFora });
+        else running.push({ f, grid:g, v: fixo.vBase - (g-1)*passW*fixo.passe, vr: fixo.vr, errou: fixo.errou, cons: fixo.cons });
+        return;
+      }
       const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carR + clima.car : 0);
       const bruto = f.isMe
         ? Engine.meSkill(wet).r + tr.r + Engine.extraQ(sea, rd) + fx.r + rv.r + meuFator.total + (sea.minhaForma || 0) + Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoR') + Engine.embalo(sea)
@@ -13582,7 +13618,9 @@ const Engine = {
       const crash = R.chance(clamp(crashP,.005,.35));
 
       if(mech || crash){
-        out.push({ f, grid:g, dnf: crash ? 'ACID' : 'MEC', fracFora: Engine.fracFora(crash) });
+        const saida = { f, grid:g, dnf: crash ? 'ACID' : 'MEC', fracFora: Engine.fracFora(crash) };
+        out.push(saida);
+        if(f.isMe && sea.mpGravar) sea.mpGravar.fora = { dnf: saida.dnf, fracFora: saida.fracFora };
         if(f.isMe) notas.push(crash ? 'erro' : 'mecanica');
       } else {
         /* o erro que não tira da corrida ainda custa caro */
@@ -13591,17 +13629,24 @@ const Engine = {
         const v = W.car*car + W.skill*sk + R.gauss()*noise*1.15 - (g-1)*passW*(f.isMe ? fx.passe : 1) - custoErro;
         /* para a corrida ao vivo: o ritmo puro (a posição de largada e o erro
            acontecem na pista) e a constância de cada um */
-        running.push({ f, grid:g, v, vr: W.car*car + W.skill*sk + R.gauss()*noise*.45, errou, cons: consF });
+        const entrada = { f, grid:g, v, vr: W.car*car + W.skill*sk + R.gauss()*noise*.45, errou, cons: consF };
+        running.push(entrada);
+        if(f.isMe && sea.mpGravar) Object.assign(sea.mpGravar, { vBase: v + (g-1)*passW*fx.passe, passe: fx.passe, vr: entrada.vr, errou, cons: consF });
       }
     });
 
     return { rd, trk, era, wet, ajuste, grid, running, out, notas, perf, fora };
   },
+  /* a sua forma do ano: sai do moral, da relação com a equipe e do acaso */
+  formaDoAno(perf){
+    return R.gauss() * 1.45 * perf.variancia + (S.driver.morale - 60) / 45 + ((S.teamRel || 50) - 50) / 60;
+  },
   runRace(sea, vivo, semMim){
     const M = (vivo && vivo.montagem) || Engine.montarCorrida(sea, semMim);
     const { rd, trk, era, wet, ajuste, grid, running, out, notas, perf } = M;
     let finish, flId = null, houveSC;
-    if(vivo){
+    /* com a chegada pronta (corrida ao vivo); só a montagem (multiplayer) corre pelo caminho de sempre */
+    if(vivo && vivo.finish){
       /* a chegada que a pista deu */
       finish = vivo.finish; flId = vivo.flId; houveSC = vivo.sc;
       (vivo.notas || []).forEach(x => { if(notas.indexOf(x) < 0) notas.push(x); });
@@ -13694,7 +13739,7 @@ const Engine = {
     /* a corrida contada metro a metro é calculada quando alguém vai assistir:
        aqui fica só a descrição dela, fora do save */
     if(vivo && vivo.crono) rec.crono = vivo.crono;
-    if(!vivo && mine && !(S.opts && S.opts.fast))
+    if(!(vivo && vivo.finish) && mine && !(S.opts && S.opts.fast))
       Object.defineProperty(rec, 'provaEnt', { value: Engine.descreverProva(sea, rd, finish, flId, wet, houveSC, S.series), enumerable: false, configurable: true });
 
     /* playoff: primeiro anda a rodada, depois se abre a fase seguinte */
@@ -13711,6 +13756,8 @@ const Engine = {
       if(sea.isTop) Engine.aprenderPista(rec);
     }
 
+    /* a chegada inteira, para o multiplayer aplicar a mesma corrida ao outro piloto (fora do save) */
+    Object.defineProperty(rec, 'chegada', { value: { finish, flId, sc: houveSC }, enumerable: false, configurable: true });
     sea.results.push(rec);
     sea.round++;
 
@@ -19349,9 +19396,12 @@ const UI = {
          <button class="btn btn-primary btn-sm" onclick="UI.close();UI.show('intro');Game.checkSave()">Nova carreira</button>`;
       return;
     }
+    /* numa partida multiplayer o ritmo é da sala: sem simular, sem dificuldade, sem modo rápido, sem salvar */
+    const emMP = Game.emMP();
     if(nx){
       const reservaAgora = S.papel && Engine.meAusente(sea);
-      h = `<button class="btn btn-primary" onclick="Game.nextRace()">${ico('bandeira')} ${reservaAgora ? 'Fim de semana' : 'Correr'} — ${esc(nx.gp)}</button>
+      h = `<button class="btn btn-primary" onclick="Game.nextRace()">${ico('bandeira')} ${reservaAgora ? 'Fim de semana' : 'Correr'} — ${esc(nx.gp)}</button>`;
+      if(!emMP) h += `
            <button class="btn btn-ghost" onclick="Game.simSeason(true, true)">${ico('avancar')} Simular só esta corrida</button>
            <button class="btn btn-ghost" onclick="Game.simSeason(true)">${ico('pular')} Simular o resto do ano</button>`;
     } else if(sea.fired && sea.results.length < sea.calendar.length){
@@ -19360,7 +19410,7 @@ const UI = {
     } else {
       h = `<button class="btn btn-gold btn-lg" onclick="Game.endSeason()">Encerrar a temporada ${sea.year} →</button>`;
     }
-    if(nx && !S.opts.fast && !Engine.invernoFeito())
+    if(nx && !S.opts.fast && !Engine.invernoFeito() && !emMP)
       h += `<button class="btn btn-gold btn-sm" onclick="UI.prepModal()">${ico('chave')} Pré-temporada</button>`;
     h += `<button class="btn btn-ghost btn-sm" onclick="UI.estatisticas()">${ico('barras')} Estatísticas</button>`;
     if(Engine.tracosSabidos().length)
@@ -19374,12 +19424,12 @@ const UI = {
       <button class="btn btn-ghost btn-sm" onclick="UI.empresarios()">${ico('maleta')} ${Engine.emp() ? esc(Engine.emp().n.split(' ').pop()) : 'Empresário'}</button>`;
     if(Engine.ehRealista())
       h += `<button class="btn btn-ghost btn-sm" onclick="UI.financas()">${ico('dinheiro')} ${fmtD(S.money.saldo)}</button>`;
-    h += `<button class="btn btn-ghost btn-sm" onclick="UI.difModal()" title="Dificuldade">${ico('bussola')} ${esc(Engine.dif().n)}</button>`;
-    h += `<button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()"
-              title="No modo rápido a equipe monta o carro e define o treino da pré-temporada">${S.opts.fast?(ico('raio')+' Rápido'):(ico('chave')+' Completo')}</button>
-      <span class="sp"></span>
-      <button class="btn btn-ghost btn-sm" onclick="Game.save(true)">${ico('salvar')} Salvar</button>
-      <button class="btn btn-ghost btn-sm" onclick="UI.confirmQuit()">Sair</button>`;
+    if(!emMP) h += `<button class="btn btn-ghost btn-sm" onclick="UI.difModal()" title="Dificuldade">${ico('bussola')} ${esc(Engine.dif().n)}</button>
+      <button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()"
+              title="No modo rápido a equipe monta o carro e define o treino da pré-temporada">${S.opts.fast?(ico('raio')+' Rápido'):(ico('chave')+' Completo')}</button>`;
+    h += `<span class="sp"></span>`;
+    if(!emMP) h += `<button class="btn btn-ghost btn-sm" onclick="Game.save(true)">${ico('salvar')} Salvar</button>`;
+    h += `<button class="btn btn-ghost btn-sm" onclick="UI.confirmQuit()">Sair</button>`;
     el('actBar').innerHTML = h;
     UI.agruparAcoes(el('actBar'));
   },
@@ -20111,7 +20161,7 @@ UI.setupModal = function(){
     <div class="mft">
       <button class="btn btn-ghost btn-sm" onclick="Game.setupNoEngenheiro()">Deixar com o engenheiro</button>
       <span class="sp"></span>
-      <button class="btn btn-primary" onclick="UI.close();Game.aoSabado()">Ir para a classificação →</button>
+      <button class="btn btn-primary" onclick="UI.close();Game.aoSabado()">${Game.emMP() ? 'Pronto para a corrida →' : 'Ir para a classificação →'}</button>
     </div>`);
 };
 
@@ -20257,9 +20307,18 @@ UI.raceDetail = function(i, arch){
 /* ══════════════════ JOGO ══════════════════ */
 const Game = {
 
+  /* ═══ MULTIPLAYER ═══
+     Numa partida de piloto com um amigo (assets/multiplayer.js), a carreira na tela é uma
+     cópia do que o servidor mandou: cada decisão vai para ele, que a aplica e devolve a
+     carreira atualizada. Nada é salvo no aparelho, e o save da carreira fica intacto. */
+  emMP(){ return typeof MP !== 'undefined' && !!MP.pilotoAtivo && MP.pilotoAtivo(); },
+  mp(tipo, dados, depois){ if(!Game.emMP()) return false; MP.pilotoAcao(tipo, dados, depois); return true; },
+  mpPronto(){ if(!Game.emMP()) return false; UI.close(); MP.pilotoPronto(); return true; },
+  mpIndisponivel(){ if(!Game.emMP()) return false; UI.toast('Indisponível no multiplayer por enquanto.'); return true; },
+
   /* ---- salvar / carregar ---- */
   save(toast){
-    if(!S) return;
+    if(!S || Game.emMP()) return;
     try{
       let json = JSON.stringify(S);
       /* Carreiras muito longas: o retrospecto de todas as temporadas continua inteiro,
@@ -20522,7 +20581,9 @@ const Game = {
     /* o inverno devolve o corpo inteiro */
     if(S.driver && S.driver.condicao != null && !(S.driver.injured > 0)) S.driver.condicao = 100;
     S.academyDropped = null; S.academyAviso = null;
-    S.season = Engine.buildSeason();
+    /* multiplayer: a temporada que os dois pilotos dividem já vem montada */
+    S.season = S.mpTemporada || Engine.buildSeason();
+    delete S.mpTemporada;
     const formacao = Engine.concluirAcademia();
     if(formacao) setTimeout(()=>UI.toast(formacao.txt), 600);
     S.season.dilemmaAt = R.int(2, Math.max(3, S.season.calendar.length-3));
@@ -20679,7 +20740,7 @@ const Game = {
     S.invernoSel = sel;
     Game.fecharInverno();
   },
-  setCompromisso(k){ S.compromisso = k; UI.prepModal(); },
+  setCompromisso(k){ if(Game.mp('setCompromisso', { k }, () => UI.prepModal())) return; S.compromisso = k; UI.prepModal(); },
 
   /* ── o ano fecha as contas ──
      Custo da temporada, salário, patrocínios, apoio da academia e da família,
@@ -20738,6 +20799,7 @@ const Game = {
 
   /* a equipe pessoal: contratar cobra a parte da temporada que falta; o ano cheio vem no balanço */
   contratarPessoal(k){
+    if(Game.mp('contratarPessoal', { k }, () => UI.financas())) return;
     if(!EQUIPE_PESSOAL[k] || !Engine.ehRealista() || !S.money) return;
     S.pessoal = S.pessoal || {};
     if(S.pessoal[k]) return;
@@ -20750,12 +20812,14 @@ const Game = {
     Game.save(); UI.financas();
   },
   dispensarPessoal(k){
+    if(Game.mp('dispensarPessoal', { k }, () => UI.financas())) return;
     if(!S.pessoal || !S.pessoal[k]) return;
     delete S.pessoal[k];
     UI.toast(EQUIPE_PESSOAL[k].n + ' dispensado. O contrato não se renova.');
     Game.save(); UI.financas();
   },
   assinarPatro(i){
+    if(Game.mp('assinarPatro', { i }, () => UI.financas())) return;
     const o = (S.patroOfertas || [])[i];
     if(!o) return;
     if((S.money.patros || []).length >= 3) return UI.toast('Três patrocinadores é o limite do macacão.');
@@ -20765,6 +20829,7 @@ const Game = {
     Game.save(); UI.financas();
   },
   investir(v){
+    if(Game.mp('investir', { v }, () => UI.financas())) return;
     const m = S.money;
     if(v > 0 && m.saldo < v) return UI.toast('Saldo insuficiente.');
     if(v < 0 && m.invest < -v) return UI.toast('Você não tem tudo isso investido.');
@@ -20772,6 +20837,7 @@ const Game = {
     Game.save(); UI.financas();
   },
   comprarLuxo(i){
+    if(Game.mp('comprarLuxo', { i }, () => UI.financas())) return;
     const it = LUXOS[i]; if(!it) return;
     const pode = luxoDisponivel(it);
     if(!pode.ok) return UI.toast(pode.motivo);
@@ -20784,6 +20850,7 @@ const Game = {
     Game.save(); UI.financas();
   },
   pagarTeste(v){
+    if(Game.mp('pagarTeste', { v }, () => UI.financas())) return;
     if(S.money.saldo < v) return UI.toast('Saldo insuficiente.');
     S.money.saldo -= v;
     S.money.teste = (S.money.teste || 0) + v / 900e3;
@@ -20794,6 +20861,7 @@ const Game = {
      relação se constrói ao longo dos anos, não numa tacada. */
   /* o foco do ano: escolhido no inverno (ou na primeira vez que você abre a ficha no ano) */
   escolherFoco(k){
+    if(Game.mp('escolherFoco', { k }, () => { UI.fichaModal(); UI.render(); })) return;
     const sea = S.season; if(!FOCOS[k] || !sea) return;
     const ano = sea.year;
     if(S.foco && S.foco.ano === ano && sea.round > 0) return UI.toast('O foco desta temporada já está decidido.');
@@ -20804,6 +20872,7 @@ const Game = {
     Game.save(); UI.fichaModal(); UI.render();
   },
   pedirDirecao(k){
+    if(Game.mp('pedirDirecao', { k }, () => { UI.fichaModal(); UI.render(); })) return;
     if(S.season && !S.season.isTop) return UI.toast('Na base os carros são iguais: o rumo do desenvolvimento só existe na categoria principal.');
     const r = Engine.pedirDirecao(k);
     if(!r) return UI.toast('Você já pediu um rumo para o carro nesta temporada.');
@@ -20812,6 +20881,7 @@ const Game = {
     Game.save(); UI.fichaModal(); UI.render();
   },
   relacionar(k){
+    if(Game.mp('relacionar', { k }, () => UI.render())) return;
     const a = RELACOES[k]; if(!a) return;
     if(!S.relFeitas) S.relFeitas = [];
     if(S.relFeitas.indexOf(k) >= 0) return UI.toast('Você já fez isso esta temporada.');
@@ -20889,6 +20959,16 @@ const Game = {
      Sexta é treino, sábado é classificação, domingo é corrida. No modo
      rápido e com o piloto machucado a equipe resolve tudo sozinha. */
   nextRace(){
+    /* no multiplayer, o fim de semana é o acerto: a corrida roda no servidor quando os dois estiverem prontos */
+    if(Game.emMP()){
+      if(!S.season || !S.season.calendar[S.season.round]) return Game.endSeason();
+      /* machucado, ou sem carro nesta etapa: não há acerto a fazer, só esperar a corrida */
+      if(S.driver.injured > 0 || (S.papel && Engine.meAusente(S.season))){
+        UI.toast(S.driver.injured > 0 ? 'Você está se recuperando da lesão e fica de fora desta etapa.' : 'Você não corre nesta etapa.');
+        return Game.mpPronto();
+      }
+      UI.close(); return UI.setupModal();
+    }
     if(S.retired) return UI.toast('Sua carreira acabou. Daqui em diante você só acompanha os números.');
     /* o que aconteceu fora da pista depois da última corrida aparece antes do fim de semana */
     if(UI._fila.length && !UI.aberta()){ UI._aoEsvaziar = () => Game.nextRace(); return UI.proxima(); }
@@ -20959,6 +21039,7 @@ const Game = {
     Game.save(); UI.prepCorrida();
   },
   confirmarLargada(){
+    if(Game.mpPronto()) return;
     const sea = S.season;
     /* só confirma a preparação que está aberta, desta etapa: clique repetido não corre a próxima */
     if(!UI.aberta() || UI._prepRd !== sea.year + ':' + sea.round) return;
@@ -21109,6 +21190,7 @@ const Game = {
     st.asa = v.asa; st.susp = v.susp; st.auto = false;
   },
   setResp(i, v){
+    if(Game.mp('setResp', { i, v }, () => UI.setupModal())) return;
     const st = Game.garantirResp();
     if(v === 2 && st.resp[i] !== 2 && Engine.ataquesUsados(st.resp) >= Engine.ATAQUES_MAX)
       return UI.toast('Os ajustes grandes deste fim de semana já foram usados. Volte outro trecho para Ajuste leve ou Manter acerto.');
@@ -21117,14 +21199,16 @@ const Game = {
     UI.setupModal();
   },
   aoSabado(){
+    if(Game.mpPronto()) return;
     const sea = S.season;
     const fds = Engine.garantirFds(sea, sea.round);
     fds.etapa = 'quali';
     Game.nextRace();
   },
-  setFilo(k){ const st = Game.garantirResp(); st.filo = k; st.auto = false; Game.aplicarResp(); UI.setupModal(); },
-  setMotor(v){ const st = Game.garantirResp(); st.motor = v; st.auto = false; UI.setupModal(); },
+  setFilo(k){ if(Game.mp('setFilo', { k }, () => UI.setupModal())) return; const st = Game.garantirResp(); st.filo = k; st.auto = false; Game.aplicarResp(); UI.setupModal(); },
+  setMotor(v){ if(Game.mp('setMotor', { i: v }, () => UI.setupModal())) return; const st = Game.garantirResp(); st.motor = v; st.auto = false; UI.setupModal(); },
   setupNoEngenheiro(){
+    if(Game.mp('setupEngenheiro', {}, () => UI.setupModal())) return;
     const sea = S.season;
     sea.setup = Engine.setupAuto(sea, sea.round);
     sea.setup.auto = false;
@@ -21235,6 +21319,7 @@ const Game = {
   },
 
   simSeason(pausar, umaEtapa){
+    if(Game.mpIndisponivel()) return;
     if(S.retired) return UI.toast('Sua carreira acabou.');
     const sea = S.season;
     let guard = 0, feitas = 0;
@@ -21370,6 +21455,7 @@ const Game = {
   },
 
   joinAcademy(i){
+    if(Game.mp('academia', { i }, () => UI.ofertasModal())) return;
     const lista = S._acadList;
     if(!lista || (i !== -1 && !lista[i])) return;
     const a = lista[i];
@@ -21701,6 +21787,8 @@ const Game = {
 
   /* ---- fim de temporada ---- */
   endSeason(){
+    /* no multiplayer o balanço já foi feito no servidor: a tela dele, e daqui a academia e as propostas */
+    if(Game.emMP()) return S.mpBalanco ? UI.seasonEndModal(S.mpBalanco.sum, S.mpBalanco.growth) : Game.afterSeason(S.lastSum || Engine.summary(S.season));
     if(S.retired) return;
     const sea = S.season;
     const sum = Engine.summary(sea);
@@ -21772,11 +21860,13 @@ const Game = {
 
     /* Quem foi bem na SUA categoria sobe de verdade no ano seguinte: a
        classificação que você disputou é a que manda no mercado da base. */
-    try {
+    /* multiplayer: a temporada que os dois pilotos dividem entra no mundo uma vez só, e nenhum dos dois vira piloto da IA */
+    if(!S.mpSemRegistro) try {
       const Wm = Engine.mundo();
       const gM = Mundo.degrauDe(S.series, sea.year, sea.cat, S.catIdx, S.ladder.length);
+      const humanos = new Set((S.mpOutros || []).map(o => o.name));
       /* a posição de cada um é a da tabela inteira: quem ficou atrás do jogador não herda o lugar dele */
-      Mundo.registrarTemporada(Wm, sea.year, gM, Engine.standings(sea).map(d => d.me ? null : d.name), sea.cat);
+      Mundo.registrarTemporada(Wm, sea.year, gM, Engine.standings(sea).map(d => d.me || humanos.has(d.name) ? null : d.name), sea.cat);
     } catch(e){}
     S.ordemBase = null;
 
@@ -21792,6 +21882,7 @@ const Game = {
   /* depois do balanço do ano: primeiro a dispensa, se houve; depois o mercado */
   afterSeason(sum){
     UI.close();
+    if(Game.emMP()) return S.academyOffers && S.academyOffers.length ? UI.academyModal(S.academyOffers, sum) : Game.showOffers(sum);
     if(S.academyOffers && S.academyOffers.length){
       const lista = S.academyOffers; S.academyOffers = null;
       UI.academyModal(lista, sum); return;
@@ -21806,6 +21897,8 @@ const Game = {
 
   /* ---- ofertas ---- */
   showOffers(sum){
+    /* no multiplayer as propostas vêm do servidor (recusar a academia também passa por ele) */
+    if(Game.emMP()) return (S.pendingOffers || []).length ? UI.ofertasModal() : Game.mp('academia', { i: null }, () => UI.ofertasModal());
     if(S.retired) return;
     let offers = Engine.offers(sum);
     /* cada proposta com o nome do campeonato que vai existir no ano dela */
@@ -21936,6 +22029,7 @@ const Game = {
       <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.ofertasModal()">Voltar às propostas</button></div>`);
   },
   pedirOferta(i, k){
+    if(Game.mp('pedirOferta', { i, k }, () => UI.ofertasModal())) return;
     const o = (S.pendingOffers || [])[i];
     if(!o || o.negociou) return UI.ofertasModal();
     o.negociou = true;
@@ -21981,6 +22075,8 @@ const Game = {
     if(S.papel || S.series !== v.sk || S.year > v.ate || (S.ladder && S.ladder[S.catIdx] === topo) || S.catAlvo === topo) S.reservaDe = null;
   },
   takeOffer(i){
+    /* no multiplayer, escolher a proposta já deixa você pronto para o ano novo */
+    if(Game.mp('escolherOferta', { i }, () => { UI.close(); UI.toast('Proposta escolhida. O ano novo começa quando os dois estiverem prontos.'); MP.pilotoPronto(); })) return;
     if(S.retired || !S.pendingOffers) return;
     const o = S.pendingOffers[i];
     if(!o) return;
@@ -22037,6 +22133,8 @@ const Game = {
       S.prospects = [];
       S._vinculoNovo = null; S.reservaDe = null;
       UI.close();
+      /* multiplayer: a temporada nova é montada depois que os dois escolherem */
+      if(S.mpSemTemporada) return;
       Game.startSeason();
       setTimeout(()=>UI.toast(`Nova carreira: ${SERIES[o.sk].name}.`), 500);
       return;
@@ -22116,6 +22214,7 @@ const Game = {
     }
     Game.ajustarVinculoReserva();
     UI.close();
+    if(S.mpSemTemporada) return;
     Game.startSeason();
     if(S.contract.years > 1) S.contract.years = S.contract.years;
   },

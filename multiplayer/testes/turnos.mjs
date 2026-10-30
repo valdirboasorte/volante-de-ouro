@@ -65,7 +65,7 @@ function achaPlano(obj, valor, caminho = ''){
 const vazou = (c, valor) => c.msgs.map(m => achaPlano(m, valor, m.t)).find(Boolean) || null;
 
 async function criarSalaCom(base, versao, nomes){
-  let r = await api(base, '/api/salas', { nome: nomes[0], modo: 'piloto', versao }, { ip: IP });
+  let r = await api(base, '/api/salas', { nome: nomes[0], modo: 'teste', versao }, { ip: IP });
   const A = r.json || {};
   const sala = { codigo: A.codigo, A, B: null, a: null, b: null };
   sala.a = ligar(await abrir(base, A.codigo, A.ficha), A.codigo, 0);

@@ -15,7 +15,7 @@ sua autorização.
 | 1 | Motor no servidor (viabilidade), salas, código de convite, conexão e reconexão | feita |
 | 2 | Rodadas: pronto, espera, processamento único (com regras de teste) | feita |
 | 3 | Modo chefe com duas equipes humanas | feita (local; as corridas ainda pelo caminho rápido) |
-| 4 | Modo piloto com dois pilotos humanos | a fazer |
+| 4 | Modo piloto com dois pilotos humanos | feita (local; as corridas ainda pelo caminho rápido) |
 | 5 | Corridas ao vivo no servidor | a fazer |
 | 6 | Robustez e testes com dois aparelhos | a fazer |
 
@@ -159,6 +159,102 @@ convidado vê os ids trocados.
     Cada um vê os seus pilotos e o seu caixa, e a tabela de construtores bate dos dois lados;
   - o save do modo chefe guardado no navegador continua intacto.
 
+## Dois pilotos no motor (Fase 4)
+
+O jogo só conhece um piloto humano, o `'ME'`. `src/piloto-mp.js` separa:
+- **o mundo:** o registro de pilotos de cada série (`mundos`, `gridMem`…) e uma temporada por
+  categoria em que há um humano;
+- **a carreira de cada piloto:** ficha, contrato, dinheiro e histórico, mais a parte pessoal da
+  temporada (resultados, acerto, fim de semana, forma do ano).
+
+Para agir por um piloto, ele monta a perspectiva dele: a carreira dele com a temporada da
+categoria dele, em que ele é o `'ME'` e o outro humano, se correr ali, é o `'ME2'`.
+
+- **Mesma idade:** os dois começam na mesma categoria e dividem uma temporada só, cada um na
+  sua equipe.
+- **Categorias diferentes:** cada um na sua temporada. A rodada da sala anda pelo calendário
+  mais longo, e o mais curto corre quando chega a vez dele. Uma categoria de 7 etapas fica de
+  fora em 2 das 9 rodadas, e quem não correu fica sabendo por um aviso.
+- **Corrida dividida:** a classificação e o domingo do convidado são calculados do lado dele
+  (acerto, forma, ficha). Eles entram como uma linha fixa na corrida do anfitrião, que roda uma
+  vez. A mesma chegada é aplicada depois à carreira do convidado.
+- **Fim do ano:** cada um tem o seu balanço, e a temporada dividida entra no registro do mundo
+  uma vez só. Nenhum dos humanos vira piloto da IA. Depois vêm a academia e as propostas, e o
+  ano novo começa com a proposta que cada um escolheu.
+- **Ganchos no `index.html`**, todos inertes no single-player:
+  - o outro humano (`S.mpOutros`) ganha vaga e carro na temporada e nunca é escalado pela IA;
+  - `montarCorrida` aceita linhas prontas (`mpLinhas`) e grava a do jogador (`mpGravar`);
+  - `runRace` aceita uma chegada pronta;
+  - `startSeason`, `takeOffer` e `endSeason` aceitam rodar sem montar a temporada nem
+    registrar o ano (`mpTemporada`, `mpSemTemporada`, `mpSemRegistro`);
+  - a forma do ano saiu de dentro de `montarCorrida` para `Engine.formaDoAno`.
+- **Prova de que o single-player não mudou:** `node testes/ouro.js` deu as 16 carreiras
+  idênticas depois de cada gancho.
+- **Na tela da carreira:** cada decisão passa por `Game.mp(tipo, dados, depois)` e só aparece
+  quando a carreira atualizada volta do servidor. Nada é salvo no aparelho.
+  - "Correr" abre o acerto, e o botão dele vira "Pronto para a corrida".
+  - Machucado ou sem carro na etapa, "Correr" só deixa você pronto.
+  - A pré-temporada é resolvida no servidor, como no modo rápido. O resumo dela aparece uma vez
+    por ano, porque explica uma lesão ou uma moral baixa antes da primeira corrida.
+  - O balanço do ano é a mesma tela do jogo solo, e escolher a proposta deixa você pronto.
+  - Os botões de simular, dificuldade, modo rápido, pré-temporada e salvar somem.
+  - O que o servidor ainda não aplica mostra "Indisponível no multiplayer por enquanto.": eventos,
+    conversas, empresário, rival, negociação, reserva, convocações e aposentadoria.
+
+**Ainda de fora no multiplayer:**
+- A corrida e a classificação ao vivo, que chegam na Fase 5. A classificação na mão também
+  fica de fora: o fim de semana é o acerto.
+- Acontecimentos fora da pista, dilemas, pedidos, conversas, convocações e corridas paralelas.
+- Propostas de outra série e de dupla (reserva + titular), que são recusadas.
+- O modo de carreira é sempre o clássico, sem finanças. No realista, ficar sem dinheiro poderia
+  encerrar a carreira e travar a sala.
+- **Lesão numa temporada dividida:** se o anfitrião se machuca, o reserva corre no carro dele,
+  como no jogo solo. Se o convidado se machuca, o carro dele fica parado.
+- **Sem caminho testado (fica para a Fase 6):**
+  - um piloto que se aposenta ou morre num acidente: o pronto dele é recusado (`carreira`), e a
+    sala para;
+  - um piloto sem nenhuma proposta que possa escolher.
+
+## O que foi testado na Fase 4
+
+- **`node testes/piloto-mp.mjs`: 48 verificações, todas passando.** Sem servidor, duas
+  variantes de dois anos cada: a mesma categoria (os dois com 20 anos) e categorias diferentes
+  (16 e 21). Em todas as rodadas:
+  - as duas visões batem: etapa, pontos, chegada e histórico;
+  - ninguém aparece repetido no grid;
+  - os pontos de cada um batem com a tabela;
+  - os dois humanos ficam fora do registro da IA;
+  - balanço, tela de balanço, propostas e ano novo funcionam para os dois.
+- **`npm run testes`: 166 verificações, todas passando.** Incluem a sala de piloto por
+  WebSocket:
+  - a escolha dos pilotos;
+  - ações que mudam só quem agiu, inclusive "deixar com o engenheiro";
+  - valores inválidos e ação na fase errada;
+  - dados privados que não vazam;
+  - dedupe;
+  - corridas idênticas para os dois;
+  - categorias diferentes (Mundial de Kart e Fórmula Regional) andando juntas até o fim do ano;
+  - as propostas de cada um e o ano novo;
+  - o reinício do servidor no meio da partida, que volta na mesma rodada com a mesma vista.
+- **No navegador, com duas abas (Eva Rocha e Fábio Nunes, 20 anos, F1 2024):**
+  - os dois na Fórmula Regional, em equipes diferentes;
+  - acerto e "deixar com o engenheiro" aplicados pelo servidor;
+  - pronto pelos dois caminhos (o botão do acerto e a barra);
+  - nove etapas com a mesma chegada nas duas telas e os pontos espelhados;
+  - as propostas de cada um;
+  - o ano novo em categorias diferentes (Eva na Fórmula Regional, Fábio na F3), com a F3
+    ficando de fora da primeira rodada;
+  - duas recargas da página e do servidor no meio da partida, que reconectaram à mesma sala.
+
+  O teste achou e corrigiu:
+  - o país do piloto sempre recusado;
+  - os estilos sem nome;
+  - "deixar com o engenheiro" mudando só a tela;
+  - botões do jogo solo (simular, dificuldade, modo rápido) ativos na partida.
+
+  Também explicou um "não largou" na primeira corrida: era uma lesão da pré-temporada, legítima,
+  que o jogador não tinha como ver.
+
 ## Como o motor roda no servidor
 
 `ferramentas/gerar-motor.mjs` pega do `index.html` os mesmos blocos `<script>` que
@@ -257,7 +353,7 @@ para provar o protocolo. As regras reais terão a mesma interface: `nome`, `inic
 
 ## Regras do modo chefe (Fase 3)
 
-Salas de modo `chefe` usam `src/regras-chefe.js` (o motor do jogo em `src/chefe-mp.js`: um mundo, um pacote privado por equipe). Salas de modo `piloto` seguem nas regras de teste até a Fase 4. O motor é criado sob demanda dentro da sala (nunca no topo do módulo) e recriado depois que a sala dorme.
+Salas de modo `chefe` usam `src/regras-chefe.js` (o motor do jogo em `src/chefe-mp.js`: um mundo, um pacote privado por equipe). As de modo `piloto` usam `src/regras-piloto.js` (Fase 4). O modo `teste` só é aceito com `DESENVOLVIMENTO`. O motor é criado sob demanda dentro da sala (nunca no topo do módulo) e recriado depois que a sala dorme.
 
 - **Lobby.** `configurar` aceita só os campos que mudam: `{ velocidade?, sk?, ano? }` (`sk` f1 ou indy; o ano precisa ter equipes naquela série, senão `config`). Mudar `sk` ou `ano` apaga `config.equipes`. Padrão: `{ velocidade: 8, sk: 'f1', ano: 2024, equipes: {} }`. `{ t:'escolherEquipe', id, idx }` (qualquer jogador, só no lobby): erro `equipe` se o índice não existir/não puder ser montado ou já for do outro. `iniciar` sem as duas equipes dá erro `equipes`.
 - **Ações** (`{ t:'acao', rodada, tipo, dados }`), todas na perspectiva do jogador e com sorteio preso à semente `codigo + 'acao:' + id`. Uma ação inválida responde `{ t:'erro', codigo, id, detalhe? }` sem mudar nada. Inverno: `negociar`, `aceitarContra`, `recusarContra`, `n1`, `promover`, `rebaixar`, `dispensar`, `motor`, `plano`, `staff`, `renovarStaff`, `construir`, `modernizar`, `patroAceitar`, `patroPedir`, `patroContrato` (também na temporada), `academia`, `academiaPapel`, `saida`. Temporada: `meta` (antes da 1ª etapa), `dec` (fds, tl1, treino, acerto, estr, n1, motor, ordem), `janela`, `pacote`, `pecasProjetar` (`{ parte, foco, nivel }`), `pecasFabricar`, `pecasArquivar`, `pecasPrio`, `acertoMudar`, `acertoSaida`, `acertoAuto`, `evento`. Balanço: `teto`, `falencia` (só `resgate`; `fechar` dá erro `mp`).
@@ -265,6 +361,41 @@ Salas de modo `chefe` usam `src/regras-chefe.js` (o motor do jogo em `src/chefe-
 - **Rodadas.** Inverno → `{ tipo:'inicio', ano }`. Cada etapa → `{ tipo:'corrida', etapa, gp, venc, pole, top[10] }` (só o que é público; na última etapa também `fimTemporada: true` e já entra no balanço). Balanço → pendências resolvidas sozinhas (teto: declarar; falência: socorro do dono ou resgate) e `{ tipo:'anoNovo', ano }`. O contador da sala conta todas as rodadas (inverno, cada etapa, balanço).
 - **Vista.** `{ fase, C }`: a perspectiva inteira da equipe do jogador (a outra equipe aparece só como o rival `EU2` em `C.mpOutras` e na tabela). Pesa uns 125 KB.
 - **Fora por enquanto:** demissão e fim de carreira são ignorados no multiplayer; fechar a equipe numa falência é recusado. O imprevisto do fim de semana (`fdsDe`) é sorteado por equipe a cada virada de rodada e resolvido na hora de correr.
+
+## Regras do modo piloto (Fase 4)
+
+- **Lobby.** `configurar` aceita `{ velocidade?, serie?, ano? }` (`serie` f1 ou indy).
+  `{ t:'escolherPiloto', piloto: { nome?, cc, idade, estilo? } }` vale para cada jogador, só no
+  lobby:
+  - o nome é limpo e cortado em 24 caracteres; precisa de pelo menos 2, não pode repetir o do
+    outro piloto, e sem nome vale o do jogador;
+  - `cc` é um país do jogo;
+  - a idade vai de 14 a 30;
+  - o estilo é um dos quatro do jogo (`equilibrado` se faltar).
+
+  Fora disso responde erro `piloto`. `iniciar` sem os dois pilotos dá erro `pilotos`.
+  Padrão: `{ velocidade: 8, serie: 'f1', ano: 2024, pilotos: {} }`.
+- **Ações**, na perspectiva do jogador e com sorteio preso à semente da ação. Os dados são
+  conferidos contra listas fechadas, e um valor fora delas dá erro `dados`.
+  - Temporada: `setResp`, `setupEngenheiro`, `setFilo`, `setMotor`, `escolherFoco`,
+    `pedirDirecao`, `investir`, `pagarTeste`, `comprarLuxo`, `assinarPatro`, `contratarPessoal`,
+    `dispensarPessoal`, `relacionar`, `setCompromisso`.
+  - Mercado: `academia` (`{ i }` ou `{ i: null }` para recusar), `pedirOferta`, `escolherOferta`.
+
+  Os avisos que o jogo daria voltam em `resultado.avisos`. Uma ação da fase errada dá erro
+  `fase`.
+- **Pronto.**
+  - Na temporada, recusado só para quem se aposentou (`carreira`).
+  - No mercado, recusado com a academia pendente (`academia`) ou sem proposta escolhida
+    (`proposta`). Quem não tem nenhuma proposta que possa escolher fica pronto sem escolha.
+- **Rodadas.**
+  - Temporada: `{ tipo:'corridas', etapas: [{ slot, cat, gp, etapa, venc, top[10] }] }`, com
+    uma entrada por piloto que correu (numa categoria dividida, as duas são a mesma corrida).
+    Na última, `fimAno: true` e já vem o balanço.
+  - Mercado: `{ tipo:'anoNovo', ano }`.
+- **Vista.** `{ fase, S }`: a carreira do jogador com a temporada dele. O outro humano aparece
+  só como `ME2` no grid e em `S.mpOutros` (nome, país, equipe, papel, força e se corre na mesma
+  categoria). Pesa uns 125 KB no começo e 165 KB no fim do ano.
 
 ## Identidade temporária (só para teste)
 

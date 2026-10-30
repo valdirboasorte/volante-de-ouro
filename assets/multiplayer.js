@@ -1,7 +1,7 @@
-/* Multiplayer, Fase 1: as salas.
+/* Multiplayer: as salas, as rodadas do chefe (Fase 3) e as da carreira de piloto (Fase 4).
    Cria uma sala ou entra com o código de um amigo, mostra quem está nela e se está
    conectado, e volta sozinho para a sala depois de uma queda ou de fechar o jogo.
-   As rodadas e as corridas chegam nas próximas fases. O servidor (pasta multiplayer/)
+   As corridas ao vivo chegam na Fase 5. O servidor (pasta multiplayer/)
    é a autoridade: esta página só faz pedidos e mostra o que ele responde.
 
    A ficha que identifica o jogador fica no localStorage (vdo_mp). É uma identidade de
@@ -47,7 +47,13 @@
     mp: 'Indisponível no multiplayer por enquanto.',
     academia: 'A academia está cheia.',
     pacote: 'Não dá para levar esse pacote agora.',
-    interno: 'O servidor não conseguiu aplicar essa decisão.'
+    interno: 'O servidor não conseguiu aplicar essa decisão.',
+    pilotos: 'Os dois jogadores precisam escolher o piloto.',
+    piloto: 'Esse nome de piloto já foi escolhido.',
+    proposta: 'Escolha uma proposta antes de seguir.',
+    serie: 'Propostas de outra série não valem no multiplayer.',
+    carreira: 'A sua carreira acabou.',
+    fase: 'Isso não vale nesta fase.'
   };
   const TELAS = new Set([TITULO_SALA, 'Partida multiplayer', 'Resultado da rodada']);
   const erroTxt = c => ERROS[c] || ERROS.servidor;
@@ -153,11 +159,12 @@
         if(typeof m.v === 'number' && m.v < (MP.vVista || -1)) return;
         MP.vVista = typeof m.v === 'number' ? m.v : MP.vVista; MP.vista = m.vista || null;
         if(MP._chefe && MP.vista && MP.vista.C) return MP.aplicarChefe();
+        if(MP._piloto && MP.vista && MP.vista.S) return MP.aplicarPiloto();
       } else if(m.t === 'rodada'){
         /* a rodada foi processada: o resultado oficial, igual para os dois */
         if(MP.sala && MP.sala.partida) MP.sala.partida.ultimo = { rodada: m.rodada, resultado: m.resultado };
         /* no chefe, o que aconteceu aparece nas telas do próprio jogo, com a equipe já atualizada */
-        if(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'chefe'){ MP._rodadaNova = m.resultado || {}; return; }
+        if(MP.sala && MP.sala.partida && (MP.sala.partida.regras === 'chefe' || MP.sala.partida.regras === 'piloto')){ MP._rodadaNova = m.resultado || {}; return; }
         const m2 = el('modal');
         if(UI.aberta() && m2 && TELAS.has(m2.dataset.titulo)) MP._verResultado = true;
         else { MP._verResultado = true; UI.toast('Rodada processada.'); }
@@ -208,11 +215,12 @@
        A equipe na tela (C) é a cópia que o servidor mandou. As telas do jogo funcionam como
        sempre; cada decisão vira uma ação (UIC.mp, no index.html), e a resposta só aparece
        depois que a equipe atualizada chega. Nada disso toca no save do modo chefe. */
-    chefeAtivo(){ return !!MP._chefe && !!(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'chefe'); },
+    /* só vale enquanto a equipe na tela é a cópia do servidor: começar uma carreira solo desliga sozinho */
+    chefeAtivo(){ return !!MP._chefe && typeof C !== 'undefined' && !!C && C === MP._C && !!(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'chefe'); },
     entrarChefe(){
       if(!MP.vista || !MP.vista.C) return MP.abrirPartida();
       MP._chefe = true;
-      C = MP.vista.C;
+      C = MP._C = MP.vista.C;
       UIC._M = null; UIC.pag = 'visao';
       UI.limparFila(); UI.close(); UI.show('chefe'); UIC.render();
       MP.barra();
@@ -226,7 +234,8 @@
     },
     /* a equipe atualizada chegou: troca a cópia, redesenha e mostra o que estava esperando */
     aplicarChefe(){
-      C = MP.vista.C;
+      if(!MP.chefeAtivo()) return;
+      C = MP._C = MP.vista.C;
       UIC.render();
       MP.barra();
       const depois = MP._aposVista, nova = MP._rodadaNova;
@@ -264,7 +273,7 @@
     async escolherEquipe(idx){ const r = await MP.enviar('escolherEquipe', { idx }); if(r.erro) UI.toast(erroTxt(r.erro)); },
     /* a barra da partida dentro da tela do chefe: rodada, quem está pronto e o botão */
     barra(){
-      if(!MP._chefe) return;
+      if(!MP._chefe && !MP._piloto) return;
       const s = MP.sala, p = s && s.partida; if(!p) return;
       let b = el('mpBarra');
       if(!b){ b = document.createElement('div'); b.id = 'mpBarra'; b.className = 'mp mp-barra'; document.body.appendChild(b); document.body.classList.add('mp-com-barra'); }
@@ -272,16 +281,114 @@
       const pronto = slot => !!(p.prontos && p.prontos[slot]);
       const outros = s.jogadores.filter(j => j.slot !== eu);
       const souPronto = pronto(eu), outrosProntos = outros.every(j => pronto(j.slot)), proc = p.estado === 'processing';
-      const fase = { inverno: 'pré-temporada', temporada: 'temporada', balanco: 'balanço do ano' }[MP.vista && MP.vista.fase] || '';
-      const sea = typeof C !== 'undefined' && C && C.temporada, prox = MP.vista && MP.vista.fase === 'temporada' && sea && sea.calendar[sea.round];
+      const piloto = p.regras === 'piloto';
+      const fase = { inverno: 'pré-temporada', temporada: 'temporada', balanco: 'balanço do ano', mercado: 'propostas' }[MP.vista && MP.vista.fase] || '';
+      const sea = piloto ? (typeof S !== 'undefined' && S && S.season) : (typeof C !== 'undefined' && C && C.temporada);
+      const prox = MP.vista && MP.vista.fase === 'temporada' && sea && sea.calendar[sea.round];
       const estado = proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? 'Aguardando o adversário…'
         : !souPronto && outrosProntos ? 'O adversário já está pronto.' : 'Tome as suas decisões no seu ritmo.';
       b.innerHTML = `<span class="mp-b-t"><b>Multiplayer</b> · <span>Rodada</span> ${p.rodada}${fase ? ` · <span>${fase}</span>` : ''}${prox ? ` · <span>GP ${esc(prox.gp)}</span>` : ''}</span>
         <span class="mp-b-e" role="status">${estado}</span>
         <span class="mp-b-j">${outros.map(j => `<span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span> <span data-i18n-ignore>${esc(j.nome)}</span>: <span>${pronto(j.slot) ? 'pronto' : 'decidindo'}</span>`).join(' ')}</span>
         ${souPronto ? `<button class="btn btn-ghost btn-sm" onclick="MP.pronto(false)"${proc ? ' disabled' : ''}>Cancelar prontidão</button>`
-                    : `<button class="btn btn-primary btn-sm" onclick="MP.chefePronto()"${proc || MP.con !== 'conectado' ? ' disabled' : ''}>Pronto para avançar</button>`}
+                    : `<button class="btn btn-primary btn-sm" onclick="${piloto ? 'MP.pilotoPronto()' : 'MP.chefePronto()'}"${proc || MP.con !== 'conectado' ? ' disabled' : ''}>Pronto para avançar</button>`}
         <button class="btn btn-ghost btn-sm" onclick="MP.abrirPartida()">Sala</button>`;
+    },
+    /* ── o modo piloto com um amigo ── (o mesmo esquema do chefe, com a carreira S) */
+    pilotoAtivo(){ return !!MP._piloto && typeof S !== 'undefined' && !!S && S === MP._S && !!(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'piloto'); },
+    entrarPiloto(){
+      if(!MP.vista || !MP.vista.S) return MP.abrirPartida();
+      MP._piloto = true;
+      S = MP._S = MP.vista.S;
+      UI.limparFila(); UI.close(); UI.show('career'); UI.render();
+      MP.barra();
+      MP.inverno();
+    },
+    /* a pré-temporada (o servidor já resolveu, como no modo rápido) explica uma lesão ou uma moral
+       baixa antes da primeira corrida: o resumo aparece uma vez por ano em cada aparelho */
+    inverno(){
+      const chave = (MP.sala && MP.sala.codigo) + ':' + S.year;
+      if(!S.invernoNotas || S.invernoAno !== S.year || MP._invernoVisto === chave) return;
+      MP._invernoVisto = chave;
+      UI.invernoResumo();
+    },
+    sairDoPiloto(){
+      MP._piloto = false; MP._aposVista = null; MP._rodadaNova = null;
+      S = null; MP._S = null;
+      const b = el('mpBarra'); if(b) b.remove();
+      document.body.classList.remove('mp-com-barra');
+      UI.limparFila(); UI.close(); UI.show('intro'); Game.checkSave(); MP.desenhar();
+    },
+    aplicarPiloto(){
+      if(!MP.pilotoAtivo()) return;
+      S = MP._S = MP.vista.S;
+      UI.render();
+      MP.barra();
+      const depois = MP._aposVista, nova = MP._rodadaNova;
+      MP._aposVista = null; MP._rodadaNova = null;
+      if(depois){ try { depois(); } catch(e){ console.error(e); } }
+      if(nova) MP.mostrarRodadaPiloto(nova);
+    },
+    /* a rodada processada: a sua corrida, pela tela de resultado do jogo (quem não correu fica sabendo) */
+    mostrarRodadaPiloto(r){
+      UI.limparFila(); UI.close();
+      const eu = MP.voce ? MP.voce.slot : (ler() || {}).slot;
+      if(r.tipo === 'corridas'){
+        const minha = (r.etapas || []).some(e => String(e.slot) === String(eu));
+        const res = S.season && S.season.results;
+        if(minha && res && res.length) return UI.depois(() => UI.raceResult(res[res.length - 1]), 150);
+        UI.toast(r.fimAno ? 'O ano acabou: veja o balanço e as propostas.' : 'Sem corrida na sua categoria nesta rodada.');
+        if(r.fimAno) UI.depois(() => Game.endSeason(), 150);
+        return;
+      }
+      if(r.tipo === 'anoNovo'){ UI.toast('A nova temporada começa.'); MP.inverno(); }
+    },
+    pilotoAcao(tipo, dados, depois){
+      const p = MP.sala && MP.sala.partida; if(!p) return;
+      MP.enviar('acao', { rodada: p.rodada, tipo, dados }).then(r => {
+        if(r.erro) return UI.toast(erroTxt(r.erro));
+        const avisos = (r.resultado && r.resultado.avisos) || [];
+        MP._aposVista = () => { if(depois) depois(r.resultado || {}); if(avisos.length) UI.toast(avisos[avisos.length - 1]); };
+      });
+    },
+    async pilotoPronto(){
+      const p = MP.sala && MP.sala.partida; if(!p || MP._prontoNoAr) return;
+      MP._prontoNoAr = true;
+      const r = await MP.enviar('pronto', { rodada: p.rodada, pronto: true });
+      MP._prontoNoAr = false;
+      if(!r.erro || r.erro === 'rodada') return;
+      if(r.erro === 'academia'){ UI.toast('Responda à academia antes de seguir.'); return Game.afterSeason(S.lastSum || Engine.summary(S.season)); }
+      if(r.erro === 'proposta'){ UI.toast('Escolha uma proposta antes de seguir.'); return Game.showOffers(S.lastSum); }
+      UI.toast(erroTxt(r.erro));
+    },
+    async escolherPiloto(){
+      const v = id => (el(id) || {}).value || '';
+      const piloto = { nome: v('mpPNome').trim(), cc: v('mpPPais').trim().toUpperCase(), idade: +v('mpPIdade'), estilo: v('mpPEstilo') };
+      const r = await MP.enviar('escolherPiloto', { piloto });
+      UI.toast(r.erro ? erroTxt(r.erro) : 'Piloto salvo.');
+    },
+    /* no lobby de uma sala de piloto: o ano e a série (do anfitrião) e o piloto de cada um */
+    configPiloto(s, souAnf, eu){
+      const cfg = s.config || {}, serie = cfg.serie || 'f1', ano = cfg.ano || 2024, meu = (cfg.pilotos || {})[eu] || {};
+      const series = { f1: 'Fórmula 1', indy: 'IndyCar' };
+      const ligado = MP.con === 'conectado' ? '' : ' disabled';
+      const estilos = typeof STYLES !== 'undefined' ? Object.keys(STYLES) : ['equilibrado'];
+      const outros = s.jogadores.filter(j => j.slot !== eu).map(j => ({ j, p: (cfg.pilotos || {})[j.slot] }));
+      return `<span class="lbl">Campeonato</span>
+        <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Série e ano</span>
+          ${souAnf ? `<div class="mp-vels">${Object.keys(series).map(k => `<button class="btn btn-sm ${k === serie ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar({ serie: '${k}' })"${ligado}>${series[k]}</button>`).join('')}
+              <input type="number" id="mpAno" min="1950" max="2026" value="${ano}" aria-label="Ano"> <button class="btn btn-ghost btn-sm" onclick="MP.configurar({ ano: +el('mpAno').value })"${ligado}>Mudar o ano</button></div>`
+                   : `<b>${series[serie] || esc(serie)} ${ano}</b>`}</div></div>
+        <span class="lbl">Seu piloto</span>
+        <p class="mut mp-ajuda">Com a mesma idade, os dois começam na mesma categoria e dividem as corridas. Com idades diferentes, cada um começa na sua.</p>
+        <div class="mp-form">
+          <div class="field"><label class="lbl" for="mpPNome">Nome</label><input type="text" id="mpPNome" maxlength="24" value="${esc(meu.nome || '')}" data-i18n-ignore></div>
+          <div class="field"><label class="lbl" for="mpPPais">País (sigla)</label><input type="text" id="mpPPais" maxlength="2" value="${esc(meu.cc || 'BR')}" data-i18n-ignore></div>
+          <div class="field"><label class="lbl" for="mpPIdade">Idade</label><input type="number" id="mpPIdade" min="14" max="30" value="${meu.idade || 17}"></div>
+          <div class="field"><label class="lbl" for="mpPEstilo">Estilo</label><select id="mpPEstilo">${estilos.map(k => `<option value="${esc(k)}"${k === (meu.estilo || 'equilibrado') ? ' selected' : ''}>${esc(typeof STYLES !== 'undefined' && STYLES[k] && STYLES[k].nome ? STYLES[k].nome : k)}</option>`).join('')}</select></div>
+        </div>
+        <button class="btn btn-contorno btn-sm" onclick="MP.escolherPiloto()"${ligado}>Salvar meu piloto</button>
+        ${outros.map(({ j, p }) => `<p class="mut mp-ajuda"><span data-i18n-ignore>${esc(j.nome)}</span>: ${p ? `<span data-i18n-ignore>${esc(p.nome)}</span>, ${p.idade} <span>anos</span>` : '<span>ainda escolhendo o piloto</span>'}</p>`).join('')}`;
     },
     /* no lobby de uma sala de chefe: o campeonato (do anfitrião) e a equipe de cada um */
     configChefe(s, souAnf, eu){
@@ -331,7 +438,7 @@
                             : '<span>Sala com um amigo</span> · <span>teste</span>';
       const m = el('modal');
       if(UI.aberta() && m && TELAS.has(m.dataset.titulo)) MP.abrir(MP._tela);
-      if(MP._chefe) MP.barra();
+      if(MP._chefe || MP._piloto) MP.barra();
     },
     /* a linha de conexão, com o que dá para fazer quando ela cai */
     linhaConexao(){
@@ -349,6 +456,7 @@
       if(!g) return MP.abrirEntrada();
       if(MP.con === 'fora') MP.conectar();
       if(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'chefe') return MP.vista && MP.vista.C ? MP.entrarChefe() : MP.abrirPartida();
+      if(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'piloto') return MP.vista && MP.vista.S ? MP.entrarPiloto() : MP.abrirPartida();
       if(MP.sala && MP.sala.partida) return MP._verResultado && MP.sala.partida.ultimo ? MP.abrirResultado() : MP.abrirPartida();
       const s = MP.sala, eu = MP.voce ? MP.voce.slot : g.slot;
       const souAnf = s && s.anfitriao === eu;
@@ -361,6 +469,7 @@
             <div class="sv-bts"><button class="btn btn-ghost btn-sm" onclick="MP.abrir()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.sair(true)">Sair</button></div></div>`
         : '';
       UI.modal(UI.head(TITULO_SALA, s && s.modo === 'chefe' ? 'Teste: chefe de equipe com um amigo. As corridas ao vivo chegam na próxima etapa.'
+        : s && s.modo === 'piloto' ? 'Teste: carreira de piloto com um amigo. As corridas ao vivo chegam na próxima etapa.'
         : 'Teste: por enquanto a sala junta os jogadores. As rodadas e as corridas chegam nas próximas etapas.') +
         `<div class="mbd sv mp">
           ${corpo}
@@ -376,15 +485,16 @@
             ${souAnf ? `<div class="mp-vels">${VELS.map(n => `<button class="btn btn-sm ${n === vel ? 'btn-primary' : 'btn-ghost'}" onclick="MP.velocidade(${n})"${MP.con === 'conectado' ? '' : ' disabled'}>${n}×</button>`).join('')}</div>`
                      : `<b>${vel}×</b>`}</div></div>` : ''}
           ${s && s.modo === 'chefe' ? MP.configChefe(s, souAnf, eu) : ''}
+          ${s && s.modo === 'piloto' ? MP.configPiloto(s, souAnf, eu) : ''}
           ${MP.linhaConexao()}
         </div>
         <div class="mft"><button class="btn btn-ghost" onclick="MP.sair()">Sair da sala</button><span class="sp"></span>
-          ${souAnf ? `<button class="btn btn-primary" onclick="MP.iniciar()"${jog.length >= 2 && MP.con === 'conectado' && (s.modo !== 'chefe' || jog.every(j => (s.config.equipes || {})[j.slot] != null)) ? '' : ' disabled'}>Iniciar partida</button>` : ''}
+          ${souAnf ? `<button class="btn btn-primary" onclick="MP.iniciar()"${jog.length >= 2 && MP.con === 'conectado' && (s.modo !== 'chefe' || jog.every(j => (s.config.equipes || {})[j.slot] != null)) && (s.modo !== 'piloto' || jog.every(j => (s.config.pilotos || {})[j.slot])) ? '' : ' disabled'}>Iniciar partida</button>` : ''}
           <button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`);
     },
     /* a rodada de gerenciamento: cada um decide no seu ritmo e confirma quando estiver pronto */
     abrirPartida(){
-      if(MP.sala && MP.sala.partida && MP.sala.partida.regras === 'chefe') return MP.abrirPartidaChefe();
+      if(MP.sala && MP.sala.partida && (MP.sala.partida.regras === 'chefe' || MP.sala.partida.regras === 'piloto')) return MP.abrirPartidaChefe();
       const s = MP.sala, p = s.partida, eu = MP.voce ? MP.voce.slot : (ler() || {}).slot, vista = MP.vista || {};
       const jog = s.jogadores.slice().sort((a, b) => a.slot - b.slot);
       const pronto = slot => !!(p.prontos && p.prontos[slot]);
@@ -419,6 +529,7 @@
     /* a sala de uma partida de chefe: quem está pronto, e a volta para a própria equipe */
     abrirPartidaChefe(){
       const s = MP.sala, p = s.partida, eu = MP.voce ? MP.voce.slot : (ler() || {}).slot;
+      const piloto = p.regras === 'piloto', pronta = !!(MP.vista && (piloto ? MP.vista.S : MP.vista.C));
       const jog = s.jogadores.slice().sort((a, b) => a.slot - b.slot);
       const pronto = slot => !!(p.prontos && p.prontos[slot]);
       const cartao = j => `<div class="sv-item mp-jog"><span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span>
@@ -427,11 +538,11 @@
         `<div class="mbd sv mp">
           <p class="mp-estado${p.estado === 'processing' ? ' mp-proc' : ''}" role="status">${p.estado === 'processing' ? 'Processando a rodada…' : 'Tome as suas decisões no seu ritmo. A rodada avança quando os dois estiverem prontos.'}</p>
           <span class="lbl">Jogadores</span>${jog.map(cartao).join('')}
-          ${MP.vista && MP.vista.C ? '' : '<p class="mut sv-vazio">Carregando a sua equipe…</p>'}
+          ${pronta ? '' : `<p class="mut sv-vazio">${piloto ? 'Carregando a sua carreira…' : 'Carregando a sua equipe…'}</p>`}
           ${MP.linhaConexao()}
         </div>
         <div class="mft"><button class="btn btn-ghost" onclick="UI.close()">Fechar</button><span class="sp"></span>
-          <button class="btn btn-primary" onclick="MP.entrarChefe()"${MP.vista && MP.vista.C ? '' : ' disabled'}>Ir para a minha equipe</button></div>`);
+          <button class="btn btn-primary" onclick="${piloto ? 'MP.entrarPiloto()' : 'MP.entrarChefe()'}"${pronta ? '' : ' disabled'}>${piloto ? 'Ir para a minha carreira' : 'Ir para a minha equipe'}</button></div>`);
     },
     /* o resultado oficial da rodada, o mesmo para os dois */
     abrirResultado(){
@@ -495,6 +606,8 @@
       .mp .mp-eq:disabled{cursor:default;opacity:.55}
       .mp .mp-cor{width:10px;height:28px;border-radius:3px;flex:none}
       .mp #mpAno{width:90px}
+      .mp .mp-form{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+      .mp .mp-form .field{margin:0}
       .mp-barra{position:fixed;left:0;right:0;bottom:0;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;
         padding:10px 16px;background:var(--s1);border-top:1px solid var(--line);font-size:14px}
       .mp-barra .mp-b-e{flex:1;min-width:160px;color:var(--soft)}
@@ -502,6 +615,29 @@
       body.mp-com-barra{padding-bottom:64px}`;
     document.head.appendChild(st);
     const b = el('btnMP'); if(b) b.hidden = false;
+    /* sair da tela da partida por qualquer botão (o menu, "Sair") desliga o modo e tira a barra */
+    const mostrar = UI.show;
+    UI.show = function(nome){
+      const r = mostrar.apply(this, arguments);
+      if((MP._piloto && nome !== 'career') || (MP._chefe && nome !== 'chefe')){
+        if(MP._piloto){ MP._piloto = false; if(typeof S !== 'undefined' && S === MP._S) S = null; MP._S = null; }
+        if(MP._chefe){ MP._chefe = false; if(typeof C !== 'undefined' && C === MP._C) C = null; MP._C = null; }
+        MP._aposVista = null; MP._rodadaNova = null;
+        const barra = el('mpBarra'); if(barra) barra.remove();
+        document.body.classList.remove('mp-com-barra');
+      }
+      return r;
+    };
+    /* o que a carreira solo deixa fazer e o servidor ainda não sabe aplicar: numa partida de piloto
+       vira um aviso, em vez de mudar só a cópia da tela (o servidor desfaria na próxima rodada) */
+    ['setDif', 'toggleFast', 'definirRival', 'contratarEmpresario', 'demitirEmpresario', 'negociarOferta', 'takeOfferDupla',
+     'ajustarVinculoReserva', 'aceitarParalela', 'recusarParalela', 'aceitarConvocacao', 'recusarConvocacao', 'correrConvocacaoAcademia',
+     'marcarInverno', 'cobrarPromessas', 'escolherSemente', 'tomarRota', 'recalcularRota', 'fazerTreino', 'pularTreinos', 'fazerQuali',
+     'escolherFala', 'aplicarFala', 'escolherEvento', 'chooseDilemma', 'responderPedido', 'pedido', 'escolherLado', 'endCareer'
+    ].forEach(k => {
+      const orig = Game[k]; if(typeof orig !== 'function') return;
+      Game[k] = function(){ return Game.mpIndisponivel() ? undefined : orig.apply(this, arguments); };
+    });
     if(ler()) MP.conectar(); else MP.desenhar();
     addEventListener('online', () => { if(ler() && !MP.ws) MP.tentarDeNovo(); });
     document.addEventListener('visibilitychange', () => { if(!document.hidden && ler() && !MP.ws && MP.con !== 'outra-aba') MP.tentarDeNovo(); });
