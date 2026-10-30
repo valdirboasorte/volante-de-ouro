@@ -81,6 +81,17 @@ export function criarRegrasPiloto(obterMotor){
       if(!S.season) return erro('dados');
       J.Game.setupNoEngenheiro();
     }),
+    /* a janela da classificação: uma escolha por etapa, com o efeito sorteado já aqui */
+    quali: acao(TEMP, d => typeof d.k === 'string', (J, S, d) => {
+      const sea = S.season, E = J.Engine;
+      if(!sea || !sea.calendar[sea.round]) return erro('dados');
+      const j = E.JANELAS.find(x => x.k === d.k); if(!j) return erro('dados');
+      const fds = E.garantirFds(sea, sea.round);
+      if(fds.mpJanela) return erro('quali');
+      const ef = E.efeitoJanela(j, E.condQuali(sea, sea.round));
+      fds.mpJanela = { k: j.k, bonus: ef.bonus, notas: ef.notas };
+      return { janela: j.k };
+    }),
     setFilo: porChave(TEMP, 'setFilo', filosofias),
     setMotor: acao(TEMP, d => Number.isInteger(d.i), (J, S, d) => {
       if(!S.season || !inteiro(d.i, 0, J.Engine.MOTOR_ROT.length - 1)) return erro('dados');

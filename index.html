@@ -2697,7 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261031-robustez" defer></script>
+<script src="assets/multiplayer.js?v=20261031-quali" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -12765,6 +12765,13 @@ const Engine = {
   },
 
   /* condição escondida da sessão, sorteada uma vez por etapa */
+  /* multiplayer: a janela de classificação que o jogador escolheu (o efeito dela é sorteado no
+     servidor na hora da escolha) e o que mais pesa no sábado, como em rodarQuali */
+  bonusQualiMP(sea, rd){
+    const j = sea.fds && sea.fds.rd === rd && sea.fds.mpJanela;
+    if(!j) return 0;
+    return j.bonus + Engine.ganhoTreino('quali') + Engine.efeitoFds(sea, 'ritmo') + Engine.efeitoFds(sea, 'ritmoQ') + Engine.embalo(sea);
+  },
   condQuali(sea, rd){
     const trk = sea.calendar[rd];
     const h = seedOf('qc' + (sea.year != null ? sea.year : sea.ano) + '_' + rd + '_' + trk.id);
@@ -13516,7 +13523,7 @@ const Engine = {
         if(fixo) return { f, v: fixo.q };
         const car = Engine.carStr(sea, f.teamId, rd) + (f.isMe ? ajuste.carQ + clima.car : 0);
         const bruto = f.isMe
-          ? Engine.meSkill(wet).q + tr.q + Engine.extraQ(sea, rd) + meuFator.total + (sea.minhaForma || 0)
+          ? Engine.meSkill(wet).q + tr.q + Engine.extraQ(sea, rd) + meuFator.total + (sea.minhaForma || 0) + Engine.bonusQualiMP(sea, rd)
           : f.skill + f.qb + (f.esp ? f.esp[trk.type] || 0 : 0) + (f.formAno || 0)
             + (wet ? R.gauss()*3 : 0);
         const sk = Engine.compSkill(bruto, sea);
@@ -20172,7 +20179,7 @@ UI.setupModal = function(){
     <div class="mft">
       <button class="btn btn-ghost btn-sm" onclick="Game.setupNoEngenheiro()">Deixar com o engenheiro</button>
       <span class="sp"></span>
-      <button class="btn btn-primary" onclick="UI.close();Game.aoSabado()">${Game.emMP() ? 'Pronto para a corrida →' : 'Ir para a classificação →'}</button>
+      <button class="btn btn-primary" onclick="UI.close();Game.aoSabado()">Ir para a classificação →</button>
     </div>`);
 };
 
@@ -21173,6 +21180,7 @@ const Game = {
   },
   /* a classificação, com a janela escolhida */
   fazerQuali(janela){
+    if(Game.mp('quali', { k: janela }, () => { UI.close(); MP.pilotoPronto(); })) return;
     const sea = S.season;
     const fds = Engine.garantirFds(sea, sea.round);
     fds.quali = Engine.rodarQuali(sea, sea.round, janela);
@@ -21210,7 +21218,8 @@ const Game = {
     UI.setupModal();
   },
   aoSabado(){
-    if(Game.mpPronto()) return;
+    /* no multiplayer, a classificação é a escolha da janela; escolher deixa você pronto */
+    if(Game.emMP()){ UI.close(); return UI.qualiModal(); }
     const sea = S.season;
     const fds = Engine.garantirFds(sea, sea.round);
     fds.etapa = 'quali';

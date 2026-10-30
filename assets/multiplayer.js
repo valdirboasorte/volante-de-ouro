@@ -70,13 +70,19 @@
     corrida: 'Você não está nesta corrida.',
     carro: 'Esse carro não é seu.',
     repetida: 'A sua largada já foi registrada.',
-    fim: 'A corrida já acabou.'
+    fim: 'A corrida já acabou.',
+    quali: 'Você já escolheu a hora da classificação.'
   };
   const TELAS = new Set([TITULO_SALA, 'Partida multiplayer', 'Resultado da rodada']);
   const erroTxt = c => ERROS[c] || ERROS.servidor;
 
   function ler(){ try { const g = JSON.parse(localStorage.getItem(CHAVE) || 'null'); return g && g.codigo && /^[0-9a-f]{64}$/.test(g.ficha) ? g : null; } catch(e){ return null; } }
-  function gravar(g){ try { if(g) localStorage.setItem(CHAVE, JSON.stringify(g)); else localStorage.removeItem(CHAVE); } catch(e){} }
+  /* as salas deste aparelho (a atual fica em CHAVE; a lista guarda todas, para voltar a qualquer uma) */
+  const LISTA = CHAVE + '_salas';
+  function lerLista(){ try { const l = JSON.parse(localStorage.getItem(LISTA) || '[]'); return Array.isArray(l) ? l.filter(g => g && g.codigo && /^[0-9a-f]{64}$/.test(g.ficha)) : []; } catch(e){ return []; } }
+  function gravarLista(l){ try { if(l.length) localStorage.setItem(LISTA, JSON.stringify(l.slice(0, 20))); else localStorage.removeItem(LISTA); } catch(e){} }
+  function naLista(g){ if(!g) return; const l = lerLista().filter(x => x.codigo !== g.codigo); l.unshift(Object.assign({}, g, { em: Date.now() })); gravarLista(l); }
+  function gravar(g){ try { if(g) localStorage.setItem(CHAVE, JSON.stringify(g)); else localStorage.removeItem(CHAVE); } catch(e){} if(g) naLista(g); }
   const codigoBonito = c => String(c || '').replace(/^(.{4})(.{4})$/, '$1-$2');
   const id = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
 
@@ -97,7 +103,7 @@
     con: 'fora', sala: null, voce: null, v: -1, ws: null, tentativas: 0, falhas: 0, _pend: {}, versao: null,
 
     /* quem já tem uma sala guardada continua vendo o botão, mesmo sem o link */
-    disponivel(){ return !!SERVIDOR && (local || ABERTO_A_TODOS || comLink || !!ler()) && typeof WebSocket === 'function' && !!(window.crypto && crypto.subtle); },
+    disponivel(){ return !!SERVIDOR && (local || ABERTO_A_TODOS || comLink || !!ler() || lerLista().length > 0) && typeof WebSocket === 'function' && !!(window.crypto && crypto.subtle); },
 
     /* o mesmo hash que multiplayer/ferramentas/gerar-motor.mjs calcula dos scripts sem atributo */
     async versaoDaPagina(){
@@ -182,6 +188,7 @@
         if(typeof m.v === 'number' && m.v < MP.v) return;
         if(typeof m.v === 'number') MP.v = m.v;
         MP.sala = m.sala || MP.sala; if(m.voce) MP.voce = m.voce;
+        const g = ler(); if(g && MP.sala && MP.sala.modo && g.modo !== MP.sala.modo){ g.modo = MP.sala.modo; gravar(g); }
       } else if(m.t === 'jogadores'){
         if(MP.sala && Array.isArray(m.jogadores)) MP.sala.jogadores = m.jogadores;
       } else if(m.t === 'vista'){
@@ -370,6 +377,21 @@
     },
     abrirCorrida(c){
       const eu = MP.meuSlot();
+      /* piloto: antes da largada, o resultado da classificação (o grid da corrida e o que a janela rendeu) */
+      if(!c.chefe && c.fase === 'largada' && MP.cor.qualiVisto !== c.k && typeof S !== 'undefined' && S && S.season){
+        MP.cor.qualiVisto = c.k;
+        const carros = c.ent.carros.slice().sort((a, b) => a.grid - b.grid);
+        const meus = new Set(Object.keys(c.donos).filter(i => String(c.donos[i]) === String(eu)).map(i => c.ent.carros[i].id));
+        const pos = carros.findIndex(x => meus.has(x.id)) + 1, sea = S.season, j = sea.fds && sea.fds.rd === sea.round && sea.fds.mpJanela;
+        UI.limparFila(); UI.close();
+        UI.qualiResultado({ minha: pos || null, foraMe: null, fmt: Engine.formatoQuali(sea.year, S.series, sea.round),
+          notas: j ? j.notas.map(k => Engine.NOTA_JANELA_EU[k]).filter(Boolean) : [],
+          ordem: carros.map(x => ({ id: x.id, name: x.nome, cc: x.cc, me: meus.has(x.id) })) });
+        /* "Domingo": a corrida, com o que o servidor tem agora (o outro pode já ter largado) */
+        const b = [...document.querySelectorAll('.modal .btn-primary')].pop();
+        if(b) b.onclick = () => { UI.close(); MP.enviar('corridaSync'); };
+        return;
+      }
       const t = MP.cor.tela = { k: c.k, R: Gp.criar(JSON.parse(JSON.stringify(c.ent))), passo: 0, fila: [], vistos: new Set(),
         liberado: c.liberado, fase: c.fase, somas: {}, somasServ: {}, donos: c.donos,
         meus: new Set(Object.keys(c.donos).filter(i => String(c.donos[i]) === String(eu)).map(Number)),
@@ -643,11 +665,36 @@
       MP.esquecer();
     },
     esquecer(){
+      const g = ler();
+      if(g) gravarLista(lerLista().filter(x => x.codigo !== g.codigo));
+      MP.soltar(); MP.abrir();
+    },
+    /* larga a sala atual sem apagá-la: ela continua na lista */
+    soltar(){
       MP._saindo = true; clearTimeout(MP._volta); clearInterval(MP._ping);
       if(MP.ws){ try { MP.ws.close(1000, 'saiu'); } catch(e){} }
       MP.ws = null; gravar(null);
       MP.sala = null; MP.voce = null; MP.v = -1; MP.con = 'fora'; MP._saindo = false;
-      MP.desenhar(); MP.abrir();
+      MP.vista = null; MP.vVista = -1; MP.cor = null; MP._apagar = null;
+      MP.desenhar();
+    },
+    /* outra sala: a atual fica guardada, e a tela volta para criar ou entrar */
+    outraSala(){ MP.soltar(); MP.abrirEntrada(); },
+    /* volta para uma sala da lista */
+    voltarSala(codigo){
+      const g = lerLista().find(x => x.codigo === codigo); if(!g) return;
+      MP.soltar(); gravar(g);
+      MP.voce = { slot: g.slot }; MP.tentativas = 0; MP.falhas = 0;
+      MP.conectar(); MP.abrir();
+    },
+    /* apaga uma sala deste aparelho (a atual sai de verdade, se a partida ainda não começou) */
+    apagarSala(codigo, certeza){
+      if(!certeza){ MP._apagar = codigo; return MP.abrirEntrada(); }
+      MP._apagar = null;
+      const g = ler();
+      if(g && g.codigo === codigo) return MP.sair(true);
+      gravarLista(lerLista().filter(x => x.codigo !== codigo));
+      MP.abrirEntrada();
     },
 
     /* ── a tela ── */
@@ -712,7 +759,7 @@
           ${s && s.modo === 'piloto' ? MP.configPiloto(s, souAnf, eu) : ''}
           ${MP.linhaConexao()}
         </div>
-        <div class="mft"><button class="btn btn-ghost" onclick="MP.sair()">Sair da sala</button><span class="sp"></span>
+        <div class="mft"><button class="btn btn-ghost" onclick="MP.sair()">Sair da sala</button><button class="btn btn-ghost" onclick="MP.outraSala()">Outra sala</button><span class="sp"></span>
           ${souAnf ? `<button class="btn btn-primary" onclick="MP.iniciar()"${jog.length >= 2 && MP.con === 'conectado' && (s.modo !== 'chefe' || jog.every(j => (s.config.equipes || {})[j.slot] != null)) && (s.modo !== 'piloto' || jog.every(j => (s.config.pilotos || {})[j.slot])) ? '' : ' disabled'}>Iniciar partida</button>` : ''}
           <button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`);
     },
@@ -783,6 +830,14 @@
         </div>
         <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="MP.voltarAoGerenciamento()">Voltar ao gerenciamento</button></div>`);
     },
+    listaSalas(){
+      const l = lerLista(); if(!l.length) return '';
+      return `<span class="lbl">Suas salas</span>` + l.map(g => MP._apagar === g.codigo
+        ? `<div class="sv-item sv-apagar"><div class="sv-tx"><b><span>Apagar esta sala?</span> <span data-i18n-ignore>${esc(codigoBonito(g.codigo))}</span></b><span class="sv-desc">Ela some deste aparelho. Se a partida ainda não começou, a vaga fica livre.</span></div>
+            <div class="sv-bts"><button class="btn btn-ghost btn-sm" onclick="MP._apagar=null;MP.abrirEntrada()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.apagarSala('${g.codigo}', true)">Apagar</button></div></div>`
+        : `<div class="sv-item"><div class="sv-tx"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b><span class="sv-desc">${g.modo ? `<span>${esc(MODOS[g.modo] || g.modo)}</span> · ` : ''}<span data-i18n-ignore>${esc(g.nome || '')}</span></span></div>
+            <div class="sv-bts"><button class="btn btn-primary btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button><button class="btn btn-ghost btn-sm" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div></div>`).join('');
+    },
     abrirEntrada(){
       let nome = ''; try { nome = localStorage.getItem('vdo_mp_nome') || ''; } catch(e){}
       UI.modal(UI.head(TITULO_ENTRADA, 'Teste com um amigo: crie uma sala ou entre com o código que ele mandar.') +
@@ -798,6 +853,7 @@
           <div class="field"><label class="lbl" for="mpCodigo">Código da sala</label><input type="text" id="mpCodigo" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH" data-i18n-ignore></div>
           <button class="btn btn-contorno mp-acao" onclick="MP.entrar()">Entrar</button>
           <p class="mp-erro" id="mpErro" role="alert"></p>
+          ${MP.listaSalas()}
           <p class="mut sv-uso">Identidade de teste: a sua vaga na sala fica guardada neste navegador. Limpar os dados do site faz você perder a vaga.</p>
         </div>
         <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`);
@@ -856,7 +912,7 @@
        vira um aviso, em vez de mudar só a cópia da tela (o servidor desfaria na próxima rodada) */
     ['setDif', 'toggleFast', 'definirRival', 'contratarEmpresario', 'demitirEmpresario', 'negociarOferta', 'takeOfferDupla',
      'ajustarVinculoReserva', 'aceitarParalela', 'recusarParalela', 'aceitarConvocacao', 'recusarConvocacao', 'correrConvocacaoAcademia',
-     'marcarInverno', 'cobrarPromessas', 'escolherSemente', 'tomarRota', 'recalcularRota', 'fazerTreino', 'pularTreinos', 'fazerQuali',
+     'marcarInverno', 'cobrarPromessas', 'escolherSemente', 'tomarRota', 'recalcularRota', 'fazerTreino', 'pularTreinos',
      'escolherFala', 'aplicarFala', 'escolherEvento', 'chooseDilemma', 'responderPedido', 'pedido', 'escolherLado', 'endCareer'
     ].forEach(k => {
       const orig = Game[k]; if(typeof orig !== 'function') return;

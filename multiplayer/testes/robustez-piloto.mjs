@@ -8,6 +8,7 @@ import { ambienteFalso } from '../src/pagina-falsa.js';
 import { criarRnd } from '../src/aleatorio.js';
 import { criarRegrasPiloto } from '../src/regras-piloto.js';
 import { perspectiva, agir } from '../src/piloto-mp.js';
+import { ligarCorridas, desligarCorridas } from '../src/corrida-mp.js';
 
 let ok = 0, falhas = 0;
 const checar = (nome, cond, detalhe) => { if(cond){ ok++; console.log('  ✓ ' + nome); } else { falhas++; console.log('  ✗ ' + nome + (detalhe === undefined ? '' : ' — ' + JSON.stringify(detalhe).slice(0, 400))); } return !!cond; };
@@ -63,6 +64,24 @@ console.log('\nUma proposta de outra série');
   const B = perspectiva(mundo, '1');
   checar(`a proposta de outra série é aceita e o piloto muda de série no ano novo (${viu ? viu.de + ' → ' + viu.para : 'sem proposta de outra série'})`,
     !!viu && B.series !== 'f1' && !B.retired && B.season && B.season.calendar.length > 0, { viu, serie: B.series });
+}
+
+console.log('\nA janela da classificação');
+{
+  const codigo = 'ROBUSTA3';
+  const mundo = regras.iniciar([{ slot: 0 }, { slot: 1 }], { config: { serie: 'f1', ano: 2024, pilotos: { 0: { nome: 'Eva Rocha', cc: 'BR', idade: 20 }, 1: { nome: 'Gil Matos', cc: 'PT', idade: 20 } } }, codigo, anfitriao: 0 });
+  const k = J.Engine.JANELAS.map(j => j.k);
+  const r0 = regras.acoes.quali.aplicar(mundo, '0', { k: 'nada' }, { codigo, id: 'q0' });
+  const r1 = regras.acoes.quali.aplicar(mundo, '0', { k: k[0] }, { codigo, id: 'q1' });
+  const r2 = regras.acoes.quali.aplicar(mundo, '0', { k: k[2] }, { codigo, id: 'q2' });
+  const r3 = regras.acoes.quali.aplicar(mundo, '1', { k: k[2] }, { codigo, id: 'q3' });
+  const jA = perspectiva(mundo, '0').season.fds.mpJanela, jB = perspectiva(mundo, '1').season.fds.mpJanela;
+  checar('janela inválida recusada; uma escolha por etapa (a segunda é recusada); cada um guarda a sua, com o efeito já sorteado',
+    r0.erro === 'dados' && !r1.erro && r2.erro === 'quali' && !r3.erro && jA.k === k[0] && jB.k === k[2] && typeof jA.bonus === 'number' && Array.isArray(jB.notas), { r0, r1, r2, r3 });
+  const passada = (modo, res) => { const ctl = ligarCorridas(J, modo, res); try { regras.processar(structuredClone(mundo), 1, criarRnd(codigo, 1)); return ctl; } finally { desligarCorridas(J); } };
+  const prep = passada('preparar'), d = prep.defs[0];
+  const conc = d ? passada('concluir', { [d.chave]: { ent: d.ent, res: (() => { const R = J.Gp.criar(structuredClone(d.ent)); J.Gp.terminar(R); return J.Gp.resultado(R); })(), notas: {} } }) : null;
+  checar('com as duas janelas escolhidas, a corrida preparada e a concluída são a mesma (o grid sai igual nas duas passadas)', !!d && conc && !conc.divergencias.length && !conc.faltas.length, conc && conc.divergencias);
 }
 
 console.log(falhas ? `\n${falhas} de ${ok + falhas} verificações falharam` : `\nrobustez do piloto: ${ok} verificações, tudo certo`);
