@@ -144,6 +144,8 @@
       MP._ocupado = false;
       document.querySelectorAll('.mp-acao').forEach(b => b.disabled = false);
       if(d.erro) return MP.avisar(d.erro);
+      /* a sala de antes continua na lista, mas a conexão com ela fecha: tudo daqui vai para a nova */
+      MP.soltar();
       gravar({ codigo: d.codigo, ficha: d.ficha, slot: d.slot, nome: String(nome).trim() });
       try { localStorage.setItem('vdo_mp_nome', String(nome).trim()); } catch(e){}
       MP.sala = d.sala || null; MP.voce = { slot: d.slot }; MP.v = -1; MP.tentativas = 0; MP.falhas = 0;
@@ -676,6 +678,10 @@
       MP.ws = null; gravar(null);
       MP.sala = null; MP.voce = null; MP.v = -1; MP.con = 'fora'; MP._saindo = false;
       MP.vista = null; MP.vVista = -1; MP.cor = null; MP._apagar = null;
+      /* a tela da partida de antes (carreira ou equipe da outra sala) deixa de ser a do multiplayer */
+      MP._piloto = false; MP._chefe = false; MP._S = null; MP._C = null; MP._aposVista = null; MP._rodadaNova = null;
+      const barra = el('mpBarra'); if(barra) barra.remove();
+      document.body.classList.remove('mp-com-barra');
       MP.desenhar();
     },
     /* outra sala: a atual fica guardada, e a tela volta para criar ou entrar */
