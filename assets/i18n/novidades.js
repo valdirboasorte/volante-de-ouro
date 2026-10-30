@@ -1977,6 +1977,7 @@
     ["A sua largada já foi registrada.", "Your start has already been recorded.", "Tu salida ya fue registrada.", "スタートはすでに記録されています。"],
     ["A corrida já acabou.", "The race is already over.", "La carrera ya terminó.", "レースはもう終わっています。"],
     ["Corrida ao vivo", "Live race", "Carrera en vivo", "ライブレース"],
+    ["carreira encerrada", "career over", "carrera terminada", "キャリア終了"],
     ["volta", "lap", "vuelta", "周"],
     ["Ver a corrida", "Watch the race", "Ver la carrera", "レースを見る"],
     ["A corrida ao vivo começou: abra a sala do multiplayer.", "The live race has started: open the multiplayer room.", "La carrera en vivo empezó: abre la sala multijugador.", "ライブレースが始まりました。マルチプレイのルームを開いてください。"],

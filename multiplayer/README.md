@@ -18,7 +18,7 @@ mesmo servidor roda no seu computador com `wrangler dev`. Ver [Publicar](#public
 | 3 | Modo chefe com duas equipes humanas | feita (local; as corridas ainda pelo caminho rápido) |
 | 4 | Modo piloto com dois pilotos humanos | feita (local; as corridas ainda pelo caminho rápido) |
 | 5 | Corridas ao vivo no servidor | feita e publicada (botão só com o link ?mp=1) |
-| 6 | Robustez e testes com dois aparelhos | a fazer |
+| 6 | Robustez e testes com dois aparelhos | em andamento (parte 1 publicada em 31/10/2026) |
 
 ## Rodar
 
@@ -381,6 +381,33 @@ Depois, o site (Cloudflare Pages, a partir da branch `main`) precisa da versão 
 à do motor publicado. As duas saem do mesmo `index.html`: publique o Worker e o site a partir do
 mesmo commit. `npx wrangler deploy --dry-run -c wrangler.producao.jsonc` confere a configuração
 sem publicar (1,7 MB comprimido).
+
+## Robustez (Fase 6, parte 1)
+
+- **Proposta de outra série:** vale. Antes, a escolha era recusada e o ano novo rodava sem
+  aplicá-la: o piloto ficava preso na série velha. Testado: F1 → NASCAR, e numa simulação F1 →
+  Endurance → NASCAR, sem erro.
+- **Sem nenhuma proposta:** a carreira acaba (`semvaga`), como no jogo solo. Em 12 salas
+  simuladas (35 anos de carreira, idades de 14 a 30, F1 e Indy, de 1978 a 2024) isso não
+  aconteceu nenhuma vez.
+- **Carreira encerrada** (aposentadoria, acidente fatal, sem vaga):
+  - o jogador conta como pronto (`regras.dispensado`), e a sala segue com o outro;
+  - quem saiu fica com a última temporada, parada, e o carro dele corre com a IA;
+  - a barra mostra "carreira encerrada".
+- **Testes:**
+  - `node testes/robustez-piloto.mjs`: 4 verificações, todas passando;
+  - `piloto-mp` 48/48 e `corrida-mp` 27/27;
+  - `npm run testes` 177 ok e 2 falhas na verificação "cada equipe com o seu resultado" da
+    sala de chefe (Fase 3). Ela supõe que quem correu ainda está no elenco, e um acontecimento
+    do fim de semana pode trocar um piloto. Passou em outras rodadas com acontecimento. Não
+    mexe no código desta parte, mas fica para corrigir.
+
+**Ainda falta (parte 2):**
+- a sala de chefe ao vivo num navegador de verdade;
+- o teste com dois aparelhos (celular e computador) e com o Safari;
+- a limpeza das salas paradas;
+- o aviso quando o outro jogador cai no meio da corrida;
+- o reserva no carro do convidado machucado numa temporada dividida.
 
 ## Como o motor roda no servidor
 

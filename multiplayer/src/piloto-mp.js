@@ -140,7 +140,7 @@ function criarPiloto(J, c){
 function montarTemporadas(J, mundo, { inicio = false } = {}){
   const h = mundo.anfitriao, g = mundo.convidado;
   const antigas = mundo.temporadas, novas = {};
-  const mesma = chaveSlot(mundo, h) === chaveSlot(mundo, g);
+  const mesma = ativo(mundo, h) && ativo(mundo, g) && chaveSlot(mundo, h) === chaveSlot(mundo, g);
   const montar = (slot, compartilhada) => {
     const S = perspectiva(mundo, slot, antigas);
     J.S = S;
@@ -165,8 +165,10 @@ function montarTemporadas(J, mundo, { inicio = false } = {}){
     delete novas[S.season.mpChave].sea.mpChave;
   };
   /* com os pilotos de antes de montar (o S.season velho ainda conta: a lesão cura no inverno) */
-  montar(h, false);
-  montar(g, mesma);
+  /* quem encerrou a carreira fica com a última temporada, parada */
+  const congelar = slot => { const c = mundo.pilotos[slot].chaveTemporada; if(antigas[c]) novas[c] = antigas[c]; };
+  if(ativo(mundo, h)) montar(h, false); else congelar(h);
+  if(ativo(mundo, g)) montar(g, mesma); else congelar(g);
   mundo.temporadas = novas;
 }
 
@@ -194,9 +196,10 @@ export function criarMundo(J, { serie, ano, anfitriao, convidado, pilotos }){
 
 /* ── as etapas ── */
 
-/* quem corre em cada temporada */
+/* quem corre em cada temporada (quem encerrou a carreira fica de fora: o carro segue com a IA) */
+const ativo = (mundo, s) => !mundo.pilotos[s].raiz.retired;
 export function pilotosDa(mundo, chave){
-  return [mundo.anfitriao, mundo.convidado].filter(s => mundo.pilotos[s].chaveTemporada === chave);
+  return [mundo.anfitriao, mundo.convidado].filter(s => mundo.pilotos[s].chaveTemporada === chave && ativo(mundo, s));
 }
 
 /* corrida ao vivo (Fase 5): quem é dono de cada carro humano nesta corrida, e o que o carro do
@@ -291,7 +294,7 @@ function etapaDupla(J, mundo){
 export function rodadaDeCorridas(J, mundo){
   const recs = {};
   const tamanho = c => mundo.temporadas[c].sea.calendar.length;
-  const nmax = Math.max(...Object.keys(mundo.temporadas).map(tamanho));
+  const nmax = Math.max(1, ...Object.keys(mundo.temporadas).filter(c => pilotosDa(mundo, c).length).map(tamanho));
   /* cada categoria com o seu sorteio, tirado antes de qualquer corrida: o que uma corrida gasta
      de sorteio não muda a montagem da outra (a corrida ao vivo prepara e conclui a rodada em
      duas passadas, e as duas precisam montar as mesmas corridas) */
@@ -311,15 +314,15 @@ export function rodadaDeCorridas(J, mundo){
   mundo.t++;
   return recs;
 }
-export const anoAcabou = mundo => Object.values(mundo.temporadas).every(T => T.sea.round >= T.sea.calendar.length);
+export const anoAcabou = mundo => Object.keys(mundo.temporadas).every(c => !pilotosDa(mundo, c).length || mundo.temporadas[c].sea.round >= mundo.temporadas[c].sea.calendar.length);
 
 /* ── o fim do ano ── */
 
 /* o balanço de cada um e as propostas: a temporada dividida entra no mundo uma vez só */
 export function fimDoAno(J, mundo){
-  const h = mundo.anfitriao, g = mundo.convidado;
-  const dividida = mundo.pilotos[h].chaveTemporada === mundo.pilotos[g].chaveTemporada;
-  for(const slot of [h, g]){
+  const h = mundo.anfitriao, g = mundo.convidado, ativos = [h, g].filter(s => ativo(mundo, s));
+  const dividida = ativos.length === 2 && mundo.pilotos[h].chaveTemporada === mundo.pilotos[g].chaveTemporada;
+  for(const slot of ativos){
     agir(J, mundo, slot, (J, S) => {
       if(dividida && slot === g) S.mpSemRegistro = true;
       /* o balanço do ano fica guardado para a página mostrar a mesma tela do jogo solo */
@@ -337,11 +340,13 @@ export function fimDoAno(J, mundo){
 
 /* com a proposta escolhida pelos dois: o ano novo e as temporadas novas */
 export function anoNovo(J, mundo, escolhas){
-  for(const slot of [mundo.anfitriao, mundo.convidado]){
+  for(const slot of [mundo.anfitriao, mundo.convidado].filter(s => ativo(mundo, s))){
     agir(J, mundo, slot, (J, S) => {
       S.mpSemTemporada = true;
       delete S.mpBalanco;
-      J.Game.takeOffer(escolhas[slot]);
+      /* sem nenhuma proposta, a carreira acaba (como no jogo solo, Game.showOffers) */
+      if(escolhas[slot] === undefined && !(S.pendingOffers || []).some(o => o.podeP !== false && !o.retirada)) J.Game.endCareer('semvaga');
+      else J.Game.takeOffer(escolhas[slot]);
       J.UI.limparFila(); J.UI.close();
       delete S.mpSemTemporada;
     }, { temporada: false });

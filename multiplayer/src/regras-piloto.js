@@ -31,7 +31,6 @@ const PEDIDOS = ['anos', 'n1', 'livre'];
 function ofertaEscolhivel(R, i){
   const o = Number.isInteger(i) && Array.isArray(R.pendingOffers) ? R.pendingOffers[i] : null;
   if(!o || o.podeP === false || o.retirada) return { erro: 'proposta' };
-  if(o.sk && o.sk !== R.series) return { erro: 'serie' };
   return { o };
 }
 const temEscolhivel = R => Array.isArray(R.pendingOffers) && R.pendingOffers.some((_, i) => !ofertaEscolhivel(R, i).erro);
@@ -163,7 +162,7 @@ export function criarRegrasPiloto(obterMotor){
        piloto direto (as chaves pessoais moram nela), sem montar a perspectiva. */
     podeFicarPronto(mundo, slot){
       const R = mundo.pilotos[slot].raiz;
-      if(mundo.fase === 'temporada') return R.retired ? erro('carreira') : null;
+      if(mundo.fase === 'temporada' || R.retired) return null;
       if(mundo.fase === 'mercado'){
         if(Array.isArray(R.academyOffers) && R.academyOffers.length) return erro('academia');
         if(!temEscolhivel(R)) return null;          // sem nenhuma proposta que possa escolher: segue sem escolha
@@ -172,9 +171,13 @@ export function criarRegrasPiloto(obterMotor){
       return null;
     },
 
+    /* quem encerrou a carreira não tem mais decisões: a sala o conta como pronto */
+    dispensado(mundo, slot){ const P = mundo.pilotos[slot]; return !!(P && P.raiz.retired); },
+
     /* muda o mundo que recebeu (a sala passa uma cópia) e devolve o resultado público da rodada */
     processar(mundo, rodada, rnd){
       const J = obterMotor(), ordem = [mundo.anfitriao, mundo.convidado];
+      if(ordem.every(s => mundo.pilotos[s].raiz.retired)) return { mundo, resultado: { tipo: 'fim' } };
       return comSemente(J, rnd, () => {
         let resultado;
         if(mundo.fase === 'temporada'){

@@ -142,6 +142,12 @@ export class Sala extends DurableObject {
   /* sala e mundo juntos, numa escrita só: nunca um sem o outro */
   async salvarTudo(){ await this.ctx.storage.put({ sala: this.sala, mundo: this.mundo }); }
 
+  /* quem não tem mais decisões na partida (carreira encerrada) conta como pronto */
+  dispensado(slot){
+    const p = this.sala && this.sala.partida, regras = p && this.regrasDe(p.regras);
+    try { return !!(regras && regras.dispensado && this.mundo && regras.dispensado(this.mundo, slot)); } catch(e){ return false; }
+  }
+
   /* vista pública: nunca inclui a ficha nem o hash dela */
   vista(excluir){
     const s = this.sala;
@@ -161,7 +167,8 @@ export class Sala extends DurableObject {
     if(!p) return null;
     const prontos = {};
     for(const j of s.jogadores) prontos[j.slot] = !!p.prontos[j.slot];
-    const v = { estado: p.estado, rodada: p.rodada, prontos, ultimo: p.ultimo, regras: p.regras };
+    const v = { estado: p.estado, rodada: p.rodada, prontos, ultimo: p.ultimo, regras: p.regras,
+                fora: s.jogadores.filter(j => this.dispensado(j.slot)).map(j => j.slot) };
     if(this.env.DESENVOLVIMENTO === '1') v.falhas = p.falhas;   // só para os testes verem a nova tentativa
     return v;
   }
@@ -441,7 +448,7 @@ export class Sala extends DurableObject {
       if(bloqueio) return this.enviar(ws, { t: 'erro', codigo: bloqueio.erro, id, detalhe: bloqueio.detalhe });
     }
     p.prontos[slot] = msg.pronto;
-    const todos = s.jogadores.every(j => p.prontos[j.slot]);
+    const todos = s.jogadores.every(j => p.prontos[j.slot] || this.dispensado(j.slot));
     const algum = s.jogadores.some(j => p.prontos[j.slot]);
     p.estado = todos ? 'processing' : algum ? 'waiting' : 'planning';
     s.v++;
