@@ -704,7 +704,12 @@
     },
     /* sair de verdade avisa o servidor (a vaga fica livre); sem conexão, só esquece aqui */
     async sair(certeza){
-      if(!certeza) return MP.abrir('sair');
+      if(!certeza){
+        /* a confirmação fica no topo da janela: rola até ela (o botão está lá embaixo) */
+        MP.abrir('sair');
+        const x = document.querySelector('.mp .sv-apagar'); if(x) x.scrollIntoView({ block: 'nearest' });
+        return;
+      }
       MP._saindo = true;
       if(MP.ws && MP.ws.readyState === 1) await MP.enviar('sair');
       MP.esquecer();
@@ -728,7 +733,7 @@
       MP.desenhar();
     },
     /* outra sala: a atual fica guardada, e a tela volta para criar ou entrar */
-    outraSala(){ MP.soltar(); UI.close(); MP.tela(); },
+    outraSala(){ MP.soltar(); UI.close(); MP.tela(); if(document.body.dataset.tela === 'multiplayer') MP.abrirEntrada(); },
     /* volta para uma sala da lista */
     voltarSala(codigo){
       const g = lerLista().find(x => x.codigo === codigo); if(!g) return;
