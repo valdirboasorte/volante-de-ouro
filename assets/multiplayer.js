@@ -963,7 +963,7 @@
             </div>
           </div>
           <section class="mpp-salas" id="mppSalas" hidden aria-label="Minhas partidas"></section>
-          <p class="mpp-credito" data-i18n-ignore>Fotos: o grid de Spa, 2008, Mark McArdle (CC BY-SA 2.0); GP da Espanha de 2009, janebelindasmith (CC BY 2.0), via Wikimedia Commons.</p>
+          <p class="mpp-credito">Fotos: o grid de Spa, 2008, Mark McArdle (CC BY-SA 2.0); GP da Espanha de 2009, janebelindasmith (CC BY 2.0), via Wikimedia Commons.</p>
         </div>
       </div>`;
       intro.parentNode.insertBefore(sec, intro.nextSibling);

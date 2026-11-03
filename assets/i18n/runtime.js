@@ -12,7 +12,7 @@
   const normal = s => String(s).replace(/\s+/g, ' ').trim();
   const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const supported = lang => lang === 'pt' || (Object.prototype.hasOwnProperty.call(locales, lang) && Array.isArray(locales[lang].pairs));
-  let language = 'pt', observer = null, started = false, names = new Set();
+  let language = 'pt', observer = null, started = false, names = new Set(), retrying = false;
   try{ const saved = global.localStorage.getItem(KEY); if(supported(saved)) language = saved; }catch(e){}
 
   function catalog(lang){
@@ -32,7 +32,7 @@
       const dstKeys = [...target.matchAll(/\{(\w+)\}/g)].map(m => m[1]);
       if([...new Set(keys)].sort().join('|') !== [...new Set(dstKeys)].sort().join('|')) continue;
       const literals = source.split(/\{\w+\}/g), weight = literals.join('').trim().length;
-      if(weight < 3 && !(keys.length === 2 && ['a','de'].includes(literals.join('').trim())) && literals[0] !== 'GP ') continue;
+      if(weight < 3 && !(keys.length === 2 && ['a','de','em'].includes(literals.join('').trim())) && literals[0] !== 'GP ') continue;
       const pattern = '^' + literals.map((s, i) => escape(s) + (i < keys.length
         ? keys[i] === 'pos' ? '(\\d+º?|P\\d+|—)' : '(.*?)' : '')).join('') + '$';
       templates.push({ source, target, keys, rx:new RegExp(pattern, 'u'),
@@ -186,6 +186,15 @@
         if(missing) for(const value of trial) missing.add(value);
         return edge[1] + translated + edge[3];
       }
+    }
+    /* A captura de um modelo como "GP {0}: {1}." chega sem o ponto final da
+       última frase. Tente a frase completa do catálogo, uma vez só. */
+    if(!retrying && /[\p{L}\p{N}º)]$/u.test(source)){
+      retrying = true;
+      try {
+        const trial = new Set(), translated = core(source + '.', lang, depth + 1, trial);
+        if(!trial.size) return translated.replace(/[.。]$/u, '');
+      } finally { retrying = false; }
     }
     if(missing && /\p{L}/u.test(source)) missing.add(source);
     return source;
