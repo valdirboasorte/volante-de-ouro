@@ -152,8 +152,6 @@ export async function fase1({ base, versao, estado }){
   checar('2 entrar: segundo jogador → 200, slot 1, ficha de 64 hex, nome limpo e com espaços colapsados',
     r.status === 200 && B.slot === 1 && /^[0-9a-f]{64}$/.test(B.ficha) && B.ficha !== A.ficha
     && B.sala.jogadores[1].nome === 'Bia Lima', r);
-  r = await api(base, `/api/salas/${A.codigo.toLowerCase()}/entrar`, { nome: 'Caio', versao });
-  checar('2 entrar: terceiro jogador (código em minúsculas) → 409 cheia', r.status === 409 && r.json.erro === 'cheia', r);
   r = await api(base, '/api/salas/ABC/entrar', { nome: 'Caio', versao });
   checar('2 entrar: código malformado → 400 codigo', r.status === 400 && r.json.erro === 'codigo', r);
   r = await api(base, '/api/salas/OOOOOOOO/entrar', { nome: 'Caio', versao });
@@ -315,8 +313,7 @@ export async function fase2({ base, versao, estado }){
     && estA.voce.slot === 0 && estB.voce.slot === 1, { estA, vEsperado: estado.v });
   const velha = conectar(base, A.codigo, fichaProto(FICHA_ZERO));
   checar('10 persistência: ficha inválida continua recusada', !(await velha.abriu));
-  let r = await api(base, `/api/salas/${A.codigo}/entrar`, { nome: 'Caio', versao });
-  checar('10 persistência: a sala continua cheia (409 cheia)', r.status === 409 && r.json.erro === 'cheia', r);
+  let r;
 
   // 11: sair libera a vaga; o anfitrião que sai passa a vez
   await esperar(a, m => m.t === 'jogadores' && m.jogadores[1].conectado === true);
@@ -340,16 +337,16 @@ export async function fase2({ base, versao, estado }){
   checar('11 sair: quando o anfitrião sai, o menor slot que sobra vira anfitrião', !!passou && passou.sala.jogadores.length === 1, passou);
   c.ws.close(1000);
 
-  // 14: três convidados ao mesmo tempo: só um fica com a vaga, e o anfitrião vê na hora
+  // 14: oito convidados ao mesmo tempo (código em minúsculas): sete ficam com as vagas, um recebe cheia, e o anfitrião vê na hora
   r = await api(base, '/api/salas', { nome: 'Duda', modo: 'chefe', versao });
   const D = r.json || {};
   const d = await abrir(base, D.codigo, D.ficha);
   await esperar(d, m => m.t === 'estado');
-  const juntos = await Promise.all(['Edu', 'Fabi', 'Gabi'].map(nome => api(base, `/api/salas/${D.codigo}/entrar`, { nome, versao })));
+  const juntos = await Promise.all(['Edu', 'Fabi', 'Gabi', 'Hugo', 'Iara', 'Joel', 'Kika', 'Leo'].map(nome => api(base, `/api/salas/${D.codigo.toLowerCase()}/entrar`, { nome, versao })));
   const entraram = juntos.filter(x => x.status === 200), barrados = juntos.filter(x => x.status === 409 && x.json.erro === 'cheia');
-  checar('14 entrar ao mesmo tempo: de três pedidos juntos, só um fica com a vaga (slot 1) e os outros recebem cheia',
-    entraram.length === 1 && barrados.length === 2 && entraram[0].json.slot === 1, juntos.map(x => [x.status, x.json && (x.json.slot ?? x.json.erro)]));
-  const aviso = await esperar(d, m => m.t === 'sala' && m.sala.jogadores.length === 2);
+  checar('14 entrar ao mesmo tempo: de oito pedidos juntos, sete ficam com os slots 1 a 7 (sem repetir) e um recebe cheia',
+    entraram.length === 7 && barrados.length === 1 && entraram.map(x => x.json.slot).sort().join() === '1,2,3,4,5,6,7', juntos.map(x => [x.status, x.json && (x.json.slot ?? x.json.erro)]));
+  const aviso = await esperar(d, m => m.t === 'sala' && m.sala.jogadores.length === 8);
   checar('14 entrar: o anfitrião recebe a sala com o convidado na hora, ainda desconectado',
     !!aviso && aviso.sala.jogadores[1].conectado === false && !JSON.stringify(aviso).includes('fichaHash'), aviso);
   d.ws.close(1000);

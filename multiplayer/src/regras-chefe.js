@@ -10,7 +10,7 @@
    Fora do multiplayer por enquanto: demissão e fim de carreira (o balanço resolve só dívida,
    teto de gastos e falência; fechar a equipe é recusado). */
 import { criarRnd } from './aleatorio.js';
-import { criarMundo, perspectiva, agir, faseDupla, corrida, comSemente } from './chefe-mp.js';
+import { criarMundo, perspectiva, agir, faseDupla, corrida, comSemente, equipesDe } from './chefe-mp.js';
 
 const erro = (codigo, detalhe) => detalhe === undefined ? { erro: codigo } : { erro: codigo, detalhe };
 const ehObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -342,7 +342,7 @@ export function criarRegrasChefe(obterMotor){
   /* uma virada de fase deixa pronto o que cada equipe decide na etapa seguinte: o imprevisto do
      fim de semana (sorteado uma vez por rodada, só dela) e sem nenhuma contraproposta velha */
   const prepararEtapa = (J, mundo) => {
-    for(const slot of [mundo.anfitriao, mundo.convidado]){
+    for(const slot of equipesDe(mundo)){
       agir(J, mundo, slot, (J, C) => {
         C.mpContra = null;
         if(emCurso(C)) J.Chefe.fdsDe(C.temporada);
@@ -353,15 +353,22 @@ export function criarRegrasChefe(obterMotor){
   return {
     nome: 'chefe',
 
-    /* jogadores: [{ slot, nome }]; ctx: { config: { sk, ano, equipes: { slot: idx } }, codigo, anfitriao } */
+    /* jogadores: [{ slot, nome }]; ctx: { config: { sk, ano, equipes: { slot: idx } }, codigo, anfitriao }.
+       Quem escolheu a mesma equipe divide ela: a chave é o menor slot entre eles, e o nome do chefe é o dele.
+       Com duas equipes de um jogador cada, o mundo sai igual ao de antes (anfitrião e convidado, sem ordem). */
     iniciar(jogadores, ctx){
       const J = obterMotor(), { config } = ctx;
-      const equipes = {};
-      for(const j of jogadores) equipes[j.slot] = { chefe: j.nome, idx: config.equipes[j.slot] };
-      const outro = jogadores.find(j => j.slot !== ctx.anfitriao);
-      return comSemente(J, criarRnd(ctx.codigo, 'inicio'), () => criarMundo(J, {
-        sk: config.sk, ano: config.ano, anfitriao: ctx.anfitriao, convidado: outro.slot, equipes
-      }));
+      const js = jogadores.slice().sort((a, b) => (a.slot === ctx.anfitriao ? -1 : b.slot === ctx.anfitriao ? 1 : a.slot - b.slot));
+      const chaveDoIdx = new Map(), equipes = {}, membros = {}, ordem = [];
+      for(const j of js){
+        const idx = config.equipes[j.slot];
+        if(!chaveDoIdx.has(idx)){ const k = String(j.slot); chaveDoIdx.set(idx, k); ordem.push(k); equipes[k] = { chefe: j.nome, idx }; }
+        membros[j.slot] = chaveDoIdx.get(idx);
+      }
+      const simples = ordem.length === 2 && js.length === 2;
+      return comSemente(J, criarRnd(ctx.codigo, 'inicio'), () => criarMundo(J, simples
+        ? { sk: config.sk, ano: config.ano, anfitriao: ordem[0], convidado: ordem[1], equipes }
+        : { sk: config.sk, ano: config.ano, equipes, ordem, membros }));
     },
 
     acoes,
@@ -390,7 +397,7 @@ export function criarRegrasChefe(obterMotor){
     processar(mundo, rodada, rnd){
       const J = obterMotor();
       return comSemente(J, rnd, () => {
-        const fase = mundo.base.fase, ordem = [mundo.anfitriao, mundo.convidado];
+        const fase = mundo.base.fase, ordem = equipesDe(mundo);
         let resultado;
         if(fase === 'inverno'){
           faseDupla(J, mundo, J => J.Chefe.comecarTemporada());

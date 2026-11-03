@@ -31,17 +31,20 @@
   const TITULO_SALA = 'Sala multiplayer', TITULO_ENTRADA = 'Multiplayer';
   const MODOS = { chefe: 'Chefe de equipe', piloto: 'Carreira de piloto' };
   const MODO_ENTRADA = {
-    chefe: { bt: 'Criar sala de chefe', tx: 'Cada um comanda uma equipe real do mesmo grid: contratos, carro e estratégia. Na corrida, os dois dão ordens ao mesmo tempo.' },
-    piloto: { bt: 'Criar sala de piloto', tx: 'Cada um é um piloto. Com a mesma idade, os dois dividem a categoria; com idades diferentes, cada um sobe pela sua.' }
+    chefe: { bt: 'Criar sala de chefe', tx: 'Até 8 jogadores. Cada um comanda uma equipe real do mesmo grid, ou divide uma com os amigos: contratos, carro e estratégia.' },
+    piloto: { bt: 'Criar sala de piloto', tx: 'Até 8 jogadores, cada um com o seu piloto. Com a mesma idade, dividem a categoria; com idades diferentes, cada um sobe pela sua.' }
   };
   const VELS = [1, 2, 4, 8, 16];
+  const MAX_SALA = 8;
+  /* o dono de um carro na corrida ao vivo: um slot, ou a lista dos membros de uma equipe dividida */
+  const ehDono = (d, slot) => [].concat(d).map(String).includes(String(slot));
   const ERROS = {
     rede: 'Sem conexão com o servidor do multiplayer.',
     servidor: 'O servidor do multiplayer não respondeu direito. Tente de novo.',
     limite: 'Muitas salas criadas agora. Espere um minuto e tente de novo.',
     codigo: 'Esse código não é válido: confira as letras e os números.',
     sala: 'Essa sala não existe.',
-    cheia: 'Essa sala já está cheia.',
+    cheia: 'Essa sala já está cheia: cabem até 8 jogadores.',
     versao: 'A sua página está numa versão diferente do servidor. Recarregue a página.',
     comecou: 'A partida dessa sala já começou.',
     nome: 'Escreva o seu nome.',
@@ -49,7 +52,7 @@
     anfitriao: 'Só o anfitrião muda isso.',
     forcar: 'Ainda não dá para avançar sem os outros.',
     tempo: 'O servidor demorou a responder. Tente de novo.',
-    jogadores: 'A partida começa com os dois jogadores na sala.',
+    jogadores: 'A partida precisa de pelo menos dois jogadores na sala.',
     estado: 'Isso não vale neste momento da partida.',
     processando: 'A rodada está sendo processada.',
     rodada: 'Essa rodada já passou: a tela foi atualizada.',
@@ -57,7 +60,7 @@
     acao: 'Essa ação não é permitida.',
     dados: 'Essa decisão não é válida.',
     equipes: 'Os dois jogadores precisam escolher uma equipe.',
-    equipe: 'Essa equipe já foi escolhida.',
+    equipe: 'Essa equipe não está disponível neste campeonato.',
     config: 'Esse campeonato não está disponível.',
     pendencias: 'Ainda há pendências antes de seguir.',
     evento: 'Decida o acontecimento antes de ficar pronto.',
@@ -349,8 +352,8 @@
       const voltas = p.estado === 'corrida' && MP.cor ? Object.values(MP.cor.corridas).filter(c => c.N)
         .map(c => `<span data-i18n-ignore>${esc(c.serie || '')}</span> <span>volta</span> ${Math.min(c.volta || 1, c.N)}/${c.N}`).join(' · ') : '';
       const estado = p.estado === 'corrida' ? `<span>Corrida ao vivo</span>${voltas ? ': ' + voltas : ''}`
-        : proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? 'Aguardando o adversário…'
-        : !souPronto && outrosProntos ? 'O adversário já está pronto.' : 'Tome as suas decisões no seu ritmo.';
+        : proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? (outros.length > 1 ? 'Aguardando os outros jogadores…' : 'Aguardando o adversário…')
+        : !souPronto && outrosProntos ? (outros.length > 1 ? 'Os outros já estão prontos.' : 'O adversário já está pronto.') : 'Tome as suas decisões no seu ritmo.';
       b.innerHTML = `<span class="mp-b-t"><b>Multiplayer</b> · <span>Rodada</span> ${p.rodada}${fase ? ` · <span>${fase}</span>` : ''}${prox ? ` · <span>GP ${esc(prox.gp)}</span>` : ''}</span>
         <span class="mp-b-e" role="status">${estado}</span>
         <span class="mp-b-j">${outros.map(j => `<span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span> <span data-i18n-ignore>${esc(j.nome)}</span>: <span>${pronto(j.slot) ? 'pronto' : (p.fora || []).map(String).includes(String(j.slot)) ? 'carreira encerrada' : 'decidindo'}</span>`).join(' ')}</span>
@@ -391,7 +394,7 @@
       if(!MP.cor || MP.cor.rodada !== m.rodada) MP.cor = { rodada: m.rodada, corridas: {}, aberta: false, tela: null, refeitas: 0 };
       MP.cor.vel = m.vel;
       (m.corridas || []).forEach(c => { MP.cor.corridas[c.k] = c; });
-      const minha = (m.corridas || []).find(c => Object.values(c.donos).map(String).includes(String(eu)));
+      const minha = (m.corridas || []).find(c => Object.values(c.donos).some(d => ehDono(d, eu)));
       MP.cor.minha = minha ? minha.k : null;
       MP.barra();
       if(!minha) return;
@@ -419,7 +422,7 @@
       if(!c.chefe && c.fase === 'largada' && MP.cor.qualiVisto !== c.k && typeof S !== 'undefined' && S && S.season){
         MP.cor.qualiVisto = c.k;
         const carros = c.ent.carros.slice().sort((a, b) => a.grid - b.grid);
-        const meus = new Set(Object.keys(c.donos).filter(i => String(c.donos[i]) === String(eu)).map(i => c.ent.carros[i].id));
+        const meus = new Set(Object.keys(c.donos).filter(i => ehDono(c.donos[i], eu)).map(i => c.ent.carros[i].id));
         const pos = carros.findIndex(x => meus.has(x.id)) + 1, sea = S.season, j = sea.fds && sea.fds.rd === sea.round && sea.fds.mpJanela;
         UI.limparFila(); UI.close();
         UI.qualiResultado({ minha: pos || null, foraMe: null, fmt: Engine.formatoQuali(sea.year, S.series, sea.round),
@@ -432,7 +435,7 @@
       }
       const t = MP.cor.tela = { k: c.k, R: Gp.criar(JSON.parse(JSON.stringify(c.ent))), passo: 0, fila: [], vistos: new Set(),
         liberado: c.liberado, fase: c.fase, somas: {}, somasServ: {}, donos: c.donos,
-        meus: new Set(Object.keys(c.donos).filter(i => String(c.donos[i]) === String(eu)).map(Number)),
+        meus: new Set(Object.keys(c.donos).filter(i => ehDono(c.donos[i], eu)).map(Number)),
         largadaEnviada: (c.largadas || []).map(String).includes(String(eu)), pediuPular: (c.votos || []).map(String).includes(String(eu)) };
       c.log.forEach(e => MP.corridaEntrada(t, e));
       /* quem chega no meio da corrida alcança o servidor de uma vez */
@@ -571,7 +574,7 @@
         aguardarLargada(sair, tx){
           if(t.fase !== 'largada') return sair();
           t.aoLargar = sair;
-          if(tx){ tx.className = 'av-luzes-tx'; tx.textContent = 'Esperando o outro jogador largar…'; }
+          if(tx){ tx.className = 'av-luzes-tx'; tx.textContent = 'Esperando a largada dos outros jogadores…'; }
         }
       };
     },
@@ -664,7 +667,7 @@
               <input type="number" id="mpAno" min="1950" max="2026" value="${ano}" aria-label="Ano"> <button class="btn btn-ghost btn-sm" onclick="MP.configurar({ ano: +el('mpAno').value })"${ligado}>Mudar o ano</button></div>`
                    : `<b>${series[serie] || esc(serie)} ${ano}</b>`}</div></div>
         <span class="lbl">Seu piloto</span>
-        <p class="mut mp-ajuda">Com a mesma idade, os dois começam na mesma categoria e dividem as corridas. Com idades diferentes, cada um começa na sua.</p>
+        <p class="mut mp-ajuda">Quem tem a mesma idade começa na mesma categoria e divide as corridas. Com idades diferentes, cada um começa na sua.</p>
         <div class="mp-form">
           <div class="field"><label class="lbl" for="mpPNome">Nome</label><input type="text" id="mpPNome" maxlength="24" value="${esc(meu.nome || '')}" data-i18n-ignore></div>
           <div class="field"><label class="lbl" for="mpPPais">País (sigla)</label><input type="text" id="mpPPais" maxlength="2" value="${esc(meu.cc || 'BR')}" data-i18n-ignore></div>
@@ -679,7 +682,7 @@
       const cfg = s.config || {}, sk = cfg.sk || 'f1', ano = cfg.ano || 2024, escolhas = cfg.equipes || {};
       let lista = [];
       try { lista = eraOfSeries(ano, sk).teams.map((t, i) => [i, Engine.resolveTeam(t, i, ano, sk)]).filter(x => x[1]).sort((a, b) => b[1].str - a[1].str); } catch(e){}
-      const dono = i => s.jogadores.find(j => escolhas[j.slot] === i);
+      const donos = i => s.jogadores.filter(j => escolhas[j.slot] === i);
       const series = { f1: 'Fórmula 1', indy: 'IndyCar' };
       const ligado = MP.con === 'conectado' ? '' : ' disabled';
       return `<span class="lbl">Campeonato</span>
@@ -688,11 +691,11 @@
               <input type="number" id="mpAno" min="1950" max="2026" value="${ano}" aria-label="Ano"> <button class="btn btn-ghost btn-sm" onclick="MP.configurar({ ano: +el('mpAno').value })"${ligado}>Mudar o ano</button></div>`
                    : `<b>${series[sk] || esc(sk)} ${ano}</b>`}</div></div>
         <span class="lbl">Equipes</span>
-        <p class="mut mp-ajuda">Cada um escolhe a sua. As outras equipes do grid ficam com a inteligência do jogo.</p>
-        <div class="mp-eqs">${lista.map(([i, t]) => { const d = dono(i), minha = !!d && d.slot === eu;
-          return `<button class="sv-item mp-jog mp-eq${minha ? ' mp-sel' : ''}" onclick="MP.escolherEquipe(${i})"${(d && !minha) || MP.con !== 'conectado' ? ' disabled' : ''}>
+        <p class="mut mp-ajuda">Cada um escolhe uma equipe. Quem escolher a mesma divide ela, e todos mandam em tudo. As outras equipes do grid ficam com a inteligência do jogo.</p>
+        <div class="mp-eqs">${lista.map(([i, t]) => { const d = donos(i), minha = d.some(j => j.slot === eu);
+          return `<button class="sv-item mp-jog mp-eq${minha ? ' mp-sel' : ''}" onclick="MP.escolherEquipe(${i})"${minha || MP.con !== 'conectado' ? ' disabled' : ''}>
             <span class="mp-cor" style="background:${esc(t.color || '#888')}" aria-hidden="true"></span>
-            <span class="sv-tx"><b data-i18n-ignore>${esc(t.name)}</b>${d ? `<span class="sv-desc" data-i18n-ignore>${esc(d.nome)}</span>` : ''}</span></button>`; }).join('')}</div>`;
+            <span class="sv-tx"><b data-i18n-ignore>${esc(t.name)}</b>${d.length ? `<span class="sv-desc" data-i18n-ignore>${d.map(j => esc(j.nome)).join(', ')}</span>` : ''}</span></button>`; }).join('')}</div>`;
     },
     copiar(){
       const g = ler(); if(!g) return;
@@ -784,17 +787,17 @@
         ? `<div class="sv-item sv-apagar"><div class="sv-tx"><b>Sair da sala?</b><span class="sv-desc">A sua vaga fica livre para outra pessoa.</span></div>
             <div class="sv-bts"><button class="btn btn-ghost btn-sm" onclick="MP.abrir()">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.sair(true)">Sair</button></div></div>`
         : '';
-      UI.modal(UI.head(TITULO_SALA, s && s.modo === 'chefe' ? 'Teste: chefe de equipe com um amigo.'
-        : s && s.modo === 'piloto' ? 'Teste: carreira de piloto com um amigo.'
+      UI.modal(UI.head(TITULO_SALA, s && s.modo === 'chefe' ? 'Teste: chefe de equipe com os amigos, até 8 jogadores.'
+        : s && s.modo === 'piloto' ? 'Teste: carreira de piloto com os amigos, até 8 jogadores.'
         : 'Teste: por enquanto a sala junta os jogadores. As rodadas e as corridas chegam nas próximas etapas.') +
         `<div class="mbd sv mp">
           ${corpo}
           <span class="lbl">Código da sala</span>
           <div class="mp-codigo"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b><button class="btn btn-ghost btn-sm" onclick="MP.copiar()">Copiar código</button></div>
-          <p class="mut mp-ajuda">Mande o código para o seu amigo: ele abre o Volante de Ouro, toca em Multiplayer e entra com o código.</p>
+          <p class="mut mp-ajuda">Mande o código para os seus amigos: eles abrem o Volante de Ouro, tocam em Multiplayer e entram com o código.</p>
           <span class="lbl">Jogadores</span>
           ${s ? jog.map(cartao).join('') : '<p class="mut sv-vazio">Carregando a sala…</p>'}
-          ${s && jog.length < 2 ? '<div class="sv-item mp-jog mp-vaga"><span class="mp-dot" aria-hidden="true"></span><div class="sv-tx"><span class="sv-desc">Esperando o segundo jogador…</span></div></div>' : ''}
+          ${s && jog.length < MAX_SALA ? `<div class="sv-item mp-jog mp-vaga"><span class="mp-dot" aria-hidden="true"></span><div class="sv-tx"><span class="sv-desc">${jog.length < 2 ? 'Esperando o segundo jogador…' : `<span>Cabem até 8 jogadores:</span> ${jog.length}/${MAX_SALA}`}</span></div></div>` : ''}
           ${s ? `<span class="lbl">Partida</span>
           <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Modo</span><b>${MODOS[s.modo] || s.modo}</b></div></div>
           <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Velocidade das corridas</span>
@@ -803,7 +806,7 @@
           ${s && s.modo !== 'teste' ? `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">Corridas</span>
             ${souAnf ? `<div class="mp-vels">${[[true, 'Ao vivo'], [false, 'Rápidas']].map(([v, n]) => `<button class="btn btn-sm ${(s.config.aoVivo !== false) === v ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar({ aoVivo: ${v} })"${MP.con === 'conectado' ? '' : ' disabled'}>${n}</button>`).join('')}</div>`
                      : `<b>${s.config.aoVivo !== false ? 'Ao vivo' : 'Rápidas'}</b>`}
-            <span class="sv-desc">${s.config.aoVivo !== false ? 'Os dois assistem e comandam a mesma corrida, no relógio da sala.' : 'A corrida é calculada na hora, sem transmissão.'}</span></div></div>` : ''}
+            <span class="sv-desc">${s.config.aoVivo !== false ? 'Todos assistem e comandam a mesma corrida, no relógio da sala.' : 'A corrida é calculada na hora, sem transmissão.'}</span></div></div>` : ''}
           ${s && s.modo === 'chefe' ? MP.configChefe(s, souAnf, eu) : ''}
           ${s && s.modo === 'piloto' ? MP.configPiloto(s, souAnf, eu) : ''}
           ${MP.linhaConexao()}
@@ -823,7 +826,7 @@
       const estado = processando ? 'Processando a rodada…'
         : souPronto && !outrosProntos ? 'Aguardando o adversário…'
         : !souPronto && outrosProntos ? 'O adversário já está pronto. A rodada avança quando você confirmar.'
-        : 'Tome as suas decisões no seu ritmo. A rodada avança quando os dois estiverem prontos.';
+        : 'Tome as suas decisões no seu ritmo. A rodada avança quando todos estiverem prontos.';
       const pontos = vista.pontos || {};
       const cartao = j => `<div class="sv-item mp-jog"><span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span>
         <div class="sv-tx"><b data-i18n-ignore>${esc(j.nome)}</b><span class="sv-desc"><span>${pronto(j.slot) ? 'pronto' : 'decidindo'}</span>${j.conectado ? '' : ' · <span>desconectado</span>'}${j.slot === eu ? ' · <span>você</span>' : ''}</span></div>

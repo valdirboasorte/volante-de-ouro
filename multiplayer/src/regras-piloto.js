@@ -16,7 +16,7 @@
    Quem fica sem nenhuma proposta que possa escolher pode ficar pronto sem escolha: o ano novo
    não chama takeOffer por ele (escolha indefinida). */
 import { criarRnd } from './aleatorio.js';
-import { criarMundo, perspectiva, agir, rodadaDeCorridas, anoAcabou, fimDoAno, anoNovo, comSemente } from './piloto-mp.js';
+import { criarMundo, perspectiva, agir, rodadaDeCorridas, anoAcabou, fimDoAno, anoNovo, comSemente, ordemDe } from './piloto-mp.js';
 
 /* o modo de carreira de cada piloto (o mesmo do formulário do jogo); 'realista' liga as finanças */
 export const MODO_CARREIRA = 'classico';
@@ -159,12 +159,13 @@ export function criarRegrasPiloto(obterMotor){
     /* jogadores: [{ slot, nome }]; ctx: { config: { serie, ano, pilotos: { slot: {nome, cc, idade, estilo} } }, codigo, anfitriao } */
     iniciar(jogadores, ctx){
       const J = obterMotor(), { config } = ctx;
-      const outro = jogadores.find(j => j.slot !== ctx.anfitriao);
       const pilotos = {};
       for(const j of jogadores) pilotos[j.slot] = Object.assign({ modo: MODO_CARREIRA }, config.pilotos[j.slot]);
-      return comSemente(J, criarRnd(ctx.codigo, 'inicio'), () => criarMundo(J, {
-        serie: config.serie, ano: config.ano, anfitriao: ctx.anfitriao, convidado: outro.slot, pilotos
-      }));
+      /* o anfitrião primeiro, depois os outros pela ordem de chegada; com dois, o mundo sai igual ao de antes */
+      const ordem = jogadores.map(j => j.slot).sort((a, b) => (a === ctx.anfitriao ? -1 : b === ctx.anfitriao ? 1 : a - b));
+      return comSemente(J, criarRnd(ctx.codigo, 'inicio'), () => criarMundo(J, ordem.length === 2
+        ? { serie: config.serie, ano: config.ano, anfitriao: ordem[0], convidado: ordem[1], pilotos }
+        : { serie: config.serie, ano: config.ano, ordem, pilotos }));
     },
 
     acoes,
@@ -202,7 +203,7 @@ export function criarRegrasPiloto(obterMotor){
 
     /* muda o mundo que recebeu (a sala passa uma cópia) e devolve o resultado público da rodada */
     processar(mundo, rodada, rnd){
-      const J = obterMotor(), ordem = [mundo.anfitriao, mundo.convidado];
+      const J = obterMotor(), ordem = ordemDe(mundo);
       if(ordem.every(s => mundo.pilotos[s].raiz.retired)) return { mundo, resultado: { tipo: 'fim' } };
       return comSemente(J, rnd, () => {
         let resultado;
