@@ -343,5 +343,27 @@
   "via": "Wikimedia Commons",
   "credit": "Formula E logo championship 2023, via Wikimedia Commons (domínio público; marca registrada do titular)",
   "notes": []
+ },
+ {
+  "file": "assets/spanish-grand-prix-2009-2.jpg",
+  "media": "image",
+  "ref": "commons:125655273",
+  "title": "Spanish Grand Prix 2009",
+  "creator": "janebelindasmith",
+  "creatorUrl": null,
+  "date": "2009-05-10",
+  "license": "CC BY 2.0",
+  "licenseCode": "by",
+  "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:Spanish_Grand_Prix_2009.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Spanish_Grand_Prix_2009.jpg/1920px-Spanish_Grand_Prix_2009.jpg",
+  "width": 1920,
+  "height": 1280,
+  "bytes": 404508,
+  "credit": "\"Spanish Grand Prix 2009\" by janebelindasmith, CC BY 2.0, via Wikimedia Commons",
+  "notes": [],
+  "saved": "2026-11-03T12:06:27.168Z"
  }
 ]

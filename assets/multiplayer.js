@@ -839,99 +839,146 @@
         </div>
         <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="MP.voltarAoGerenciamento()">Voltar ao gerenciamento</button></div>`);
     },
-    /* ── a tela do multiplayer (o botão da abertura): os dois modos, o código e as salas deste aparelho ── */
+    /* ── a página do multiplayer (o botão da abertura): os dois modos, continuar e as partidas deste aparelho ──
+       Só monta a interface: criar e entrar usam a tela de entrada de sempre (MP.abrirEntrada), continuar usa
+       MP.abrir, e "Minhas partidas" mostra as salas guardadas neste aparelho (nada é inventado). */
     tela(){
       const sec = MP.montarTela();
       if(!sec) return MP.abrirEntrada();
       UI.limparFila(); UI.close();
       UI.show('multiplayer');
       MP.telaSalas();
-      const n = el('mpTNome'); if(n && !n.value) try { n.value = localStorage.getItem('vdo_mp_nome') || ''; } catch(e){}
+      /* a entrada anima a cada visita: o cabeçalho, os dois cartões, os painéis */
+      const raiz = sec.querySelector('.mpp');
+      if(raiz){
+        raiz.classList.remove('mpp-entra'); void raiz.offsetWidth; raiz.classList.add('mpp-entra');
+        clearTimeout(MP._entra); MP._entra = setTimeout(() => raiz.classList.remove('mpp-entra'), 1900);
+      }
     },
     montarTela(){
       let sec = el('scr-multiplayer');
       if(sec) return sec;
       const intro = el('scr-intro'); if(!intro || !intro.parentNode) return null;
       sec = document.createElement('section');
-      sec.className = 'screen'; sec.id = 'scr-multiplayer'; sec.setAttribute('aria-labelledby', 'mpTTit');
-      const modo = (k, img, pos, alt, nome, txt, acao) => `<div class="mpt-modo">
-          <img src="${img}" width="1280" height="854" alt="${alt}" loading="lazy" decoding="async" style="object-position:${pos}">
-          <div class="mpt-modo-tx"><h2>${nome}</h2><p>${txt}</p>
-            <button class="btn btn-primary btn-lg" onclick="MP.criarDaTela('${k}')">${acao} <span aria-hidden="true">→</span></button></div>
-        </div>`;
-      sec.innerHTML = `<div class="mpt">
-        <button class="mpt-voltar" onclick="UI.show('intro');Game.checkSave()"><span aria-hidden="true">←</span> <span>Início</span></button>
-        <header class="mpt-cab">
-          <div class="mpt-cab-tx">
-            <h1 id="mpTTit">Multiplayer</h1>
-            <p>Uma sala, um amigo, o mesmo campeonato. Cada um decide no seu ritmo, e as corridas passam ao vivo para os dois.</p>
-            <div class="field mpt-nome"><label class="lbl" for="mpTNome">Seu nome</label><input type="text" id="mpTNome" maxlength="24" autocomplete="off"></div>
-          </div>
-          <figure class="mpt-cab-foto"><img src="assets/lauda-12-gevolgd-door-jarier-17-bestanddeelnr.jpg" width="1920" height="1271" alt="Lauda, com o 12, seguido de perto por Jarier, com o 17, numa curva" decoding="async"></figure>
-        </header>
-        <div class="mpt-modos">
-          ${modo('chefe', 'assets/cartoes/pit-stop-emil-frey.jpg', '50% 45%', 'Equipe trocando os pneus de um carro vermelho num pit stop', 'Chefe de equipe',
-            'Cada um comanda uma equipe real do mesmo grid: contratos, carro e estratégia. Na corrida, os dois dão ordens ao mesmo tempo.', 'Criar sala de chefe')}
-          ${modo('piloto', 'assets/cartoes/capacete-cockpit.jpg', '45% 30%', 'Piloto de capacete no cockpit de um monoposto', 'Carreira de piloto',
-            'Cada um é um piloto. Com a mesma idade, os dois dividem a categoria; com idades diferentes, cada um sobe pela sua.', 'Criar sala de piloto')}
-        </div>
-        <p class="mp-erro mpt-erro" id="mpErro" role="alert"></p>
-        <div class="mpt-baixo">
-          <div class="mpt-entrar">
-            <img class="mpt-entrar-foto" src="assets/fia-f1-austria-2023-nr-1-3.jpg" width="1920" height="1080" alt="Um carro de Fórmula 1 na pista do Red Bull Ring, 2023" loading="lazy" decoding="async">
-            <div class="mpt-entrar-in">
-            <h2>Entrar com um código</h2>
-            <p>Quem criou a sala manda o código de 8 letras.</p>
-            <div class="mpt-entrar-linha">
-              <input type="text" id="mpTCodigo" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH" aria-label="Código da sala" data-i18n-ignore>
-              <button class="btn btn-contorno btn-lg" onclick="MP.entrarDaTela()">Entrar</button>
+      sec.className = 'screen'; sec.id = 'scr-multiplayer'; sec.setAttribute('aria-labelledby', 'mppTit');
+      /* os ícones da casa (ICONES, no index.html) e dois desenhados aqui no mesmo traço */
+      const IC = {
+        historico: 'M13 3a9 9 0 0 0-9 9H1l3.9 3.9.1.1L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z',
+        lista: 'M4 5h2v2H4V5zm4 0h12v2H8V5zM4 11h2v2H4v-2zm4 0h12v2H8v-2zM4 17h2v2H4v-2zm4 0h12v2H8v-2z',
+        seta: 'M9.3 5.3 7.9 6.7 13.2 12l-5.3 5.3 1.4 1.4L16 12z'
+      };
+      const svg = k => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[k]}"/></svg>`;
+      let ni = 0;
+      const item = (ic, nome, acao, ativo) => `<button class="mpp-nav-i${ativo ? ' on' : ''}" style="--i:${(ni++) * .5}"${ativo ? ' aria-current="page"' : ` onclick="${acao}"`}>${ico(ic)}<span>${nome}</span></button>`;
+      const cartao = (k, n, img, pos, alt, titulo, texto) => `<article class="mpp-card" style="--i:${n}">
+          <div class="mpp-card-foto"><img src="${img}" width="1920" height="1280" alt="${alt}" loading="lazy" decoding="async" style="object-position:${pos}"></div>
+          <div class="mpp-card-corpo">
+            <div class="mpp-card-cab">
+              <span class="mpp-num" aria-hidden="true">0${n}.</span>
+              <h2>${titulo}</h2>
+              <span class="mpp-selo">${ico('pessoas')}<span>Multiplayer</span></span>
             </div>
+            <p>${texto}</p>
+            <button class="mpp-entrar" onclick="MP.entrarNoModo('${k}')">${ico('pessoas')}<span>Entrar no modo</span>${svg('seta')}</button>
+          </div>
+        </article>`;
+      sec.innerHTML = `<div class="mpp">
+        <nav class="mpp-nav" aria-label="Navegação">
+          ${item('casa', 'Início', 'Game.goHome()')}
+          ${item('trofeu', 'Carreira', 'Abertura.comecar()')}
+          ${item('maleta', 'Chefe de equipe', 'Abertura.chefe()')}
+          ${item('pessoas', 'Multiplayer', '', true)}
+          ${item('barras', 'Recordes', 'UI.records()')}
+          ${item('coroa', 'Lendas', 'UI.hall()')}
+          ${item('livros', 'Como funciona', 'UI.help()')}
+          <p class="mpp-nav-lema"><span>Do kart ao topo.</span> <span>Em qualquer época.</span> <span>Com quem você quiser.</span></p>
+        </nav>
+        <div class="mpp-conteudo">
+          <header class="mpp-cab">
+            <div class="mpp-cab-foto" aria-hidden="true"><img src="assets/apoio/spa-2008-before-start.jpg" width="1920" height="1280" alt="" decoding="async"></div>
+            <div class="mpp-cab-tx">
+              <span class="mpp-cab-ic" aria-hidden="true">${ico('pessoas')}</span>
+              <div>
+                <div class="mpp-titulo"><h1 id="mppTit">Multiplayer</h1><span class="mpp-beta">Beta</span></div>
+                <p>Convide seus amigos ou jogue com outros pilotos em uma experiência completa de automobilismo!</p>
+              </div>
+            </div>
+          </header>
+          <div class="mpp-cards">
+            ${cartao('chefe', 1, 'assets/spanish-grand-prix-2009.jpg', '50% 38%', 'Ross Brawn, de fone, entre os mecânicos no grid do GP da Espanha de 2009, com Adrian Newey ao lado', 'Chefe de Equipe',
+              'Administre uma equipe junto com outros jogadores ou dispute contra equipes controladas por eles.')}
+            ${cartao('piloto', 2, 'assets/cartoes/capacete-cockpit.jpg', '45% 32%', 'Piloto de capacete no cockpit de um monoposto', 'Carreira de Piloto',
+              'Cada jogador controla seu próprio piloto. Compitam nas mesmas categorias e busquem títulos contra outros participantes.')}
+          </div>
+          <div class="mpp-paineis">
+            <div class="mpp-painel" id="mppContinuar" style="--i:3">
+              <span class="mpp-painel-ic">${svg('historico')}</span>
+              <div class="mpp-painel-tx"><h3><button class="mpp-painel-bt" onclick="MP.continuarDaTela()" aria-describedby="mppContinuarTx">Continuar Partida</button></h3><p id="mppContinuarTx">Retome sua última carreira multiplayer.</p></div>
+              <span class="mpp-painel-ir">${svg('seta')}</span>
+            </div>
+            <div class="mpp-painel" id="mppMinhas" style="--i:4">
+              <span class="mpp-painel-ic">${svg('lista')}</span>
+              <div class="mpp-painel-tx"><h3><button class="mpp-painel-bt" id="mppMinhasBt" onclick="MP.minhasPartidas()" aria-expanded="false" aria-controls="mppSalas" aria-describedby="mppMinhasTx">Minhas Partidas</button></h3><p id="mppMinhasTx">Acompanhe suas campanhas multiplayer.</p></div>
+              <span class="mpp-painel-ir">${svg('seta')}</span>
             </div>
           </div>
-          <div class="mpt-salas">
-            <h2>Suas salas</h2>
-            <div id="mpTSalas"></div>
-          </div>
+          <section class="mpp-salas" id="mppSalas" hidden aria-label="Minhas partidas"></section>
+          <p class="mpp-credito" data-i18n-ignore>Fotos: o grid de Spa, 2008, Mark McArdle (CC BY-SA 2.0); GP da Espanha de 2009, janebelindasmith (CC BY 2.0), via Wikimedia Commons; capacete no cockpit, Carl Gelin (Unsplash).</p>
         </div>
-        <p class="mpt-credito" data-i18n-ignore>Fotos: Lauda e Jarier, Rob Croes / Anefo (CC0); pit stop, Paul Krüger, e capacete no cockpit, Carl Gelin (Unsplash); Áustria 2023, Lukas Raich (CC BY-SA 4.0).</p>
       </div>`;
       intro.parentNode.insertBefore(sec, intro.nextSibling);
       return sec;
     },
-    nomeDaTela(){
-      const n = String((el('mpTNome') || {}).value || '').trim();
-      if(n) try { localStorage.setItem('vdo_mp_nome', n); } catch(e){}
-      return n;
+    /* "Entrar no modo": a entrada de sempre (criar ou entrar com código), já com o modo escolhido */
+    entrarNoModo(modo){
+      MP.abrirEntrada();
+      const r = document.querySelector('input[name="mpModo"][value="' + modo + '"]');
+      if(r) r.checked = true;
     },
-    criarDaTela(modo){ const nome = MP.nomeDaTela(); MP.chegar('/api/salas', { nome, modo }, nome); },
-    entrarDaTela(){
-      const nome = MP.nomeDaTela();
-      const codigo = String((el('mpTCodigo') || {}).value || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
-      if(codigo.length !== 8) return MP.avisar('codigo');
-      MP.chegar('/api/salas/' + codigo + '/entrar', { nome }, nome);
+    continuarDaTela(){
+      if(!ler()) return UI.toast('Nenhuma partida multiplayer neste aparelho ainda. Entre num dos modos para começar.');
+      MP.abrir();
     },
-    /* as salas deste aparelho, na tela: a atual com o estado da conexão */
+    minhasPartidas(){
+      const box = el('mppSalas'), b = el('mppMinhasBt'); if(!box) return;
+      if(!lerLista().length && !ler()) return UI.toast('Nenhuma partida guardada neste aparelho ainda.');
+      box.hidden = !box.hidden;
+      if(b) b.setAttribute('aria-expanded', box.hidden ? 'false' : 'true');
+      if(!box.hidden){ MP.telaSalas(); try { box.scrollIntoView({ behavior: UI.movimentoLigado && UI.movimentoLigado() ? 'smooth' : 'auto', block: 'nearest' }); } catch(e){} }
+    },
+    /* o estado real dos dois painéis e a lista das salas deste aparelho */
     telaSalas(){
-      const box = el('mpTSalas'); if(!box) return;
       const atual = ler(); if(atual && !lerLista().some(x => x.codigo === atual.codigo)) naLista(atual);
-      const l = lerLista();
-      if(!l.length){ box.innerHTML = '<p class="mpt-vazio">Nenhuma sala neste aparelho ainda. Crie uma acima ou entre com um código.</p>'; return; }
-      const p = MP.sala && MP.sala.partida;
+      const l = lerLista(), p = MP.sala && MP.sala.partida;
+      const cont = el('mppContinuar'), contTx = el('mppContinuarTx'), min = el('mppMinhas'), minTx = el('mppMinhasTx');
+      if(cont){
+        cont.classList.toggle('mpp-off', !atual); cont.querySelector('.mpp-painel-bt').setAttribute('aria-disabled', atual ? 'false' : 'true');
+        if(contTx) contTx.innerHTML = atual
+          ? `<span>Sala</span> <span data-i18n-ignore>${esc(codigoBonito(atual.codigo))}</span>${atual.modo ? ` · <span>${esc(MODOS[atual.modo] || atual.modo)}</span>` : ''}${p ? ` · <span>rodada</span> ${p.rodada}` : ''}`
+          : '<span>Nenhuma partida multiplayer neste aparelho ainda.</span>';
+      }
+      if(min){
+        min.classList.toggle('mpp-off', !l.length); min.querySelector('.mpp-painel-bt').setAttribute('aria-disabled', l.length ? 'false' : 'true');
+        if(minTx) minTx.innerHTML = l.length ? (l.length === 1 ? '<span>1 sala guardada neste aparelho.</span>' : `${l.length} <span>salas guardadas neste aparelho.</span>`)
+                                             : '<span>Acompanhe suas campanhas multiplayer.</span>';
+      }
+      const box = el('mppSalas'); if(!box || box.hidden) return;
+      if(!l.length){ box.innerHTML = '<p class="mpp-vazio">Nenhuma partida guardada neste aparelho ainda.</p>'; return; }
       box.innerHTML = l.map(g => {
         const eh = atual && atual.codigo === g.codigo;
-        if(MP._apagar === g.codigo) return `<div class="mpt-sala mpt-apagar">
-            <div class="mpt-sala-tx"><b><span>Apagar esta sala?</span> <span data-i18n-ignore>${esc(codigoBonito(g.codigo))}</span></b>
+        if(MP._apagar === g.codigo) return `<div class="mpp-sala mpp-sala-apagar">
+            <div class="mpp-sala-tx"><b><span>Apagar esta sala?</span> <span data-i18n-ignore>${esc(codigoBonito(g.codigo))}</span></b>
               <span>Ela some deste aparelho. Se a partida ainda não começou, a vaga fica livre.</span></div>
-            <div class="mpt-sala-bts"><button class="btn btn-sm" onclick="MP.apagarSala('${g.codigo}', false)">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.apagarSala('${g.codigo}', true)">Apagar</button></div>
+            <div class="mpp-sala-bts"><button class="btn btn-sm" onclick="MP.apagarSala('${g.codigo}', false)">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.apagarSala('${g.codigo}', true)">Apagar</button></div>
           </div>`;
-        const estado = eh ? `${p ? `<span>rodada</span> ${p.rodada} · ` : ''}<span>${MP.textoConexao()}</span>` : `<span>guardada</span>`;
-        return `<div class="mpt-sala${eh ? ' mpt-atual' : ''}">
-            <div class="mpt-sala-tx"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b>
+        const estado = eh ? `${p ? `<span>rodada</span> ${p.rodada} · ` : ''}<span>${MP.textoConexao()}</span>` : '<span>guardada</span>';
+        return `<div class="mpp-sala${eh ? ' mpp-sala-atual' : ''}">
+            <div class="mpp-sala-tx"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b>
               <span>${g.modo ? `<span>${esc(MODOS[g.modo] || g.modo)}</span> · ` : ''}<span data-i18n-ignore>${esc(g.nome || '')}</span> · ${estado}</span></div>
-            <div class="mpt-sala-bts">${eh ? '<button class="btn btn-primary btn-sm" onclick="MP.abrir()">Continuar</button>' : `<button class="btn btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button>`}
-              <button class="btn btn-sm mpt-x" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div>
+            <div class="mpp-sala-bts">${eh ? '<button class="btn btn-primary btn-sm" onclick="MP.abrir()">Continuar</button>' : `<button class="btn btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button>`}
+              <button class="btn btn-sm mpp-x" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div>
           </div>`;
-      }).join('') + '<p class="mpt-nota">Identidade de teste: as salas ficam guardadas neste navegador. Limpar os dados do site faz você perder as vagas.</p>';
+      }).join('') + '<p class="mpp-nota">Identidade de teste: as salas ficam guardadas neste navegador. Limpar os dados do site faz você perder as vagas.</p>';
     },
     listaSalas(){
       const atual = ler(); if(atual && !lerLista().some(x => x.codigo === atual.codigo)) naLista(atual);
@@ -999,53 +1046,123 @@
       body.mp-com-barra{padding-bottom:64px}
       .ini-mp{margin-top:12px}
       .ini-texto:has(#abMP){max-width:740px}
-      .mpt{width:min(1360px,100%); margin:0 auto; padding:clamp(12px,2.4vw,28px) var(--m,24px) 96px}
-      .mpt-voltar{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 4px; font-size:16px; color:var(--soft)}
-      .mpt-voltar:hover{color:var(--ink)}
-      .mpt-cab{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); align-items:end; gap:24px 40px; margin:clamp(16px,3vw,40px) 0 16px}
-      .mpt-cab-tx p{margin:0 0 20px; max-width:46ch; font-size:21px; line-height:1.45; color:var(--ink)}
-      .mpt-cab-foto{margin:0; border-radius:24px; overflow:hidden; aspect-ratio:16/10; background:var(--s1)}
-      .mpt-cab-foto img{width:100%; height:100%; object-fit:cover; object-position:50% 55%}
-      .mpt-cab h1{margin:0; font-size:clamp(52px,6.4vw,104px); font-weight:800; font-stretch:72%; text-transform:uppercase; line-height:.86; letter-spacing:-.02em; margin-bottom:clamp(18px,2.4vw,32px)}
-      .mpt-nome{margin:0; max-width:360px}
-      .mpt-modos{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-      .mpt-modo{position:relative; display:flex; align-items:flex-end; min-height:clamp(380px,52vh,560px); padding:clamp(22px,2.6vw,40px); border-radius:24px; overflow:hidden; isolation:isolate; color:#fff; background:#141619}
-      .mpt-modo img{position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; transition:transform 1.2s var(--ease-out,ease)}
-      .mpt-modo::after{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,rgba(8,9,11,.94) 0%,rgba(8,9,11,.6) 42%,rgba(8,9,11,.05) 100%)}
-      .mpt-modo:hover img{transform:scale(1.05)}
-      .mpt-modo-tx{display:grid; gap:14px; justify-items:start}
-      .mpt-modo-tx h2{margin:0; font-size:clamp(36px,4.2vw,64px); font-weight:800; font-stretch:72%; text-transform:uppercase; line-height:.92}
-      .mpt-modo-tx p{margin:0; max-width:46ch; font-size:16px; line-height:1.5; color:#dde1e6}
-      .mpt-modo-tx .btn{margin-top:6px}
-      .mpt-erro{margin:14px 0 0}
-      .mpt-baixo{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:16px; margin-top:16px}
-      .mpt-entrar,.mpt-salas{background:var(--s1); border-radius:24px; padding:clamp(22px,2.6vw,36px)}
-      .mpt-entrar{padding:0; overflow:hidden}
-      .mpt-entrar-foto{display:block; width:100%; height:190px; object-fit:cover; object-position:50% 60%}
-      .mpt-entrar-in{padding:clamp(22px,2.6vw,36px)}
-      .mpt-baixo h2{margin:0 0 8px; font-size:clamp(26px,2.4vw,34px); font-weight:800; font-stretch:72%; text-transform:uppercase; line-height:1}
-      .mpt-entrar p{margin:0 0 18px; font-size:16px; color:var(--soft)}
-      .mpt-entrar-linha{display:flex; gap:10px; flex-wrap:wrap}
-      .mpt-entrar-linha input{flex:1 1 200px; min-height:56px; padding:0 18px; font-size:21px; letter-spacing:.12em; font-variant-numeric:tabular-nums; background:var(--s3); color:var(--ink); border:0; border-radius:0}
-      .mpt-sala{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 16px; padding:16px 18px; margin-top:10px; background:var(--s2)}
-      .mpt-sala.mpt-atual{background:var(--s3)}
-      .mpt-sala.mpt-apagar{background:var(--s4)}
-      .mpt-sala-tx{display:grid; gap:4px; min-width:0}
-      .mpt-sala-tx b{font-size:21px; font-weight:800; letter-spacing:.06em; font-variant-numeric:tabular-nums}
-      .mpt-sala-tx > span{font-size:14px; color:var(--soft)}
-      .mpt-sala-bts{display:flex; gap:8px}
-      .mpt-x{background:transparent; color:var(--soft)}
-      .mpt-x:hover{color:var(--ink); background:var(--s4)}
-      .mpt-vazio{margin:12px 0 0; font-size:16px; color:var(--soft)}
-      .mpt-nota{margin:16px 0 0; max-width:72ch; font-size:14px; color:var(--faint)}
-      .mpt-credito{margin:28px 0 0; max-width:72ch; font-size:14px; color:var(--faint)}
-      @media (max-width:820px){
-        .mpt-cab,.mpt-modos,.mpt-baixo{grid-template-columns:1fr}
-        .mpt-modo{min-height:360px}
-        .mpt-cab h1{font-size:clamp(44px,13.5vw,84px)}
-        .mpt-cab-tx p{font-size:18px}
+      #scr-multiplayer{--mpp-ouro:var(--accent)}
+      /* a página ocupa a largura toda, como a tela do chefe (o trilho na borda esquerda) */
+      body[data-tela="multiplayer"] .wrap{max-width:none; padding:0}
+      .mpp{position:relative; display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(100vh - 64px)}
+      .mpp::before{content:''; position:absolute; left:0; top:0; bottom:0; width:232px; background:var(--rail)}
+      .mpp-nav{position:sticky; top:64px; z-index:1; align-self:start; height:calc(100vh - 64px); display:flex; flex-direction:column; gap:4px; padding:28px 16px 24px}
+      .mpp-nav-i{display:flex; align-items:center; gap:14px; min-height:50px; padding:0 16px; border-radius:10px; font-size:16px; font-weight:600; color:var(--soft); text-align:left; transition:background .2s,color .2s,transform .2s var(--ease)}
+      .mpp-nav-i .ico{width:24px; height:24px; fill:currentColor; flex:none}
+      .mpp-nav-i:hover{background:var(--s2); color:var(--ink); transform:translateX(3px)}
+      .mpp-nav-i:focus-visible{outline:2px solid var(--mpp-ouro); outline-offset:2px}
+      .mpp-nav-i.on{background:var(--mpp-ouro); color:var(--accent-ink); cursor:default}
+      .mpp-nav-i.on:hover{transform:none}
+      .mpp-nav-lema{margin:auto 0 0; padding:20px 16px 0; display:grid; gap:2px; font-size:16px; line-height:1.4; font-style:italic; color:var(--faint)}
+      .mpp-conteudo{min-width:0; max-width:1440px; padding:24px clamp(16px,2.6vw,40px) 72px}
+      .mpp-cab{position:relative; display:flex; align-items:flex-end; min-height:clamp(240px,32vh,330px); border-radius:18px; overflow:hidden; isolation:isolate; background:#0d0e10}
+      .mpp-cab-foto{position:absolute; inset:0; z-index:-2}
+      .mpp-cab-foto img{width:100%; height:100%; object-fit:cover; object-position:50% 78%; filter:grayscale(1) contrast(1.06) brightness(.78)}
+      /* o véu que deixa o título legível sobre a foto (taste-skill-ignore) */
+      .mpp-cab::after{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,rgba(8,9,11,.96) 0%,rgba(8,9,11,.6) 42%,rgba(8,9,11,.12) 100%)}
+      .mpp-cab-tx{display:flex; align-items:center; gap:clamp(14px,2vw,26px); width:100%; padding:clamp(20px,2.6vw,34px); border-bottom:2px solid var(--mpp-ouro)}
+      .mpp-cab-ic{display:grid; place-items:center; flex:none}
+      .mpp-cab-ic .ico{width:clamp(52px,5vw,78px); height:clamp(52px,5vw,78px); fill:var(--mpp-ouro)}
+      .mpp-titulo{display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px}
+      .mpp-cab h1{margin:0; font-size:clamp(40px,5.6vw,86px); font-weight:800; font-style:italic; text-transform:uppercase; line-height:.95; letter-spacing:-.01em; color:#fff}
+      .mpp-beta{padding:6px 12px; border:2px solid var(--mpp-ouro); border-radius:999px; font-size:14px; font-weight:700; line-height:1; color:var(--mpp-ouro)}
+      .mpp-cab-tx p{margin:8px 0 0; max-width:62ch; font-size:19px; line-height:1.45; font-style:italic; color:#d3d7dc}
+      .mpp-cards{display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,2vw,28px); margin-top:clamp(18px,2.4vw,28px)}
+      .mpp-card{position:relative; display:flex; flex-direction:column; border:2px solid var(--mpp-ouro); border-radius:18px; overflow:hidden; background:var(--s1); transition:transform .35s var(--ease-out,ease),box-shadow .35s}
+      .mpp-card:hover{transform:translateY(-4px); box-shadow:0 0 0 1px var(--mpp-ouro),0 24px 60px -20px rgba(240,193,46,.38)}
+      .mpp-card-foto{position:relative; aspect-ratio:16/8.5; overflow:hidden; background:#0d0e10}
+      .mpp-card-foto img{width:100%; height:100%; object-fit:cover; transition:transform 1.1s var(--ease-out,ease)}
+      /* a foto se funde no corpo do cartão (taste-skill-ignore) */
+      .mpp-card-foto::after{content:''; position:absolute; inset:auto 0 0 0; height:42%; background:linear-gradient(0deg,var(--s1),rgba(0,0,0,0))}
+      .mpp-card:hover .mpp-card-foto img{transform:scale(1.05)}
+      .mpp-card-corpo{display:flex; flex-direction:column; flex:1; gap:14px; padding:4px clamp(18px,2vw,28px) clamp(18px,2vw,26px)}
+      .mpp-card-cab{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px}
+      .mpp-num{font-size:40px; font-weight:800; font-style:italic; line-height:1; color:var(--mpp-ouro)}
+      .mpp-card-cab h2{flex:0 1 auto; margin:0; font-size:32px; font-weight:700; font-style:italic; line-height:1.05; color:var(--ink)}
+      .mpp-selo{margin-left:auto; display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:999px; background:var(--mpp-ouro); color:var(--accent-ink); font-size:14px; font-weight:700; line-height:1}
+      .mpp-selo .ico{width:18px; height:18px; fill:currentColor}
+      .mpp-card-corpo p{margin:0; padding-bottom:18px; border-bottom:1px solid var(--s4); font-size:16px; line-height:1.5; font-style:italic; color:var(--soft)}
+      .mpp-entrar{position:relative; display:flex; align-items:center; justify-content:center; gap:14px; min-height:62px; margin-top:auto; padding:0 56px; border:2px solid var(--mpp-ouro); border-radius:10px; color:var(--mpp-ouro); font-size:22px; font-weight:700; font-style:italic; transition:background .2s,color .2s,transform .12s var(--ease)}
+      .mpp-entrar .ico{width:26px; height:26px; fill:currentColor; flex:none}
+      .mpp-entrar .ico:last-child{position:absolute; right:18px; transition:transform .25s var(--ease)}
+      .mpp-entrar:hover,.mpp-entrar:focus-visible{background:var(--mpp-ouro); color:var(--accent-ink); outline:none}
+      .mpp-entrar:hover .ico:last-child{transform:translateX(5px)}
+      .mpp-entrar:active{transform:translateY(1px)}
+      .mpp-paineis{display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,2vw,28px); margin-top:clamp(16px,2vw,24px)}
+      .mpp-painel{position:relative; display:flex; align-items:center; gap:18px; min-height:88px; padding:16px 22px; border:1px solid var(--s4); border-radius:14px; background:var(--s1); transition:border-color .2s,background .2s}
+      .mpp-painel:hover,.mpp-painel:focus-within{border-color:var(--mpp-ouro); background:var(--s2)}
+      .mpp-painel h3{margin:0; font-size:22px; font-weight:700; line-height:1.15}
+      .mpp-painel-bt{color:var(--ink); text-align:left; font:inherit}
+      .mpp-painel-bt::after{content:''; position:absolute; inset:0; border-radius:14px}
+      .mpp-painel-bt:focus-visible{outline:none}
+      .mpp-painel:focus-within{box-shadow:0 0 0 2px var(--mpp-ouro)}
+      .mpp-painel .ico{fill:var(--soft); transition:fill .2s,transform .25s var(--ease)}
+      .mpp-painel-ic .ico{width:42px; height:42px}
+      .mpp-painel:hover .ico{fill:var(--mpp-ouro)}
+      .mpp-painel-tx{flex:1; display:grid; gap:3px; min-width:0}
+      .mpp-painel-tx p{margin:0; font-size:16px; line-height:1.4; font-style:italic; color:var(--soft)}
+      .mpp-painel-ir .ico{width:28px; height:28px}
+      .mpp-painel:hover .mpp-painel-ir .ico{transform:translateX(4px)}
+      .mpp-painel.mpp-off{opacity:.55}
+      .mpp-painel.mpp-off .mpp-painel-bt{cursor:default}
+      .mpp-painel.mpp-off:hover{border-color:var(--s4); background:var(--s1)}
+      .mpp-painel.mpp-off:hover .ico{fill:var(--soft); transform:none}
+      .mpp-salas{margin-top:14px; padding:clamp(14px,2vw,22px); border-radius:14px; background:var(--s1)}
+      .mpp-sala{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 16px; padding:14px 18px; background:var(--s2); border-radius:10px}
+      .mpp-sala + .mpp-sala{margin-top:8px}
+      .mpp-sala-atual{background:var(--s3)}
+      .mpp-sala-apagar{background:var(--s4)}
+      .mpp-sala-tx{display:grid; gap:3px; min-width:0}
+      .mpp-sala-tx b{font-size:22px; font-weight:800; letter-spacing:.06em; font-variant-numeric:tabular-nums}
+      .mpp-sala-tx > span{font-size:16px; color:var(--soft)}
+      .mpp-sala-bts{display:flex; gap:8px}
+      .mpp-x{background:transparent; color:var(--soft)}
+      .mpp-x:hover{background:var(--s4); color:var(--ink)}
+      .mpp-vazio{margin:0; font-size:16px; color:var(--soft)}
+      .mpp-nota{margin:14px 0 0; max-width:72ch; font-size:14px; color:var(--faint)}
+      .mpp-credito{margin:24px 0 0; max-width:64ch; font-size:14px; line-height:1.5; color:var(--faint)}
+      /* a entrada: a foto do grid assenta, o título e os cartões sobem em sequência */
+      .mpp-entra .mpp-cab-foto img{animation:mppFoto 1.8s var(--ease-out,ease) both}
+      .mpp-entra .mpp-cab-tx > *,.mpp-entra .mpp-card,.mpp-entra .mpp-painel,.mpp-entra .mpp-nav-i{animation:mppSobe .62s var(--ease-out,ease) both; animation-delay:calc(var(--i,0) * 85ms + 140ms)}
+      .mpp-entra .mpp-cab-tx > :last-child{--i:.6}
+      @keyframes mppSobe{from{opacity:0; transform:translateY(24px)} to{opacity:1; transform:none}}
+      @keyframes mppFoto{from{transform:scale(1.12)} to{transform:scale(1)}}
+      @media (max-width:1100px){
+        .mpp{grid-template-columns:1fr; min-height:0}
+        .mpp::before{display:none}
+        .mpp-nav{background:var(--rail)}
+        .mpp-nav{position:static; height:auto; flex-direction:row; flex-wrap:wrap; gap:6px; padding:10px clamp(16px,2.4vw,36px)}
+        .mpp-nav-i{flex:none; min-height:44px; padding:0 14px; gap:10px}
+        .mpp-nav-i:hover{transform:none}
+        .mpp-nav-lema{display:none}
       }
-      @media (prefers-reduced-motion:reduce){ .mpt-modo img{transition:none} .mpt-modo:hover img{transform:none} }
+      @media (max-width:760px){
+        .mpp-cards,.mpp-paineis{grid-template-columns:1fr}
+        /* no celular a foto vira uma faixa em cima, e o texto fica embaixo, no escuro */
+        .mpp-cab{flex-direction:column; align-items:stretch; min-height:0}
+        .mpp-cab-foto{position:relative; inset:auto; height:150px; z-index:0}
+        .mpp-cab::after{inset:0 0 auto 0; height:150px; z-index:0}
+        .mpp-cab-tx{position:relative; z-index:1; align-items:flex-start; padding:16px 18px 20px}
+        .mpp-cab h1{font-size:clamp(34px,10.5vw,52px)}
+        .mpp-cab-ic .ico{width:40px; height:40px; margin-top:2px}
+        .mpp-cab-tx p{font-size:17px}
+        .mpp-selo{margin-left:0}
+        .mpp-nav{gap:4px; padding:8px 16px}
+        .mpp-nav-i{min-height:40px; padding:0 12px; font-size:15px}
+        .mpp-card-cab h2{font-size:28px}
+        .mpp-num{font-size:36px}
+        .mpp-entrar{padding:0 48px}
+      }
+      @media (prefers-reduced-motion:reduce){
+        .mpp-entra *{animation:none!important}
+        .mpp-card,.mpp-card-foto img,.mpp-nav-i,.mpp-painel .ico{transition:none}
+        .mpp-card:hover,.mpp-card:hover .mpp-card-foto img{transform:none}
+      }
       .mp-clicado{background:var(--accent,#e1251b)!important;border-color:var(--accent,#e1251b)!important;color:#fff!important}`;
     document.head.appendChild(st);
     /* o botão fica fora do bloco "Continuar", que some quando o aparelho não tem save do jogo solo */
