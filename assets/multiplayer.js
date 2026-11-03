@@ -738,7 +738,9 @@
     },
     /* apaga uma sala deste aparelho (a atual sai de verdade, se a partida ainda não começou) */
     async apagarSala(codigo, certeza){
-      const naTela = document.body.dataset.tela === 'multiplayer';
+      /* a lista da janela de entrada (aberta por cima da página) tem a vez; senão, a da página */
+      const m = el('modal'), naEntrada = UI.aberta() && m && m.dataset.titulo === TITULO_ENTRADA;
+      const naTela = document.body.dataset.tela === 'multiplayer' && !naEntrada;
       if(certeza === false){ MP._apagar = null; return naTela ? MP.telaSalas() : MP.abrirEntrada(); }
       if(!certeza){ MP._apagar = codigo; return naTela ? MP.telaSalas() : MP.abrirEntrada(); }
       MP._apagar = null;
