@@ -198,11 +198,14 @@ export async function fase2({ base, estado }){
   await dormir(1500);
   const depois = a.msgs.filter(m => m.t === 'corridaEstado').pop();
   checar('7 e segue andando no relógio da sala', !!depois && c && depois.corridas[0].passo > c.passo, depois && depois.corridas[0]);
-  await corrida(a, E.k, 'pular', { quer: true });
-  await corrida(b, E.k, 'pular', { quer: true });
+  /* o convidado não pode forçar; o anfitrião força sem o voto do convidado */
+  const rb = await pedir(b, { t: 'forcar', rodada: 1 });
+  const ra = await pedir(a, { t: 'forcar', rodada: 1 });
+  const aviso = await esperar(b, m => m.t === 'forcado', 10000);
   const rod = await esperar(a, m => m.t === 'rodada' && m.rodada === 1, 120000);
   await dormir(1500);
-  checar('7 com o voto dos dois ela termina e a rodada 1 é processada uma vez só',
-    !!rod && a.msgs.filter(m => m.t === 'rodada').length === 1 && a.msgs.filter(m => m.t === 'sala').pop().sala.partida.rodada === 2);
+  checar('7 o anfitrião força o fim (o convidado não pode): a corrida termina sem o voto do convidado, ele recebe o aviso e a rodada 1 é processada uma vez só',
+    rb && rb.codigo === 'anfitriao' && ra && ra.t === 'ok' && aviso && aviso.corrida === true
+    && !!rod && a.msgs.filter(m => m.t === 'rodada').length === 1 && a.msgs.filter(m => m.t === 'sala').pop().sala.partida.rodada === 2, { rb, ra, aviso });
   a.ws.close(); b.ws.close();
 }

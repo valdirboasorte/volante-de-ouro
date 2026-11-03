@@ -84,5 +84,21 @@ console.log('\nA janela da classificação');
   checar('com as duas janelas escolhidas, a corrida preparada e a concluída são a mesma (o grid sai igual nas duas passadas)', !!d && conc && !conc.divergencias.length && !conc.faltas.length, conc && conc.divergencias);
 }
 
+console.log('\nO anfitrião força o mercado');
+{
+  const codigo = 'ROBUSTA4';
+  let mundo = regras.iniciar([{ slot: 0 }, { slot: 1 }], { config: { serie: 'f1', ano: 2024, pilotos: { 0: { nome: 'Ivo Lopes', cc: 'BR', idade: 22 }, 1: { nome: 'Lia Neves', cc: 'PT', idade: 22 } } }, codigo, anfitriao: 0 });
+  let N = 1, g = 0;
+  while(mundo.fase !== 'mercado' && g++ < 40){ mundo = regras.processar(mundo, N, criarRnd(codigo, N)).mundo; N++; }
+  const antes = regras.podeFicarPronto(mundo, '1');
+  const r = regras.autoPronto(mundo, '1', { codigo, rodada: N, id: 'forcar:' + N + ':1' });
+  const P = perspectiva(mundo, '1'), depois = regras.podeFicarPronto(mundo, '1');
+  checar(`no mercado sem escolha (${antes ? antes.erro : 'nada barrava'}), a escolha padrão deixa a Lia pronta: sem academia aberta e com uma proposta que vale`,
+    mundo.fase === 'mercado' && !(r && r.erro) && depois === null && !(P.academyOffers && P.academyOffers.length)
+    && (!(P.pendingOffers || []).some(o => o.podeP !== false && !o.retirada) || Number.isInteger(mundo.pilotos['1'].raiz.mpEscolha)), { antes, r, depois });
+  const x = regras.processar(mundo, N, criarRnd(codigo, N));
+  checar('e o ano novo começa para os dois', x.mundo.fase === 'temporada' && perspectiva(x.mundo, '1').season.round === 0 && !perspectiva(x.mundo, '1').retired, { fase: x.mundo.fase });
+}
+
 console.log(falhas ? `\n${falhas} de ${ok + falhas} verificações falharam` : `\nrobustez do piloto: ${ok} verificações, tudo certo`);
 process.exit(falhas ? 1 : 0);

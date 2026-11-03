@@ -345,6 +345,7 @@ export class Sala extends DurableObject {
     if(msg.t === 'iniciar') return this.iniciar(ws, slot, id);
     if(msg.t === 'acao') return this.acao(ws, slot, msg, id);
     if(msg.t === 'pronto') return this.pronto(ws, slot, msg, id);
+    if(msg.t === 'forcar') return this.forcar(ws, slot, msg, id);
     if(msg.t === 'corrida') return this.ordemCorrida(ws, slot, msg, id);
     if(msg.t === 'velocidade') return this.velocidadeCorrida(ws, slot, msg, id);
     if(msg.t === 'corridaSync'){ this.enviarCorridaInicio(ws); return this.enviar(ws, { t: 'ok', id }); }
@@ -457,6 +458,60 @@ export class Sala extends DurableObject {
     this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
     this.enviarVistas();
     if(todos) await this.processar();
+  }
+
+  /* "forçar avanço" (só o anfitrião, sem esperar a confirmação dos outros):
+     - na rodada (planning/waiting): quem ainda não confirmou recebe a escolha padrão das regras
+       (autoPronto) e fica pronto; se alguém tem uma decisão sem padrão (o inverno do chefe), nada
+       muda e o anfitrião recebe o que falta, por jogador;
+     - na corrida ao vivo: todas as corridas da rodada vão para o fim (como o pular de todos). */
+  async forcar(ws, slot, msg, id){
+    const s = this.sala, p = s.partida;
+    if(!p) return this.erro(ws, 'estado', id);
+    if(slot !== s.anfitriao) return this.erro(ws, 'anfitriao', id);
+    if(msg.rodada !== p.rodada) return this.erro(ws, 'rodada', id);
+    if(p.estado === 'corrida'){
+      if(!this.corridas) return this.erro(ws, 'processando', id);
+      const agora = Date.now();
+      try{
+        for(const c of this.corridas.values()) if(c.fase !== 'fim') this.difundir({ t: 'corridaLog', k: c.def.chave, e: c.terminar(agora) });
+      }catch(e){ log('erro', s.codigo, { motivo: 'forcar', erro: textoErro(e) }); return this.erro(ws, 'interno', id); }
+      log('forcada', s.codigo, { rodada: p.rodada, corrida: true });
+      this.enviar(ws, { t: 'ok', id });
+      this.difundir({ t: 'forcado', rodada: p.rodada, corrida: true, slots: [] }, ws);
+      this.difundir(this.publicoCorrida(agora));
+      await this.ctx.storage.put('corridaEst', this.estadoCorrida());
+      return;
+    }
+    if(p.estado === 'processing') return this.erro(ws, 'processando', id);
+    const regras = this.regrasDe(p.regras);
+    const faltam = s.jogadores.filter(j => !p.prontos[j.slot] && !this.dispensado(j.slot));
+    if(!faltam.length) return this.enviar(ws, { t: 'ok', id });
+    /* numa cópia: se alguém não puder seguir, o mundo oficial fica como estava */
+    const copia = structuredClone(this.mundo), bloqueios = [];
+    try{
+      for(const j of faltam){
+        const ctx = { codigo: s.codigo, rodada: p.rodada, id: 'forcar:' + p.rodada + ':' + j.slot };
+        const r = regras.autoPronto ? regras.autoPronto(copia, j.slot, ctx) : null;
+        const b = r && typeof r.erro === 'string' ? r : regras.podeFicarPronto ? regras.podeFicarPronto(copia, j.slot) : null;
+        if(b) bloqueios.push({ slot: j.slot, nome: j.nome, erro: b.erro, detalhe: b.detalhe });
+      }
+    }catch(e){
+      log('erro', s.codigo, { motivo: 'forcar', erro: textoErro(e) });
+      return this.erro(ws, 'interno', id);
+    }
+    if(bloqueios.length) return this.enviar(ws, { t: 'erro', codigo: 'forcar', id, detalhe: bloqueios });
+    this.mundo = copia;
+    for(const j of faltam) p.prontos[j.slot] = true;
+    p.estado = 'processing';
+    s.v++;
+    await this.salvarTudo();
+    log('forcada', s.codigo, { rodada: p.rodada, slots: faltam.map(j => j.slot) });
+    this.enviar(ws, { t: 'ok', id });
+    this.difundir({ t: 'forcado', rodada: p.rodada, slots: faltam.map(j => j.slot) }, ws);
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+    this.enviarVistas();
+    await this.processar();
   }
 
   /* processa a rodada atual no máximo uma vez: só roda com a partida em 'processing' e
@@ -671,7 +726,9 @@ export class Sala extends DurableObject {
     if(typeof msg.tipo !== 'string') return this.erro(ws, 'tipo', id);
     const agora = Date.now();
     let r;
-    try{ r = c.ordem(slot, msg.tipo, msg.dados, agora); }
+    /* o pular do anfitrião não espera o voto dos outros: a corrida vai para o fim na hora */
+    const forcar = msg.tipo === 'pular' && msg.dados && msg.dados.forcar === true && msg.dados.quer === true && slot === this.sala.anfitriao;
+    try{ r = forcar ? (c.fase === 'fim' ? { erro: 'fim' } : { e: c.terminar(agora) }) : c.ordem(slot, msg.tipo, msg.dados, agora); }
     catch(e){ log('erro', this.sala.codigo, { motivo: 'ordem', erro: textoErro(e) }); return this.erro(ws, 'interno', id); }
     if(r.erro) return this.erro(ws, r.erro, id);
     if(r.e) this.difundir({ t: 'corridaLog', k: c.def.chave, e: r.e });

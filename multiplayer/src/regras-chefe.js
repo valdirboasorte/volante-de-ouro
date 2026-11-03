@@ -378,6 +378,14 @@ export function criarRegrasChefe(obterMotor){
       return null;
     },
 
+    /* "forçar avanço" do anfitrião: o acontecimento aberto fica sem decisão, como no "simular o resto
+       do ano" do jogo. O que falta no inverno (pilotos, contratos) não tem padrão e continua barrando. */
+    autoPronto(mundo, slot){
+      const J = obterMotor();
+      agir(J, mundo, slot, (J, C) => { if(C.fase === 'temporada' && C.evento) C.evento = null; });
+      return null;
+    },
+
     /* muda o mundo que recebeu (a sala passa uma cópia) e devolve o resultado público da rodada */
     processar(mundo, rodada, rnd){
       const J = obterMotor();

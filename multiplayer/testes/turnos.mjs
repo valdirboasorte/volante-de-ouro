@@ -331,6 +331,24 @@ export async function fase1({ base, versao, estado }){
     igual(semFalha, rodF && rodF.resultado), { semFalha, rodF });
   F.a.ws.close(1000); b2.ws.close(1000);
 
+  // 13: o anfitrião força o avanço sem esperar o convidado
+  const G = await salaIniciada(base, versao);
+  r = await pedir(G.b, { t: 'forcar', rodada: 1 });
+  checar('13 forçar: o convidado → erro anfitriao', r && r.t === 'erro' && r.codigo === 'anfitriao', r);
+  r = await pedir(G.a, { t: 'forcar', rodada: 2 });
+  checar('13 forçar: com a rodada errada → erro rodada', r && r.t === 'erro' && r.codigo === 'rodada', r);
+  await pedir(G.a, planejar(1, 4));
+  r = await pedir(G.a, { t: 'forcar', rodada: 1 });
+  const rodGa = await esperar(G.a, m => m.t === 'rodada'), rodGb = await esperar(G.b, m => m.t === 'rodada');
+  const avisoG = await esperar(G.b, m => m.t === 'forcado');
+  await dormir(300);
+  const salaG = ultima(G.b, 'sala');
+  checar('13 forçar: o anfitrião sozinho pronto → ok; a rodada 1 é processada uma vez para os dois, o convidado recebe o aviso (com o slot dele) e a sala vai para a rodada 2 em planning',
+    r && r.t === 'ok' && !!rodGa && !!rodGb && rodGa.rodada === 1 && igual(rodGa.resultado, rodGb.resultado) && contar(G.b, m => m.t === 'rodada') === 1
+    && avisoG && igual(avisoG.slots, [0, 1]) && !G.a.msgs.some(m => m.t === 'forcado')
+    && salaG.sala.partida.rodada === 2 && salaG.sala.partida.estado === 'planning', { r, avisoG, partida: salaG && salaG.sala.partida });
+  G.a.ws.close(1000); G.b.ws.close(1000);
+
   // 12 (preparação): sala travada em processing com o alarme pendente; rodar.mjs derruba o servidor logo em seguida
   const K = await salaIniciada(base, versao);
   await pedir(K.a, { t: '__falhar' });

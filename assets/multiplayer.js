@@ -30,6 +30,10 @@
   const CHAVE = 'vdo_mp' + (perfil ? '_' + perfil : '');
   const TITULO_SALA = 'Sala multiplayer', TITULO_ENTRADA = 'Multiplayer';
   const MODOS = { chefe: 'Chefe de equipe', piloto: 'Carreira de piloto' };
+  const MODO_ENTRADA = {
+    chefe: { bt: 'Criar sala de chefe', tx: 'Cada um comanda uma equipe real do mesmo grid: contratos, carro e estratégia. Na corrida, os dois dão ordens ao mesmo tempo.' },
+    piloto: { bt: 'Criar sala de piloto', tx: 'Cada um é um piloto. Com a mesma idade, os dois dividem a categoria; com idades diferentes, cada um sobe pela sua.' }
+  };
   const VELS = [1, 2, 4, 8, 16];
   const ERROS = {
     rede: 'Sem conexão com o servidor do multiplayer.',
@@ -43,6 +47,7 @@
     nome: 'Escreva o seu nome.',
     origem: 'Este endereço não pode abrir salas.',
     anfitriao: 'Só o anfitrião muda isso.',
+    forcar: 'Ainda não dá para avançar sem os outros.',
     tempo: 'O servidor demorou a responder. Tente de novo.',
     jogadores: 'A partida começa com os dois jogadores na sala.',
     estado: 'Isso não vale neste momento da partida.',
@@ -212,6 +217,12 @@
       } else if(m.t === 'corridaEstado'){ return MP.corridaEstado(m);
       } else if(m.t === 'corridaSoma'){ return MP.corridaSoma(m);
       } else if(m.t === 'corridaFim'){ if(MP.cor) MP.cor.fim = true; return MP.barra();
+      } else if(m.t === 'forcado'){
+        /* o anfitrião avançou sem esperar: quem não tinha confirmado fica sabendo */
+        const eu = MP.meuSlot();
+        if(m.corrida) UI.toast('O anfitrião levou a corrida até o fim.');
+        else if((m.slots || []).map(String).includes(String(eu))) UI.toast('O anfitrião avançou a rodada: as suas decisões abertas ficaram com a escolha padrão.');
+        return;
       } else if(m.t === 'ok' || m.t === 'erro'){
         const p = m.id && MP._pend[m.id];
         if(p){ delete MP._pend[m.id]; p.fim(m.t === 'ok' ? { ok: true, resultado: m.resultado } : { erro: m.codigo, detalhe: m.detalhe }); }
@@ -327,6 +338,11 @@
       const outros = s.jogadores.filter(j => j.slot !== eu);
       const souPronto = pronto(eu), outrosProntos = outros.every(j => pronto(j.slot)), proc = p.estado === 'processing' || p.estado === 'corrida';
       const piloto = p.regras === 'piloto';
+      /* o anfitrião pode avançar sem esperar quem ainda está decidindo (ou levar a corrida até o fim) */
+      const fora = (p.fora || []).map(String);
+      const esperando = outros.some(j => !pronto(j.slot) && !fora.includes(String(j.slot)));
+      const podeForcar = s.anfitriao === eu && MP.con === 'conectado' && (p.estado === 'corrida' ? !!(MP.cor && !MP.cor.fim) : !proc && esperando);
+      const armado = podeForcar && MP._forcarArmado && Date.now() - MP._forcarArmado < 6000;
       const fase = { inverno: 'pré-temporada', temporada: 'temporada', balanco: 'balanço do ano', mercado: 'propostas' }[MP.vista && MP.vista.fase] || '';
       const sea = piloto ? (typeof S !== 'undefined' && S && S.season) : (typeof C !== 'undefined' && C && C.temporada);
       const prox = MP.vista && MP.vista.fase === 'temporada' && sea && sea.calendar[sea.round];
@@ -341,7 +357,27 @@
         ${souPronto ? `<button class="btn btn-ghost btn-sm" onclick="MP.pronto(false)"${proc ? ' disabled' : ''}>Cancelar prontidão</button>`
                     : `<button class="btn btn-primary btn-sm" onclick="${piloto ? 'MP.pilotoPronto()' : 'MP.chefePronto()'}"${proc || MP.con !== 'conectado' ? ' disabled' : ''}>Pronto para avançar</button>`}
         ${p.estado === 'corrida' && MP.cor && MP.cor.minha && !MP.cor.aberta ? '<button class="btn btn-gold btn-sm" onclick="MP.verCorrida()">Ver a corrida</button>' : ''}
+        ${podeForcar ? `<button class="btn btn-sm mp-forcar${armado ? ' mp-armado' : ''}" onclick="MP.forcar()"${MP._forcarNoAr ? ' disabled' : ''}>${armado ? 'Confirmar: avançar agora' : p.estado === 'corrida' ? 'Forçar o fim da corrida' : 'Forçar avanço'}</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="MP.abrirPartida()">Sala</button>`;
+    },
+    /* "Forçar avanço" (só o anfitrião): o primeiro toque arma, o segundo (em até 6 s) manda.
+       O servidor dá a escolha padrão a quem não confirmou; o que não tem padrão volta como aviso. */
+    async forcar(){
+      const p = MP.sala && MP.sala.partida; if(!p || MP._forcarNoAr) return;
+      if(!MP._forcarArmado || Date.now() - MP._forcarArmado >= 6000){
+        MP._forcarArmado = Date.now(); MP.barra();
+        UI.toast(p.estado === 'corrida' ? 'Toque de novo para levar a corrida até o fim para todos.'
+                                         : 'Toque de novo para avançar agora. Quem não confirmou fica com a escolha padrão.');
+        setTimeout(() => { if(MP._forcarArmado && Date.now() - MP._forcarArmado >= 6000){ MP._forcarArmado = 0; MP.barra(); } }, 6100);
+        return;
+      }
+      MP._forcarArmado = 0; MP._forcarNoAr = true; MP.barra();
+      const r = await MP.enviar('forcar', { rodada: p.rodada });
+      MP._forcarNoAr = false; MP.barra();
+      if(!r.erro || r.erro === 'rodada') return;
+      if(r.erro === 'forcar' && Array.isArray(r.detalhe) && r.detalhe.length)
+        return UI.toast(r.detalhe.map(b => b.nome + ': ' + (b.erro === 'pendencias' && Array.isArray(b.detalhe) && b.detalhe.length ? 'falta ' + b.detalhe.join(' e ') : erroTxt(b.erro))).join(' · '));
+      UI.toast(erroTxt(r.erro));
     },
 
     /* ── a corrida ao vivo (Fase 5) ──
@@ -521,6 +557,10 @@
         },
         responder(R, k){ MP.ordemCorrida(t, 'responder', { k }); },
         pular(){
+          if(MP.sala && MP.sala.anfitriao === MP.meuSlot()){
+            MP.ordemCorrida(t, 'pular', { quer: true, forcar: true });
+            return UI.toast('Você é o anfitrião: a corrida vai até o fim para todos.');
+          }
           t.pediuPular = !t.pediuPular;
           MP.ordemCorrida(t, 'pular', { quer: t.pediuPular });
           UI.toast(t.pediuPular ? 'Você pediu para pular até o fim. A corrida pula quando todos pedirem.' : 'Pedido para pular cancelado.');
@@ -907,7 +947,7 @@
           <div class="mpp-cards">
             ${cartao('chefe', 1, 'assets/spanish-grand-prix-2009.jpg', '50% 38%', 'Ross Brawn, de fone, entre os mecânicos no grid do GP da Espanha de 2009, com Adrian Newey ao lado', 'Chefe de Equipe',
               'Administre uma equipe junto com outros jogadores ou dispute contra equipes controladas por eles.')}
-            ${cartao('piloto', 2, 'assets/cartoes/capacete-cockpit.jpg', '45% 32%', 'Piloto de capacete no cockpit de um monoposto', 'Carreira de Piloto',
+            ${cartao('piloto', 2, 'assets/cartoes/hamilton-trofeu.jpg', '50% 20%', 'Lewis Hamilton, de boné branco, sorri e ergue o troféu no pódio', 'Carreira de Piloto',
               'Cada jogador controla seu próprio piloto. Compitam nas mesmas categorias e busquem títulos contra outros participantes.')}
           </div>
           <div class="mpp-paineis">
@@ -923,18 +963,14 @@
             </div>
           </div>
           <section class="mpp-salas" id="mppSalas" hidden aria-label="Minhas partidas"></section>
-          <p class="mpp-credito" data-i18n-ignore>Fotos: o grid de Spa, 2008, Mark McArdle (CC BY-SA 2.0); GP da Espanha de 2009, janebelindasmith (CC BY 2.0), via Wikimedia Commons; capacete no cockpit, Carl Gelin (Unsplash).</p>
+          <p class="mpp-credito" data-i18n-ignore>Fotos: o grid de Spa, 2008, Mark McArdle (CC BY-SA 2.0); GP da Espanha de 2009, janebelindasmith (CC BY 2.0), via Wikimedia Commons.</p>
         </div>
       </div>`;
       intro.parentNode.insertBefore(sec, intro.nextSibling);
       return sec;
     },
     /* "Entrar no modo": a entrada de sempre (criar ou entrar com código), já com o modo escolhido */
-    entrarNoModo(modo){
-      MP.abrirEntrada();
-      const r = document.querySelector('input[name="mpModo"][value="' + modo + '"]');
-      if(r) r.checked = true;
-    },
+    entrarNoModo(modo){ MP.abrirEntrada(modo); },
     continuarDaTela(){
       if(!ler()) return UI.toast('Nenhuma partida multiplayer neste aparelho ainda. Entre num dos modos para começar.');
       MP.abrir();
@@ -989,25 +1025,51 @@
         : `<div class="sv-item"><div class="sv-tx"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b><span class="sv-desc">${g.modo ? `<span>${esc(MODOS[g.modo] || g.modo)}</span> · ` : ''}<span data-i18n-ignore>${esc(g.nome || '')}</span></span></div>
             <div class="sv-bts">${atual && atual.codigo === g.codigo ? '<button class="btn btn-primary btn-sm" onclick="MP.abrir()">Continuar</button>' : `<button class="btn btn-primary btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button>`}<button class="btn btn-ghost btn-sm" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div></div>`).join('');
     },
-    abrirEntrada(){
+    /* a entrada: o nome em cima; à esquerda os dois modos (com foto) e criar, à direita o código e as salas.
+       Os campos de sempre (mpNome, mpModo, mpCodigo) ficam, então criar, entrar e entrarNoModo não mudam. */
+    abrirEntrada(modo){
       let nome = ''; try { nome = localStorage.getItem('vdo_mp_nome') || ''; } catch(e){}
-      UI.modal(UI.head(TITULO_ENTRADA, 'Teste com um amigo: crie uma sala ou entre com o código que ele mandar.') +
-        `<div class="mbd sv mp">
-          <div class="field"><label class="lbl" for="mpNome">Seu nome</label><input type="text" id="mpNome" maxlength="24" autocomplete="off" value="${esc(nome)}"></div>
-          <span class="lbl">Criar uma sala</span>
-          <div class="mp-modos">
-            <label class="sv-item"><input type="radio" name="mpModo" value="chefe" checked> <span>Chefe de equipe</span></label>
-            <label class="sv-item"><input type="radio" name="mpModo" value="piloto"> <span>Carreira de piloto</span></label>
+      const k = MODO_ENTRADA[modo] ? modo : (MODO_ENTRADA[MP._modo] ? MP._modo : 'chefe');
+      MP._modo = k;
+      const tile = (v, img, pos) => `<label class="mpe-modo">
+            <input type="radio" name="mpModo" value="${v}"${v === k ? ' checked' : ''} onchange="MP.modoEscolhido()">
+            <span class="mpe-foto"><img src="${img}" alt="" decoding="async" style="object-position:${pos}"></span>
+            <b>${MODOS[v]}</b>
+          </label>`;
+      UI.modal(UI.head(TITULO_ENTRADA, 'Crie uma sala ou entre com o código que um amigo mandar.') +
+        `<div class="mbd mp mpe">
+          <div class="field mpe-nome"><label class="lbl" for="mpNome">Seu nome</label><input type="text" id="mpNome" maxlength="24" autocomplete="off" value="${esc(nome)}" placeholder="Como os outros vão ver você"></div>
+          <div class="mpe-grade">
+            <section class="mpe-lado" aria-labelledby="mpeCriar">
+              <h3 class="mpe-t" id="mpeCriar">Criar uma sala</h3>
+              <div class="mpe-modos" role="radiogroup" aria-labelledby="mpeCriar">
+                ${tile('chefe', 'assets/spanish-grand-prix-2009.jpg', '50% 34%')}
+                ${tile('piloto', 'assets/cartoes/hamilton-trofeu.jpg', '50% 22%')}
+              </div>
+              <p class="mpe-desc" id="mpModoTx">${MODO_ENTRADA[k].tx}</p>
+              <button class="btn btn-primary mp-acao mpe-bt" id="mpCriarBt" onclick="MP.criar()">${MODO_ENTRADA[k].bt}</button>
+            </section>
+            <section class="mpe-lado mpe-cod" aria-labelledby="mpeEntrar">
+              <h3 class="mpe-t" id="mpeEntrar">Entrar com um código</h3>
+              <p class="mpe-desc">Quem criou a sala manda o código de 8 letras.</p>
+              <label class="mpe-vh" for="mpCodigo">Código da sala</label>
+              <input type="text" id="mpCodigo" class="mpe-codigo" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH" data-i18n-ignore onkeydown="if(event.key==='Enter')MP.entrar()">
+              <button class="btn btn-contorno mp-acao mpe-bt" onclick="MP.entrar()">Entrar</button>
+            </section>
           </div>
-          <button class="btn btn-primary mp-acao" onclick="MP.criar()">Criar sala</button>
-          <span class="lbl">Entrar numa sala</span>
-          <div class="field"><label class="lbl" for="mpCodigo">Código da sala</label><input type="text" id="mpCodigo" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH" data-i18n-ignore></div>
-          <button class="btn btn-contorno mp-acao" onclick="MP.entrar()">Entrar</button>
           <p class="mp-erro" id="mpErro" role="alert"></p>
-          ${MP.listaSalas()}
+          ${MP.listaSalas() ? `<div class="mpe-salas">${MP.listaSalas()}</div>` : ''}
           <p class="mut sv-uso">Identidade de teste: a sua vaga na sala fica guardada neste navegador. Limpar os dados do site faz você perder a vaga.</p>
         </div>
-        <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`);
+        <div class="mft"><span class="sp"></span><button class="btn btn-ghost" onclick="UI.close()">Fechar</button></div>`, true);
+    },
+    /* o texto e o botão seguem o modo marcado */
+    modoEscolhido(){
+      const m = document.querySelector('input[name="mpModo"]:checked'), k = m && MODO_ENTRADA[m.value] ? m.value : 'chefe';
+      MP._modo = k;
+      const b = el('mpCriarBt'), tx = el('mpModoTx');
+      if(b) b.textContent = MODO_ENTRADA[k].bt;
+      if(tx) tx.textContent = MODO_ENTRADA[k].tx;
     }
   };
   window.MP = MP;
@@ -1039,11 +1101,49 @@
       .mp #mpAno{width:90px}
       .mp .mp-form{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
       .mp .mp-form .field{margin:0}
+      .modal.wide:has(.mpe){max-width:900px}
+      /* as linhas não encolhem quando o modal fica baixo: quem rola é o corpo */
+      .mpe{display:grid;gap:16px;grid-auto-rows:max-content}
+      .mpe .mpe-nome input{font-size:18px;min-height:52px}
+      .mpe-grade{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--s1)}
+      .mpe-lado{display:flex;flex-direction:column;gap:12px;padding:20px 22px 22px;min-width:0}
+      .mpe-cod{background:var(--s2)}
+      .mpe-t{margin:0;font-size:24px;font-weight:700;font-style:italic;line-height:1.1;color:var(--ink)}
+      .mpe-desc{margin:0;font-size:15px;line-height:1.45;color:var(--soft)}
+      .mpe-modos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .mpe-modo{position:relative;display:block;border-radius:10px;overflow:hidden;cursor:pointer;background:#0d0e10;isolation:isolate;transition:transform .18s var(--ease),box-shadow .18s}
+      .mpe-modo input{position:absolute;opacity:0;pointer-events:none}
+      .mpe-foto{display:block;aspect-ratio:4/3}
+      .mpe-foto img{width:100%;height:100%;object-fit:cover;filter:grayscale(.85) brightness(.62);transition:filter .3s,transform .6s var(--ease-out,ease)}
+      /* o nome do modo fica legível sobre a foto (taste-skill-ignore) */
+      .mpe-modo::after{content:'';position:absolute;inset:40% 0 0;z-index:0;background:linear-gradient(0deg,rgba(8,9,11,.9),rgba(8,9,11,0))}
+      .mpe-modo b{position:absolute;left:12px;right:12px;bottom:10px;z-index:1;font-size:19px;font-weight:700;font-style:italic;line-height:1.1;color:#fff}
+      .mpe-modo:hover .mpe-foto img{filter:grayscale(.3) brightness(.78);transform:scale(1.04)}
+      .mpe-modo:has(input:checked){box-shadow:0 0 0 2px var(--accent)}
+      .mpe-modo:has(input:checked) .mpe-foto img{filter:none}
+      .mpe-modo:has(input:checked) b{color:var(--accent)}
+      .mpe-modo:has(input:focus-visible){outline:2px solid var(--ink);outline-offset:3px}
+      .mpe-modo:active{transform:scale(.98)}
+      .mpe .mpe-bt{width:100%;min-height:52px;margin-top:auto;font-size:17px}
+      .mpe-vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+      .mpe .mpe-codigo{min-height:64px;font-size:28px;font-weight:800;letter-spacing:.16em;text-align:center;text-transform:uppercase;font-variant-numeric:tabular-nums}
+      .mpe .mpe-codigo::placeholder{color:var(--faint);letter-spacing:.16em}
+      .mpe-salas{display:grid;gap:8px}
+      .mpe .mp-erro:empty{display:none}
+      @media (max-width:700px){
+        .mpe-grade{grid-template-columns:1fr}
+        .mpe-lado{padding:16px}
+        .mpe-foto{aspect-ratio:1/1}
+        .mpe-modo b{font-size:17px}
+      }
+      @media (prefers-reduced-motion:reduce){ .mpe-modo,.mpe-foto img{transition:none} .mpe-modo:hover .mpe-foto img{transform:none} }
       .mp-barra{position:fixed;left:0;right:0;bottom:0;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;
         padding:10px 16px;background:var(--s1);border-top:1px solid var(--line);font-size:14px}
       .mp-barra .mp-b-e{flex:1;min-width:160px;color:var(--soft)}
       .mp-barra .mp-dot{display:inline-block;vertical-align:middle}
       body.mp-com-barra{padding-bottom:64px}
+      .mp-barra .mp-forcar{border:1px solid var(--accent);color:var(--accent);background:transparent}
+      .mp-barra .mp-forcar.mp-armado{background:var(--accent);color:var(--accent-ink)}
       .ini-mp{margin-top:12px}
       .ini-texto:has(#abMP){max-width:740px}
       #scr-multiplayer{--mpp-ouro:var(--accent)}

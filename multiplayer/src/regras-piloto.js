@@ -182,6 +182,21 @@ export function criarRegrasPiloto(obterMotor){
       return null;
     },
 
+    /* "forçar avanço" do anfitrião: as decisões abertas recebem a escolha padrão — recusa a academia
+       e fica com a primeira proposta que vale (a ordem da tela de propostas). Muda o mundo recebido. */
+    autoPronto(mundo, slot, ctx){
+      const raiz = () => mundo.pilotos[slot].raiz;
+      if(mundo.fase !== 'mercado' || raiz().retired) return null;
+      if(Array.isArray(raiz().academyOffers) && raiz().academyOffers.length){
+        const r = acoes.academia.aplicar(mundo, slot, { i: null }, Object.assign({}, ctx, { id: ctx.id + ':academia' }));
+        if(r && r.erro) return r;
+      }
+      const R = raiz();
+      if(!temEscolhivel(R) || (Number.isInteger(R.mpEscolha) && !ofertaEscolhivel(R, R.mpEscolha).erro)) return null;
+      const i = R.pendingOffers.findIndex((_, k) => !ofertaEscolhivel(R, k).erro);
+      return acoes.escolherOferta.aplicar(mundo, slot, { i }, Object.assign({}, ctx, { id: ctx.id + ':proposta' }));
+    },
+
     /* quem encerrou a carreira não tem mais decisões: a sala o conta como pronto */
     dispensado(mundo, slot){ const P = mundo.pilotos[slot]; return !!(P && P.raiz.retired); },
 
