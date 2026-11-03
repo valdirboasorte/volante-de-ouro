@@ -40,7 +40,8 @@ export function ligarCorridas(J, modo, resultados){
   const correr = (ent, donos, M, info) => {
     const chave = 'c' + ctl.k++;
     if(modo === 'preparar'){
-      ctl.defs.push(Object.assign({ chave, ent: clone(ent), donos, slots: [...new Set(Object.values(donos))].sort() }, info));
+      const slots = [...new Set(Object.values(donos).flatMap(d => [].concat(d).map(String)))].sort((a, b) => a - b);
+      ctl.defs.push(Object.assign({ chave, ent: clone(ent), donos, slots }, info));
       const R = J.Gp.criar(clone(ent)); J.Gp.terminar(R);
       return vivoDe(M, J.Gp.resultado(R), null);
     }
@@ -122,7 +123,8 @@ function cmdValido(Gp, R, s, cmd){
 }
 
 export class Corrida {
-  /* def: { chave, ent, donos: { indiceDoCarro: slot }, slots, serie, chefe }; salvo: o estado de antes */
+  /* def: { chave, ent, donos: { indiceDoCarro: slot, ou a lista dos membros de uma equipe dividida }, slots, serie, chefe };
+     salvo: o estado de antes */
   constructor(J, def, salvo){
     this.J = J; this.def = def;
     const Gp = J.Gp;
@@ -148,7 +150,9 @@ export class Corrida {
     return { chave: this.def.chave, log: this.log, seq: this.seq, passo: this.passo, liberado: this.liberado, fase: this.fase, prazo: this.prazo,
              largadas: this.largadas, votos: this.votos, fora: this.fora, res: this.res, notas: this.notas };
   }
-  meus(slot){ return Object.keys(this.def.donos).filter(i => String(this.def.donos[i]) === String(slot)).map(Number); }
+  donosDe(i){ const d = this.def.donos[i]; return d === undefined ? [] : [].concat(d).map(String); }
+  manda(i, slot){ return this.donosDe(i).includes(String(slot)); }
+  meus(slot){ return Object.keys(this.def.donos).filter(i => this.manda(i, slot)).map(Number); }
   dono(i){ return this.def.donos[i]; }
 
   registrar(tipo, slot, dados, passo){
@@ -182,7 +186,7 @@ export class Corrida {
     }
     if(tipo === 'comandar'){
       const i = d.i, s = Number.isInteger(i) ? R.carros[i] : null;
-      if(!s || String(this.dono(i)) !== String(slot)) return { erro: 'carro' };
+      if(!s || !this.manda(i, slot)) return { erro: 'carro' };
       const cmd = cmdValido(Gp, R, s, d.cmd);
       if(!cmd) return { erro: 'dados' };
       return { e: this.registrar('comandar', slot, { i, cmd }, this.proximoPasso()) };
@@ -190,7 +194,7 @@ export class Corrida {
     if(tipo === 'responder'){
       const q = R.pergunta;
       if(this.fase !== 'pergunta' || !q) return { erro: 'fase' };
-      if(String(this.dono(q.i)) !== String(slot)) return { erro: 'carro' };
+      if(!this.manda(q.i, slot)) return { erro: 'carro' };
       if(typeof d.k !== 'string' || !q.opcoes.some(o => o.k === d.k)) return { erro: 'dados' };
       const e = this.registrar('responder', slot, { k: d.k }, this.passo);
       this.retomar(agora);
@@ -215,12 +219,13 @@ export class Corrida {
     if(pausa) this.retomar(agora);
     return e;
   }
-  /* a largada: cada jogador larga só os carros dele, na ordem dos slots (a mesma em todo lugar) */
+  /* a largada: cada jogador larga só os carros dele, na ordem dos slots (a mesma em todo lugar);
+     numa equipe dividida, o carro larga com a reação do primeiro membro que reagiu */
   darLargada(agora){
-    const R = this.R, novas = [];
+    const R = this.R, novas = [], ja = new Set();
     for(const slot of this.def.slots){
-      const l = this.largadas[slot], so = this.meus(slot);
-      if(l && !l.auto && so.length) novas.push(this.registrar('largar', slot, { reac: l.reac, queimou: !!l.queimou, so }, 0));
+      const l = this.largadas[slot], so = this.meus(slot).filter(i => !ja.has(i));
+      if(l && !l.auto && so.length){ so.forEach(i => ja.add(i)); novas.push(this.registrar('largar', slot, { reac: l.reac, queimou: !!l.queimou, so }, 0)); }
     }
     this.retomar(agora);
     return novas;

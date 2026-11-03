@@ -1,21 +1,26 @@
-/* O modo chefe com duas equipes humanas no mesmo mundo, em cima do motor do jogo.
+/* O modo chefe com várias equipes humanas no mesmo mundo, em cima do motor do jogo.
 
    O jogo só conhece uma equipe humana, a 'EU'. Em vez de reescrevê-lo, o mundo da sala
    guarda uma parte compartilhada (a temporada, o registro de pilotos, a IA, o mercado) e
    um pacote por equipe (caixa, carro, pilotos, patrocínios, decisões...). Para agir por
    uma equipe, monta-se a "perspectiva" dela: o mundo com o pacote dela, em que ela é a
-   'EU' e a outra humana aparece com o id 'EU2'. O anfitrião guarda o mundo com os ids
-   dele; o convidado vê os ids trocados.
+   'EU' e as outras humanas aparecem como 'EU2', 'EU3'... O mundo guardado tem os ids da
+   equipe do anfitrião; cada outra equipe vê o seu id trocado com o 'EU'.
 
-   - Ações (as decisões de um jogador): rodam na perspectiva dele, e o mundo que sai dali
-     vale para todos (o servidor faz uma ação por vez).
+   Várias pessoas podem dividir uma equipe: todas mandam em tudo. O pacote é da equipe
+   (mundo.equipes, pela chave dela: o menor slot entre os membros) e mundo.membros diz de
+   que equipe é cada jogador. Salas antigas, de duas equipes, guardam só anfitriao e
+   convidado (sem ordem nem membros) e seguem funcionando.
+
+   - Ações (as decisões de um jogador): rodam na perspectiva da equipe dele, e o mundo que
+     sai dali vale para todos (o servidor faz uma ação por vez).
    - Viradas de fase (começo de temporada, fim de temporada, ano novo): rodam primeiro do
-     lado do anfitrião, que decide o mundo; depois do lado do convidado, sobre uma cópia
-     do mundo de antes, e dali só sai o que é dele: o pacote, os carros e os registros dos
-     pilotos dele.
+     lado do anfitrião, que decide o mundo; depois do lado de cada outra equipe, sobre uma
+     cópia do mundo de antes, e dali só sai o que é dela: o pacote, os carros e os
+     registros dos pilotos dela.
    - A corrida: a classificação roda uma vez, com cada carro humano avaliado na
-     perspectiva da sua equipe; a montagem do domingo junta os dois lados e corre uma vez;
-     a mesma chegada é aplicada depois à economia do convidado. */
+     perspectiva da sua equipe; a montagem do domingo junta todos os lados e corre uma vez;
+     a mesma chegada é aplicada depois à economia de cada outra equipe. */
 
 /* o que é de cada equipe; o resto é o mundo */
 export const CHAVES = {
@@ -33,29 +38,39 @@ export const MUNDO = ['v', 'realismo', 'sk', 'topo', 'cat', 'escada', 'mundo', '
 const clone = o => o === undefined ? undefined : structuredClone(o);
 const pegar = (o, ks) => { const r = {}; if(o) for(const k of ks) if(k in o) r[k] = o[k]; return r; };
 const tirar = (o, ks) => { if(o) for(const k of ks) delete o[k]; };
-const idDe = (mundo, slot) => String(slot) === String(mundo.anfitriao) ? 'EU' : 'EU2';
-const outroDe = (mundo, slot) => String(slot) === String(mundo.anfitriao) ? mundo.convidado : mundo.anfitriao;
 
-/* 'EU' ↔ 'EU2' na temporada: na lista de equipes, nos carros e na tabela de construtores.
+/* as equipes humanas, na ordem da sala (a do anfitrião primeiro) */
+export const equipesDe = mundo => (mundo.ordem || [mundo.anfitriao, mundo.convidado]).map(String);
+/* a equipe de um jogador (a chave de uma equipe também serve: ela é um dos membros) */
+export const equipeDe = (mundo, slot) => String(mundo.membros && mundo.membros[slot] !== undefined ? mundo.membros[slot] : slot);
+/* os jogadores de uma equipe */
+export const membrosDe = (mundo, k) => mundo.membros
+  ? Object.keys(mundo.membros).filter(s => String(mundo.membros[s]) === String(k)).sort((a, b) => a - b) : [String(k)];
+/* o id de uma equipe no mundo guardado: 'EU' para a do anfitrião, 'EU2', 'EU3'... para as outras */
+const idBase = (mundo, k) => { const i = equipesDe(mundo).indexOf(String(k)); return i <= 0 ? 'EU' : 'EU' + (i + 1); };
+/* o id da equipe j vista pela equipe k (k troca de lugar com o 'EU') */
+const idVisto = (mundo, j, k) => { const a = idBase(mundo, j), b = idBase(mundo, k); return a === b ? 'EU' : a === 'EU' ? b : a; };
+
+/* 'EU' ↔ outro id na temporada: na lista de equipes, nos carros e na tabela de construtores.
    Trocar duas vezes volta ao começo. */
-export function trocarIds(C){
-  const t = C && C.temporada; if(!t) return C;
-  const tr = id => id === 'EU' ? 'EU2' : id === 'EU2' ? 'EU' : id;
+export function trocarIds(C, outro = 'EU2'){
+  const t = C && C.temporada; if(!t || outro === 'EU') return C;
+  const tr = id => id === 'EU' ? outro : id === outro ? 'EU' : id;
   for(const x of t.teams || []){
-    if(x.id !== 'EU' && x.id !== 'EU2') continue;
+    if(x.id !== 'EU' && x.id !== outro) continue;
     x.id = tr(x.id);
     if(x.id === 'EU'){ x.nossa = true; delete x.humana; } else { x.humana = true; delete x.nossa; }
   }
   for(const f of t.field || []){
-    if(f.teamId !== 'EU' && f.teamId !== 'EU2') continue;
+    if(f.teamId !== 'EU' && f.teamId !== outro) continue;
     f.teamId = tr(f.teamId);
     if(f.teamId === 'EU') f.nosso = true; else delete f.nosso;
   }
-  if(t.cstand){ const a = t.cstand.EU, b = t.cstand.EU2; delete t.cstand.EU; delete t.cstand.EU2; if(b !== undefined) t.cstand.EU = b; if(a !== undefined) t.cstand.EU2 = a; }
+  if(t.cstand){ const a = t.cstand.EU, b = t.cstand[outro]; delete t.cstand.EU; delete t.cstand[outro]; if(b !== undefined) t.cstand.EU = b; if(a !== undefined) t.cstand[outro] = a; }
   return C;
 }
 
-/* o que a outra equipe mostra ao mundo: nome, cor, força do carro, quem é dela e os carros
+/* o que uma equipe mostra ao mundo: nome, cor, força do carro, quem é dela e os carros
    dela no grid (calculado com a perspectiva dela ativa) */
 function vitrine(J, C){
   return {
@@ -65,24 +80,26 @@ function vitrine(J, C){
   };
 }
 const midsDe = b => new Set(((b && b.raiz && b.raiz.pilotos) || []).map(p => p.mid).filter(Boolean));
+const outraDe = (mundo, j, k) => { const vo = mundo.equipes[j].vitrine; return { id: idVisto(mundo, j, k), nome: vo.nome, cor: vo.cor, str: vo.str, reservados: vo.reservados, carros: vo.carros }; };
 
-/* a perspectiva de uma equipe: um C completo, só dela, pronto para o motor */
+/* a perspectiva da equipe de um jogador: um C completo, só dela, pronto para o motor */
 export function perspectiva(mundo, slot, base){
+  const k = equipeDe(mundo, slot);
   const C = clone(base || mundo.base);
-  const b = mundo.equipes[slot];
+  const b = mundo.equipes[k];
   Object.assign(C, clone(b.raiz));
   if(C.temporada){
     Object.assign(C.temporada, clone(b.temporada));
     if(C.temporada.qs) Object.assign(C.temporada.qs, clone(b.qs));
   }
   if(C.inv) Object.assign(C.inv, clone(b.inv));
-  if(idDe(mundo, slot) === 'EU2') trocarIds(C);
-  const vo = mundo.equipes[outroDe(mundo, slot)].vitrine;
-  C.mpOutras = [{ id: 'EU2', nome: vo.nome, cor: vo.cor, str: vo.str, reservados: vo.reservados, carros: vo.carros }];
+  trocarIds(C, idBase(mundo, k));
+  C.mpOutras = equipesDe(mundo).filter(j => j !== k).map(j => outraDe(mundo, j, k));
   if(C.temporada){
-    const t = C.temporada.teams.find(x => x.id === 'EU2'); if(t) t.str = vo.str;
-    /* da outra equipe, só os carros que estão escalados correm */
-    C.temporada.field = C.temporada.field.filter(f => f.teamId !== 'EU2' || f.ativo);
+    for(const o of C.mpOutras){ const t = C.temporada.teams.find(x => x.id === o.id); if(t) t.str = o.str; }
+    /* das outras equipes, só os carros que estão escalados correm */
+    const outras = new Set(C.mpOutras.map(o => o.id));
+    C.temporada.field = C.temporada.field.filter(f => !outras.has(f.teamId) || f.ativo);
   }
   return C;
 }
@@ -90,10 +107,11 @@ export function perspectiva(mundo, slot, base){
 /* guarda de volta o que saiu de uma perspectiva. compartilhado: o mundo inteiro vem dela;
    senão, só o que é da equipe (pacote, carros, registros dos pilotos dela) */
 export function absorver(J, mundo, slot, C, { compartilhado, midsAntes } = {}){
+  const k = equipeDe(mundo, slot);
   const vit = (J.C = C, vitrine(J, C));
-  const id = idDe(mundo, slot);
-  if(id === 'EU2') trocarIds(C);
-  const b = mundo.equipes[slot] || (mundo.equipes[slot] = {});
+  const id = idBase(mundo, k);
+  trocarIds(C, id);
+  const b = mundo.equipes[k] || (mundo.equipes[k] = {});
   b.raiz = clone(pegar(C, CHAVES.raiz));
   b.temporada = C.temporada ? clone(pegar(C.temporada, CHAVES.temporada)) : {};
   b.qs = C.temporada && C.temporada.qs ? clone(pegar(C.temporada.qs, CHAVES.qs)) : {};
@@ -127,34 +145,47 @@ export function comSemente(J, rnd, fn){
 
 /* ── a sala ── */
 
-/* duas equipes reais da mesma série e do mesmo ano; o anfitrião decide o mundo */
-export function criarMundo(J, { sk, ano, anfitriao, convidado, equipes }){
+/* equipes reais da mesma série e do mesmo ano; o anfitrião decide o mundo.
+   equipes: { chave: { chefe, cc, idx } }; ordem: as chaves, a do anfitrião primeiro;
+   membros: { slot: chave }. Sem ordem, valem anfitriao e convidado (duas equipes, um jogador cada). */
+export function criarMundo(J, { sk, ano, anfitriao, convidado, equipes, ordem, membros }){
+  const ks = (ordem || [anfitriao, convidado]).map(String);
   const novo = (e, seq) => {
     J.Chefe.novo({ chefe: { nome: e.chefe, cc: e.cc || 'BR' }, realismo: true, modo: 'assumir', sk, ano, idx: e.idx, seq });
     J.UI.limparFila(); J.UI.close();
     return J.C;
   };
-  const CA = novo(equipes[anfitriao], 0);
-  const CB = novo(equipes[convidado], 500000);
-  const mundo = { v: 1, sk, ano, anfitriao: String(anfitriao), convidado: String(convidado), etapa: 'inverno', base: null, equipes: {} };
-  /* o convidado ainda não está no mundo do anfitrião: o pacote dele vem do mundo dele */
-  J.C = CB;
-  mundo.equipes[mundo.convidado] = { raiz: clone(pegar(CB, CHAVES.raiz)), temporada: {}, qs: {}, inv: CB.inv ? clone(pegar(CB.inv, CHAVES.inv)) : {}, vitrine: vitrine(J, CB) };
-  /* o mundo é o do anfitrião, com o mercado refeito sem os pilotos do convidado */
-  const vo = mundo.equipes[mundo.convidado].vitrine;
-  CA.mpOutras = [{ id: 'EU2', nome: vo.nome, cor: vo.cor, str: vo.str, reservados: vo.reservados, carros: [] }];
+  const Cs = ks.map((k, i) => novo(equipes[k], i * 500000));
+  const mundo = { v: 1, sk, ano, anfitriao: ks[0], convidado: ks[1], etapa: 'inverno', base: null, equipes: {} };
+  if(ordem){
+    mundo.ordem = ks;
+    mundo.membros = {};
+    for(const [s, k] of Object.entries(membros || {})) mundo.membros[s] = String(k);
+    for(const k of ks) if(mundo.membros[k] === undefined) mundo.membros[k] = k;
+  }
+  /* as outras equipes ainda não estão no mundo do anfitrião: o pacote de cada uma vem do mundo dela */
+  ks.slice(1).forEach((k, i) => {
+    const CB = Cs[i + 1];
+    J.C = CB;
+    mundo.equipes[k] = { raiz: clone(pegar(CB, CHAVES.raiz)), temporada: {}, qs: {}, inv: CB.inv ? clone(pegar(CB.inv, CHAVES.inv)) : {}, vitrine: vitrine(J, CB) };
+  });
+  /* o mundo é o do anfitrião, com o mercado refeito sem os pilotos das outras equipes */
+  const CA = Cs[0];
+  CA.mpOutras = ks.slice(1).map(k => Object.assign(outraDe(mundo, k, ks[0]), { carros: [] }));
   J.C = CA;
   if(CA.inv) CA.inv.mercado = J.Chefe.mercadoPilotos();
-  absorver(J, mundo, mundo.anfitriao, CA, { compartilhado: true });
-  /* e os pilotos do convidado passam a ser dele também no registro do mundo */
-  const FB = perspectiva(mundo, mundo.convidado);
-  J.C = FB;
-  FB.pilotos.forEach(p => J.Chefe.ligar(p));
-  absorver(J, mundo, mundo.convidado, FB, { compartilhado: false });
+  absorver(J, mundo, ks[0], CA, { compartilhado: true });
+  /* e os pilotos de cada outra equipe passam a ser dela também no registro do mundo */
+  for(const k of ks.slice(1)){
+    const FB = perspectiva(mundo, k);
+    J.C = FB;
+    FB.pilotos.forEach(p => J.Chefe.ligar(p));
+    absorver(J, mundo, k, FB, { compartilhado: false });
+  }
   return mundo;
 }
 
-/* uma decisão de um jogador: roda na perspectiva dele e o mundo que sai vale para todos */
+/* uma decisão de um jogador: roda na perspectiva da equipe dele e o mundo que sai vale para todos */
 export function agir(J, mundo, slot, fn){
   const C = perspectiva(mundo, slot);
   J.C = C;
@@ -164,64 +195,77 @@ export function agir(J, mundo, slot, fn){
   return r;
 }
 
-/* uma virada de fase: o anfitrião decide o mundo; o convidado roda sobre o mundo de antes */
+/* uma virada de fase: o anfitrião decide o mundo; cada outra equipe roda sobre o mundo de antes */
 export function faseDupla(J, mundo, fn){
-  const antes = clone(mundo.base), g = mundo.convidado;
-  const FA = perspectiva(mundo, mundo.anfitriao);
+  const antes = clone(mundo.base), [h, ...outras] = equipesDe(mundo);
+  const FA = perspectiva(mundo, h);
   J.C = FA; fn(J, FA); J.UI.limparFila();
-  absorver(J, mundo, mundo.anfitriao, FA, { compartilhado: true });
-  const midsAntes = midsDe(mundo.equipes[g]);
-  const FB = perspectiva(mundo, g, antes);
-  J.C = FB; fn(J, FB); J.UI.limparFila();
-  absorver(J, mundo, g, FB, { compartilhado: false, midsAntes });
+  absorver(J, mundo, h, FA, { compartilhado: true });
+  for(const g of outras){
+    const midsAntes = midsDe(mundo.equipes[g]);
+    const FB = perspectiva(mundo, g, antes);
+    J.C = FB; fn(J, FB); J.UI.limparFila();
+    absorver(J, mundo, g, FB, { compartilhado: false, midsAntes });
+  }
 }
 
-/* o fim de semana: classificação e corrida uma vez só, para os dois */
+/* o fim de semana: classificação e corrida uma vez só, para todos; devolve o registro de cada equipe */
 export function corrida(J, mundo){
-  const h = mundo.anfitriao, g = mundo.convidado;
-  const FA = perspectiva(mundo, h), FB = perspectiva(mundo, g);
-  const sA = FA.temporada, sB = FB.temporada;
+  const [h, ...ks] = equipesDe(mundo);
+  const FA = perspectiva(mundo, h), sA = FA.temporada;
+  const outras = ks.map(g => { const F = perspectiva(mundo, g); return { g, F, sea: F.temporada }; });
   const em = (C, fn) => { const antes = J.C; J.C = C; try { return fn(); } finally { J.C = antes; } };
   /* o tempo da etapa é um só: o lado do anfitrião sorteia */
   em(FA, () => J.Chefe.chuvaDaEtapa(sA));
-  sB.clima = clone(sA.clima);
+  for(const o of outras) o.sea.clima = clone(sA.clima);
   /* sábado: as sessões rodam uma vez; cada carro humano vale o que vale na equipe dele */
   /* o imprevisto do fim de semana de cada equipe vale na hora de correr, mesmo que o sábado já tenha sido criado
-     por uma decisão do outro lado (resolver duas vezes não faz nada) */
+     por uma decisão de outro lado (resolver duas vezes não faz nada) */
   em(FA, () => J.Chefe.fdsResolver(sA));
-  em(FB, () => J.Chefe.fdsResolver(sB));
+  for(const o of outras) em(o.F, () => J.Chefe.fdsResolver(o.sea));
   em(FA, () => J.Chefe.qualiDaEtapa(sA));
-  /* o sábado pode ter nascido numa decisão do convidado: sem janelas escolhidas do lado do anfitrião, vale a janela padrão */
+  /* o sábado pode ter nascido numa decisão de outra equipe: sem janelas escolhidas do lado do anfitrião, vale a janela padrão */
   if(!sA.qs.janelas) sA.qs.janelas = {};
-  const janelasB = (sB.qs && sB.qs.rd === sA.qs.rd && sB.qs.janelas) || {};
-  sB.qs = Object.assign(clone(sA.qs), { janelas: janelasB });
+  for(const o of outras){
+    o.janelas = (o.sea.qs && o.sea.qs.rd === sA.qs.rd && o.sea.qs.janelas) || {};
+    o.sea.qs = Object.assign(clone(sA.qs), { janelas: o.janelas });
+  }
   if(!sA.qs.concluida){
     const vqA = em(FA, () => J.Chefe.valorQuali(sA, J.Chefe.ctxQuali(sA)));
-    const vqB = em(FB, () => J.Chefe.valorQuali(sB, J.Chefe.ctxQuali(sB)));
-    const doB = new Set(sA.field.filter(f => f.teamId === 'EU2').map(f => f.id));
-    em(FA, () => J.Classif.simularTudo(sA, (id, ses) => doB.has(id) ? em(FB, () => vqB(id, ses)) : vqA(id, ses)));
+    const deQuem = new Map();
+    for(const o of outras){
+      o.vq = em(o.F, () => J.Chefe.valorQuali(o.sea, J.Chefe.ctxQuali(o.sea)));
+      const id = idBase(mundo, o.g);
+      sA.field.filter(f => f.teamId === id).forEach(f => deQuem.set(f.id, o));
+    }
+    em(FA, () => J.Classif.simularTudo(sA, (id, ses) => { const o = deQuem.get(id); return o ? em(o.F, () => o.vq(id, ses)) : vqA(id, ses); }));
   }
   em(FA, () => J.Chefe.gridDaEtapa(sA));
-  /* o convidado fica com o mesmo resultado de sábado (e calcula onde os carros dele ficaram) */
-  sB.qs = Object.assign(clone(sA.qs), { janelas: janelasB });
-  delete sB.qs.grid;
-  em(FB, () => J.Chefe.gridDaEtapa(sB));
+  /* cada outra equipe fica com o mesmo resultado de sábado (e calcula onde os carros dela ficaram) */
+  for(const o of outras){
+    o.sea.qs = Object.assign(clone(sA.qs), { janelas: o.janelas });
+    delete o.sea.qs.grid;
+    em(o.F, () => J.Chefe.gridDaEtapa(o.sea));
+  }
   /* domingo: cada lado monta os seus; a corrida usa os carros humanos de cada um */
-  const MA = em(FA, () => J.Chefe.montar()), MB = em(FB, () => J.Chefe.montar());
-  const doB = new Set(MB.corre.filter(f => f.teamId === 'EU').map(f => f.id));
+  const MA = em(FA, () => J.Chefe.montar());
+  for(const o of outras) o.M = em(o.F, () => J.Chefe.montar());
+  const deOutra = new Map();
+  for(const o of outras) o.M.corre.filter(f => f.teamId === 'EU').forEach(f => deOutra.set(f.id, o));
   const paraA = x => Object.assign({}, x, { f: sA.field.find(f => f.id === x.f.id) || x.f });
+  const dosOutros = lista => outras.flatMap(o => o.M[lista].filter(x => deOutra.get(x.f.id) === o).map(paraA));
   const M = Object.assign({}, MA, {
-    running: MA.running.filter(x => !doB.has(x.f.id)).concat(MB.running.filter(x => doB.has(x.f.id)).map(paraA)),
-    out: MA.out.filter(x => !doB.has(x.f.id)).concat(MB.out.filter(x => doB.has(x.f.id)).map(paraA)),
-    /* sem ordem de equipe no multiplayer por enquanto: ela só valeria para um dos dois lados */
+    running: MA.running.filter(x => !deOutra.has(x.f.id)).concat(dosOutros('running')),
+    out: MA.out.filter(x => !deOutra.has(x.f.id)).concat(dosOutros('out')),
+    /* sem ordem de equipe no multiplayer por enquanto: ela só valeria para um dos lados */
     dec: Object.assign({}, MA.dec, { ordem: 'livre' })
   });
-  /* corrida ao vivo (Fase 5): de quem é cada carro, com o ritmo e o pneu de largada que cada
-     equipe deixou combinados (o que UIC.largar põe na entrada da corrida) */
+  /* corrida ao vivo (Fase 5): de quem é cada carro (o slot, ou os membros de uma equipe dividida),
+     com o ritmo e o pneu de largada que cada equipe deixou combinados (o que UIC.largar põe na entrada) */
   if(J.mpCorridas){
     const MODO = { ataque: 'atacar', poupar: 'poupar' };
-    const modos = {}, pneus = {};
-    for(const [sea, Mx] of [[sA, MA], [sB, MB]]){
+    const modos = {}, pneus = {}, donos = {};
+    for(const [sea, Mx] of [[sA, MA], ...outras.map(o => [o.sea, o.M])]){
       const fds = sea.fds && sea.fds.rd === sea.round && sea.fds.efeitos && sea.fds.efeitos.modo;
       const esc = sea.pneusLargada && sea.pneusLargada.rd === sea.round ? sea.pneusLargada.carros || {} : {};
       sea.field.filter(f => f.teamId === 'EU').forEach(f => {
@@ -229,19 +273,22 @@ export function corrida(J, mundo){
         if(esc[f.id]) pneus[f.id] = esc[f.id];
       });
     }
-    J.mpCorridas.contexto = { modo: 'chefe', donos: { EU: h, EU2: g }, modos, pneus };
+    for(const k of equipesDe(mundo)){ const m = membrosDe(mundo, k); donos[idBase(mundo, k)] = m.length === 1 ? m[0] : m; }
+    J.mpCorridas.contexto = { modo: 'chefe', donos, modos, pneus };
   }
   let recA;
   try { recA = em(FA, () => J.Chefe.correr({ montagem: M })); } finally { if(J.mpCorridas) J.mpCorridas.contexto = null; }
   J.C = FA; J.UI.limparFila();
   absorver(J, mundo, h, FA, { compartilhado: true });
-  /* a mesma chegada, aplicada à economia e aos pilotos do convidado */
-  const ch = recA.chegada;
-  const paraB = x => Object.assign({}, x, { f: sB.field.find(f => f.id === x.f.id) || x.f });
-  const midsAntes = midsDe(mundo.equipes[g]);
-  const recB = em(FB, () => J.Chefe.correr({ montagem: Object.assign({}, MB, { dec: Object.assign({}, MB.dec, { ordem: 'livre' }) }),
-    finish: ch.finish.map(paraB), flId: ch.flId, sc: ch.sc }));
-  J.C = FB; J.UI.limparFila();
-  absorver(J, mundo, g, FB, { compartilhado: false, midsAntes });
-  return { [h]: recA, [g]: recB };
+  /* a mesma chegada, aplicada à economia e aos pilotos de cada outra equipe */
+  const ch = recA.chegada, recs = { [h]: recA };
+  for(const o of outras){
+    const paraB = x => Object.assign({}, x, { f: o.sea.field.find(f => f.id === x.f.id) || x.f });
+    const midsAntes = midsDe(mundo.equipes[o.g]);
+    recs[o.g] = em(o.F, () => J.Chefe.correr({ montagem: Object.assign({}, o.M, { dec: Object.assign({}, o.M.dec, { ordem: 'livre' }) }),
+      finish: ch.finish.map(paraB), flId: ch.flId, sc: ch.sc }));
+    J.C = o.F; J.UI.limparFila();
+    absorver(J, mundo, o.g, o.F, { compartilhado: false, midsAntes });
+  }
+  return recs;
 }

@@ -213,6 +213,33 @@ export async function fase1({ base, versao, estado }){
     && W1.S.season.year === anoAntes + 1 && W1.S.season.round === 0 && W1.S.mpEscolha === undefined, { eA, eB, prA, prB, ano: ro1 && ro1.resultado, f: W1 && W1.fase, y: W1 && W1.S.year });
   a2.ws.close(); b2.ws.close();
   await dormir(300);
+
+  // 6: três pilotos na mesma sala (até 8 cabem): todos começam, cada um vê o seu piloto e os outros dois
+  //    no mesmo grid, a rodada só anda com os três prontos e chega igual para os três
+  {
+    const { A, a, b } = await novaSala(base, versao, 'Ana', 'Bia');
+    const r = await api(base, `/api/salas/${A.codigo}/entrar`, { nome: 'Caio', versao }, { ip: IP });
+    const c = ligar(await abrir(base, A.codigo, r.json.ficha), A.codigo, 2);
+    await esperar(c, m => m.t === 'estado');
+    const fichas = [{ nome: 'Ana Tres', cc: 'BR', idade: 22, estilo: 'equilibrado' }, { nome: 'Bia Tres', cc: 'PT', idade: 22, estilo: 'equilibrado' }, { nome: 'Caio Tres', cc: 'AR', idade: 22, estilo: 'equilibrado' }];
+    await pedir(c, { t: 'escolherPiloto', piloto: fichas[2] });
+    const ri = await iniciarCom(a, b, fichas[0], fichas[1]);
+    await esperar(c, m => m.t === 'sala' && m.sala.partida, 60000);
+    const Vs = [await atual(a), await atual(b), await atual(c)];
+    const nomes = V => V && V.S && V.S.season ? V.S.season.field.filter(f => f.isMe || f.humano).map(f => (f.isMe ? '*' : '') + f.name).sort() : null;
+    checar('6 três pilotos: o anfitrião inicia com três, e cada um é o piloto dele (os da mesma idade, no mesmo grid)',
+      r.status === 200 && r.json.slot === 2 && ri && ri.t === 'ok' && Vs.every((V, i) => V && V.S && V.S.driver.name === fichas[i].nome)
+      && Vs.every((V, i) => { const n = nomes(V); return n && n.includes('*' + fichas[i].nome) && n.length === 3; }), { slot: r.json && r.json.slot, ri, nomes: Vs.map(nomes) });
+    await pronto(a, 1); await pronto(b, 1);
+    await dormir(600);
+    const cedo = [a, b, c].some(x => x.msgs.some(m => m.t === 'rodada'));
+    await pronto(c, 1);
+    const rods = [await rodadaMsg(a, 1), await rodadaMsg(b, 1), await rodadaMsg(c, 1)];
+    checar('6 com dois prontos a rodada espera o terceiro; com os três, ela chega uma vez, igual para os três',
+      !cedo && rods.every(x => x && eq(x.resultado, rods[0].resultado)) && rods[0].resultado.tipo === 'corridas', { cedo, tipos: rods.map(x => x && x.resultado.tipo) });
+    a.ws.close(); b.ws.close(); c.ws.close();
+    await dormir(300);
+  }
 }
 
 export async function fase2({ base, versao, estado }){

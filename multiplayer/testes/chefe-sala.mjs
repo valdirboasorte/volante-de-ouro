@@ -85,10 +85,11 @@ export async function fase1({ base, versao, estado }){
   checar('1 escolherEquipe: índice que não existe → erro equipe', r && r.t === 'erro' && r.codigo === 'equipe', r);
   r = await pedir(a, { t: 'escolherEquipe', idx: idxA });
   checar(`1 escolherEquipe: o anfitrião escolhe a ${nomeA} → ok`, r && r.t === 'ok', r);
-  r = await pedir(b, { t: 'escolherEquipe', idx: idxA });
-  checar('1 escolherEquipe: o mesmo índice para o convidado → erro equipe', r && r.t === 'erro' && r.codigo === 'equipe', r);
   r = await pedir(a, { t: 'iniciar' });
   checar('1 iniciar sem as duas equipes → erro equipes', r && r.t === 'erro' && r.codigo === 'equipes', r);
+  r = await pedir(b, { t: 'escolherEquipe', idx: idxA });
+  const dividida = await esperar(b, m => m.t === 'sala' && m.sala.config.equipes && m.sala.config.equipes[1] === idxA);
+  checar('1 escolherEquipe: o convidado pode escolher a mesma equipe (dividir) → ok, os dois nela', r && r.t === 'ok' && dividida && dividida.sala.config.equipes[0] === idxA, r);
   r = await pedir(b, { t: 'escolherEquipe', idx: idxB });
   const salaB = await esperar(b, m => m.t === 'sala' && m.sala.config.equipes && m.sala.config.equipes[1] === idxB);
   checar(`1 escolherEquipe: o convidado escolhe a ${nomeB} → ok e a sala mostra as duas escolhas`, r && r.t === 'ok' && salaB && salaB.sala.config.equipes[0] === idxA, r);

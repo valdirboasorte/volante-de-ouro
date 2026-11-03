@@ -27,7 +27,8 @@ import { criarRegrasPiloto } from './regras-piloto.js';
 import { criarRnd } from './aleatorio.js';
 import { ligarCorridas, desligarCorridas, Corrida, LARGADA_MS } from './corrida-mp.js';
 
-const MAX_JOGADORES = 2;              // pensado para crescer: nada abaixo assume 2
+const MAX_JOGADORES = 8;              // até 8 por sala nesta etapa (o servidor ainda vai ser medido para mais)
+const MIN_JOGADORES = 2;
 const MAX_NOME = 24;
 const MAX_MENSAGEM = 16384;
 const LIMITE_MENSAGENS = 20;          // por slot, a cada JANELA_MS
@@ -363,7 +364,7 @@ export class Sala extends DurableObject {
     const s = this.sala;
     if(slot !== s.anfitriao) return this.erro(ws, 'anfitriao', id);
     if(s.estado !== 'lobby') return this.erro(ws, 'estado', id);
-    if(s.jogadores.length !== MAX_JOGADORES) return this.erro(ws, 'jogadores', id);
+    if(s.jogadores.length < MIN_JOGADORES) return this.erro(ws, 'jogadores', id);
     const chefe = s.modo === 'chefe';
     if(chefe && !s.jogadores.every(j => Number.isInteger(s.config.equipes && s.config.equipes[j.slot]))) return this.erro(ws, 'equipes', id);
     if(s.modo === 'piloto' && !s.jogadores.every(j => s.config.pilotos && s.config.pilotos[j.slot])) return this.erro(ws, 'pilotos', id);
@@ -654,7 +655,12 @@ export class Sala extends DurableObject {
         if(f.aplicado){ f.aplicado = false; c.meus(slot).forEach(i => { const e = c.ordemDaSala(i, { equipe: false }); if(e) novas.push(e); }); }
       } else {
         if(f.desde == null) f.desde = agora;
-        if(!f.aplicado && agora - f.desde > FORA_MS){ f.aplicado = true; c.meus(slot).forEach(i => { const e = c.ordemDaSala(i, { equipe: true }); if(e) novas.push(e); }); }
+        /* numa equipe dividida, o carro só passa para a equipe quando nenhum dos donos está conectado */
+        if(!f.aplicado && agora - f.desde > FORA_MS){
+          f.aplicado = true;
+          c.meus(slot).filter(i => c.donosDe(i).every(d => d === String(slot) || !this.conectado(Number(d))))
+            .forEach(i => { const e = c.ordemDaSala(i, { equipe: true }); if(e) novas.push(e); });
+        }
       }
     }
     return novas;
@@ -808,7 +814,7 @@ export class Sala extends DurableObject {
   }
 
   /* a equipe de cada jogador, no lobby da sala de chefe: um índice da lista de equipes da série e
-     do ano que o motor consegue montar, e nunca o mesmo para dois jogadores */
+     do ano que o motor consegue montar. Dois ou mais jogadores na mesma equipe dividem ela. */
   async escolherEquipe(ws, slot, msg, id){
     const s = this.sala;
     if(s.modo !== 'chefe') return this.erro(ws, 'modo', id);
@@ -821,7 +827,7 @@ export class Sala extends DurableObject {
       ok = !!era.teams[idx] && !!J.Engine.resolveTeam(era.teams[idx], idx, s.config.ano, s.config.sk);
     }catch(e){ ok = false; }
     s.config.equipes = s.config.equipes || {};
-    if(!ok || Object.entries(s.config.equipes).some(([k, v]) => v === idx && Number(k) !== slot)) return this.erro(ws, 'equipe', id);
+    if(!ok) return this.erro(ws, 'equipe', id);
     s.config.equipes[slot] = idx;
     s.v++;
     await this.salvar();
