@@ -85,7 +85,7 @@
     body.com-trilho #conteudo{margin-left:var(--trilho); margin-right:0; max-width:none;
       padding-left:max(var(--m), calc((100vw - var(--trilho) - 1240px) / 2 + var(--m)));
       padding-right:max(var(--m), calc((100vw - var(--trilho) - 1240px) / 2 + var(--m)))}
-    body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo{padding-left:0; padding-right:0}
+    body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{padding-left:0; padding-right:0}
     /* a página do multiplayer usa este trilho no lugar do dela */
     body.com-trilho .mpp{grid-template-columns:minmax(0,1fr)}
     body.com-trilho .mpp::before,body.com-trilho .mpp-nav{display:none}
@@ -106,7 +106,7 @@
       body.com-trilho[data-tela="chefe"] .trilho-i{padding:0 12px}
       body.com-trilho[data-tela="chefe"] .trilho-i span{display:inline}
       body.com-trilho #conteudo{margin-left:auto; margin-right:auto; max-width:1240px; padding-left:var(--m); padding-right:var(--m)}
-      body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo{max-width:none; padding-left:0; padding-right:0}
+      body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{max-width:none; padding-left:0; padding-right:0}
     }
     @media (prefers-reduced-motion:reduce){ .trilho-i{transition:none} .trilho-i:hover{transform:none} }
   `;
