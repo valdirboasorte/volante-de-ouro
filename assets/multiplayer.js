@@ -900,7 +900,8 @@
       .mp-barra .mp-b-e{flex:1;min-width:160px;color:var(--soft)}
       .mp-barra .mp-dot{display:inline-block;vertical-align:middle}
       body.mp-com-barra{padding-bottom:64px}
-      .ini-mp{margin-top:12px}`;
+      .ini-mp{margin-top:12px}
+      .mp-clicado{background:var(--accent,#e1251b)!important;border-color:var(--accent,#e1251b)!important;color:#fff!important}`;
     document.head.appendChild(st);
     /* o botão fica fora do bloco "Continuar", que some quando o aparelho não tem save do jogo solo */
     const b = el('btnMP');
@@ -934,6 +935,18 @@
       const orig = Game[k]; if(typeof orig !== 'function') return;
       Game[k] = function(){ return Game.mpIndisponivel() ? undefined : orig.apply(this, arguments); };
     });
+    /* o clique aparece na hora, mesmo com ping alto: o botão fica vermelho já no toque e os vizinhos
+       do mesmo grupo apagam; a tela de verdade chega com a resposta do servidor e redesenha tudo */
+    document.addEventListener('click', e => {
+      if(!(MP._piloto || MP._chefe || (MP.sala && UI.aberta()))) return;
+      const b = e.target.closest && e.target.closest('button, .dil, [data-sel]');
+      if(!b || b.disabled) return;
+      const oc = b.getAttribute('onclick') || '';
+      if(!/(Game|UIC|MP)\./.test(oc) || /^\s*UI\.close\(\);?\s*$/.test(oc)) return;
+      const grupo = b.parentElement;
+      if(grupo) [...grupo.children].forEach(x => { if(x !== b) x.classList.remove('mp-clicado'); });
+      b.classList.add('mp-clicado');
+    }, true);
     if(ler()) MP.conectar(); else MP.desenhar();
     addEventListener('online', () => { if(ler() && !MP.ws) MP.tentarDeNovo(); });
     document.addEventListener('visibilitychange', () => { if(!document.hidden && ler() && !MP.ws && MP.con !== 'outra-aba') MP.tentarDeNovo(); });

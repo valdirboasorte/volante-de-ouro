@@ -2697,7 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261031-salas3" defer></script>
+<script src="assets/multiplayer.js?v=20261103-clique" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
 <script>
@@ -19420,8 +19420,8 @@ const UI = {
       const reservaAgora = S.papel && Engine.meAusente(sea);
       h = `<button class="btn btn-primary" onclick="Game.nextRace()">${ico('bandeira')} ${reservaAgora ? 'Fim de semana' : 'Correr'} — ${esc(nx.gp)}</button>`;
       if(!emMP) h += `
-           <button class="btn btn-ghost" onclick="Game.simSeason(true, true)">${ico('avancar')} Simular só esta corrida</button>
-           <button class="btn btn-ghost" onclick="Game.simSeason(true)">${ico('pular')} Simular o resto do ano</button>`;
+           <button class="btn btn-ghost" onclick="Game.simSeason(false, true)">${ico('avancar')} Simular só esta corrida</button>
+           <button class="btn btn-ghost" onclick="Game.simSeason(false)">${ico('pular')} Simular o resto do ano</button>`;
     } else if(sea.fired && sea.results.length < sea.calendar.length){
       h = `<button class="btn btn-gold btn-lg" onclick="Game.endSeason()">Encerrar a temporada ${sea.year} →</button>
            <span class="pill rd" style="align-self:center">${ico('porta')} sem carro desde a ${ord(sea.firedAt+1)} etapa</span>`;
@@ -21349,12 +21349,12 @@ const Game = {
       /* reserva: a atividade do fim de semana, ou a convocação */
       if(S.papel && Engine.meAusente(sea) && S.driver.injured <= 0){
         const conv = Engine.checarConvocacao(sea);
-        if(conv && pausar){ UI.render(); Game.save(); UI._aoEsvaziar = () => Game.simSeason(true); UI.convocacaoModal(conv); return; }
+        if(conv && pausar){ UI.render(); Game.save(); UI._aoEsvaziar = () => Game.simSeason(true, umaEtapa); UI.convocacaoModal(conv); return; }
         if(conv) Engine.iniciarSubstituicao(sea, conv);
         else Engine.fazerAtividadePapel(sea, Engine.atividadeAuto(sea));
       } else if(!sea.isTop && (S.academy || S.reservaDe) && S.driver.injured <= 0){
         const ca = (S.reservaDe && Engine.convocacaoReserva(sea)) || (S.academy && Engine.convocacaoAcademia(sea));
-        if(ca && pausar){ UI.render(); Game.save(); UI._aoEsvaziar = () => Game.simSeason(true); UI.convocacaoModal(ca); return; }
+        if(ca && pausar){ UI.render(); Game.save(); UI._aoEsvaziar = () => Game.simSeason(true, umaEtapa); UI.convocacaoModal(ca); return; }
         if(ca) Game.correrConvocacaoAcademia(ca, true);
       }
       if(S.driver.injured > 0){
@@ -21374,7 +21374,8 @@ const Game = {
          decide, e ela segue de onde parou */
       if(pausar && sea.calendar[sea.round]){
         UI.render(); Game.save();
-        UI._aoEsvaziar = () => Game.simSeason(true);
+        /* só esta corrida: depois do acontecimento a simulação para, não segue o ano */
+        UI._aoEsvaziar = umaEtapa ? () => { UI.render(); Game.save(); } : () => Game.simSeason(true);
         if(Game.foraDaPista(sea) && UI.aberta()) return;
         UI._aoEsvaziar = null;
       }
