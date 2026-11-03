@@ -10,7 +10,7 @@
    Fora do multiplayer por enquanto: demissão e fim de carreira (o balanço resolve só dívida,
    teto de gastos e falência; fechar a equipe é recusado). */
 import { criarRnd } from './aleatorio.js';
-import { criarMundo, perspectiva, agir, faseDupla, corrida, comSemente, equipesDe, gruposDe, doGrupo, temporadaDo, agrupado } from './chefe-mp.js';
+import { criarMundo, perspectiva, agir, faseDupla, corrida, comSemente, equipesDe, equipeDe, gruposDe, doGrupo, temporadaDo, agrupado } from './chefe-mp.js';
 
 const erro = (codigo, detalhe) => detalhe === undefined ? { erro: codigo } : { erro: codigo, detalhe };
 const ehObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -339,9 +339,11 @@ export function criarRegrasChefe(obterMotor){
       return { t: J.Chefe.resolverTeto(d.op) };
     }),
     falencia: acao(BAL, d => texto(d.op), (J, C, d) => {
-      if(d.op === 'fechar') return erro('mp', 'fechar a equipe não existe no multiplayer');
-      if(d.op !== 'resgate') return erro('dados');
       if(!C.balanco || !C.balanco.falencia) return erro('falencia');
+      /* fechar as portas: a carreira de chefe de quem está nela termina (a sala segue com os outros);
+         a equipe fica no grid, com a dívida paga por um resgate, decidindo sozinha */
+      if(d.op === 'fechar'){ J.Chefe.resgatar(); C.mpFechada = C.ano; return { ok: true, fechada: true }; }
+      if(d.op !== 'resgate') return erro('dados');
       return { ok: true, pct: J.Chefe.resgatar() };
     })
   };
@@ -384,6 +386,9 @@ export function criarRegrasChefe(obterMotor){
     },
 
     acoes,
+
+    /* quem fechou a equipe não tem mais decisões: a sala o conta como pronto */
+    dispensado(mundo, slot){ const b = mundo.equipes[equipeDe(mundo, slot)]; return !!(b && b.raiz && b.raiz.mpFechada); },
 
     /* null, ou { erro, detalhe? } quando o jogador ainda não pode ficar pronto */
     podeFicarPronto(mundo, slot){

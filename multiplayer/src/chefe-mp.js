@@ -35,7 +35,7 @@ export const CHAVES = {
   raiz: ['chefe', 'eq', 'caixa', 'livro', 'rep', 'part', 'dir', 'carro', 'motor', 'instal', 'obras', 'staff', 'pilotos',
          'patro', 'plano', 'acad', 'futuroBonus', 'news', 'decisao', 'n1', 'pecas', 'acertos', 'instalAno', 'balanco',
          'ultimaPos', 'rel', 'hist', 'eventos', 'evento', 'inicio', 'total', 'carreira', 'carroDoAno', 'modo', 'seq',
-         'cenario', 'eqDesde', 'divida', 'mpContra', 'penalTunel', 'penalTunelAno', 'vendida', 'conceito', 'exPiloto'],
+         'cenario', 'eqDesde', 'divida', 'mpContra', 'penalTunel', 'penalTunelAno', 'vendida', 'conceito', 'exPiloto', 'mpFechada'],
   temporada: ['results', 'qsHist', 'meta', 'rankCarro', 'gastoTeto', 'pacotes', 'evol', 'leitura', 'ac', 'conf', 'objPatro', 'fds', 'metaNeg', 'excluida'],
   qs: ['janelas'],
   inv: ['tent', 'msgs', 'decisoes', 'staffMerc', 'patro', 'olheiros', 'investidores', 'convites', 'subir']

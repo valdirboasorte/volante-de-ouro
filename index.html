@@ -2697,7 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js?v=20261103-i18n" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261103-base" defer></script>
+<script src="assets/multiplayer.js?v=20261103-fechar" defer></script>
 <script src="assets/trilho.js?v=20261103-trilho4" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
@@ -30773,7 +30773,7 @@ const UIC = {
         <button class="dil" onclick="UIC.falOp('fechar')"><b>Fechar as portas</b><span>A equipe deixa de existir. A sua carreira de chefe termina aqui.</span></button></div>`);
   },
   falOp(op){
-    if(op === 'fechar' && UIC.mpIndisponivel()) return;
+    if(op === 'fechar' && UIC.mp('falencia', { op }, () => MP.equipeFechou())) return;
     if(op === 'fechar') return UIC.fimCarreira('falencia');
     if(UIC.mp('falencia', { op }, () => UIC.respostaResgate())) return;
     const pct = Chefe.resgatar();

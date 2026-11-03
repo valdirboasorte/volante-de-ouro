@@ -368,6 +368,12 @@
         ${podeForcar ? `<button class="btn btn-sm mp-forcar${armado ? ' mp-armado' : ''}" onclick="MP.forcar()"${MP._forcarNoAr ? ' disabled' : ''}>${armado ? 'Confirmar: avançar agora' : p.estado === 'corrida' ? 'Forçar o fim da corrida' : 'Forçar avanço'}</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="MP.abrirPartida()">Sala</button>`;
     },
+    /* fechou as portas na falência: a carreira de chefe nesta sala termina; a sala segue com os outros */
+    equipeFechou(){
+      UI.modal(UI.head('Fim de linha', 'A equipe fechou as portas', false) +
+        `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:var(--red)">A sua carreira de chefe nesta sala terminou aqui. A equipe segue no grid nas mãos de um investidor, e a sala continua com os outros jogadores: você pode acompanhar a partida daqui.</div></div>
+        <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close(); UIC.render()">Fechar</button></div>`);
+    },
     /* "Simular o resto do ano": as rodadas deste jogador ficam prontas sozinhas até o fim da temporada */
     simularAno(ligar, certeza){
       if(ligar && !certeza) return UI.modal(UI.head('Simular o resto do ano?', 'As suas rodadas ficam prontas sozinhas até o fim da temporada') +

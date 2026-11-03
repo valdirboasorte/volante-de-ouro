@@ -78,5 +78,14 @@ const vistas = new Set();
 for(let i = 0; i < 8; i++){ const r2 = regras.processar(mundo, N, criarRnd(codigo, N)); mundo = r2.mundo; N++; (r2.resultado.etapas || [{ cat: grupoDe(mundo, '0') }]).forEach(e => vistas.add(e.cat)); }
 checar(`e as rodadas seguintes correm nas três categorias (${[...vistas].join(', ')})`, vistas.size === 3, [...vistas]);
 
+console.log('\nFechar as portas');
+{
+  /* a ação de falência só vale no balanço: aqui o caixa negativo é posto à mão e a ação roda direto */
+  const m2 = structuredClone(mundo);
+  agir(J, m2, '2', (J, C) => { C.fase = 'balanco'; C.balanco = Object.assign(C.balanco || {}, { falencia: { divida: 5e6, grave: false } }); });
+  const r = regras.acoes.falencia.aplicar(m2, '2', { op: 'fechar' }, { codigo, id: 'fechar1' });
+  checar('o Caio fecha a equipe: a sala passa a contá-lo como pronto, e os outros seguem', r && r.fechada === true && regras.dispensado(m2, '2') && !regras.dispensado(m2, '1') && !regras.dispensado(m2, '0'), r);
+}
+
 console.log(falhas ? `\n${falhas} de ${ok + falhas} verificações falharam` : `\nbase: ${ok} verificações, tudo certo`);
 process.exit(falhas ? 1 : 0);
