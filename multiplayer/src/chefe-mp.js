@@ -146,12 +146,14 @@ export function comSemente(J, rnd, fn){
 /* ── a sala ── */
 
 /* equipes reais da mesma série e do mesmo ano; o anfitrião decide o mundo.
-   equipes: { chave: { chefe, cc, idx } }; ordem: as chaves, a do anfitrião primeiro;
+   equipes: { chave: { chefe, cc, idx } ou { chefe, cc, criar: { nome, cor, cc }, fin } }; ordem: as chaves, a do anfitrião primeiro;
    membros: { slot: chave }. Sem ordem, valem anfitriao e convidado (duas equipes, um jogador cada). */
 export function criarMundo(J, { sk, ano, anfitriao, convidado, equipes, ordem, membros }){
   const ks = (ordem || [anfitriao, convidado]).map(String);
+  /* cada equipe: uma real (idx) ou uma fundada pelo jogador (criar: nome, cor, país; fin: de onde vem o dinheiro) */
   const novo = (e, seq) => {
-    J.Chefe.novo({ chefe: { nome: e.chefe, cc: e.cc || 'BR' }, realismo: true, modo: 'assumir', sk, ano, idx: e.idx, seq });
+    J.Chefe.novo(Object.assign({ chefe: { nome: e.chefe, cc: e.cc || 'BR' }, realismo: true, sk, ano, seq },
+      e.criar ? { modo: 'criar', fin: e.fin || 'investidor', eq: { nome: e.criar.nome, cor: e.criar.cor, cc: e.criar.cc } } : { modo: 'assumir', idx: e.idx }));
     J.UI.limparFila(); J.UI.close();
     return J.C;
   };

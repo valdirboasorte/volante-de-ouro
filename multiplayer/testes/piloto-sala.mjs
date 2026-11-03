@@ -83,7 +83,7 @@ export async function fase1({ base, versao, estado }){
     eq(A.sala && A.sala.config, { velocidade: 8, serie: 'f1', ano: 2024, pilotos: {} }), A.sala && A.sala.config);
   let r = await pedir(b, { t: 'configurar', config: { ano: 2019 } });
   checar('1 o convidado configura → erro anfitriao', r && r.t === 'erro' && r.codigo === 'anfitriao', r);
-  r = await pedir(a, { t: 'configurar', config: { serie: 'wec' } });
+  r = await pedir(a, { t: 'configurar', config: { serie: 'kart' } });
   checar('1 série fora da lista → erro config', r && r.t === 'erro' && r.codigo === 'config', r);
   r = await pedir(a, { t: 'configurar', config: { ano: 1800 } });
   checar('1 ano antes da primeira era → erro config', r && r.t === 'erro' && r.codigo === 'config', r);
@@ -238,6 +238,28 @@ export async function fase1({ base, versao, estado }){
     checar('6 com dois prontos a rodada espera o terceiro; com os três, ela chega uma vez, igual para os três',
       !cedo && rods.every(x => x && eq(x.resultado, rods[0].resultado)) && rods[0].resultado.tipo === 'corridas', { cedo, tipos: rods.map(x => x && x.resultado.tipo) });
     a.ws.close(); b.ws.close(); c.ws.close();
+    await dormir(300);
+  }
+
+  // 7: "simular o resto do ano": quem liga fica pronto sozinho; com os dois simulando, a sala corre
+  //    a temporada inteira sozinha até as propostas, e a simulação desliga
+  {
+    const { a, b } = await novaSala(base, versao, 'Ana', 'Bia');
+    await iniciarCom(a, b, { nome: 'Ana Auto', cc: 'BR', idade: 22, estilo: 'equilibrado' }, { nome: 'Bia Auto', cc: 'PT', idade: 22, estilo: 'equilibrado' });
+    const r1 = await pedir(a, { t: 'simular', ligado: true });
+    const salaA = await esperar(b, m => m.t === 'sala' && m.sala.partida && (m.sala.partida.auto || []).includes(0) && m.sala.partida.prontos[0] === true);
+    const sozinho = salaA && salaA.sala.partida.prontos[0] === true && !salaA.sala.partida.prontos[1];
+    await pronto(b, 1);
+    const rod1 = await rodadaMsg(b, 1);
+    const pronta2 = await esperar(b, m => m.t === 'sala' && m.sala.partida && m.sala.partida.rodada === 2 && m.sala.partida.prontos[0] === true);
+    checar('7 simular: quem liga fica pronto sozinho; a rodada anda com o pronto do outro e, na seguinte, ele já está pronto de novo',
+      r1 && r1.t === 'ok' && sozinho && !!rod1 && !!pronta2, { r1, sozinho, rod1: !!rod1, pronta2: !!pronta2 });
+    const r2 = await pedir(b, { t: 'simular', ligado: true });
+    const fim = await esperar(b, m => m.t === 'sala' && m.sala.partida && !(m.sala.partida.auto || []).length && m.sala.partida.rodada > 3, 180000);
+    const V = await atual(b);
+    checar('7 simular: com os dois simulando, a temporada corre sozinha até as propostas, e a simulação desliga',
+      r2 && r2.t === 'ok' && !!fim && V && V.fase === 'mercado', { r2, rodada: fim && fim.sala.partida.rodada, fase: V && V.fase });
+    a.ws.close(); b.ws.close();
     await dormir(300);
   }
 }

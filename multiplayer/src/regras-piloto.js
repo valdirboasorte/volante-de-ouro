@@ -235,6 +235,9 @@ export function criarRegrasPiloto(obterMotor){
     },
 
     /* tudo o que o jogador pode ver: a perspectiva dele (a carreira da outra nunca entra) */
+    /* a fase do mundo (o "simular o resto do ano" só vale na temporada) */
+    faseDe(mundo){ return mundo.fase; },
+
     vista(mundo, slot){
       return { fase: mundo.fase, S: perspectiva(mundo, slot) };
     }

@@ -51,6 +51,7 @@
     origem: 'Este endereço não pode abrir salas.',
     anfitriao: 'Só o anfitrião muda isso.',
     forcar: 'Ainda não dá para avançar sem os outros.',
+    fundar: 'Confira a equipe: nome de 2 a 22 letras (sem repetir o de outra equipe fundada), cor, país e de onde vem o dinheiro.',
     tempo: 'O servidor demorou a responder. Tente de novo.',
     jogadores: 'A partida precisa de pelo menos dois jogadores na sala.',
     estado: 'Isso não vale neste momento da partida.',
@@ -346,22 +347,35 @@
       const esperando = outros.some(j => !pronto(j.slot) && !fora.includes(String(j.slot)));
       const podeForcar = s.anfitriao === eu && MP.con === 'conectado' && (p.estado === 'corrida' ? !!(MP.cor && !MP.cor.fim) : !proc && esperando);
       const armado = podeForcar && MP._forcarArmado && Date.now() - MP._forcarArmado < 6000;
+      const auto = (p.auto || []).map(String), simulo = auto.includes(String(eu));
       const fase = { inverno: 'pré-temporada', temporada: 'temporada', balanco: 'balanço do ano', mercado: 'propostas' }[MP.vista && MP.vista.fase] || '';
       const sea = piloto ? (typeof S !== 'undefined' && S && S.season) : (typeof C !== 'undefined' && C && C.temporada);
       const prox = MP.vista && MP.vista.fase === 'temporada' && sea && sea.calendar[sea.round];
       const voltas = p.estado === 'corrida' && MP.cor ? Object.values(MP.cor.corridas).filter(c => c.N)
         .map(c => `<span data-i18n-ignore>${esc(c.serie || '')}</span> <span>volta</span> ${Math.min(c.volta || 1, c.N)}/${c.N}`).join(' · ') : '';
-      const estado = p.estado === 'corrida' ? `<span>Corrida ao vivo</span>${voltas ? ': ' + voltas : ''}`
+      const estado = simulo && p.estado !== 'corrida' ? 'Simulando até o fim da temporada.'
+        : p.estado === 'corrida' ? `<span>Corrida ao vivo</span>${voltas ? ': ' + voltas : ''}`
         : proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? (outros.length > 1 ? 'Aguardando os outros jogadores…' : 'Aguardando o adversário…')
         : !souPronto && outrosProntos ? (outros.length > 1 ? 'Os outros já estão prontos.' : 'O adversário já está pronto.') : 'Tome as suas decisões no seu ritmo.';
       b.innerHTML = `<span class="mp-b-t"><b>Multiplayer</b> · <span>Rodada</span> ${p.rodada}${fase ? ` · <span>${fase}</span>` : ''}${prox ? ` · <span>GP ${esc(prox.gp)}</span>` : ''}</span>
         <span class="mp-b-e" role="status">${estado}</span>
-        <span class="mp-b-j">${outros.map(j => `<span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span> <span data-i18n-ignore>${esc(j.nome)}</span>: <span>${pronto(j.slot) ? 'pronto' : (p.fora || []).map(String).includes(String(j.slot)) ? 'carreira encerrada' : 'decidindo'}</span>`).join(' ')}</span>
-        ${souPronto ? `<button class="btn btn-ghost btn-sm" onclick="MP.pronto(false)"${proc ? ' disabled' : ''}>Cancelar prontidão</button>`
+        <span class="mp-b-j">${outros.map(j => `<span class="mp-dot${j.conectado ? ' on' : ''}" aria-hidden="true"></span> <span data-i18n-ignore>${esc(j.nome)}</span>: <span>${auto.includes(String(j.slot)) ? 'simulando' : pronto(j.slot) ? 'pronto' : (p.fora || []).map(String).includes(String(j.slot)) ? 'carreira encerrada' : 'decidindo'}</span>`).join(' ')}</span>
+        ${simulo ? `<button class="btn btn-ghost btn-sm" onclick="MP.simularAno(false)">Parar a simulação</button>`
+          : souPronto ? `<button class="btn btn-ghost btn-sm" onclick="MP.pronto(false)"${proc ? ' disabled' : ''}>Cancelar prontidão</button>`
                     : `<button class="btn btn-primary btn-sm" onclick="${piloto ? 'MP.pilotoPronto()' : 'MP.chefePronto()'}"${proc || MP.con !== 'conectado' ? ' disabled' : ''}>Pronto para avançar</button>`}
         ${p.estado === 'corrida' && MP.cor && MP.cor.minha && !MP.cor.aberta ? '<button class="btn btn-gold btn-sm" onclick="MP.verCorrida()">Ver a corrida</button>' : ''}
         ${podeForcar ? `<button class="btn btn-sm mp-forcar${armado ? ' mp-armado' : ''}" onclick="MP.forcar()"${MP._forcarNoAr ? ' disabled' : ''}>${armado ? 'Confirmar: avançar agora' : p.estado === 'corrida' ? 'Forçar o fim da corrida' : 'Forçar avanço'}</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="MP.abrirPartida()">Sala</button>`;
+    },
+    /* "Simular o resto do ano": as rodadas deste jogador ficam prontas sozinhas até o fim da temporada */
+    simularAno(ligar, certeza){
+      if(ligar && !certeza) return UI.modal(UI.head('Simular o resto do ano?', 'As suas rodadas ficam prontas sozinhas até o fim da temporada') +
+        `<div class="mbd"><p class="mut" style="margin:0">Os acontecimentos do caminho ficam sem a sua decisão, e você não assiste às corridas: os seus carros ficam com a equipe. A sala anda quando os outros também confirmarem. Dá para parar a qualquer momento na barra de baixo.</p></div>
+        <div class="mft"><button class="btn btn-ghost" onclick="UI.close()">Voltar</button><span class="sp"></span><button class="btn btn-primary" onclick="UI.close(); MP.simularAno(true, true)">Simular</button></div>`);
+      MP.enviar('simular', { ligado: !!ligar }).then(r => {
+        if(r.erro) return UI.toast(erroTxt(r.erro));
+        UI.toast(ligar ? 'Simulando até o fim da temporada.' : 'Simulação parada: as decisões voltam a ser suas.');
+      });
     },
     /* "Forçar avanço" (só o anfitrião): o primeiro toque arma, o segundo (em até 6 s) manda.
        O servidor dá a escolha padrão a quem não confirmou; o que não tem padrão volta como aviso. */
@@ -693,11 +707,44 @@
               <input type="number" id="mpAno" min="1950" max="2026" value="${ano}" aria-label="Ano"> <button class="btn btn-ghost btn-sm" onclick="MP.configurar({ ano: +el('mpAno').value })"${ligado}>Mudar o ano</button></div>`
                    : `<b>${series[sk] || esc(sk)} ${ano}</b>`}</div></div>
         <span class="lbl">Equipes</span>
-        <p class="mut mp-ajuda">Cada um escolhe uma equipe. Quem escolher a mesma divide ela, e todos mandam em tudo. As outras equipes do grid ficam com a inteligência do jogo.</p>
-        <div class="mp-eqs">${lista.map(([i, t]) => { const d = donos(i), minha = d.some(j => j.slot === eu);
+        <p class="mut mp-ajuda">Cada um escolhe uma equipe real ou funda a sua. Quem escolher a mesma divide ela, e todos mandam em tudo. As outras equipes do grid ficam com a inteligência do jogo.</p>
+        ${MP.formFundar(s, eu, ligado)}
+        <div class="mp-eqs">${Object.entries(cfg.fundadas || {}).map(([k, f]) => { const v = 'n' + k, d = s.jogadores.filter(j => escolhas[j.slot] === v), minha = d.some(j => j.slot === eu);
+          return `<button class="sv-item mp-jog mp-eq${minha ? ' mp-sel' : ''}" onclick="MP.escolherEquipe('${v}')"${minha || MP.con !== 'conectado' ? ' disabled' : ''}>
+            <span class="mp-cor" style="background:${esc(f.cor)}" aria-hidden="true"></span>
+            <span class="sv-tx"><b data-i18n-ignore>${esc(f.nome)}</b><span class="sv-desc"><span>fundada</span>${d.length ? ` · <span data-i18n-ignore>${d.map(j => esc(j.nome)).join(', ')}</span>` : ''}</span></span></button>`; }).join('')}${lista.map(([i, t]) => { const d = donos(i), minha = d.some(j => j.slot === eu);
           return `<button class="sv-item mp-jog mp-eq${minha ? ' mp-sel' : ''}" onclick="MP.escolherEquipe(${i})"${minha || MP.con !== 'conectado' ? ' disabled' : ''}>
             <span class="mp-cor" style="background:${esc(t.color || '#888')}" aria-hidden="true"></span>
             <span class="sv-tx"><b data-i18n-ignore>${esc(t.name)}</b>${d.length ? `<span class="sv-desc" data-i18n-ignore>${d.map(j => esc(j.nome)).join(', ')}</span>` : ''}</span></button>`; }).join('')}</div>`;
+    },
+    /* "Fundar uma equipe", como no jogo: nome, país, cor e de onde vem o dinheiro (o rascunho fica em MP._fundar
+       para sobreviver aos redesenhos da sala) */
+    formFundar(s, eu, ligado){
+      const fundadas = (s.config && s.config.fundadas) || {};
+      if(fundadas[eu]) return '';
+      if(!MP._fundarAberto) return `<div class="mp-vels"><button class="btn btn-contorno btn-sm" onclick="MP._fundarAberto=true;MP.abrir()"${ligado}>Fundar uma equipe</button></div>`;
+      const cores = (typeof UIC !== 'undefined' && UIC.CORES) || ['#e8112d'], fins = (typeof Chefe !== 'undefined' && Chefe.FIN) || {};
+      const F = MP._fundar || (MP._fundar = { nome: '', cc: 'BR', cor: cores[0], fin: 'investidor' });
+      return `<div class="sv-item mp-fundar"><div class="sv-tx">
+          <span class="sv-modo">Fundar uma equipe</span>
+          <span class="sv-desc">O carro é o pior do grid e ninguém quer correr por você. Ainda. Os pilotos você contrata no inverno.</span>
+          <div class="mp-form">
+            <div class="field"><label class="lbl" for="mpFNome">Nome da equipe</label><input type="text" id="mpFNome" maxlength="22" value="${esc(F.nome)}" oninput="MP._fundar.nome=this.value" autocomplete="off" data-i18n-ignore></div>
+            <div class="field"><label class="lbl" for="mpFPais">País</label><select id="mpFPais" onchange="MP._fundar.cc=this.value">${COUNTRIES.map(c => `<option value="${c.cc}"${c.cc === F.cc ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
+          </div>
+          <span class="lbl">Cor</span>
+          <div class="ch-cores">${cores.map(c => `<button class="ch-cor${F.cor === c ? ' sel' : ''}" style="background:${c}" onclick="MP._fundar.cor='${c}';MP.abrir()" aria-label="Cor ${c}" aria-pressed="${F.cor === c}"></button>`).join('')}</div>
+          <span class="lbl">De onde vem o dinheiro</span>
+          <div class="mp-vels">${Object.keys(fins).map(k => `<button class="btn btn-sm ${F.fin === k ? 'btn-primary' : 'btn-ghost'}" onclick="MP._fundar.fin='${k}';MP.abrir()" title="${esc(fins[k].d)}">${esc(fins[k].n)}</button>`).join('')}</div>
+          <span class="sv-desc">${esc((fins[F.fin] || {}).d || '')}</span>
+          <div class="mp-vels"><button class="btn btn-primary btn-sm" onclick="MP.fundarEquipe()"${ligado}>Fundar a equipe</button><button class="btn btn-ghost btn-sm" onclick="MP._fundarAberto=false;MP.abrir()">Cancelar</button></div>
+        </div></div>`;
+    },
+    async fundarEquipe(){
+      const F = MP._fundar || {};
+      const r = await MP.enviar('fundarEquipe', { equipe: { nome: String(F.nome || '').trim(), cor: F.cor, cc: F.cc, fin: F.fin } });
+      if(r.erro) return UI.toast(erroTxt(r.erro));
+      MP._fundarAberto = false; UI.toast('Equipe fundada: ela já é a sua nesta sala.');
     },
     copiar(){
       const g = ler(); if(!g) return;
@@ -1314,6 +1361,16 @@
       const orig = Game[k]; if(typeof orig !== 'function') return;
       Game[k] = function(){ return Game.mpIndisponivel() ? undefined : orig.apply(this, arguments); };
     });
+    /* "Simular o resto do ano" numa partida (piloto ou chefe): liga a simulação na sala, em vez de
+       correr o ano só na cópia da tela */
+    if(typeof UIC !== 'undefined' && typeof UIC.simularResto === 'function'){
+      const sr = UIC.simularResto;
+      UIC.simularResto = function(){ return UIC.emMP && UIC.emMP() ? MP.simularAno(true) : sr.apply(this, arguments); };
+    }
+    if(typeof Game.simSeason === 'function'){
+      const ss = Game.simSeason;
+      Game.simSeason = function(pausar, umaEtapa){ return Game.emMP && Game.emMP() && !umaEtapa ? MP.simularAno(true) : ss.apply(this, arguments); };
+    }
     /* o clique aparece na hora, mesmo com ping alto: o botão fica vermelho já no toque e os vizinhos
        do mesmo grupo apagam; a tela de verdade chega com a resposta do servidor e redesenha tudo */
     document.addEventListener('click', e => {

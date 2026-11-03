@@ -79,7 +79,7 @@ export async function fase1({ base, versao, estado }){
   checar('1 o convidado configura → erro anfitriao', r && r.t === 'erro' && r.codigo === 'anfitriao', r);
   r = await pedir(a, { t: 'configurar', config: { ano: 1800 } });
   checar('1 ano sem equipes → erro config', r && r.t === 'erro' && r.codigo === 'config', r);
-  r = await pedir(a, { t: 'configurar', config: { sk: 'wec' } });
+  r = await pedir(a, { t: 'configurar', config: { sk: 'kart' } });
   checar('1 série fora da lista → erro config', r && r.t === 'erro' && r.codigo === 'config', r);
   r = await pedir(a, { t: 'escolherEquipe', idx: 9999 });
   checar('1 escolherEquipe: índice que não existe → erro equipe', r && r.t === 'erro' && r.codigo === 'equipe', r);
@@ -219,6 +219,30 @@ export async function fase1({ base, versao, estado }){
   Object.assign(E, { rodada: rodadaN, vistaA: JSON.stringify(ultimaVista(a).vista), vistaB: JSON.stringify(ultimaVista(b).vista), etapas: 3 });
   a.ws.close(); b.ws.close();
   await dormir(300);
+
+  // 8: fundar uma equipe: a Ana funda, a Bia entra nela, e a partida começa com a equipe nova no grid
+  {
+    let r = await api(base, '/api/salas', { nome: 'Ana', modo: 'chefe', versao }, { ip: IP });
+    const F = r.json || {};
+    const fa = ligar(await abrir(base, F.codigo, F.ficha), F.codigo, 0);
+    await esperar(fa, m => m.t === 'estado');
+    r = await api(base, `/api/salas/${F.codigo}/entrar`, { nome: 'Bia', versao }, { ip: IP });
+    const fb = ligar(await abrir(base, F.codigo, r.json.ficha), F.codigo, 1);
+    await esperar(fb, m => m.t === 'estado');
+    await pedir(fa, { t: 'configurar', config: { aoVivo: false } });
+    const ruim = await pedir(fa, { t: 'fundarEquipe', equipe: { nome: 'X', cor: '#e8112d', cc: 'BR', fin: 'investidor' } });
+    const rf = await pedir(fa, { t: 'fundarEquipe', equipe: { nome: 'Ana Racing', cor: J.UIC.CORES[7], cc: 'BR', fin: 'fundo' } });
+    const rj = await pedir(fb, { t: 'escolherEquipe', idx: 'n0' });
+    const ri = await pedir(fa, { t: 'iniciar' }, 60000);
+    await esperar(fa, m => m.t === 'sala' && m.sala.partida, 60000); await esperar(fb, m => m.t === 'sala' && m.sala.partida, 60000);
+    const [VA, VB] = await sodois(fa, fb);
+    checar('8 fundar: nome curto recusado; a Ana funda a Ana Racing, a Bia entra nela, e os dois começam na mesma equipe nova (sem pilotos ainda)',
+      ruim && ruim.codigo === 'fundar' && rf && rf.t === 'ok' && rj && rj.t === 'ok' && ri && ri.t === 'ok'
+      && VA && VB && VA.eq.nome === 'Ana Racing' && VB.eq.nome === 'Ana Racing' && VA.eq.cor === J.UIC.CORES[7] && VA.modo === 'criar',
+      { ruim, rf, rj, ri, a: VA && VA.eq, modo: VA && VA.modo });
+    fa.ws.close(); fb.ws.close();
+    await dormir(300);
+  }
 }
 
 export async function fase2({ base, versao, estado }){

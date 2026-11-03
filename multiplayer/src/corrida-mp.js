@@ -33,11 +33,15 @@ const clone = o => o === undefined ? undefined : structuredClone(o);
    modo 'preparar': cada corrida com humano vira uma definição (a entrada e os donos dos carros)
    e segue com uma chegada rápida, descartada (o processamento roda numa cópia do mundo).
    modo 'concluir': cada corrida recebe a chegada da corrida ao vivo. */
-export function ligarCorridas(J, modo, resultados){
+export function ligarCorridas(J, modo, resultados, { semVivo } = {}){
   const ctl = { modo, defs: [], k: 0, contexto: null, resultados: resultados || {}, divergencias: [], faltas: [] };
+  /* quem está simulando o resto do ano não assiste: uma corrida só com eles não é ao vivo (nas duas passadas) */
+  const fora = new Set((semVivo || []).map(String));
+  const soSimulando = donos => { const ss = Object.values(donos).flatMap(d => [].concat(d).map(String)); return ss.length > 0 && ss.every(s => fora.has(s)); };
   const vivoDe = (M, res, notas) => ({ finish: J.Gp.chegada(M, res), flId: res.flId, sc: res.sc, crono: J.Gp.cronoDe(res),
     notas: (notas && notas.ME) || [], ordem: res.ordemEquipe || null });
   const correr = (ent, donos, M, info) => {
+    if(soSimulando(donos)) return null;
     const chave = 'c' + ctl.k++;
     if(modo === 'preparar'){
       const slots = [...new Set(Object.values(donos).flatMap(d => [].concat(d).map(String)))].sort((a, b) => a - b);

@@ -169,7 +169,8 @@ export class Sala extends DurableObject {
     const prontos = {};
     for(const j of s.jogadores) prontos[j.slot] = !!p.prontos[j.slot];
     const v = { estado: p.estado, rodada: p.rodada, prontos, ultimo: p.ultimo, regras: p.regras,
-                fora: s.jogadores.filter(j => this.dispensado(j.slot)).map(j => j.slot) };
+                fora: s.jogadores.filter(j => this.dispensado(j.slot)).map(j => j.slot),
+                auto: s.jogadores.filter(j => this.emAuto(j.slot)).map(j => j.slot) };
     if(this.env.DESENVOLVIMENTO === '1') v.falhas = p.falhas;   // só para os testes verem a nova tentativa
     return v;
   }
@@ -341,12 +342,14 @@ export class Sala extends DurableObject {
 
     if(msg.t === 'configurar') return this.configurar(ws, slot, msg, id);
     if(msg.t === 'escolherEquipe') return this.escolherEquipe(ws, slot, msg, id);
+    if(msg.t === 'fundarEquipe') return this.fundarEquipe(ws, slot, msg, id);
     if(msg.t === 'escolherPiloto') return this.escolherPiloto(ws, slot, msg, id);
     if(msg.t === 'sair') return this.sair(ws, slot, id);
     if(msg.t === 'iniciar') return this.iniciar(ws, slot, id);
     if(msg.t === 'acao') return this.acao(ws, slot, msg, id);
     if(msg.t === 'pronto') return this.pronto(ws, slot, msg, id);
     if(msg.t === 'forcar') return this.forcar(ws, slot, msg, id);
+    if(msg.t === 'simular') return this.simular(ws, slot, msg, id);
     if(msg.t === 'corrida') return this.ordemCorrida(ws, slot, msg, id);
     if(msg.t === 'velocidade') return this.velocidadeCorrida(ws, slot, msg, id);
     if(msg.t === 'corridaSync'){ this.enviarCorridaInicio(ws); return this.enviar(ws, { t: 'ok', id }); }
@@ -366,7 +369,7 @@ export class Sala extends DurableObject {
     if(s.estado !== 'lobby') return this.erro(ws, 'estado', id);
     if(s.jogadores.length < MIN_JOGADORES) return this.erro(ws, 'jogadores', id);
     const chefe = s.modo === 'chefe';
-    if(chefe && !s.jogadores.every(j => Number.isInteger(s.config.equipes && s.config.equipes[j.slot]))) return this.erro(ws, 'equipes', id);
+    if(chefe && !s.jogadores.every(j => this.equipeValida(s.config.equipes && s.config.equipes[j.slot]))) return this.erro(ws, 'equipes', id);
     if(s.modo === 'piloto' && !s.jogadores.every(j => s.config.pilotos && s.config.pilotos[j.slot])) return this.erro(ws, 'pilotos', id);
     const regras = this.regrasDe(s.modo);
     try{
@@ -450,6 +453,7 @@ export class Sala extends DurableObject {
       if(bloqueio) return this.enviar(ws, { t: 'erro', codigo: bloqueio.erro, id, detalhe: bloqueio.detalhe });
     }
     p.prontos[slot] = msg.pronto;
+    if(msg.pronto) this.prontoAuto(this.regrasDe(p.regras));
     const todos = s.jogadores.every(j => p.prontos[j.slot] || this.dispensado(j.slot));
     const algum = s.jogadores.some(j => p.prontos[j.slot]);
     p.estado = todos ? 'processing' : algum ? 'waiting' : 'planning';
@@ -566,6 +570,66 @@ export class Sala extends DurableObject {
     this.difundir({ t: 'rodada', v: s.v, rodada: N, resultado: r.resultado });
     this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
     this.enviarVistas();
+    await this.seguirAuto();
+  }
+
+  /* ── "simular o resto do ano" ──
+     Quem liga fica pronto sozinho em cada rodada da temporada, com a escolha padrão das regras
+     (autoPronto) nas decisões abertas, e não assiste às corridas: uma corrida só com quem simula
+     corre pelo caminho rápido; numa corrida com outros humanos, os carros dele ficam com a equipe.
+     Desliga sozinho quando a temporada acaba, ou numa decisão que não tem padrão. */
+  emAuto(slot){ const p = this.sala && this.sala.partida; return !!(p && p.auto && p.auto[slot]); }
+  naTemporada(regras){ try { return !!(regras.faseDe && regras.faseDe(this.mundo) === 'temporada'); } catch(e){ return false; } }
+  prontoAuto(regras){
+    const s = this.sala, p = s.partida;
+    if(!p.auto || !this.naTemporada(regras)) return;
+    for(const j of s.jogadores){
+      if(p.prontos[j.slot] || !this.emAuto(j.slot) || this.dispensado(j.slot)) continue;
+      const copia = structuredClone(this.mundo), ctx = { codigo: s.codigo, rodada: p.rodada, id: 'auto:' + p.rodada + ':' + j.slot };
+      let b = null;
+      try{
+        const r = regras.autoPronto ? regras.autoPronto(copia, j.slot, ctx) : null;
+        b = r && typeof r.erro === 'string' ? r : regras.podeFicarPronto ? regras.podeFicarPronto(copia, j.slot) : null;
+      }catch(e){ b = { erro: 'interno' }; log('erro', s.codigo, { motivo: 'auto', erro: textoErro(e) }); }
+      if(b){ delete p.auto[j.slot]; continue; }
+      this.mundo = copia; p.prontos[j.slot] = true;
+    }
+  }
+  async seguirAuto(){
+    const s = this.sala, p = s && s.partida;
+    if(!p || !p.auto || !Object.keys(p.auto).length || (p.estado !== 'planning' && p.estado !== 'waiting')) return;
+    const regras = this.regrasDe(p.regras);
+    if(!this.naTemporada(regras)){
+      /* a temporada acabou: a simulação de todos desliga */
+      p.auto = {}; s.v++;
+      await this.salvarTudo();
+      this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+      return;
+    }
+    this.prontoAuto(regras);
+    const todos = s.jogadores.every(j => p.prontos[j.slot] || this.dispensado(j.slot));
+    const algum = s.jogadores.some(j => p.prontos[j.slot]);
+    p.estado = todos ? 'processing' : algum ? 'waiting' : 'planning';
+    s.v++;
+    await this.salvarTudo();
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+    this.enviarVistas();
+    if(todos) await this.processar();
+  }
+  async simular(ws, slot, msg, id){
+    const s = this.sala, p = s.partida;
+    if(!p) return this.erro(ws, 'estado', id);
+    if(typeof msg.ligado !== 'boolean') return this.erro(ws, 'dados', id);
+    const regras = this.regrasDe(p.regras);
+    if(msg.ligado && !this.naTemporada(regras)) return this.erro(ws, 'fase', id);
+    p.auto = p.auto || {};
+    if(msg.ligado) p.auto[slot] = true; else delete p.auto[slot];
+    s.v++;
+    await this.salvarTudo();
+    log('simular', s.codigo, { slot, ligado: msg.ligado });
+    this.enviar(ws, { t: 'ok', id });
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+    if(msg.ligado) await this.seguirAuto();
   }
 
   async alarm(){
@@ -584,8 +648,9 @@ export class Sala extends DurableObject {
   /* a rodada processada com os ganchos das corridas: 'preparar' recolhe as corridas (numa cópia do
      mundo, descartada); 'concluir' usa as chegadas guardadas */
   comCorridas(regras, N, modo, resultados){
-    const s = this.sala, J = this.motor();
-    const ctl = ligarCorridas(J, modo, resultados);
+    const s = this.sala, J = this.motor(), p = s.partida;
+    if(modo === 'preparar') p.semVivo = Object.keys(p.auto || {});
+    const ctl = ligarCorridas(J, modo, resultados, { semVivo: p.semVivo || [] });
     try{ return { ctl, r: regras.processar(structuredClone(this.mundo), N, criarRnd(s.codigo, N)) }; }
     finally{ desligarCorridas(J); }
   }
@@ -596,7 +661,13 @@ export class Sala extends DurableObject {
   async comecarCorrida(defs, N){
     const s = this.sala, p = s.partida, J = this.motor(), agora = Date.now();
     this.corridas = new Map();
-    for(const d of defs){ const c = new Corrida(J, d); c.prazo = agora + LARGADA_MS; this.corridas.set(d.chave, c); }
+    const simula = new Set(p.semVivo || []);
+    for(const d of defs){
+      const c = new Corrida(J, d); c.prazo = agora + LARGADA_MS;
+      for(const sl of d.slots) if(simula.has(String(sl))){ c.largadas[sl] = { auto: true }; c.votos[sl] = true; }
+      Object.keys(d.donos).forEach(i => { if(c.donosDe(i).every(x => simula.has(x))) c.ordemDaSala(Number(i), { equipe: true }); });
+      this.corridas.set(d.chave, c);
+    }
     this.corridaVel = VELOCIDADES.includes(s.config && s.config.velocidade) ? s.config.velocidade : 8;
     p.estado = 'corrida';
     p.corrida = { rodada: N, n: defs.length };
@@ -778,7 +849,7 @@ export class Sala extends DurableObject {
         let teams = [];
         try{ teams = this.motor().eraOfSeries(novo.ano, novo.sk).teams || []; }catch(e){ teams = []; }
         if(!teams.length) return this.erro(ws, 'config', id);
-        novo.equipes = {};
+        novo.equipes = {}; novo.fundadas = {};
       }
       s.config = novo;
     }else if(s.modo === 'piloto'){
@@ -820,15 +891,58 @@ export class Sala extends DurableObject {
     if(s.modo !== 'chefe') return this.erro(ws, 'modo', id);
     if(s.estado !== 'lobby') return this.erro(ws, 'estado', id);
     const idx = msg.idx;
-    if(!Number.isInteger(idx) || idx < 0) return this.erro(ws, 'equipe', id);
     let ok = false;
-    try{
-      const J = this.motor(), era = J.eraOfSeries(s.config.ano, s.config.sk);
-      ok = !!era.teams[idx] && !!J.Engine.resolveTeam(era.teams[idx], idx, s.config.ano, s.config.sk);
-    }catch(e){ ok = false; }
+    if(typeof idx === 'string') ok = /^n\d+$/.test(idx) && !!(s.config.fundadas && s.config.fundadas[idx.slice(1)]);
+    else if(Number.isInteger(idx) && idx >= 0){
+      try{
+        const J = this.motor(), era = J.eraOfSeries(s.config.ano, s.config.sk);
+        ok = !!era.teams[idx] && !!J.Engine.resolveTeam(era.teams[idx], idx, s.config.ano, s.config.sk);
+      }catch(e){ ok = false; }
+    }
     s.config.equipes = s.config.equipes || {};
     if(!ok) return this.erro(ws, 'equipe', id);
+    if(idx !== 'n' + slot) this.desfundar(slot);
     s.config.equipes[slot] = idx;
+    s.v++;
+    await this.salvar();
+    this.enviar(ws, { t: 'ok', id });
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+  }
+
+  /* uma equipe é real (o índice da lista do motor) ou fundada por um jogador ('n' + o slot dele) */
+  equipeValida(v){
+    if(Number.isInteger(v)) return true;
+    return typeof v === 'string' && /^n\d+$/.test(v) && !!(this.sala.config.fundadas && this.sala.config.fundadas[v.slice(1)]);
+  }
+  /* quem fundou e escolhe outra equipe (ou sai) desfaz a dele: quem tinha entrado nela fica sem equipe */
+  desfundar(slot){
+    const c = this.sala.config;
+    if(!c.fundadas || !c.fundadas[slot]) return;
+    delete c.fundadas[slot];
+    for(const k of Object.keys(c.equipes || {})) if(c.equipes[k] === 'n' + slot) delete c.equipes[k];
+  }
+
+  /* fundar uma equipe, no lobby da sala de chefe, como o "Fundar uma equipe" do jogo: nome (2 a 22),
+     cor da paleta do jogo, país e de onde vem o dinheiro. Quem funda já fica nela; outros podem entrar. */
+  async fundarEquipe(ws, slot, msg, id){
+    const s = this.sala;
+    if(s.modo !== 'chefe') return this.erro(ws, 'modo', id);
+    if(s.estado !== 'lobby') return this.erro(ws, 'estado', id);
+    const f = msg.equipe;
+    if(!f || typeof f !== 'object' || Array.isArray(f)) return this.erro(ws, 'fundar', id);
+    const nome = limparNome(f.nome).slice(0, 22);
+    let ok = nome.length >= 2 && typeof f.cor === 'string' && typeof f.cc === 'string' && typeof f.fin === 'string';
+    try{
+      const J = this.motor();
+      ok = ok && J.UIC.CORES.includes(f.cor) && J.COUNTRIES.some(c => c.cc === f.cc) && Object.hasOwn(J.Chefe.FIN, f.fin);
+    }catch(e){ ok = false; }
+    if(!ok) return this.erro(ws, 'fundar', id);
+    s.config.fundadas = s.config.fundadas || {};
+    const igual = x => x.nome.toLocaleLowerCase() === nome.toLocaleLowerCase();
+    if(Object.entries(s.config.fundadas).some(([k, v]) => Number(k) !== slot && igual(v))) return this.erro(ws, 'fundar', id);
+    s.config.fundadas[slot] = { nome, cor: f.cor, cc: f.cc, fin: f.fin };
+    s.config.equipes = s.config.equipes || {};
+    s.config.equipes[slot] = 'n' + slot;
     s.v++;
     await this.salvar();
     this.enviar(ws, { t: 'ok', id });
@@ -868,7 +982,7 @@ export class Sala extends DurableObject {
     const s = this.sala;
     if(s.estado !== 'lobby') return this.enviar(ws, { t: 'erro', codigo: 'estado', id });
     s.jogadores = s.jogadores.filter(j => j.slot !== slot);
-    if(s.config && s.config.equipes) delete s.config.equipes[slot];
+    if(s.config && s.config.equipes){ this.desfundar(slot); delete s.config.equipes[slot]; }
     if(s.config && s.config.pilotos) delete s.config.pilotos[slot];
     this.limites.delete(slot);
     this.enviar(ws, { t: 'ok', id });

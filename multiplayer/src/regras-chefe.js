@@ -362,10 +362,15 @@ export function criarRegrasChefe(obterMotor){
       const chaveDoIdx = new Map(), equipes = {}, membros = {}, ordem = [];
       for(const j of js){
         const idx = config.equipes[j.slot];
-        if(!chaveDoIdx.has(idx)){ const k = String(j.slot); chaveDoIdx.set(idx, k); ordem.push(k); equipes[k] = { chefe: j.nome, idx }; }
+        if(!chaveDoIdx.has(idx)){
+          const k = String(j.slot); chaveDoIdx.set(idx, k); ordem.push(k);
+          /* fundada ('n' + o slot de quem fundou): nome, cor, país e dinheiro do lobby */
+          const f = typeof idx === 'string' ? (config.fundadas || {})[idx.slice(1)] : null;
+          equipes[k] = f ? { chefe: j.nome, cc: f.cc, criar: { nome: f.nome, cor: f.cor, cc: f.cc }, fin: f.fin } : { chefe: j.nome, idx };
+        }
         membros[j.slot] = chaveDoIdx.get(idx);
       }
-      const simples = ordem.length === 2 && js.length === 2;
+      const simples = ordem.length === 2 && js.length === 2 && Object.values(equipes).every(e => !e.criar);
       return comSemente(J, criarRnd(ctx.codigo, 'inicio'), () => criarMundo(J, simples
         ? { sk: config.sk, ano: config.ano, anfitriao: ordem[0], convidado: ordem[1], equipes }
         : { sk: config.sk, ano: config.ano, equipes, ordem, membros }));
@@ -436,6 +441,9 @@ export function criarRegrasChefe(obterMotor){
         return { mundo, resultado };
       });
     },
+
+    /* a fase do mundo (o "simular o resto do ano" só vale na temporada) */
+    faseDe(mundo){ return mundo.base.fase; },
 
     /* tudo o que o jogador pode ver: a perspectiva dele (o pacote da outra equipe nunca entra) */
     vista(mundo, slot){
