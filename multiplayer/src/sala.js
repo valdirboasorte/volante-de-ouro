@@ -39,9 +39,9 @@ const MODOS = ['chefe', 'piloto'];
 const PROTOCOLO = 'volante.v1';
 const RE_FICHA = /^ficha\.([0-9a-f]{64})$/;
 const ABERTO = 1;                     // WebSocket.OPEN
-const SERIES_CHEFE = ['f1', 'indy'];
+const SERIES_CHEFE = ['f1', 'indy', 'wec', 'stock', 'nascar', 'dtm', 'fe'];   // as 7 séries do jogo (testes/series-mp.mjs)
 const CONFIG_CHEFE = () => ({ velocidade: 8, sk: 'f1', ano: 2024, equipes: {} });
-const SERIES_PILOTO = ['f1', 'indy'];
+const SERIES_PILOTO = ['f1', 'indy', 'wec', 'stock', 'nascar', 'dtm', 'fe'];
 const CONFIG_PILOTO = () => ({ velocidade: 8, serie: 'f1', ano: 2024, pilotos: {} });
 const IDADE_MIN = 14, IDADE_MAX = 30;
 const RE_CC = /^[A-Z]{2}$/;

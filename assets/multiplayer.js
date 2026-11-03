@@ -657,7 +657,8 @@
     /* no lobby de uma sala de piloto: o ano e a série (do anfitrião) e o piloto de cada um */
     configPiloto(s, souAnf, eu){
       const cfg = s.config || {}, serie = cfg.serie || 'f1', ano = cfg.ano || 2024, meu = (cfg.pilotos || {})[eu] || {};
-      const series = { f1: 'Fórmula 1', indy: 'IndyCar' };
+      /* as 7 séries do jogo, com o nome que o jogo usa */
+      const series = {}; (typeof SERIES_KEYS !== 'undefined' ? SERIES_KEYS : ['f1', 'indy']).forEach(k => { series[k] = SERIES[k] ? SERIES[k].name : k; });
       const ligado = MP.con === 'conectado' ? '' : ' disabled';
       const estilos = typeof STYLES !== 'undefined' ? Object.keys(STYLES) : ['equilibrado'];
       const outros = s.jogadores.filter(j => j.slot !== eu).map(j => ({ j, p: (cfg.pilotos || {})[j.slot] }));
@@ -683,7 +684,8 @@
       let lista = [];
       try { lista = eraOfSeries(ano, sk).teams.map((t, i) => [i, Engine.resolveTeam(t, i, ano, sk)]).filter(x => x[1]).sort((a, b) => b[1].str - a[1].str); } catch(e){}
       const donos = i => s.jogadores.filter(j => escolhas[j.slot] === i);
-      const series = { f1: 'Fórmula 1', indy: 'IndyCar' };
+      /* as 7 séries do jogo, com o nome que o jogo usa */
+      const series = {}; (typeof SERIES_KEYS !== 'undefined' ? SERIES_KEYS : ['f1', 'indy']).forEach(k => { series[k] = SERIES[k] ? SERIES[k].name : k; });
       const ligado = MP.con === 'conectado' ? '' : ' disabled';
       return `<span class="lbl">Campeonato</span>
         <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Série e ano</span>
