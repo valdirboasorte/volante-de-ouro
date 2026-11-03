@@ -83,10 +83,10 @@
     .trilho-i.on:hover{transform:none}
     .trilho-i:active{transform:scale(.98)}
     .trilho-lema{margin:auto 0 0; padding:20px 14px 0; display:grid; gap:2px; font-size:14px; line-height:1.4; font-style:italic; color:var(--faint)}
-    /* o conteúdo começa depois do trilho e continua centrado no espaço que sobra */
+    /* o conteúdo começa depois do trilho e ocupa todo o espaço que sobra (sem faixas vazias dos lados) */
     body.com-trilho #conteudo{margin-left:var(--trilho); margin-right:0; max-width:none;
-      padding-left:max(var(--m), calc((100vw - var(--trilho) - 1240px) / 2 + var(--m)));
-      padding-right:max(var(--m), calc((100vw - var(--trilho) - 1240px) / 2 + var(--m)))}
+      padding-left:clamp(20px,2.4vw,40px); padding-right:clamp(20px,2.4vw,40px)}
+    body.com-trilho .mpp-conteudo{max-width:none}
     body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{padding-left:0; padding-right:0}
     /* na abertura, o texto encosta no trilho em vez de ficar centrado (sem o vão escuro entre os dois) */
     body.com-trilho .ini-conteudo{margin-left:0; padding-left:clamp(28px,3.4vw,64px)}
