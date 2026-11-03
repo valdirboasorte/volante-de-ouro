@@ -43,7 +43,7 @@
       const topo = el('topBar'); if(!topo) return;
       const nav = document.createElement('nav');
       nav.id = 'trilho'; nav.className = 'trilho'; nav.setAttribute('aria-label', 'Navegação principal');
-      nav.innerHTML = ITENS.map(i => `<button class="trilho-i" data-k="${i.k}" title="${i.nome}" onclick="Trilho.ir('${i.k}')">${ico(i.ic)}<span>${i.nome}</span></button>`).join('')
+      nav.innerHTML = ITENS.map(i => `<button class="trilho-i" data-k="${i.k}" onclick="Trilho.ir('${i.k}')">${ico(i.ic)}<span>${i.nome}</span></button>`).join('')
         + '<p class="trilho-lema"><span>Do kart ao topo.</span> <span>Em qualquer época.</span> <span>Com quem você quiser.</span></p>';
       topo.insertAdjacentElement('afterend', nav);
       document.body.classList.add('com-trilho');
@@ -58,6 +58,8 @@
         b.classList.toggle('on', on);
         if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
         if(it.k === 'mp') b.hidden = !mpLigado();
+        /* só com os ícones (tela do chefe), o nome aparece ao passar o mouse */
+        if(tela === 'chefe') b.title = it.nome; else b.removeAttribute('title');
       });
     }
   };
@@ -86,6 +88,8 @@
       padding-left:max(var(--m), calc((100vw - var(--trilho) - 1240px) / 2 + var(--m)));
       padding-right:max(var(--m), calc((100vw - var(--trilho) - 1240px) / 2 + var(--m)))}
     body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{padding-left:0; padding-right:0}
+    /* na abertura, o texto encosta no trilho em vez de ficar centrado (sem o vão escuro entre os dois) */
+    body.com-trilho .ini-conteudo{margin-left:0; padding-left:clamp(28px,3.4vw,64px)}
     /* a página do multiplayer usa este trilho no lugar do dela */
     body.com-trilho .mpp{grid-template-columns:minmax(0,1fr)}
     body.com-trilho .mpp::before,body.com-trilho .mpp-nav{display:none}
