@@ -51,6 +51,7 @@
     origem: 'Este endereço não pode abrir salas.',
     anfitriao: 'Só o anfitrião muda isso.',
     forcar: 'Ainda não dá para avançar sem os outros.',
+    tarde: 'Não dá mais tempo de abrir uma volta.',
     subir: 'Não há oferta para subir de categoria agora.',
     fundar: 'Confira a equipe: nome de 2 a 22 letras (sem repetir o de outra equipe fundada), cor, país e de onde vem o dinheiro.',
     tempo: 'O servidor demorou a responder. Tente de novo.',
@@ -221,7 +222,7 @@
       } else if(m.t === 'corridaLog'){ return MP.corridaLog(m);
       } else if(m.t === 'corridaEstado'){ return MP.corridaEstado(m);
       } else if(m.t === 'corridaSoma'){ return MP.corridaSoma(m);
-      } else if(m.t === 'corridaFim'){ if(MP.cor) MP.cor.fim = true; return MP.barra();
+      } else if(m.t === 'corridaFim'){ if(MP.cor) MP.cor.fim = !m.sessao; return MP.barra();
       } else if(m.t === 'forcado'){
         /* o anfitrião avançou sem esperar: quem não tinha confirmado fica sabendo */
         const eu = MP.meuSlot();
@@ -349,12 +350,15 @@
       const podeForcar = s.anfitriao === eu && MP.con === 'conectado' && (p.estado === 'corrida' ? !!(MP.cor && !MP.cor.fim) : !proc && esperando);
       const armado = podeForcar && MP._forcarArmado && Date.now() - MP._forcarArmado < 6000;
       const auto = (p.auto || []).map(String), simulo = auto.includes(String(eu));
+      /* a etapa ao vivo agora é uma sessão da classificação (e não a corrida)? */
+      const emSessao = p.estado === 'corrida' && !!(MP.cor && Object.values(MP.cor.corridas || {}).some(c => c.sessao));
       const fase = { inverno: 'pré-temporada', temporada: 'temporada', balanco: 'balanço do ano', mercado: 'propostas' }[MP.vista && MP.vista.fase] || '';
       const sea = piloto ? (typeof S !== 'undefined' && S && S.season) : (typeof C !== 'undefined' && C && C.temporada);
       const prox = MP.vista && MP.vista.fase === 'temporada' && sea && sea.calendar[sea.round];
       const voltas = p.estado === 'corrida' && MP.cor ? Object.values(MP.cor.corridas).filter(c => c.N)
         .map(c => `<span data-i18n-ignore>${esc(c.serie || '')}</span> <span>volta</span> ${Math.min(c.volta || 1, c.N)}/${c.N}`).join(' · ') : '';
       const estado = simulo && p.estado !== 'corrida' ? 'Simulando até o fim da temporada.'
+        : emSessao ? '<span>Classificação ao vivo</span>'
         : p.estado === 'corrida' ? `<span>Corrida ao vivo</span>${voltas ? ': ' + voltas : ''}`
         : proc ? 'Processando a rodada…' : souPronto && !outrosProntos ? (outros.length > 1 ? 'Aguardando os outros jogadores…' : 'Aguardando o adversário…')
         : !souPronto && outrosProntos ? (outros.length > 1 ? 'Os outros já estão prontos.' : 'O adversário já está pronto.') : 'Tome as suas decisões no seu ritmo.';
@@ -364,7 +368,7 @@
         ${simulo ? `<button class="btn btn-ghost btn-sm" onclick="MP.simularAno(false)">Parar a simulação</button>`
           : souPronto ? `<button class="btn btn-ghost btn-sm" onclick="MP.pronto(false)"${proc ? ' disabled' : ''}>Cancelar prontidão</button>`
                     : `<button class="btn btn-primary btn-sm" onclick="${piloto ? 'MP.pilotoPronto()' : 'MP.chefePronto()'}"${proc || MP.con !== 'conectado' ? ' disabled' : ''}>Pronto para avançar</button>`}
-        ${p.estado === 'corrida' && MP.cor && MP.cor.minha && !MP.cor.aberta ? '<button class="btn btn-gold btn-sm" onclick="MP.verCorrida()">Ver a corrida</button>' : ''}
+        ${p.estado === 'corrida' && MP.cor && MP.cor.minha && !MP.cor.aberta ? `<button class="btn btn-gold btn-sm" onclick="MP.verCorrida()">${emSessao ? 'Ver a classificação' : 'Ver a corrida'}</button>` : ''}
         ${podeForcar ? `<button class="btn btn-sm mp-forcar${armado ? ' mp-armado' : ''}" onclick="MP.forcar()"${MP._forcarNoAr ? ' disabled' : ''}>${armado ? 'Confirmar: avançar agora' : p.estado === 'corrida' ? 'Forçar o fim da corrida' : 'Forçar avanço'}</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="MP.abrirPartida()">Sala</button>`;
     },
@@ -414,11 +418,21 @@
       const eu = MP.meuSlot();
       if(!MP.cor || MP.cor.rodada !== m.rodada) MP.cor = { rodada: m.rodada, corridas: {}, aberta: false, tela: null, refeitas: 0 };
       MP.cor.vel = m.vel;
+      /* cada etapa ao vivo (uma sessão, ou a corrida) chega inteira: o que era da etapa de antes sai */
+      MP.cor.corridas = {};
       (m.corridas || []).forEach(c => { MP.cor.corridas[c.k] = c; });
       const minha = (m.corridas || []).find(c => Object.values(c.donos).some(d => ehDono(d, eu)));
       MP.cor.minha = minha ? minha.k : null;
+      MP.cor.fim = false;
       MP.barra();
       if(!minha) return;
+      /* a classificação ao vivo (chefe): a sessão do servidor na tela de sessão do jogo */
+      if(minha.sessao){
+        if(MP.cor.sessao && MP.cor.sessao.k === minha.k && Sessao.S) return MP.sessaoEstado(minha);
+        return MP._chefe ? MP.abrirSessao(minha) : UI.toast('A classificação ao vivo começou: abra a sala do multiplayer.');
+      }
+      /* a corrida começa com a tela da sessão ainda aberta (o fim da Q3): ela fecha antes */
+      if(MP.cor.sessao && Sessao.S){ Sessao.mp = null; Sessao.fechar_tela(); MP.cor.sessao = null; }
       const t = MP.cor.tela;
       /* a mesma corrida já na tela (o servidor mandou de novo depois de uma queda): só junta o que faltava */
       if(t && t.k === minha.k && MP.cor.aberta && !t.refazer){
@@ -525,6 +539,8 @@
       if(!MP.cor) return;
       MP.cor.vel = m.vel;
       (m.corridas || []).forEach(c => { MP.cor.corridas[c.k] = Object.assign(MP.cor.corridas[c.k] || {}, c); });
+      const ses = MP.cor.sessao && (m.corridas || []).find(x => x.sessao && x.k === MP.cor.sessao.k);
+      if(ses){ MP.sessaoEstado(ses); return; }
       const t = MP.cor.tela, c = t && (m.corridas || []).find(x => x.k === t.k);
       if(c){ t.liberado = Math.max(t.liberado, c.liberado); MP.corridaFase(t, c); }
       const ov = el('aovivo');
@@ -543,6 +559,53 @@
       }
       const pb = el('avPular');
       if(pb && c.votos) pb.classList.toggle('on', c.votos.map(String).includes(String(MP.meuSlot())));
+    },
+    /* ── a classificação ao vivo do chefe (multiplayer/src/sessao-mp.js) ──
+       O servidor roda a sessão (o ritmo de cada volta rápida é sorteado lá) e manda o estado: esta
+       tela só mostra, entre um estado e outro anda o relógio, e "Sair para a pista" vira uma ordem. */
+    abrirSessao(c){
+      /* a sessão de antes ainda na tela (o fim dela): fecha antes da próxima */
+      if(Sessao.S){ Sessao.mp = null; Sessao.fechar_tela(); }
+      const e = c.ent, eu = MP.meuSlot();
+      const meus = new Set(Object.keys(c.donos).filter(i => ehDono(c.donos[i], eu)).map(Number));
+      const S = { tipo: e.tipo || 'quali', sea: { ano: e.ano }, trk: e.trk, g: Pista.de(e.trk.id, e.ano), T: e.T, wet: e.wet, dur: e.dur,
+        ses: e.ses, sesV: e.ses, qs: { janelas: {} }, t: c.t, fim: false, fechada: true, emFila: e.emFila, log: [], vRef: 0,
+        carros: e.carros.map((x, i) => ({ id: x.id, nome: x.nome, cor: x.cor, carro: x.carro, ctrl: meus.has(i), voltas: [], plano: [], rapidas: 0, porSaida: 1 })) };
+      MP.cor.sessao = { k: c.k, t: c.t, em: Date.now() };
+      MP.cor.aberta = true;
+      const k = c.k;
+      Sessao.vel = MP.cor.vel || 8;
+      Sessao.mp = {
+        quadro(S){
+          const est = MP.cor && MP.cor.sessao; if(!est || S.fim) return;
+          /* entre um estado e outro, o relógio anda na velocidade da sala (sem passar muito do último) */
+          const vel = (MP.cor && MP.cor.vel) || 8;
+          S.t = Math.max(S.t, Math.min(est.t + (Date.now() - est.em) / 1000 * vel, est.t + vel * .8));
+        },
+        sair(i){
+          MP.enviar('corrida', { k, tipo: 'sair', dados: { i } }).then(r => { if(r.erro && r.erro !== 'fim') UI.toast(erroTxt(r.erro)); });
+          return true;
+        },
+        pular(){
+          const anf = MP.sala && MP.sala.anfitriao === MP.meuSlot();
+          MP.enviar('corrida', { k, tipo: 'pular', dados: anf ? { quer: true, forcar: true } : { quer: true } }).then(r => { if(r.erro && r.erro !== 'fim') UI.toast(erroTxt(r.erro)); });
+          UI.toast(anf ? 'Você é o anfitrião: a sessão vai até o fim para todos.' : 'Você pediu para pular até o fim. A sessão pula quando todos pedirem.');
+        },
+        velocidade(v){ MP.enviar('velocidade', { v }).then(r => { if(r.erro) UI.toast(erroTxt(r.erro)); }); },
+        fechou(){ if(MP.cor){ MP.cor.aberta = false; MP.cor.sessao = null; } MP.barra(); }
+      };
+      MP.sessaoEstado(c, S);
+      Sessao.abrir('quali', null, S);
+    },
+    sessaoEstado(c, S0){
+      const S = S0 || Sessao.S, est = MP.cor && MP.cor.sessao; if(!S || !est) return;
+      (c.carros || []).forEach((x, i) => { if(S.carros[i]) Object.assign(S.carros[i], x); });
+      if(Array.isArray(c.log)) S.log = c.log;
+      est.t = c.t; est.em = Date.now();
+      if(c.t > S.t) S.t = Math.min(c.t, S.t + 60);
+      if(c.fase === 'fim' || c.fim){ S.t = Math.max(S.t, c.t); S.fim = true; }
+      const ov = el('sessao');
+      if(ov) ov.querySelectorAll('.av-vel [data-v]').forEach(b => b.classList.toggle('on', +b.dataset.v === (MP.cor.vel || 8)));
     },
     /* a tela da corrida fechou ("Ver o resultado"): o resultado da rodada, se já chegou */
     corridaFechou(){

@@ -2697,7 +2697,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js?v=20261103-i18n" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261103-fechar" defer></script>
+<script src="assets/multiplayer.js?v=20261103-quali2" defer></script>
 <script src="assets/trilho.js?v=20261103-trilho4" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
@@ -28699,7 +28699,7 @@ const Acerto = {
    treino livre cada saída gasta uma saída do acerto; de volta aos boxes o
    piloto diz o que sente e o acerto pode mudar antes da próxima. */
 const Sessao = {
-  S: null, raf: 0, ult: 0, vel: 16, pausa: false, aoFim: null, sel: 0,
+  S: null, raf: 0, ult: 0, vel: 16, pausa: false, aoFim: null, sel: 0, mp: null,
   VELS: [1, 4, 16, 32, 64],
   /* segundos de volta por ponto de desempenho: a mesma ordem de grandeza da
      tabela da classificação, mais espalhada nas épocas de grid mais desigual */
@@ -28778,9 +28778,10 @@ const Sessao = {
     const tanque = .25 + ((seedOf(c.id + ':' + Math.floor(S.t)) % 100) / 100) * .9;
     return S.T * evol + (S.vRef - v) * K + acerto + tanque;
   },
-  /* manda um carro seu para a pista */
+  /* manda um carro seu para a pista (no multiplayer, a ordem vai para o servidor, que roda a sessão) */
   sair(i){
     const S = Sessao.S; if(!S || S.fim) return false;
+    if(Sessao.mp) return Sessao.mp.sair(i);
     const c = S.carros[i]; if(!c || !c.ctrl || c.estado !== 'box') return false;
     if(S.tipo === 'treino'){ const st = Acerto.estado(S.sea, c.carro); if(st.usadas >= st.saidas) return false; }
     else if(S.t + S.T * 1.15 >= S.dur) return false;
@@ -28849,8 +28850,8 @@ const Sessao = {
   },
 
   /* ── a tela ── */
-  abrir(tipo, aoFim){
-    const S = Sessao.criar(tipo); if(!S) return;
+  abrir(tipo, aoFim, pronta){
+    const S = pronta || Sessao.criar(tipo); if(!S) return;
     Sessao.S = S; Sessao.aoFim = aoFim; Sessao.pausa = false; Sessao.sel = Math.max(0, S.carros.findIndex(c => c.ctrl));
     if(typeof requestAnimationFrame !== 'function' || typeof document === 'undefined'){ Sessao.terminar(S); return Sessao.concluir(); }
     try{ const v = +Store.get('vdo_velsessao'); if(Sessao.VELS.indexOf(v) >= 0) Sessao.vel = v; }catch(e){}
@@ -28900,9 +28901,11 @@ const Sessao = {
         ${abas.map(([k, n, ic]) => `<button role="tab" data-aba="${k}" aria-selected="${k === 'corrida'}">${ico(ic)}<span>${n}</span><i></i></button>`).join('')}
       </nav>`;
     ov.querySelector('.av-nav').addEventListener('click', e => { const b = e.target.closest('[data-aba]'); if(b) Sessao.mudarAba(b.dataset.aba); });
-    ov.querySelector('.av-vel').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; Sessao.vel = +b.dataset.v; try{ Store.set('vdo_velsessao', String(Sessao.vel)); }catch(x){} ov.querySelectorAll('.av-vel button').forEach(x => x.classList.toggle('on', x === b)); });
+    ov.querySelector('.av-vel').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; if(Sessao.mp){ Sessao.mp.velocidade(+b.dataset.v); return; } Sessao.vel = +b.dataset.v; try{ Store.set('vdo_velsessao', String(Sessao.vel)); }catch(x){} ov.querySelectorAll('.av-vel button').forEach(x => x.classList.toggle('on', x === b)); });
     el('ssPlay').onclick = () => { Sessao.pausa = !Sessao.pausa; el('ssPlay').innerHTML = ico(Sessao.pausa ? 'tocar' : 'pausa'); };
-    el('ssFim').onclick = () => { Sessao.terminar(S); Sessao.painel(); Sessao.encerrada(); };
+    el('ssFim').onclick = () => { if(Sessao.mp) return Sessao.mp.pular(); Sessao.terminar(S); Sessao.painel(); Sessao.encerrada(); };
+    /* no multiplayer a sessão é do servidor: sem pausa, e a velocidade é a da sala */
+    if(Sessao.mp) el('ssPlay').style.display = 'none';
     el('ssMuro').addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
       if(b.dataset.sair != null){ if(!Sessao.sair(+b.dataset.sair)) UI.toast(S.tipo === 'treino' ? 'Não há mais saídas para este carro.' : 'Não dá mais tempo de abrir uma volta.'); }
@@ -28929,7 +28932,8 @@ const Sessao = {
   quadro(ts){
     const S = Sessao.S; if(!S || !el('sessao')) return;
     const dt = Math.min(.1, (ts - Sessao.ult) / 1000); Sessao.ult = ts;
-    if(!Sessao.pausa && !S.fim){
+    if(Sessao.mp) Sessao.mp.quadro(S, dt);
+    else if(!Sessao.pausa && !S.fim){
       let resta = dt * Sessao.vel, g = 0;
       while(resta > 0 && !S.fim && g++ < 400){ const p = Math.min(.5, resta); Sessao.passo(S, p); resta -= p; }
     }
@@ -29016,9 +29020,10 @@ const Sessao = {
     el('ssOk').onclick = () => Sessao.concluir();
   },
   concluir(){
-    const S = Sessao.S, f = Sessao.aoFim; Sessao.aoFim = null;
-    const r = S ? Sessao.fechar(S) : null;
+    const S = Sessao.S, f = Sessao.aoFim, mp = Sessao.mp; Sessao.aoFim = null; Sessao.mp = null;
+    const r = S && !mp ? Sessao.fechar(S) : null;
     Sessao.fechar_tela();
+    if(mp) return mp.fechou();
     if(f) f(r, S);
   },
   fechar_tela(){

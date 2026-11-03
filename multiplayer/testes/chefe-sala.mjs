@@ -269,6 +269,47 @@ export async function fase1({ base, versao, estado }){
     ga.ws.close(); gb.ws.close();
     await dormir(300);
   }
+
+  // 10: classificação ao vivo: com as corridas ao vivo, a rodada de corrida passa por cada sessão
+  //     (Q1, Q2, Q3) no relógio da sala antes da corrida; cada um manda só nos carros dele
+  {
+    let r = await api(base, '/api/salas', { nome: 'Ana', modo: 'chefe', versao }, { ip: IP });
+    const Q = r.json || {};
+    const qa = ligar(await abrir(base, Q.codigo, Q.ficha), Q.codigo, 0);
+    await esperar(qa, m => m.t === 'estado');
+    r = await api(base, `/api/salas/${Q.codigo}/entrar`, { nome: 'Bia', versao }, { ip: IP });
+    const qb = ligar(await abrir(base, Q.codigo, r.json.ficha), Q.codigo, 1);
+    await esperar(qb, m => m.t === 'estado');
+    await pedir(qa, { t: 'configurar', config: { aoVivo: true, velocidade: 16 } });
+    await pedir(qa, { t: 'escolherEquipe', idx: idxA }); await pedir(qb, { t: 'escolherEquipe', idx: idxB });
+    await pedir(qa, { t: 'iniciar' }, 60000);
+    await esperar(qa, m => m.t === 'sala' && m.sala.partida, 60000);
+    await pedir(qa, { t: 'forcar', rodada: 1 }, 60000);                 // o inverno
+    await esperar(qa, m => m.t === 'rodada' && m.rodada === 1, 60000);
+    await pedir(qa, { t: 'forcar', rodada: 2 }, 60000);                 // a primeira etapa
+    const nomes = [];
+    let recusa = null, saiu = null, corrida = null;
+    for(let i = 0; i < 6; i++){
+      const ini = await esperar(qb, m => m.t === 'corridaInicio' && m.rodada === 2 && m.corridas.length && !nomes.includes(m.corridas[0].k), 60000);
+      if(!ini) break;
+      const c = ini.corridas[0];
+      nomes.push(c.k);
+      if(!c.sessao){ corrida = c; break; }
+      if(i === 0){
+        const meu = Object.keys(c.donos).map(Number).find(x => String(c.donos[x]) === '1'), dela = Object.keys(c.donos).map(Number).find(x => String(c.donos[x]) === '0');
+        recusa = await pedir(qb, { t: 'corrida', k: c.k, tipo: 'sair', dados: { i: dela } });
+        saiu = await pedir(qb, { t: 'corrida', k: c.k, tipo: 'sair', dados: { i: meu } });
+      }
+      await pedir(qa, { t: 'forcar', rodada: 2 });                      // o anfitrião leva a sessão até o fim
+    }
+    if(corrida) await pedir(qa, { t: 'forcar', rodada: 2 });
+    const rod = await esperar(qb, m => m.t === 'rodada' && m.rodada === 2, 120000);
+    checar('10 classificação ao vivo: as sessões vêm uma depois da outra e só então a corrida; a Bia não manda no carro da Ana, manda no dela; a rodada fecha',
+      nomes.length >= 3 && nomes.slice(0, -1).every(k => /^s:/.test(k)) && !!corrida && recusa && recusa.codigo === 'carro' && saiu && saiu.t === 'ok'
+      && !!rod && rod.resultado.tipo === 'corrida', { nomes, recusa, saiu, rod: rod && rod.resultado.tipo });
+    qa.ws.close(); qb.ws.close();
+    await dormir(300);
+  }
 }
 
 export async function fase2({ base, versao, estado }){

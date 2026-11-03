@@ -54,6 +54,7 @@ const TIQUE_MS = 100;                 // o relógio da corrida ao vivo
 const MARCA_MS = 200;                 // o andamento (passo liberado) para as telas
 const SOMA_MS = 2000;                 // a conferência do estado
 const SALVAR_MS = 2000;               // o passo da corrida guardado, para refazer depois de um reinício
+const ENTRE_SESSOES_MS = 6000;        // entre uma sessão da classificação e a próxima: dá para ver quem passou
 const VIGIA_MS = 10000;               // o alarme que retoma a corrida se a sala reiniciar
 const FORA_MS = 15000;                // desconectado por mais que isso, a equipe assume as paradas dele
 
@@ -479,7 +480,7 @@ export class Sala extends DurableObject {
       if(!this.corridas) return this.erro(ws, 'processando', id);
       const agora = Date.now();
       try{
-        for(const c of this.corridas.values()) if(c.fase !== 'fim') this.difundir({ t: 'corridaLog', k: c.def.chave, e: c.terminar(agora) });
+        for(const c of this.corridas.values()) if(c.fase !== 'fim'){ const e = c.terminar(agora); if(e) this.difundir({ t: 'corridaLog', k: c.def.chave, e }); }
       }catch(e){ log('erro', s.codigo, { motivo: 'forcar', erro: textoErro(e) }); return this.erro(ws, 'interno', id); }
       log('forcada', s.codigo, { rodada: p.rodada, corrida: true });
       this.enviar(ws, { t: 'ok', id });
@@ -532,13 +533,17 @@ export class Sala extends DurableObject {
     try{
       if(this.falharProximo){ this.falharProximo = false; throw new Error('falha de teste'); }
       if(aoVivo && !p.corridaPronta){
-        const x = this.comCorridas(regras, N, 'preparar');
+        /* as sessões da classificação ao vivo que já acabaram nesta rodada valem nesta passada */
+        const ant = (await this.ctx.storage.get('aoVivoRes')) || {};
+        const x = this.comCorridas(regras, N, 'preparar', ant);
+        if(x.ctl.sessoes.length) return await this.comecarSessoes(x.ctl.sessoes, N);
         if(x.ctl.defs.length) return await this.comecarCorrida(x.ctl.defs, N);
         /* sem corrida com humano nesta rodada: o que saiu da preparação já é a rodada */
         r = x.r;
       }
       else if(aoVivo){
-        const x = this.comCorridas(regras, N, 'concluir', p.corridaPronta ? await this.resultadosDaCorrida() : {});
+        const ant = (await this.ctx.storage.get('aoVivoRes')) || {};
+        const x = this.comCorridas(regras, N, 'concluir', Object.assign({}, ant, p.corridaPronta ? await this.resultadosDaCorrida() : {}));
         r = x.r;
         if(x.ctl.divergencias.length || x.ctl.faltas.length)
           log('erro', s.codigo, { motivo: 'corrida', rodada: N, divergencias: x.ctl.divergencias, faltas: x.ctl.faltas });
@@ -566,6 +571,7 @@ export class Sala extends DurableObject {
     s.v++;
     await this.salvarTudo();
     if(tinhaCorrida) await this.ctx.storage.delete(['corridaDefs', 'corridaEst']);
+    if(aoVivo) await this.ctx.storage.delete('aoVivoRes');
     log('processada', s.codigo, { rodada: N });
     this.difundir({ t: 'rodada', v: s.v, rodada: N, resultado: r.resultado });
     this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
@@ -650,7 +656,7 @@ export class Sala extends DurableObject {
   comCorridas(regras, N, modo, resultados){
     const s = this.sala, J = this.motor(), p = s.partida;
     if(modo === 'preparar') p.semVivo = Object.keys(p.auto || {});
-    const ctl = ligarCorridas(J, modo, resultados, { semVivo: p.semVivo || [] });
+    const ctl = ligarCorridas(J, modo, resultados, { semVivo: p.semVivo || [], qualiAoVivo: regras.nome === 'chefe' });
     try{ return { ctl, r: regras.processar(structuredClone(this.mundo), N, criarRnd(s.codigo, N)) }; }
     finally{ desligarCorridas(J); }
   }
@@ -680,9 +686,39 @@ export class Sala extends DurableObject {
     this.ligarRelogio();
   }
 
+  /* a classificação ao vivo (sessao-mp.js): as sessões vêm prontas da passada de preparar e andam no
+     mesmo relógio da corrida; quem simula o ano já votou para pular */
+  async comecarSessoes(sessoes, N){
+    const s = this.sala, p = s.partida, agora = Date.now();
+    this.corridas = new Map();
+    const simula = new Set(p.semVivo || []);
+    for(const c of sessoes){
+      c.relogio = agora;
+      for(const sl of c.def.slots) if(simula.has(String(sl))) c.votos[sl] = true;
+      this.corridas.set(c.def.chave, c);
+    }
+    this.corridaVel = VELOCIDADES.includes(s.config && s.config.velocidade) ? s.config.velocidade : 8;
+    p.estado = 'corrida';
+    p.corrida = { rodada: N, n: sessoes.length, sessao: true };
+    p.falhas = 0;
+    s.v++;
+    await this.ctx.storage.put({ sala: s, corridaDefs: [], corridaEst: this.estadoCorrida() });
+    log('sessao', s.codigo, { rodada: N, sessoes: sessoes.map(c => c.def.chave) });
+    this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+    for(const w of this.ctx.getWebSockets()) this.enviarCorridaInicio(w);
+    this.ligarRelogio();
+  }
+
   /* depois de um reinício: a entrada e o registro refazem cada corrida até o passo guardado */
   async retomarCorrida(){
     const s = this.sala, p = s.partida;
+    if(p.corrida && p.corrida.sessao){
+      /* a sessão ao vivo não volta (o sorteio dela só existia na memória): a passada a abre de novo */
+      log('sessaoRetomada', s.codigo, { rodada: p.rodada });
+      p.estado = 'processing'; delete p.corrida;
+      await this.salvar();
+      return this.processar();
+    }
     const g = await this.ctx.storage.get(['corridaDefs', 'corridaEst']);
     const defs = g.get('corridaDefs'), est = g.get('corridaEst');
     if(!defs || !est){
@@ -768,6 +804,21 @@ export class Sala extends DurableObject {
     const s = this.sala, p = s.partida;
     if(!p || p.estado !== 'corrida') return;
     this.desligarRelogio();
+    if(p.corrida && p.corrida.sessao){
+      const res = (await this.ctx.storage.get('aoVivoRes')) || {};
+      for(const c of this.corridas.values()) if(c.resultado && c.resultado()) res[c.def.chave] = c.resultado();
+      p.estado = 'processing'; delete p.corrida;
+      this.corridas = null;
+      s.v++;
+      await this.ctx.storage.put({ sala: s, aoVivoRes: res });
+      await this.ctx.storage.delete(['corridaDefs', 'corridaEst']);
+      log('sessaoFim', s.codigo, { rodada: p.rodada, sessoes: Object.keys(res) });
+      this.difundir({ t: 'corridaFim', rodada: p.rodada, sessao: true });
+      this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+      /* a próxima etapa (outra sessão, ou a corrida) vem pelo alarme, depois de alguns segundos */
+      await this.ctx.storage.setAlarm(Date.now() + ENTRE_SESSOES_MS);
+      return;
+    }
     p.estado = 'processing'; p.corridaPronta = true;
     s.v++;
     await this.ctx.storage.put({ sala: s, corridaEst: this.estadoCorrida() });

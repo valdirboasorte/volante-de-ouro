@@ -26,6 +26,7 @@ export const PERGUNTA_MS = 20000;      // o rádio espera a resposta do dono
 export const LARGADA_MS = 45000;       // a largada espera a reação de todos
 export const SOMA_CADA = 64;           // passos entre duas conferências (16 s de prova)
 const MAX_PASSOS = 400000;
+import { criarSessao } from './sessao-mp.js';
 
 const clone = o => o === undefined ? undefined : structuredClone(o);
 
@@ -33,8 +34,14 @@ const clone = o => o === undefined ? undefined : structuredClone(o);
    modo 'preparar': cada corrida com humano vira uma definição (a entrada e os donos dos carros)
    e segue com uma chegada rápida, descartada (o processamento roda numa cópia do mundo).
    modo 'concluir': cada corrida recebe a chegada da corrida ao vivo. */
-export function ligarCorridas(J, modo, resultados, { semVivo } = {}){
-  const ctl = { modo, defs: [], k: 0, contexto: null, resultados: resultados || {}, divergencias: [], faltas: [] };
+export function ligarCorridas(J, modo, resultados, { semVivo, qualiAoVivo } = {}){
+  const ctl = { modo, defs: [], k: 0, contexto: null, resultados: resultados || {}, divergencias: [], faltas: [], sessoes: [], qualiAoVivo: !!qualiAoVivo };
+  /* a classificação ao vivo do chefe (sessao-mp.js): a sessão que falta, criada no meio da passada */
+  ctl.novaSessao = arg => {
+    /* uma sessão só com quem está simulando não é ao vivo: ela roda rápida, nas duas passadas */
+    if(soSimulando(arg.donos)) return null;
+    const s = criarSessao(J, arg); if(s) ctl.sessoes.push(s); return s;
+  };
   /* quem está simulando o resto do ano não assiste: uma corrida só com eles não é ao vivo (nas duas passadas) */
   const fora = new Set((semVivo || []).map(String));
   const soSimulando = donos => { const ss = Object.values(donos).flatMap(d => [].concat(d).map(String)); return ss.length > 0 && ss.every(s => fora.has(s)); };

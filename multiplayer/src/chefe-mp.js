@@ -324,10 +324,27 @@ export function corrida(J, mundo, g){
     const deQuem = new Map();
     for(const o of outras){
       o.vq = em(o.F, () => J.Chefe.valorQuali(o.sea, J.Chefe.ctxQuali(o.sea)));
-      const id = idBase(mundo, o.g);
-      sA.field.filter(f => f.teamId === id).forEach(f => deQuem.set(f.id, o));
+      o.id = idBase(mundo, o.g);
+      sA.field.filter(f => f.teamId === o.id).forEach(f => deQuem.set(f.id, o));
     }
-    em(FA, () => J.Classif.simularTudo(sA, (id, ses) => { const o = deQuem.get(id); return o ? em(o.F, () => o.vq(id, ses)) : vqA(id, ses); }));
+    const valor = (id, ses) => { const o = deQuem.get(id); return o ? em(o.F, () => o.vq(id, ses)) : vqA(id, ses); };
+    const ctl = J.mpCorridas;
+    if(ctl && ctl.qualiAoVivo){
+      /* classificação ao vivo (sessao-mp.js): cada sessão que já foi ao vivo vale com o valor de cada carro;
+         a primeira que falta vira sessão ao vivo (só ao preparar), e o resto desta passada segue rápido */
+      const gk = g === undefined ? '*' : String(g);
+      let guarda = 0;
+      while(!sA.qs.concluida && guarda++ < 12){
+        const chave = 's:' + gk + ':' + sA.qs.i, res = ctl.resultados[chave];
+        if(res && res.valores){ em(FA, () => J.Classif.rodar(sA, id => ({ v: res.valores[id] != null ? res.valores[id] : -1e9, notas: (res.notas || {})[id] }))); continue; }
+        if(ctl.modo === 'preparar'){
+          const donos = {}; for(const k of [h, ...ks]){ const m = membrosDe(mundo, k); donos[idBase(mundo, k)] = m.length === 1 ? m[0] : m; }
+          ctl.novaSessao({ FA, outras: outras.map(o => ({ F: o.F, id: o.id })), chave, donos });
+        } else ctl.faltas.push(chave);
+        break;
+      }
+    }
+    if(!sA.qs.concluida) em(FA, () => J.Classif.simularTudo(sA, valor));
   }
   em(FA, () => J.Chefe.gridDaEtapa(sA));
   /* cada outra equipe fica com o mesmo resultado de sábado (e calcula onde os carros dela ficaram) */
