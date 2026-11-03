@@ -685,7 +685,7 @@
       MP.desenhar();
     },
     /* outra sala: a atual fica guardada, e a tela volta para criar ou entrar */
-    outraSala(){ MP.soltar(); MP.abrirEntrada(); },
+    outraSala(){ MP.soltar(); UI.close(); MP.tela(); },
     /* volta para uma sala da lista */
     voltarSala(codigo){
       const g = lerLista().find(x => x.codigo === codigo); if(!g) return;
@@ -694,13 +694,15 @@
       MP.conectar(); MP.abrir();
     },
     /* apaga uma sala deste aparelho (a atual sai de verdade, se a partida ainda não começou) */
-    apagarSala(codigo, certeza){
-      if(!certeza){ MP._apagar = codigo; return MP.abrirEntrada(); }
+    async apagarSala(codigo, certeza){
+      const naTela = document.body.dataset.tela === 'multiplayer';
+      if(certeza === false){ MP._apagar = null; return naTela ? MP.telaSalas() : MP.abrirEntrada(); }
+      if(!certeza){ MP._apagar = codigo; return naTela ? MP.telaSalas() : MP.abrirEntrada(); }
       MP._apagar = null;
       const g = ler();
-      if(g && g.codigo === codigo) return MP.sair(true);
+      if(g && g.codigo === codigo){ await MP.sair(true); if(naTela){ UI.close(); MP.tela(); } return; }
       gravarLista(lerLista().filter(x => x.codigo !== codigo));
-      MP.abrirEntrada();
+      naTela ? MP.telaSalas() : MP.abrirEntrada();
     },
 
     /* ── a tela ── */
@@ -712,6 +714,7 @@
       const m = el('modal');
       if(UI.aberta() && m && TELAS.has(m.dataset.titulo)) MP.abrir(MP._tela);
       if(MP._chefe || MP._piloto) MP.barra();
+      if(document.body.dataset.tela === 'multiplayer') MP.telaSalas();
     },
     /* a linha de conexão, com o que dá para fazer quando ela cai */
     linhaConexao(){
@@ -836,6 +839,100 @@
         </div>
         <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="MP.voltarAoGerenciamento()">Voltar ao gerenciamento</button></div>`);
     },
+    /* ── a tela do multiplayer (o botão da abertura): os dois modos, o código e as salas deste aparelho ── */
+    tela(){
+      const sec = MP.montarTela();
+      if(!sec) return MP.abrirEntrada();
+      UI.limparFila(); UI.close();
+      UI.show('multiplayer');
+      MP.telaSalas();
+      const n = el('mpTNome'); if(n && !n.value) try { n.value = localStorage.getItem('vdo_mp_nome') || ''; } catch(e){}
+    },
+    montarTela(){
+      let sec = el('scr-multiplayer');
+      if(sec) return sec;
+      const intro = el('scr-intro'); if(!intro || !intro.parentNode) return null;
+      sec = document.createElement('section');
+      sec.className = 'screen'; sec.id = 'scr-multiplayer'; sec.setAttribute('aria-labelledby', 'mpTTit');
+      const modo = (k, img, pos, alt, nome, txt, acao) => `<div class="mpt-modo">
+          <img src="${img}" width="1280" height="854" alt="${alt}" loading="lazy" decoding="async" style="object-position:${pos}">
+          <div class="mpt-modo-tx"><h2>${nome}</h2><p>${txt}</p>
+            <button class="btn btn-primary btn-lg" onclick="MP.criarDaTela('${k}')">${acao} <span aria-hidden="true">→</span></button></div>
+        </div>`;
+      sec.innerHTML = `<div class="mpt">
+        <button class="mpt-voltar" onclick="UI.show('intro');Game.checkSave()"><span aria-hidden="true">←</span> <span>Início</span></button>
+        <header class="mpt-cab">
+          <div class="mpt-cab-tx">
+            <h1 id="mpTTit">Multiplayer</h1>
+            <p>Uma sala, um amigo, o mesmo campeonato. Cada um decide no seu ritmo, e as corridas passam ao vivo para os dois.</p>
+            <div class="field mpt-nome"><label class="lbl" for="mpTNome">Seu nome</label><input type="text" id="mpTNome" maxlength="24" autocomplete="off"></div>
+          </div>
+          <figure class="mpt-cab-foto"><img src="assets/lauda-12-gevolgd-door-jarier-17-bestanddeelnr.jpg" width="1920" height="1271" alt="Lauda, com o 12, seguido de perto por Jarier, com o 17, numa curva" decoding="async"></figure>
+        </header>
+        <div class="mpt-modos">
+          ${modo('chefe', 'assets/cartoes/pit-stop-emil-frey.jpg', '50% 45%', 'Equipe trocando os pneus de um carro vermelho num pit stop', 'Chefe de equipe',
+            'Cada um comanda uma equipe real do mesmo grid: contratos, carro e estratégia. Na corrida, os dois dão ordens ao mesmo tempo.', 'Criar sala de chefe')}
+          ${modo('piloto', 'assets/cartoes/capacete-cockpit.jpg', '45% 30%', 'Piloto de capacete no cockpit de um monoposto', 'Carreira de piloto',
+            'Cada um é um piloto. Com a mesma idade, os dois dividem a categoria; com idades diferentes, cada um sobe pela sua.', 'Criar sala de piloto')}
+        </div>
+        <p class="mp-erro mpt-erro" id="mpErro" role="alert"></p>
+        <div class="mpt-baixo">
+          <div class="mpt-entrar">
+            <img class="mpt-entrar-foto" src="assets/fia-f1-austria-2023-nr-1-3.jpg" width="1920" height="1080" alt="Um carro de Fórmula 1 na pista do Red Bull Ring, 2023" loading="lazy" decoding="async">
+            <div class="mpt-entrar-in">
+            <h2>Entrar com um código</h2>
+            <p>Quem criou a sala manda o código de 8 letras.</p>
+            <div class="mpt-entrar-linha">
+              <input type="text" id="mpTCodigo" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH" aria-label="Código da sala" data-i18n-ignore>
+              <button class="btn btn-contorno btn-lg" onclick="MP.entrarDaTela()">Entrar</button>
+            </div>
+            </div>
+          </div>
+          <div class="mpt-salas">
+            <h2>Suas salas</h2>
+            <div id="mpTSalas"></div>
+          </div>
+        </div>
+        <p class="mpt-credito" data-i18n-ignore>Fotos: Lauda e Jarier, Rob Croes / Anefo (CC0); pit stop, Paul Krüger, e capacete no cockpit, Carl Gelin (Unsplash); Áustria 2023, Lukas Raich (CC BY-SA 4.0).</p>
+      </div>`;
+      intro.parentNode.insertBefore(sec, intro.nextSibling);
+      return sec;
+    },
+    nomeDaTela(){
+      const n = String((el('mpTNome') || {}).value || '').trim();
+      if(n) try { localStorage.setItem('vdo_mp_nome', n); } catch(e){}
+      return n;
+    },
+    criarDaTela(modo){ const nome = MP.nomeDaTela(); MP.chegar('/api/salas', { nome, modo }, nome); },
+    entrarDaTela(){
+      const nome = MP.nomeDaTela();
+      const codigo = String((el('mpTCodigo') || {}).value || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+      if(codigo.length !== 8) return MP.avisar('codigo');
+      MP.chegar('/api/salas/' + codigo + '/entrar', { nome }, nome);
+    },
+    /* as salas deste aparelho, na tela: a atual com o estado da conexão */
+    telaSalas(){
+      const box = el('mpTSalas'); if(!box) return;
+      const atual = ler(); if(atual && !lerLista().some(x => x.codigo === atual.codigo)) naLista(atual);
+      const l = lerLista();
+      if(!l.length){ box.innerHTML = '<p class="mpt-vazio">Nenhuma sala neste aparelho ainda. Crie uma acima ou entre com um código.</p>'; return; }
+      const p = MP.sala && MP.sala.partida;
+      box.innerHTML = l.map(g => {
+        const eh = atual && atual.codigo === g.codigo;
+        if(MP._apagar === g.codigo) return `<div class="mpt-sala mpt-apagar">
+            <div class="mpt-sala-tx"><b><span>Apagar esta sala?</span> <span data-i18n-ignore>${esc(codigoBonito(g.codigo))}</span></b>
+              <span>Ela some deste aparelho. Se a partida ainda não começou, a vaga fica livre.</span></div>
+            <div class="mpt-sala-bts"><button class="btn btn-sm" onclick="MP.apagarSala('${g.codigo}', false)">Cancelar</button><button class="btn btn-primary btn-sm" onclick="MP.apagarSala('${g.codigo}', true)">Apagar</button></div>
+          </div>`;
+        const estado = eh ? `${p ? `<span>rodada</span> ${p.rodada} · ` : ''}<span>${MP.textoConexao()}</span>` : `<span>guardada</span>`;
+        return `<div class="mpt-sala${eh ? ' mpt-atual' : ''}">
+            <div class="mpt-sala-tx"><b data-i18n-ignore>${esc(codigoBonito(g.codigo))}</b>
+              <span>${g.modo ? `<span>${esc(MODOS[g.modo] || g.modo)}</span> · ` : ''}<span data-i18n-ignore>${esc(g.nome || '')}</span> · ${estado}</span></div>
+            <div class="mpt-sala-bts">${eh ? '<button class="btn btn-primary btn-sm" onclick="MP.abrir()">Continuar</button>' : `<button class="btn btn-sm" onclick="MP.voltarSala('${g.codigo}')">Abrir</button>`}
+              <button class="btn btn-sm mpt-x" onclick="MP.apagarSala('${g.codigo}')">Apagar</button></div>
+          </div>`;
+      }).join('') + '<p class="mpt-nota">Identidade de teste: as salas ficam guardadas neste navegador. Limpar os dados do site faz você perder as vagas.</p>';
+    },
     listaSalas(){
       const atual = ler(); if(atual && !lerLista().some(x => x.codigo === atual.codigo)) naLista(atual);
       const l = lerLista(); if(!l.length) return '';
@@ -901,16 +998,69 @@
       .mp-barra .mp-dot{display:inline-block;vertical-align:middle}
       body.mp-com-barra{padding-bottom:64px}
       .ini-mp{margin-top:12px}
+      .ini-texto:has(#abMP){max-width:740px}
+      .mpt{width:min(1360px,100%); margin:0 auto; padding:clamp(12px,2.4vw,28px) var(--m,24px) 96px}
+      .mpt-voltar{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 4px; font-size:16px; color:var(--soft)}
+      .mpt-voltar:hover{color:var(--ink)}
+      .mpt-cab{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); align-items:end; gap:24px 40px; margin:clamp(16px,3vw,40px) 0 16px}
+      .mpt-cab-tx p{margin:0 0 20px; max-width:46ch; font-size:21px; line-height:1.45; color:var(--ink)}
+      .mpt-cab-foto{margin:0; border-radius:24px; overflow:hidden; aspect-ratio:16/10; background:var(--s1)}
+      .mpt-cab-foto img{width:100%; height:100%; object-fit:cover; object-position:50% 55%}
+      .mpt-cab h1{margin:0; font-size:clamp(52px,6.4vw,104px); font-weight:800; font-stretch:72%; text-transform:uppercase; line-height:.86; letter-spacing:-.02em; margin-bottom:clamp(18px,2.4vw,32px)}
+      .mpt-nome{margin:0; max-width:360px}
+      .mpt-modos{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+      .mpt-modo{position:relative; display:flex; align-items:flex-end; min-height:clamp(380px,52vh,560px); padding:clamp(22px,2.6vw,40px); border-radius:24px; overflow:hidden; isolation:isolate; color:#fff; background:#141619}
+      .mpt-modo img{position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; transition:transform 1.2s var(--ease-out,ease)}
+      .mpt-modo::after{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,rgba(8,9,11,.94) 0%,rgba(8,9,11,.6) 42%,rgba(8,9,11,.05) 100%)}
+      .mpt-modo:hover img{transform:scale(1.05)}
+      .mpt-modo-tx{display:grid; gap:14px; justify-items:start}
+      .mpt-modo-tx h2{margin:0; font-size:clamp(36px,4.2vw,64px); font-weight:800; font-stretch:72%; text-transform:uppercase; line-height:.92}
+      .mpt-modo-tx p{margin:0; max-width:46ch; font-size:16px; line-height:1.5; color:#dde1e6}
+      .mpt-modo-tx .btn{margin-top:6px}
+      .mpt-erro{margin:14px 0 0}
+      .mpt-baixo{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:16px; margin-top:16px}
+      .mpt-entrar,.mpt-salas{background:var(--s1); border-radius:24px; padding:clamp(22px,2.6vw,36px)}
+      .mpt-entrar{padding:0; overflow:hidden}
+      .mpt-entrar-foto{display:block; width:100%; height:190px; object-fit:cover; object-position:50% 60%}
+      .mpt-entrar-in{padding:clamp(22px,2.6vw,36px)}
+      .mpt-baixo h2{margin:0 0 8px; font-size:clamp(26px,2.4vw,34px); font-weight:800; font-stretch:72%; text-transform:uppercase; line-height:1}
+      .mpt-entrar p{margin:0 0 18px; font-size:16px; color:var(--soft)}
+      .mpt-entrar-linha{display:flex; gap:10px; flex-wrap:wrap}
+      .mpt-entrar-linha input{flex:1 1 200px; min-height:56px; padding:0 18px; font-size:21px; letter-spacing:.12em; font-variant-numeric:tabular-nums; background:var(--s3); color:var(--ink); border:0; border-radius:0}
+      .mpt-sala{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 16px; padding:16px 18px; margin-top:10px; background:var(--s2)}
+      .mpt-sala.mpt-atual{background:var(--s3)}
+      .mpt-sala.mpt-apagar{background:var(--s4)}
+      .mpt-sala-tx{display:grid; gap:4px; min-width:0}
+      .mpt-sala-tx b{font-size:21px; font-weight:800; letter-spacing:.06em; font-variant-numeric:tabular-nums}
+      .mpt-sala-tx > span{font-size:14px; color:var(--soft)}
+      .mpt-sala-bts{display:flex; gap:8px}
+      .mpt-x{background:transparent; color:var(--soft)}
+      .mpt-x:hover{color:var(--ink); background:var(--s4)}
+      .mpt-vazio{margin:12px 0 0; font-size:16px; color:var(--soft)}
+      .mpt-nota{margin:16px 0 0; max-width:72ch; font-size:14px; color:var(--faint)}
+      .mpt-credito{margin:28px 0 0; max-width:72ch; font-size:14px; color:var(--faint)}
+      @media (max-width:820px){
+        .mpt-cab,.mpt-modos,.mpt-baixo{grid-template-columns:1fr}
+        .mpt-modo{min-height:360px}
+        .mpt-cab h1{font-size:clamp(44px,13.5vw,84px)}
+        .mpt-cab-tx p{font-size:18px}
+      }
+      @media (prefers-reduced-motion:reduce){ .mpt-modo img{transition:none} .mpt-modo:hover img{transform:none} }
       .mp-clicado{background:var(--accent,#e1251b)!important;border-color:var(--accent,#e1251b)!important;color:#fff!important}`;
     document.head.appendChild(st);
     /* o botão fica fora do bloco "Continuar", que some quando o aparelho não tem save do jogo solo */
     const b = el('btnMP');
     if(b){
-      b.hidden = false;
-      /* o botão da abertura leva às salas (continuar, abrir outra ou criar uma nova), nunca direto para a partida */
-      b.onclick = () => MP.abrirEntrada();
-      const cont = b.closest('.ini-cont');
-      if(cont && cont.parentNode){ const w = document.createElement('div'); w.className = 'ini-mp'; cont.parentNode.insertBefore(w, cont.nextSibling); w.appendChild(b); }
+      /* o botão grande da abertura, ao lado de "Chefe de equipe", leva à tela do multiplayer */
+      b.hidden = true;
+      const chefe = document.querySelector('.ini-acoes .btn-contorno');
+      if(chefe && !el('abMP')){
+        const nb = document.createElement('button');
+        nb.className = 'btn btn-contorno btn-lg'; nb.id = 'abMP';
+        nb.innerHTML = '<span>Multiplayer</span> <span class="seta" aria-hidden="true">→</span>';
+        nb.onclick = () => MP.tela();
+        chefe.parentNode.insertBefore(nb, chefe.nextSibling);
+      }
     }
     /* sair da tela da partida por qualquer botão (o menu, "Sair") desliga o modo e tira a barra */
     const mostrar = UI.show;
@@ -948,6 +1098,8 @@
       b.classList.add('mp-clicado');
     }, true);
     if(ler()) MP.conectar(); else MP.desenhar();
+    /* o link direto para a tela do multiplayer: volantedeouro.com/?mp=1#multiplayer */
+    if(location.hash === '#multiplayer') setTimeout(() => MP.tela(), 0);
     addEventListener('online', () => { if(ler() && !MP.ws) MP.tentarDeNovo(); });
     document.addEventListener('visibilitychange', () => { if(!document.hidden && ler() && !MP.ws && MP.con !== 'outra-aba') MP.tentarDeNovo(); });
   }
