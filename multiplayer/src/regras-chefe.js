@@ -10,7 +10,7 @@
    Fora do multiplayer por enquanto: demissão e fim de carreira (o balanço resolve só dívida,
    teto de gastos e falência; fechar a equipe é recusado). */
 import { criarRnd } from './aleatorio.js';
-import { criarMundo, perspectiva, agir, faseDupla, corrida, comSemente, equipesDe } from './chefe-mp.js';
+import { criarMundo, perspectiva, agir, faseDupla, corrida, comSemente, equipesDe, gruposDe, doGrupo, temporadaDo, agrupado } from './chefe-mp.js';
 
 const erro = (codigo, detalhe) => detalhe === undefined ? { erro: codigo } : { erro: codigo, detalhe };
 const ehObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -318,6 +318,13 @@ export function criarRegrasChefe(obterMotor){
       J.Acerto.auto(carroDe(d.k));
       return { ok: true };
     }),
+    /* subir de categoria no inverno (a oferta de C.inv.subir), com o próprio caixa ou com um investidor;
+       a equipe muda de campeonato no começo da temporada */
+    subir: acao(INV, d => typeof d.fin === 'boolean', (J, C, d) => {
+      if(!C.inv || !C.inv.subir) return erro('subir');
+      const r = J.Chefe.subir(d.fin);
+      return { ok: !!r.ok, t: r.t };
+    }),
     evento: acao(TEMP, d => Number.isInteger(d.i), (J, C, d) => {
       if(!C.evento) return erro('evento');
       const def = J.CH_EVENTOS.find(e => e.k === C.evento.k);
@@ -366,7 +373,7 @@ export function criarRegrasChefe(obterMotor){
           const k = String(j.slot); chaveDoIdx.set(idx, k); ordem.push(k);
           /* fundada ('n' + o slot de quem fundou): nome, cor, país e dinheiro do lobby */
           const f = typeof idx === 'string' ? (config.fundadas || {})[idx.slice(1)] : null;
-          equipes[k] = f ? { chefe: j.nome, cc: f.cc, criar: { nome: f.nome, cor: f.cor, cc: f.cc }, fin: f.fin } : { chefe: j.nome, idx };
+          equipes[k] = f ? { chefe: j.nome, cc: f.cc, criar: { nome: f.nome, cor: f.cor, cc: f.cc }, fin: f.fin, base: f.base || undefined } : { chefe: j.nome, idx };
         }
         membros[j.slot] = chaveDoIdx.get(idx);
       }
@@ -405,20 +412,39 @@ export function criarRegrasChefe(obterMotor){
         const fase = mundo.base.fase, ordem = equipesDe(mundo);
         let resultado;
         if(fase === 'inverno'){
-          faseDupla(J, mundo, J => J.Chefe.comecarTemporada());
+          faseDupla(J, mundo, J => J.Chefe.comecarTemporada(), { novaTemporada: true });
           prepararEtapa(J, mundo);
+          mundo.t = 0;
           resultado = { tipo: 'inicio', ano: mundo.base.ano };
         } else if(fase === 'temporada'){
-          const sea = () => mundo.base.temporada;
-          if(sea().round < sea().calendar.length){
-            const recs = corrida(J, mundo);
-            for(const slot of ordem) agir(J, mundo, slot, (J, C) => J.Chefe.sortearEvento(recs[slot]));
-            const h = recs[mundo.anfitriao];
-            /* só o que todo mundo viu na pista: nada de dinheiro nem de notas da equipe */
-            resultado = { tipo: 'corrida', etapa: h.r, gp: h.gp, venc: h.venc, pole: h.pole,
-              top: h.top.map(x => ({ pos: x.pos, nome: x.n, cc: x.cc, equipe: x.t, dnf: x.dnf || null })) };
+          /* cada categoria anda a sua fração do calendário: todas acabam na mesma rodada da sala */
+          const gs = gruposDe(mundo), sea = g => temporadaDo(mundo, g);
+          const falta = g => sea(g).round < sea(g).calendar.length;
+          if(gs.some(falta)){
+            const tam = g => sea(g).calendar.length, nmax = Math.max(1, ...gs.map(tam));
+            const t = agrupado(mundo) ? (mundo.t || 0) : sea(gs[0]).round;
+            /* cada categoria com o seu sorteio, tirado antes de qualquer corrida (as duas passadas da corrida ao vivo montam o mesmo) */
+            const sementes = agrupado(mundo) ? gs.map(() => Math.floor(J.amb.Math.random() * 4294967296)) : null;
+            const recs = {}, etapas = [];
+            gs.forEach((g, i) => {
+              const alvo = Math.min(tam(g), Math.floor((t + 1) * tam(g) / nmax));
+              let guarda = 0;
+              while(sea(g).round < alvo && guarda++ < 5){
+                const r = sementes ? comSemente(J, criarRnd('etapa:' + sementes[i], sea(g).round), () => corrida(J, mundo, g)) : corrida(J, mundo, g);
+                Object.assign(recs, r);
+                const h = r[doGrupo(mundo, g)[0]];
+                /* só o que todo mundo viu na pista: nada de dinheiro nem de notas da equipe */
+                if(h) etapas.push({ cat: g === '*' ? null : g, etapa: h.r, gp: h.gp, venc: h.venc, pole: h.pole,
+                  top: h.top.map(x => ({ pos: x.pos, nome: x.n, cc: x.cc, equipe: x.t, dnf: x.dnf || null })) });
+              }
+            });
+            if(agrupado(mundo)) mundo.t = t + 1;
+            for(const slot of ordem) if(recs[slot]) agir(J, mundo, slot, (J, C) => J.Chefe.sortearEvento(recs[slot]));
+            const p = etapas[0] || {};
+            resultado = { tipo: 'corrida', etapa: p.etapa, gp: p.gp, venc: p.venc, pole: p.pole, top: p.top || [] };
+            if(etapas.length > 1) resultado.etapas = etapas;
           } else resultado = { tipo: 'fimTemporada' };
-          if(sea().round >= sea().calendar.length){
+          if(!gs.some(falta)){
             faseDupla(J, mundo, J => J.Chefe.fimDeTemporada());
             resultado.fimTemporada = true;
           }

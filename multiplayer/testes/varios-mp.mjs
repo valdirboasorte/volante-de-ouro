@@ -14,7 +14,7 @@ import { ambienteFalso } from '../src/pagina-falsa.js';
 import { criarRnd } from '../src/aleatorio.js';
 import { criarRegrasChefe } from '../src/regras-chefe.js';
 import { criarRegrasPiloto } from '../src/regras-piloto.js';
-import { perspectiva as vistaChefe, agir as agirChefe } from '../src/chefe-mp.js';
+import { perspectiva as vistaChefe, agir as agirChefe, temporadaDo, grupoDe } from '../src/chefe-mp.js';
 import { perspectiva as vistaPiloto } from '../src/piloto-mp.js';
 import { ligarCorridas, desligarCorridas } from '../src/corrida-mp.js';
 
@@ -58,8 +58,8 @@ console.log('\nChefe: 4 jogadores, 3 equipes (Ana e Bia dividem a equipe do anfi
       corridas++;
       /* a mesma chegada para as três equipes: a pontuação de construtores bate entre os lados */
       const pts = s => { const C = V(s), t = C.temporada; return t && t.cstand ? t.cstand.EU || 0 : 0; };
-      const base = mundo.base.temporada && mundo.base.temporada.cstand;
-      if(base && !(pts(0) === (base.EU || 0) && pts(2) === (base.EU2 || 0) && pts(3) === (base.EU3 || 0))) iguais = false;
+      const tg = temporadaDo(mundo, grupoDe(mundo, '0')), base = tg && tg.cstand;
+      if(!base || !(pts(0) === (base.EU || 0) && pts(2) === (base.EU2 || 0) && pts(3) === (base.EU3 || 0))) iguais = false;
     }
     N++;
   }

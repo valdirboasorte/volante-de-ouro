@@ -243,6 +243,32 @@ export async function fase1({ base, versao, estado }){
     fa.ws.close(); fb.ws.close();
     await dormir(300);
   }
+
+  // 9: começar na base: a Ana assume uma equipe da categoria principal, a Bia funda uma na primeira
+  //    categoria de acesso; cada uma começa no campeonato dela
+  {
+    const escada = J.Chefe.escadaBase(2024, 'BR', 'f1');
+    let r = await api(base, '/api/salas', { nome: 'Ana', modo: 'chefe', versao }, { ip: IP });
+    const G = r.json || {};
+    const ga = ligar(await abrir(base, G.codigo, G.ficha), G.codigo, 0);
+    await esperar(ga, m => m.t === 'estado');
+    r = await api(base, `/api/salas/${G.codigo}/entrar`, { nome: 'Bia', versao }, { ip: IP });
+    const gb = ligar(await abrir(base, G.codigo, r.json.ficha), G.codigo, 1);
+    await esperar(gb, m => m.t === 'estado');
+    await pedir(ga, { t: 'configurar', config: { aoVivo: false } });
+    await pedir(ga, { t: 'escolherEquipe', idx: idxA });
+    const ruim = await pedir(gb, { t: 'fundarEquipe', equipe: { nome: 'Bia Junior', cor: J.UIC.CORES[3], cc: 'BR', fin: 'investidor', base: 'Fórmula 1' } });
+    const rf = await pedir(gb, { t: 'fundarEquipe', equipe: { nome: 'Bia Junior', cor: J.UIC.CORES[3], cc: 'BR', fin: 'investidor', base: escada[0] } });
+    const ri = await pedir(ga, { t: 'iniciar' }, 60000);
+    await esperar(ga, m => m.t === 'sala' && m.sala.partida, 60000); await esperar(gb, m => m.t === 'sala' && m.sala.partida, 60000);
+    const [VA, VB] = await sodois(ga, gb);
+    checar(`9 base: uma categoria fora da escada é recusada; a Bia começa na ${escada[0]} e a Ana na categoria principal, cada uma no seu campeonato`,
+      ruim && ruim.codigo === 'fundar' && rf && rf.t === 'ok' && ri && ri.t === 'ok' && VA && VB
+      && VB.eq.nome === 'Bia Junior' && VB.cat === escada[0] && VB.modo === 'base' && VA.eq.nome === nomeA && VA.cat !== escada[0]
+      && VB.mpOutras.some(o => o.fora && o.nome === nomeA), { ruim, rf, ri, a: VA && VA.cat, b: VB && [VB.cat, VB.modo], outras: VB && VB.mpOutras.map(o => [o.nome, o.fora]) });
+    ga.ws.close(); gb.ws.close();
+    await dormir(300);
+  }
 }
 
 export async function fase2({ base, versao, estado }){

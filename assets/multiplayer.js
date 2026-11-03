@@ -51,6 +51,7 @@
     origem: 'Este endereço não pode abrir salas.',
     anfitriao: 'Só o anfitrião muda isso.',
     forcar: 'Ainda não dá para avançar sem os outros.',
+    subir: 'Não há oferta para subir de categoria agora.',
     fundar: 'Confira a equipe: nome de 2 a 22 letras (sem repetir o de outra equipe fundada), cor, país e de onde vem o dinheiro.',
     tempo: 'O servidor demorou a responder. Tente de novo.',
     jogadores: 'A partida precisa de pelo menos dois jogadores na sala.',
@@ -712,7 +713,7 @@
         <div class="mp-eqs">${Object.entries(cfg.fundadas || {}).map(([k, f]) => { const v = 'n' + k, d = s.jogadores.filter(j => escolhas[j.slot] === v), minha = d.some(j => j.slot === eu);
           return `<button class="sv-item mp-jog mp-eq${minha ? ' mp-sel' : ''}" onclick="MP.escolherEquipe('${v}')"${minha || MP.con !== 'conectado' ? ' disabled' : ''}>
             <span class="mp-cor" style="background:${esc(f.cor)}" aria-hidden="true"></span>
-            <span class="sv-tx"><b data-i18n-ignore>${esc(f.nome)}</b><span class="sv-desc"><span>fundada</span>${d.length ? ` · <span data-i18n-ignore>${d.map(j => esc(j.nome)).join(', ')}</span>` : ''}</span></span></button>`; }).join('')}${lista.map(([i, t]) => { const d = donos(i), minha = d.some(j => j.slot === eu);
+            <span class="sv-tx"><b data-i18n-ignore>${esc(f.nome)}</b><span class="sv-desc"><span>fundada</span>${f.base ? ` · <span data-i18n-ignore>${esc(f.base)}</span>` : ''}${d.length ? ` · <span data-i18n-ignore>${d.map(j => esc(j.nome)).join(', ')}</span>` : ''}</span></span></button>`; }).join('')}${lista.map(([i, t]) => { const d = donos(i), minha = d.some(j => j.slot === eu);
           return `<button class="sv-item mp-jog mp-eq${minha ? ' mp-sel' : ''}" onclick="MP.escolherEquipe(${i})"${minha || MP.con !== 'conectado' ? ' disabled' : ''}>
             <span class="mp-cor" style="background:${esc(t.color || '#888')}" aria-hidden="true"></span>
             <span class="sv-tx"><b data-i18n-ignore>${esc(t.name)}</b>${d.length ? `<span class="sv-desc" data-i18n-ignore>${d.map(j => esc(j.nome)).join(', ')}</span>` : ''}</span></button>`; }).join('')}</div>`;
@@ -724,16 +725,24 @@
       if(fundadas[eu]) return '';
       if(!MP._fundarAberto) return `<div class="mp-vels"><button class="btn btn-contorno btn-sm" onclick="MP._fundarAberto=true;MP.abrir()"${ligado}>Fundar uma equipe</button></div>`;
       const cores = (typeof UIC !== 'undefined' && UIC.CORES) || ['#e8112d'], fins = (typeof Chefe !== 'undefined' && Chefe.FIN) || {};
-      const F = MP._fundar || (MP._fundar = { nome: '', cc: 'BR', cor: cores[0], fin: 'investidor' });
+      const F = MP._fundar || (MP._fundar = { nome: '', cc: 'BR', cor: cores[0], fin: 'investidor', base: null });
+      const cfg = s.config || {};
+      /* onde começa: na categoria principal ou numa de acesso (a escada depende do país, como no jogo) */
+      let escada = [];
+      try { escada = Chefe.escadaBase(cfg.ano || 2024, F.cc, cfg.sk || 'f1'); } catch(e){}
+      if(F.base && !escada.includes(F.base)) F.base = null;
       return `<div class="sv-item mp-fundar"><div class="sv-tx">
           <span class="sv-modo">Fundar uma equipe</span>
           <span class="sv-desc">O carro é o pior do grid e ninguém quer correr por você. Ainda. Os pilotos você contrata no inverno.</span>
           <div class="mp-form">
             <div class="field"><label class="lbl" for="mpFNome">Nome da equipe</label><input type="text" id="mpFNome" maxlength="22" value="${esc(F.nome)}" oninput="MP._fundar.nome=this.value" autocomplete="off" data-i18n-ignore></div>
-            <div class="field"><label class="lbl" for="mpFPais">País</label><select id="mpFPais" onchange="MP._fundar.cc=this.value">${COUNTRIES.map(c => `<option value="${c.cc}"${c.cc === F.cc ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
+            <div class="field"><label class="lbl" for="mpFPais">País</label><select id="mpFPais" onchange="MP._fundar.cc=this.value;MP.abrir()">${COUNTRIES.map(c => `<option value="${c.cc}"${c.cc === F.cc ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
           </div>
           <span class="lbl">Cor</span>
           <div class="ch-cores">${cores.map(c => `<button class="ch-cor${F.cor === c ? ' sel' : ''}" style="background:${c}" onclick="MP._fundar.cor='${c}';MP.abrir()" aria-label="Cor ${c}" aria-pressed="${F.cor === c}"></button>`).join('')}</div>
+          <span class="lbl">Onde a equipe começa</span>
+          <div class="mp-vels"><button class="btn btn-sm ${!F.base ? 'btn-primary' : 'btn-ghost'}" onclick="MP._fundar.base=null;MP.abrir()">Na categoria principal</button>${escada.map(c => `<button class="btn btn-sm ${F.base === c ? 'btn-primary' : 'btn-ghost'}" onclick="MP._fundar.base='${esc(c).replace(/'/g, "\\'")}';MP.abrir()" data-i18n-ignore>${esc(c)}</button>`).join('')}</div>
+          <span class="sv-desc">${F.base ? 'Começar na base: pilotos que pagam para correr, orçamento curto e a categoria principal lá em cima. Cada categoria com equipe da sala tem o seu campeonato.' : 'Fundar na categoria principal: o carro é o pior do grid.'}</span>
           <span class="lbl">De onde vem o dinheiro</span>
           <div class="mp-vels">${Object.keys(fins).map(k => `<button class="btn btn-sm ${F.fin === k ? 'btn-primary' : 'btn-ghost'}" onclick="MP._fundar.fin='${k}';MP.abrir()" title="${esc(fins[k].d)}">${esc(fins[k].n)}</button>`).join('')}</div>
           <span class="sv-desc">${esc((fins[F.fin] || {}).d || '')}</span>
@@ -742,7 +751,7 @@
     },
     async fundarEquipe(){
       const F = MP._fundar || {};
-      const r = await MP.enviar('fundarEquipe', { equipe: { nome: String(F.nome || '').trim(), cor: F.cor, cc: F.cc, fin: F.fin } });
+      const r = await MP.enviar('fundarEquipe', { equipe: { nome: String(F.nome || '').trim(), cor: F.cor, cc: F.cc, fin: F.fin, base: F.base || null } });
       if(r.erro) return UI.toast(erroTxt(r.erro));
       MP._fundarAberto = false; UI.toast('Equipe fundada: ela já é a sua nesta sala.');
     },

@@ -923,7 +923,9 @@ export class Sala extends DurableObject {
   }
 
   /* fundar uma equipe, no lobby da sala de chefe, como o "Fundar uma equipe" do jogo: nome (2 a 22),
-     cor da paleta do jogo, país e de onde vem o dinheiro. Quem funda já fica nela; outros podem entrar. */
+     cor da paleta do jogo, país e de onde vem o dinheiro; base (opcional): começar numa categoria de
+     acesso da escada da série, como o "Começar na base" (a escada depende do país). Quem funda já fica
+     nela; outros podem entrar. Cada categoria com equipe humana vira um campeonato da sala. */
   async fundarEquipe(ws, slot, msg, id){
     const s = this.sala;
     if(s.modo !== 'chefe') return this.erro(ws, 'modo', id);
@@ -931,16 +933,18 @@ export class Sala extends DurableObject {
     const f = msg.equipe;
     if(!f || typeof f !== 'object' || Array.isArray(f)) return this.erro(ws, 'fundar', id);
     const nome = limparNome(f.nome).slice(0, 22);
-    let ok = nome.length >= 2 && typeof f.cor === 'string' && typeof f.cc === 'string' && typeof f.fin === 'string';
+    let ok = nome.length >= 2 && typeof f.cor === 'string' && typeof f.cc === 'string' && typeof f.fin === 'string'
+      && (f.base === undefined || f.base === null || typeof f.base === 'string');
     try{
       const J = this.motor();
-      ok = ok && J.UIC.CORES.includes(f.cor) && J.COUNTRIES.some(c => c.cc === f.cc) && Object.hasOwn(J.Chefe.FIN, f.fin);
+      ok = ok && J.UIC.CORES.includes(f.cor) && J.COUNTRIES.some(c => c.cc === f.cc) && Object.hasOwn(J.Chefe.FIN, f.fin)
+        && (!f.base || J.Chefe.escadaBase(s.config.ano, f.cc, s.config.sk).includes(f.base));
     }catch(e){ ok = false; }
     if(!ok) return this.erro(ws, 'fundar', id);
     s.config.fundadas = s.config.fundadas || {};
     const igual = x => x.nome.toLocaleLowerCase() === nome.toLocaleLowerCase();
     if(Object.entries(s.config.fundadas).some(([k, v]) => Number(k) !== slot && igual(v))) return this.erro(ws, 'fundar', id);
-    s.config.fundadas[slot] = { nome, cor: f.cor, cc: f.cc, fin: f.fin };
+    s.config.fundadas[slot] = Object.assign({ nome, cor: f.cor, cc: f.cc, fin: f.fin }, f.base ? { base: f.base } : {});
     s.config.equipes = s.config.equipes || {};
     s.config.equipes[slot] = 'n' + slot;
     s.v++;

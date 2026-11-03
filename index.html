@@ -2693,11 +2693,11 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/complete-driver.js" defer></script>
 <script src="assets/i18n/complete-chief.js" defer></script>
 <script src="assets/i18n/complete-common.js" defer></script>
-<script src="assets/i18n/novidades.js?v=20261103-fundar" defer></script>
+<script src="assets/i18n/novidades.js?v=20261103-base" defer></script>
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js?v=20261103-i18n" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
-<script src="assets/multiplayer.js?v=20261103-fundar" defer></script>
+<script src="assets/multiplayer.js?v=20261103-base" defer></script>
 <script src="assets/trilho.js?v=20261103-trilho4" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js"></script>
@@ -25534,8 +25534,8 @@ const Chefe = {
     const ano = C.ano, f1 = Chefe.ehTopo();
     const era = eraOfSeries(ano, Chefe.sk());
     const eu = { id:'EU', name:C.eq.nome, color:C.eq.cor, str: Chefe.forca(), nossa:true };
-    /* multiplayer: a outra equipe humana, com a força do carro dela */
-    const humanas = (C.mpOutras || []).map(o => ({ id: o.id, name: o.nome, color: o.cor, str: o.str, humana: true }));
+    /* multiplayer: as outras equipes humanas desta categoria, com a força do carro delas (as de outra categoria, fora, não) */
+    const humanas = (C.mpOutras || []).filter(o => !o.fora).map(o => ({ id: o.id, name: o.nome, color: o.cor, str: o.str, humana: true }));
     let teams, field;
     if(f1){
       const ia = Chefe.equipesIA(ano);
@@ -25576,8 +25576,8 @@ const Chefe = {
     };
     C.temporada.field.forEach(f => { if(f.teamId === 'EU') f.teamId = 'EU'; });
     Chefe.escalar(C.temporada);
-    /* multiplayer: os carros da outra equipe humana, com os pilotos que ela escalou */
-    (C.mpOutras || []).forEach(o => (o.carros || []).forEach(f => C.temporada.field.push(Object.assign({}, f, { teamId: o.id, nosso: false }))));
+    /* multiplayer: os carros das outras equipes humanas desta categoria, com os pilotos que elas escalaram */
+    (C.mpOutras || []).filter(o => !o.fora).forEach(o => (o.carros || []).forEach(f => C.temporada.field.push(Object.assign({}, f, { teamId: o.id, nosso: false }))));
   },
 
   /* quem pilota os seus dois carros neste fim de semana */
@@ -31371,8 +31371,12 @@ const UIC = {
         <button class="btn btn-gold" ${op.ok && C.caixa >= op.custo ? '' : 'disabled'} onclick="UIC.subir(false)">Subir com o próprio caixa</button></div>`);
   },
   subir(fin){
+    if(UIC.mp('subir', { fin: !!fin }, r => UIC.subiu(r))) return;
     const r = Chefe.subir(!!fin);
     UIC.salvar(); UIC.render();
+    UIC.subiu(r);
+  },
+  subiu(r){
     UI.modal(UI.head(r.ok ? 'Subiu' : 'Não foi desta vez', C.cat, false) +
       `<div class="mbd"><div class="res-nar" style="margin-top:0;border-left-color:${r.ok ? 'var(--gold)' : 'var(--red)'}">${esc(r.t)}</div></div>
       <div class="mft"><span class="sp"></span><button class="btn btn-primary" onclick="UI.close();UIC.render()">Fechar</button></div>`);

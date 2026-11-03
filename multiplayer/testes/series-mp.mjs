@@ -8,7 +8,7 @@ import { ambienteFalso } from '../src/pagina-falsa.js';
 import { criarRnd } from '../src/aleatorio.js';
 import { criarRegrasChefe } from '../src/regras-chefe.js';
 import { criarRegrasPiloto } from '../src/regras-piloto.js';
-import { perspectiva as vistaChefe } from '../src/chefe-mp.js';
+import { perspectiva as vistaChefe, temporadaDo, grupoDe } from '../src/chefe-mp.js';
 import { perspectiva as vistaPiloto } from '../src/piloto-mp.js';
 import { ligarCorridas, desligarCorridas } from '../src/corrida-mp.js';
 
@@ -45,7 +45,7 @@ for(const sk of SERIES){
       const r = chefe.processar(mundo, N, criarRnd(codigo, N)); mundo = r.mundo;
       if(r.resultado.tipo === 'corrida'){
         corridas++;
-        const base = mundo.base.temporada.cstand || {}, pts = s => (vistaChefe(mundo, String(s)).temporada.cstand || {}).EU || 0;
+        const base = temporadaDo(mundo, grupoDe(mundo, '0')).cstand || {}, pts = s => (vistaChefe(mundo, String(s)).temporada.cstand || {}).EU || 0;
         if(!(pts(0) === (base.EU || 0) && pts(2) === (base.EU2 || 0))) iguais = false;
       }
     }
