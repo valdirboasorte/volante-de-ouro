@@ -697,10 +697,14 @@
      Um rosto desenhado (montado pelo jogador, nunca gerado) ou uma foto que ele escolhe.
      Fica neste navegador (vdo_retrato), fora do save: não pesa na carreira, não vai para o
      multiplayer nem para a internet. A chave liga o retrato ao piloto da carreira atual. */
-  const PELES = ['#f3d5bd', '#e6b897', '#cf9a72', '#a8693f', '#7b4a2b', '#4e2f1d'];
-  const CABELOS = ['#16110d', '#3a2315', '#6a4224', '#a5692f', '#d8b35e', '#a3a8ae'];
-  const ESTILOS = [['curto', 'Curto'], ['topete', 'Topete'], ['comprido', 'Comprido'], ['cacheado', 'Cacheado'], ['careca', 'Careca']];
-  const BARBAS = [['nenhuma', 'Nenhuma'], ['curta', 'Curta'], ['cheia', 'Cheia']];
+  const PELES = ['#f3d5bd', '#e9bf9c', '#d39d76', '#b07448', '#82502f', '#563421'];
+  const CABELOS = ['#15100c', '#3a2315', '#6a4224', '#a5692f', '#d9b462', '#a9aeb4', '#7d2a1d'];
+  const OLHOS = ['#4a2f1b', '#7a5228', '#3f7a4a', '#3a6ea5', '#6b7580'];
+  const ESTILOS = [['curto', 'Curto'], ['topete', 'Topete'], ['raspado', 'Raspado'], ['comprido', 'Comprido'], ['cacheado', 'Cacheado'], ['careca', 'Careca']];
+  const BARBAS = [['nenhuma', 'Nenhuma'], ['bigode', 'Bigode'], ['cavanhaque', 'Cavanhaque'], ['curta', 'Curta'], ['cheia', 'Cheia']];
+  const OCULOS = [['nenhum', 'Sem óculos'], ['grau', 'De grau'], ['escuros', 'Escuros'], ['esportivos', 'Esportivos']];
+  const CABECA = [['nada', 'Nada'], ['bone', 'Boné da equipe'], ['fone', 'Fone de rádio']];
+  const PADRAO = { pele: 1, cor: 1, olhos: 0, estilo: 'curto', barba: 'nenhuma', oculos: 'nenhum', cabeca: 'nada' };
   const chaveDe = d => d ? [d.name, d.cc, d.num].join('|') : '';
   function lerRetrato(){ try { return JSON.parse(localStorage.getItem('vdo_retrato') || 'null'); } catch(e){ return null; } }
   function retratoDe(s){ const r = lerRetrato(); return r && s && s.driver && r.chave === chaveDe(s.driver) ? r : null; }
@@ -711,34 +715,61 @@
   /* sem retrato escolhido, um rosto desenhado e estável para o piloto (sai do nome, não da nacionalidade) */
   function avatarPadrao(d){
     const h = tenta(() => seedOf(String(d.name) + ':' + d.num), 7) >>> 0;
-    return { pele: h % PELES.length, cor: (h >> 3) % CABELOS.length, estilo: ESTILOS[(h >> 6) % 4][0], barba: BARBAS[(h >> 9) % 3][0] };
+    return Object.assign({}, PADRAO, { pele: h % PELES.length, cor: (h >> 3) % 6, olhos: (h >> 5) % OLHOS.length,
+      estilo: ESTILOS[(h >> 7) % 5][0], barba: BARBAS[(h >> 10) % BARBAS.length][0] });
   }
-  function avatarSvg(a, cor){
-    a = Object.assign({ pele: 1, cor: 1, estilo: 'curto', barba: 'nenhuma' }, a || {});
-    const pele = PELES[a.pele] || PELES[1], cab = CABELOS[a.cor] || CABELOS[1], sombra = 'rgba(0,0,0,.16)';
-    const atras = a.estilo === 'comprido' ? `<path d="M33 96C27 60 33 29 60 28s34 31 27 68z" fill="${cab}"/>` : '';
-    const frente = {
-      curto: `<path d="M36 62C34 40 47 30 60 30s26 10 24 32c-3-11-11-17-24-17S39 51 36 62z" fill="${cab}"/>`,
-      topete: `<path d="M35 63C32 38 45 24 62 25c14 1 26 11 23 37-3-12-9-17-17-18 4-6 1-10-6-11-7 4-15 7-27 30z" fill="${cab}"/>`,
-      comprido: `<path d="M37 62C35 41 47 31 60 31s25 10 23 31c-4-10-12-16-23-16S41 52 37 62z" fill="${cab}"/>`,
-      cacheado: `<g fill="${cab}">${[[40, 52, 9], [48, 40, 10], [60, 35, 11], [72, 40, 10], [80, 52, 9], [37, 63, 6], [83, 63, 6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>`,
-      careca: `<path d="M44 44q16-8 32 0" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none" stroke-linecap="round"/>`
-    }[a.estilo] || '';
+  /* o boneco: um retrato de piloto em traço chapado, as cores da paleta e a cor da equipe */
+  function avatarSvg(a, cor, vb){
+    a = Object.assign({}, PADRAO, a || {});
+    cor = esc(cor || '#3a3f46');
+    const pele = PELES[a.pele] || PELES[1], cab = CABELOS[a.cor] || CABELOS[1], olho = OLHOS[a.olhos] || OLHOS[0];
+    const somb = 'rgba(0,0,0,.16)', somb2 = 'rgba(0,0,0,.09)', luz = 'rgba(255,255,255,.16)';
+    const atras = a.estilo === 'comprido' && a.cabeca !== 'bone' ? `<path d="M33 100c-7-30-4-64 27-66 31 2 34 36 27 66-3-15-4-27-5-35-6-8-13-12-22-12s-16 4-22 12c-1 8-2 20-5 35z" fill="${cab}"/>` : '';
+    const cabelo = a.cabeca === 'bone' ? '' : ({
+      curto: `<path d="M36 60c-1-16 9-26 24-26s25 10 24 26c-2-7-7-11-12-12-5 4-15 5-25 2-5 2-9 5-11 10z" fill="${cab}"/><path d="M49 39q11-4 22 0" stroke="${luz}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+      topete: `<path d="M35 60c-2-18 8-30 26-31 11-1 21 6 23 15 1 6 0 11-1 16-2-8-7-12-13-13 3-6 0-10-5-11-9 5-18 7-24 9-3 4-5 9-6 15z" fill="${cab}"/><path d="M52 33q9-3 17 1" stroke="${luz}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+      raspado: `<path d="M37 57c1-14 10-21 23-21s22 7 23 21c-6-6-14-9-23-9s-17 3-23 9z" fill="${cab}" opacity=".6"/>`,
+      comprido: `<path d="M37 62c0-17 9-27 23-27 15 0 24 10 23 27-5-9-12-14-23-14-8 0-15 3-23 14z" fill="${cab}"/><path d="M50 39q10-4 20 0" stroke="${luz}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+      cacheado: `<g fill="${cab}">${[[40, 53, 9], [47, 41, 10], [59, 35, 11], [71, 40, 10], [80, 52, 9], [36, 63, 6.5], [84, 63, 6.5]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><g fill="rgba(0,0,0,.14)">${[[45, 45, 3], [58, 38, 3.4], [70, 44, 3], [79, 55, 2.6], [41, 57, 2.6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>`,
+      careca: `<path d="M45 42q15-7 30 0" stroke="${luz}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    }[a.estilo] || '');
     const barba = {
-      curta: `<path d="M40 74c2 17 11 25 20 25s18-8 20-25c-4 11-10 15-20 15s-16-4-20-15z" fill="${cab}" opacity=".85"/>`,
-      cheia: `<path d="M38 66c0 25 10 37 22 37s22-12 22-37c-3 12-9 19-22 19s-19-7-22-19z" fill="${cab}"/><path d="M52 84q8 4 16 0" stroke="${pele}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+      bigode: `<path d="M52 79q8-4 16 0q-3 3-8 2q-5 1-8-2z" fill="${cab}"/>`,
+      cavanhaque: `<path d="M53 79q7-3 14 0q-2 2-7 2q-5 0-7-2z" fill="${cab}"/><path d="M55 87q5 2 10 0q0 7-5 9q-5-2-5-9z" fill="${cab}"/>`,
+      curta: `<path d="M39 74c1 15 9 26 21 26s20-11 21-26c-4 11-10 16-21 16s-17-5-21-16z" fill="${cab}" opacity=".55"/>`,
+      cheia: `<path d="M38 67c0 25 10 37 22 37s22-12 22-37c-3 12-9 19-22 19s-19-7-22-19z" fill="${cab}"/><path d="M53 84q7 4 14 0" stroke="${pele}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
     }[a.barba] || '';
-    return `<svg class="pp-avatar" viewBox="0 0 120 150" aria-hidden="true"><rect width="120" height="150" fill="${esc(cor || '#3a3f46')}"/>
-      ${atras}<path d="M60 104c-22 0-44 10-50 46h100c-6-36-28-46-50-46z" fill="#15171b"/>
-      <path d="M44 106l16 17 16-17" fill="none" stroke="${esc(cor || '#3a3f46')}" stroke-width="5" stroke-linejoin="round"/>
-      <path d="M48 89h24v17c-7 6-17 6-24 0z" fill="${pele}"/><path d="M48 95h24v5c-8 4-16 4-24 0z" fill="${sombra}"/>
-      <ellipse cx="38" cy="68" rx="4.5" ry="7" fill="${pele}"/><ellipse cx="82" cy="68" rx="4.5" ry="7" fill="${pele}"/>
-      <ellipse cx="60" cy="65" rx="22" ry="27" fill="${pele}"/>
-      <path d="M47 57h9M64 57h9" stroke="${cab}" stroke-width="2.6" stroke-linecap="round"/>
-      <ellipse cx="51.5" cy="65" rx="2.6" ry="2.3" fill="#1b1410"/><ellipse cx="68.5" cy="65" rx="2.6" ry="2.3" fill="#1b1410"/>
-      <path d="M60 67q-3 7 0 9" stroke="${sombra}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M53 82q7 4 14 0" stroke="#7a3b2e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      ${barba}${frente}</svg>`;
+    const oculos = {
+      grau: `<g fill="rgba(255,255,255,.08)" stroke="#1b1e23" stroke-width="1.7"><rect x="44.5" y="59.5" width="13" height="9" rx="2.5"/><rect x="62.5" y="59.5" width="13" height="9" rx="2.5"/></g><path d="M57.5 63q2.5-1.5 5 0" stroke="#1b1e23" stroke-width="1.5" fill="none"/>`,
+      escuros: `<g fill="#14161a"><path d="M43.5 60h15c0 6-3 9-7.5 9s-7.5-3-7.5-9z"/><path d="M61.5 60h15c0 6-3 9-7.5 9s-7.5-3-7.5-9z"/></g><path d="M58.5 61h3" stroke="#14161a" stroke-width="1.6"/><path d="M46 62l4 0M64 62l4 0" stroke="rgba(255,255,255,.35)" stroke-width="1.2" stroke-linecap="round"/>`,
+      esportivos: `<path d="M41 60q19-5 38 0l-1.5 7q-17.5 4-35 0z" fill="#16181c"/><path d="M43 61.5q17-4 34 0l-1 4q-16 3-32 0z" fill="${cor}" opacity=".75"/><path d="M47 62.5q6-1 11-1" stroke="rgba(255,255,255,.5)" stroke-width="1.2" stroke-linecap="round"/>`
+    }[a.oculos] || '';
+    const cabeca = {
+      bone: `<path d="M35 58c0-15 11-24 25-24s25 9 25 24z" fill="${cor}"/><path d="M35 58c0-15 11-24 25-24s25 9 25 24" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.2"/><path d="M33 57q27-7 54 0q-27 5-54 0z" fill="#16181c"/><circle cx="60" cy="45" r="4" fill="#f2f4f6"/><path d="M60 34v4" stroke="rgba(0,0,0,.2)" stroke-width="1.2"/>`,
+      fone: `<path d="M35 64c0-21 10-30 25-30s25 9 25 30" fill="none" stroke="#202328" stroke-width="4.5" stroke-linecap="round"/><rect x="29" y="58" width="10" height="16" rx="4.5" fill="#202328"/><rect x="81" y="58" width="10" height="16" rx="4.5" fill="#202328"/><rect x="30.5" y="61" width="7" height="10" rx="3" fill="${cor}"/><rect x="82.5" y="61" width="7" height="10" rx="3" fill="${cor}"/><path d="M34 73q3 13 16 12" stroke="#202328" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="51.5" cy="85" r="2.6" fill="#202328"/>`
+    }[a.cabeca] || '';
+    return `<svg class="pp-avatar" viewBox="${vb || '0 0 120 150'}" aria-hidden="true">
+      <rect width="120" height="150" fill="${cor}"/><path d="M80 0h22L50 150H28z" fill="#000" opacity=".12"/><rect y="104" width="120" height="46" fill="#000" opacity=".14"/>
+      ${atras}
+      <path d="M8 150c3-25 19-39 52-41 33 2 49 16 52 41z" fill="#1b1e23"/>
+      <path d="M13 134c9-11 20-16 32-18M107 134c-9-11-20-16-32-18" stroke="${cor}" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M60 120v30" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/><rect x="69" y="128" width="17" height="9" rx="2" fill="#e9ecef" opacity=".85"/>
+      <path d="M49 91h22v18c-6 5-16 5-22 0z" fill="${pele}"/><path d="M49 96c7 5 15 5 22 0v7c-7 4-15 4-22 0z" fill="${somb}"/>
+      <path d="M43 111c5 7 29 7 34 0l-2 9c-7 6-23 6-30 0z" fill="${cor}"/>
+      <path d="M38 64c-5-2-8 3-7 9s5 9 9 8z" fill="${pele}"/><path d="M82 64c5-2 8 3 7 9s-5 9-9 8z" fill="${pele}"/>
+      <path d="M36 70q-1 4 2 7M84 70q1 4-2 7" stroke="${somb}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M60 36c-14 0-24 10-24 26 0 10 2 20 7 27 5 7 11 11 17 11s12-4 17-11c5-7 7-17 7-27 0-16-10-26-24-26z" fill="${pele}"/>
+      <path d="M73 74c4 6 5 12 2 19 4-4 7-11 8-20z" fill="${somb2}"/><path d="M47 74c-4 6-5 12-2 19-4-4-7-11-8-20z" fill="${somb2}"/>
+      <ellipse cx="51" cy="64.5" rx="3.8" ry="2.6" fill="#f6f2ec"/><ellipse cx="69" cy="64.5" rx="3.8" ry="2.6" fill="#f6f2ec"/>
+      <circle cx="51.3" cy="64.6" r="2" fill="${olho}"/><circle cx="69.3" cy="64.6" r="2" fill="${olho}"/>
+      <circle cx="51.3" cy="64.6" r=".95" fill="#111"/><circle cx="69.3" cy="64.6" r=".95" fill="#111"/>
+      <circle cx="52" cy="63.8" r=".55" fill="#fff"/><circle cx="70" cy="63.8" r=".55" fill="#fff"/>
+      <path d="M46.8 63q4.2-2.8 8.4 0M64.8 63q4.2-2.8 8.4 0" stroke="rgba(0,0,0,.4)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M45.5 58q5.5-3.2 11-.6M63.5 57.4q5.5-2.6 11 .6" stroke="${a.estilo === 'careca' && a.barba === 'nenhuma' ? '#3a2315' : cab}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M60.5 66v8q-3 1.6-.4 3" stroke="${somb}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M53.5 82q6.5 4.2 13 0" stroke="#8c3f33" stroke-width="2.1" fill="none" stroke-linecap="round"/><path d="M56 85q4 1.6 8 0" stroke="${somb2}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      ${barba}${cabelo}${cabeca}${oculos}
+    </svg>`;
   }
   /* o rosto que a capa mostra: o escolhido, a foto real do Commons ou o desenho padrão */
   function rostoHtml(d, cor){
@@ -750,33 +781,62 @@
     return { html: avatarSvg(avatarPadrao(d), cor), commons: null };
   }
 
-  /* o editor: o mesmo na nova carreira e na janela do perfil */
+  /* ── o editor: o mesmo na nova carreira e na janela do perfil ──
+     À esquerda o cartão do piloto, ao vivo; à direita as abas, com cada opção mostrada no próprio boneco */
   PP.retEd = null;
-  function editorHtml(cor){
-    const e = PP.retEd, a = e.avatar;
-    const prev = e.tipo === 'foto' && e.foto ? `<img src="${e.foto}" alt="">` : avatarSvg(a, cor);
-    const sw = (lista, k, rot) => `<div class="pp-sw" role="group" aria-label="${rot}">${lista.map((c, i) => `<button type="button" style="--c:${c}" aria-pressed="${a[k] === i}" aria-label="${rot} ${i + 1}" onclick="PP.retSet('${k}', ${i})"></button>`).join('')}</div>`;
-    const seg = (lista, k) => `<div class="pp-seg" role="group">${lista.map(([v, nm]) => `<button type="button" aria-pressed="${a[k] === v}" onclick="PP.retSet('${k}', '${v}')">${nm}</button>`).join('')}</div>`;
-    return `<div class="pp-reted">
-      <figure class="pp-reted-prev" style="--tc:${esc(cor)}">${prev}</figure>
+  const ABAS = [['rosto', 'Rosto'], ['cabelo', 'Cabelo'], ['equip', 'Equipamentos'], ['foto', 'Foto']];
+  function identidade(){
+    if(PP.retCtx === 'novo'){
+      const nm = ($('inName') && $('inName').value.trim()) || 'Seu piloto', num = ($('inNum') && $('inNum').value.trim()) || '–';
+      return { nome: nm, num, cc: (typeof UI !== 'undefined' && UI.country) || '', cor: '#3a3f46' };
+    }
+    const d = S.driver; return { nome: d.name, num: d.num, cc: d.cc, cor: (S.team && S.team.color) || '#3a3f46' };
+  }
+  function editorHtml(){
+    const e = PP.retEd, a = e.avatar, id = identidade(), aba = e.aba || 'rosto';
+    const prev = e.tipo === 'foto' && e.foto ? `<img src="${e.foto}" alt="">` : avatarSvg(a, id.cor);
+    const sw = (lista, k, rot) => `<div class="pp-sw" role="group" aria-label="${rot}">${lista.map((c, i) => `<button type="button" style="--c:${c}" aria-pressed="${e.tipo !== 'foto' && a[k] === i}" aria-label="${rot} ${i + 1}" onclick="PP.retSet('${k}', ${i})"></button>`).join('')}</div>`;
+    /* cada opção aparece no boneco de agora, recortado no rosto */
+    const op = (lista, k) => `<div class="pp-opcoes">${lista.map(([v, nm]) => {
+      /* no cabelo, o boné sai da miniatura para o estilo aparecer */
+      const b = Object.assign({}, a, { [k]: v }, k === 'estilo' && a.cabeca === 'bone' ? { cabeca: 'nada' } : {});
+      return `<button type="button" class="pp-opcao" aria-pressed="${e.tipo !== 'foto' && a[k] === v}" onclick="PP.retSet('${k}', '${v}')">${avatarSvg(b, id.cor, '24 22 72 82')}<span>${nm}</span></button>`;
+    }).join('')}</div>`;
+    const painel = {
+      rosto: `<p class="pp-h3">Tom de pele</p>${sw(PELES, 'pele', 'Tom de pele')}<p class="pp-h3">Olhos</p>${sw(OLHOS, 'olhos', 'Olhos')}<p class="pp-h3">Barba</p>${op(BARBAS, 'barba')}`,
+      cabelo: `<p class="pp-h3">Estilo</p>${op(ESTILOS, 'estilo')}<p class="pp-h3">Cor do cabelo</p>${sw(CABELOS, 'cor', 'Cor do cabelo')}`,
+      equip: `<p class="pp-h3">Óculos</p>${op(OCULOS, 'oculos')}<p class="pp-h3">Na cabeça</p>${op(CABECA, 'cabeca')}`,
+      foto: `<p class="pp-vazio" style="font-size:14px">Use uma foto sua no lugar do desenho. Ela é recortada no formato do retrato.</p>
+        <div class="pp-botoes"><label class="btn btn-ghost btn-sm pp-file">${e.foto ? 'Trocar a foto' : 'Escolher foto'}<input type="file" accept="image/*" onchange="PP.retFoto(this)"></label>
+        ${e.foto ? `<button type="button" class="btn btn-ghost btn-sm" onclick="PP.retTipo('${e.tipo === 'foto' ? 'avatar' : 'foto'}')">${e.tipo === 'foto' ? 'Usar o desenho' : 'Usar a foto'}</button>` : ''}</div>
+        <p class="pp-sub">A foto fica só neste navegador. Não vai para o save nem para a internet.</p>`
+    }[aba];
+    return `<div class="pp-reted${e.pop ? ' pp-pop' : ''}">
+      <div class="pp-reted-card">
+        <figure class="pp-reted-prev" style="--tc:${esc(id.cor)}">${prev}</figure>
+        <div class="pp-reted-nome"><i data-i18n-ignore>${esc(String(id.num))}</i><b data-i18n-ignore>${esc(id.nome)}</b>${id.cc ? fg(id.cc) : ''}</div>
+        ${e.tipo === 'foto' ? '' : '<button type="button" class="btn btn-ghost btn-sm pp-sortear" onclick="PP.retSortear()">Sortear</button>'}
+      </div>
       <div class="pp-reted-ops">
-        <div class="pp-seg pp-reted-tipo" role="group" aria-label="Retrato">
-          <button type="button" aria-pressed="${e.tipo !== 'foto'}" onclick="PP.retTipo('avatar')">Desenho</button>
-          <button type="button" aria-pressed="${e.tipo === 'foto'}" onclick="PP.retTipo('foto')">Foto minha</button>
-        </div>
-        ${e.tipo === 'foto' ? `<label class="btn btn-ghost btn-sm pp-file">Escolher foto<input type="file" accept="image/*" onchange="PP.retFoto(this)"></label>
-          <p class="pp-sub">A foto fica só neste navegador. Não vai para o save nem para a internet.</p>`
-        : `<p class="pp-h3">Tom de pele</p>${sw(PELES, 'pele', 'Tom de pele')}
-          <p class="pp-h3">Cabelo</p>${seg(ESTILOS, 'estilo')}
-          <p class="pp-h3">Cor do cabelo</p>${sw(CABELOS, 'cor', 'Cor do cabelo')}
-          <p class="pp-h3">Barba</p>${seg(BARBAS, 'barba')}`}
+        <div class="pp-tabs" role="tablist" aria-label="Retrato">${ABAS.map(([k, nm]) => `<button type="button" role="tab" aria-selected="${aba === k}" onclick="PP.retAba('${k}')">${nm}</button>`).join('')}</div>
+        <div class="pp-tabpainel" role="tabpanel">${painel}</div>
       </div>
     </div>`;
   }
-  const corAtual = () => (PP.retCtx === 'novo' ? '#3a3f46' : (S && S.team && S.team.color) || '#3a3f46');
-  function redesenharEditor(){ const box = $(PP.retCtx === 'novo' ? 'ppRetEdNovo' : 'ppRetEd'); if(box && PP.retEd) box.innerHTML = editorHtml(corAtual()); }
-  PP.retSet = function(k, v){ if(!PP.retEd) return; PP.retEd.avatar[k] = v; PP.retEd.tipo = 'avatar'; PP.retEd.mexeu = true; redesenharEditor(); };
-  PP.retTipo = function(t){ if(!PP.retEd) return; PP.retEd.tipo = t; PP.retEd.mexeu = true; redesenharEditor(); };
+  function redesenharEditor(pop){
+    const box = $(PP.retCtx === 'novo' ? 'ppRetEdNovo' : 'ppRetEd');
+    if(!box || !PP.retEd) return;
+    PP.retEd.pop = !!pop; box.innerHTML = editorHtml(); PP.retEd.pop = false;
+  }
+  PP.retSet = function(k, v){ if(!PP.retEd) return; PP.retEd.avatar[k] = v; PP.retEd.tipo = 'avatar'; redesenharEditor(true); };
+  PP.retTipo = function(t){ if(!PP.retEd) return; PP.retEd.tipo = t; redesenharEditor(true); };
+  PP.retAba = function(k){ if(!PP.retEd) return; PP.retEd.aba = k; redesenharEditor(); };
+  PP.retSortear = function(){
+    if(!PP.retEd) return; const r = n => Math.floor(Math.random() * n);
+    PP.retEd.avatar = { pele: r(PELES.length), cor: r(CABELOS.length), olhos: r(OLHOS.length), estilo: ESTILOS[r(ESTILOS.length)][0], barba: BARBAS[r(BARBAS.length)][0],
+      oculos: r(3) ? 'nenhum' : OCULOS[1 + r(3)][0], cabeca: r(4) ? 'nada' : CABECA[1 + r(2)][0] };
+    PP.retEd.tipo = 'avatar'; redesenharEditor(true);
+  };
   /* a foto escolhida vira um retrato de 240 × 300, recortada no centro e um pouco acima (onde o rosto costuma estar) */
   PP.retFoto = function(input){
     const f = input.files && input.files[0]; if(!f) return;
@@ -788,8 +848,8 @@
         const W = 240, H = 300, c = document.createElement('canvas'); c.width = W; c.height = H;
         const k = Math.max(W / img.width, H / img.height), w = img.width * k, h = img.height * k;
         c.getContext('2d').drawImage(img, (W - w) / 2, (H - h) * .3, w, h);
-        PP.retEd.foto = c.toDataURL('image/jpeg', .84); PP.retEd.tipo = 'foto'; PP.retEd.mexeu = true;
-        redesenharEditor();
+        PP.retEd.foto = c.toDataURL('image/jpeg', .84); PP.retEd.tipo = 'foto';
+        redesenharEditor(true);
       };
       img.onerror = () => UI.toast('Escolha uma imagem.');
       img.src = fr.result;
@@ -801,11 +861,12 @@
     if(!S || !S.driver) return;
     const meu = retratoDe(S);
     PP.retCtx = 'carreira';
-    PP.retEd = { tipo: meu ? meu.tipo : 'avatar', avatar: Object.assign(avatarPadrao(S.driver), meu && meu.avatar || {}), foto: meu && meu.foto || null };
-    UI.modal(UI.head('Retrato do piloto', `<span data-i18n-ignore>${esc(S.driver.name)}</span>`) +
-      `<div class="mbd"><div id="ppRetEd">${editorHtml(corAtual())}</div></div>
+    PP.retEd = { tipo: meu ? meu.tipo : 'avatar', aba: meu && meu.tipo === 'foto' ? 'foto' : 'rosto',
+      avatar: Object.assign({}, avatarPadrao(S.driver), meu && meu.avatar || {}), foto: meu && meu.foto || null };
+    UI.modal(UI.head('Retrato do piloto', 'Monte o rosto do seu piloto ou use uma foto sua.') +
+      `<div class="mbd"><div id="ppRetEd">${editorHtml()}</div></div>
        <div class="mft">${meu ? '<button class="btn btn-ghost" onclick="PP.retRemover()">Voltar ao padrão</button>' : ''}<span class="sp"></span>
-         <button class="btn btn-primary" onclick="PP.retSalvar()">Salvar retrato</button></div>`);
+         <button class="btn btn-primary" onclick="PP.retSalvar()">Salvar retrato</button></div>`, true);
   };
   PP.retSalvar = function(){
     const e = PP.retEd; if(!e || !S) return;
@@ -813,15 +874,16 @@
     if(gravarRetrato({ chave: chaveDe(S.driver), tipo: e.tipo, avatar: e.avatar, foto: e.tipo === 'foto' ? e.foto : null })){ UI.close(); UI.render(); }
   };
   PP.retRemover = function(){ try { localStorage.removeItem('vdo_retrato'); } catch(e){} UI.close(); UI.render(); };
-  /* na nova carreira: um passo a mais, logo depois do nome e do número */
+  /* na nova carreira: um passo a mais, logo depois do nome e do número; o cartão acompanha o que se digita */
   function passoNovo(){
     const sec = $('scr-new'); if(!sec) return;
-    if(!PP.retEd || PP.retCtx !== 'novo'){ PP.retCtx = 'novo'; PP.retEd = { tipo: 'avatar', avatar: { pele: 1, cor: 1, estilo: 'curto', barba: 'nenhuma' }, foto: null }; }
+    if(!PP.retEd || PP.retCtx !== 'novo'){ PP.retCtx = 'novo'; PP.retEd = { tipo: 'avatar', aba: 'rosto', avatar: Object.assign({}, PADRAO), foto: null }; }
     let p = sec.querySelector('.pp-passo-ret');
     if(!p){
       const primeiro = sec.querySelector('.passo'); if(!primeiro) return;
       primeiro.insertAdjacentHTML('afterend', `<div class="passo pp-passo-ret"><div class="passo-n"><span>Retrato</span></div>
-        <div class="card pad"><p class="pp-sub" style="margin:0 0 12px">Monte o rosto do seu piloto ou use uma foto sua. Dá para mudar depois, no Perfil do piloto.</p><div id="ppRetEdNovo"></div></div></div>`);
+        <div class="card pad"><div id="ppRetEdNovo"></div></div></div>`);
+      ['inName', 'inNum'].forEach(id => { const i = $(id); if(i) i.addEventListener('input', () => { if(PP.retCtx === 'novo') redesenharEditor(); }); });
     }
     redesenharEditor();
   }
@@ -831,9 +893,10 @@
     Game.start = function(){
       const ed = PP.retCtx === 'novo' ? PP.retEd : null;
       const r = comecar.apply(this, arguments);
-      if(ed && S && S.driver && document.body.dataset.tela === 'career')
+      if(ed && S && S.driver && document.body.dataset.tela === 'career'){
         gravarRetrato({ chave: chaveDe(S.driver), tipo: ed.tipo === 'foto' && ed.foto ? 'foto' : 'avatar', avatar: ed.avatar, foto: ed.tipo === 'foto' ? ed.foto : null });
-      if(ed && S && document.body.dataset.tela === 'career'){ PP.retEd = null; PP.retCtx = null; UI.render(); }
+        PP.retEd = null; PP.retCtx = null; UI.render();
+      }
       return r;
     };
   }
