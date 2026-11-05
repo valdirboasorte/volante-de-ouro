@@ -72,6 +72,9 @@
   const FOTO_TEMA = {
     nascar: { src: "assets/temas/2018-coke-zero-sugar-400-beginning-from.jpg", alt: 'Largada das 400 milhas de Daytona, 2018', pagina: "https://commons.wikimedia.org/wiki/File:2018_Coke_Zero_Sugar_400_beginning_from_frontstretch.jpg", autor: "Dough4872", lic: "CC BY-SA 3.0" },
     fe: { src: "assets/temas/2023-04-21-motorsport-abb-fia-formula.jpg", alt: 'Fórmula E no E-Prix de Berlim, 2023', pagina: "https://commons.wikimedia.org/wiki/File:2023-04-21_Motorsport,_ABB_FIA_Formula_E_World_Championship,_Berlin_E-Prix_2023_1DX_0749_by_Stepro.jpg", autor: "Steffen Prößdorf", lic: "CC BY-SA 4.0" },
+    stock: { src: "assets/temas/stock-car-interlagos-7963788896.jpg", alt: 'Stock Car em Interlagos, 2012', pagina: "https://commons.wikimedia.org/wiki/File:Stock_Car_Interlagos_(7963788896).jpg", autor: "Pedro Henrique Ponchio from São Paulo, Brazil", lic: "CC BY 2.0" },
+    wec: { src: "assets/temas/le-mans-esses-at-night.jpg", alt: 'Os Esses de Le Mans à noite, 2014', pagina: "https://commons.wikimedia.org/wiki/File:Le_Mans_Esses_at_night.jpg", autor: "Nic Redhead", lic: "CC BY-SA 2.0" },
+    dtm: { src: "assets/temas/dtm-2010-hockenheim-amk.jpg", alt: 'DTM em Hockenheim, 2010', pagina: "https://commons.wikimedia.org/wiki/File:DTM_2010_Hockenheim_amk.jpg", autor: "AngMoKio", lic: "CC BY-SA 3.0" },
     indy: { src: "assets/temas/2020-indycar-harvestgp-race2.jpg", alt: 'Largada da IndyCar em Indianápolis, 2020', pagina: "https://commons.wikimedia.org/wiki/File:2020-IndyCar-HarvestGP-Race2.jpg", autor: "Doctorindy", lic: "CC BY-SA 4.0" }
   };
   function fotoCapa(){
@@ -150,7 +153,10 @@
       return `<svg viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice">${rotas.map(r => `<path d="${r}"/>`).join('')}${
         rotas.map((r, k) => `<path class="e" d="${r}" style="--d:${-k * .9}s;--t:${4 + (k % 3)}s"/>`).join('')}</svg>`;
     },
-    indy: () => '<i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i>'
+    indy: () => '<i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i>',
+    stock: () => '<div class="pp-zebra"><i></i></div><b></b>',
+    wec: () => [14, 27, 41, 58, 72, 86].map((y, k) => `<i style="--y:${y}%;--d:${-k * .9}s;--t:${4.2 + (k % 3) * .8}s"></i>`).join(''),
+    dtm: () => '<i style="--x:30%;--w:9%;--n:0"></i><i style="--x:22%;--w:4%;--n:1"></i><i style="--x:12%;--w:12%;--n:2"></i><b></b>'
   };
   function capa(){
     const d = S.driver, sea = S.season, t = S.team || { name: '', color: '#3a3f46' }, foto = fotoCapa();
@@ -548,7 +554,7 @@
   }
 
   /* ── o ambiente da categoria ── */
-  const TEMAS = { f1: 'Fórmula 1', nascar: 'NASCAR', fe: 'Fórmula E', indy: 'IndyCar' };
+  const TEMAS = { f1: 'Fórmula 1', nascar: 'NASCAR', fe: 'Fórmula E', indy: 'IndyCar', stock: 'Stock Car', wec: 'Endurance', dtm: 'DTM' };
   /* o tema vem da categoria real: só a principal de cada série tem ambiente próprio; a base
      (kart, fórmulas de acesso, divisões de baixo) e as séries sem ambiente usam o do Volante de Ouro.
      Uma série nova ganha ambiente com uma entrada em TEMAS, outra em FOTO_TEMA e o bloco dela no CSS. */

@@ -535,3 +535,105 @@ body.pp-modo .ov .lbl{color:var(--pp-suave)}
 body.pp-modo .toast{background:var(--pp-painel2); color:var(--pp-tinta); border:1px solid var(--pp-borda2); border-radius:calc(var(--pp-raio) * .6);
   box-shadow:inset 0 -2px 0 var(--pp-cor), 0 18px 40px -16px rgba(0,0,0,.9)} /* flutua (taste-skill-ignore) */
 body.pp-modo[data-pp-tema="fe"] .toast{box-shadow:inset 0 -2px 0 var(--pp-cor), 0 0 24px -8px rgba(0,229,255,.55)}
+
+/* ═══ Stock Car: Interlagos, zebra, âmbar e verde, itálico largo ═══ */
+.pp[data-tema="stock"],body.pp-modo[data-pp-tema="stock"] .ov,body.pp-modo[data-pp-tema="stock"] .toast{
+  --pp-fundo:#0d0c0a; --pp-trilho:#11100d; --pp-painel:#191714; --pp-painel2:#221f1a; --pp-borda:rgba(255,171,0,.12); --pp-borda2:rgba(255,171,0,.34);
+  --pp-cor:#ffab00; --pp-cor2:#00a859; --pp-barra:#ffab00; --pp-acao:#ffab00; --pp-acao-tx:#140d00; --pp-tinta:#f7f3ea; --pp-suave:#b9b0a0; --pp-fraca:#8c8476;
+  --pp-larg:112%; --pp-ital:italic; --pp-peso:900; --pp-raio:8px;
+  --pp-luz:radial-gradient(90% 70% at 100% 0%, rgba(0,168,89,.09), transparent 60%);
+  --pp-textura:repeating-linear-gradient(135deg, rgba(255,171,0,.022) 0 14px, transparent 14px 28px);
+  --pp-entrada:pp-e-stock; --pp-janela:pp-j-stock;
+}
+.pp[data-tema="stock"] .chx-p{background:var(--pp-textura), var(--pp-luz), var(--pp-painel)}
+.pp[data-tema="stock"] .chx-p::before{content:''; position:absolute; left:0; top:0; width:56px; height:4px; background:var(--pp-cor); box-shadow:60px 0 0 -0px var(--pp-cor2)} /* traço de cor, não é sombra (taste-skill-ignore) */
+.pp[data-tema="stock"] .chx-p-cab h2::before{content:''; display:inline-block; width:22px; height:12px; margin-right:10px; vertical-align:0;
+  background:repeating-linear-gradient(90deg, #e4002b 0 5.5px, #f7f3ea 5.5px 11px); transform:skewX(-20deg)}
+.pp[data-tema="stock"] .pp-geral{background:var(--pp-cor); transform:skewX(-8deg); border-radius:4px}
+.pp[data-tema="stock"] .pp-geral > *{transform:skewX(8deg)}
+.pp[data-tema="stock"] .pp-geral b{color:#140d00}
+.pp[data-tema="stock"] .pp-geral span{color:#4a3300; font-weight:700}
+.pp[data-tema="stock"] .chx-acao{transform:skewX(-8deg)}
+.pp[data-tema="stock"] .chx-acao:active{transform:skewX(-8deg) scale(.97)}
+.pp[data-tema="stock"] .pp-torre li b{background:var(--pp-cor); color:#140d00}
+.pp[data-tema="stock"] .pp-torre li.eu{background:color-mix(in srgb, var(--pp-cor2) 26%, var(--pp-painel2)); box-shadow:inset 0 0 0 1px var(--pp-cor2)} /* contorno (taste-skill-ignore) */
+.pp[data-tema="stock"] .pp-torre li.eu b{background:var(--pp-cor2); color:#fff}
+.pp[data-tema="stock"] .chx-et > button,.pp[data-tema="stock"] .chx-et > div{transform:skewX(-10deg)}
+.pp[data-tema="stock"] .chx-et > * > *{transform:skewX(10deg)}
+.pp-zebra{position:absolute; left:0; right:0; bottom:0; height:16px; overflow:hidden; opacity:.85}
+.pp-zebra i{position:absolute; inset:0 -44px 0 0; background:repeating-linear-gradient(90deg, #e4002b 0 22px, #f7f3ea 22px 44px); animation:pp-zebra 1.8s linear infinite}
+.pp-orn-stock b{position:absolute; right:-4%; top:-20%; width:26%; height:150%; background:linear-gradient(180deg, rgba(0,168,89,0), rgba(0,168,89,.45)); transform:skewX(-22deg); mix-blend-mode:screen}
+.pp-orn-stock .pp-zebra{bottom:auto; top:0}
+@keyframes pp-zebra{to{transform:translateX(-44px)}}
+@keyframes pp-e-stock{from{opacity:0; transform:translateX(-30px) skewX(8deg)}}
+@keyframes pp-j-stock{from{opacity:0; transform:translateX(-40px) skewX(6deg)}}
+body.pp-modo[data-pp-tema="stock"] .mhd::before{content:''; position:absolute; left:0; right:0; top:0; height:8px; background:repeating-linear-gradient(90deg, #e4002b 0 16px, #f7f3ea 16px 32px)}
+body.pp-modo[data-pp-tema="stock"] .ov .btn-primary,body.pp-modo[data-pp-tema="stock"] .ov .btn-gold{transform:skewX(-8deg)}
+
+/* ═══ WEC: a noite das 24 horas, luz de farol e rastros longos ═══ */
+.pp[data-tema="wec"],body.pp-modo[data-pp-tema="wec"] .ov,body.pp-modo[data-pp-tema="wec"] .toast{
+  --pp-fundo:#04070b; --pp-trilho:#060a10; --pp-painel:#0a1018; --pp-painel2:#101a26; --pp-borda:rgba(150,200,255,.10); --pp-borda2:rgba(255,209,102,.32);
+  --pp-cor:#ffd166; --pp-cor2:#00a38c; --pp-barra:#ffd166; --pp-acao:#ffd166; --pp-acao-tx:#1a1200; --pp-tinta:#eef3f8; --pp-suave:#9fb0c2; --pp-fraca:#71839a;
+  --pp-larg:100%; --pp-ital:normal; --pp-peso:700; --pp-raio:12px; --pp-caixa:uppercase;
+  --pp-luz:radial-gradient(80% 60% at 0% 0%, rgba(255,209,102,.07), transparent 60%);
+  --pp-textura:repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 7px);
+  --pp-entrada:pp-e-wec; --pp-janela:pp-j-wec;
+}
+.pp[data-tema="wec"] .chx-p{background:var(--pp-textura), var(--pp-luz), var(--pp-painel)}
+.pp[data-tema="wec"] .chx-p-cab h2{letter-spacing:.06em; font-size:16px}
+.pp[data-tema="wec"] .chx-p::before{content:''; position:absolute; left:0; right:0; top:0; height:1px; z-index:1;
+  background:linear-gradient(90deg, transparent, rgba(255,209,102,.9) 40%, rgba(255,80,60,.7) 70%, transparent); background-size:250% 100%; animation:pp-farol 6s linear infinite}
+.pp[data-tema="wec"] .pp-geral{background:rgba(4,7,11,.86); box-shadow:inset 0 0 0 1px rgba(255,209,102,.4), 0 0 40px -10px rgba(255,209,102,.55)} /* luz de farol (taste-skill-ignore) */
+.pp[data-tema="wec"] .pp-geral b{color:#fff6dc}
+.pp[data-tema="wec"] .chx-acao{box-shadow:0 0 30px -8px rgba(255,209,102,.6)} /* luz de farol (taste-skill-ignore) */
+.pp[data-tema="wec"] .pp-torre li{background:rgba(255,255,255,.025)}
+.pp[data-tema="wec"] .pp-torre li b{background:none; color:var(--pp-cor)}
+.pp[data-tema="wec"] .pp-torre li.eu{box-shadow:inset 0 0 0 1px var(--pp-cor)} /* contorno (taste-skill-ignore) */
+.pp[data-tema="wec"] .pp-torre li.eu b{background:none; color:var(--pp-cor)}
+.pp-orn-wec i{position:absolute; left:0; height:2px; width:55%; top:var(--y); border-radius:2px; opacity:.0;
+  background:linear-gradient(90deg, transparent, rgba(255,90,60,.8) 30%, rgba(255,230,170,.95) 85%, #fff);
+  filter:drop-shadow(0 0 6px rgba(255,209,102,.8)); transform:translateX(-110%); animation:pp-rastro var(--t, 5s) cubic-bezier(.45,.05,.55,.95) infinite; animation-delay:var(--d)}
+@keyframes pp-rastro{0%{opacity:0; transform:translateX(-110%)} 15%{opacity:.85} 85%{opacity:.85} 100%{opacity:0; transform:translateX(220%)}}
+@keyframes pp-farol{from{background-position:120% 0} to{background-position:-120% 0}}
+@keyframes pp-e-wec{from{opacity:0; transform:translateY(10px) scale(.99)}}
+@keyframes pp-j-wec{from{opacity:0; transform:scale(.97)}}
+.pp-anima[data-pg] .pp-entra{animation-duration:.32s}
+.pp[data-tema="wec"] .pp-anima .pp-entra{animation-duration:.5s}
+body.pp-modo[data-pp-tema="wec"] .mhd::before{content:''; position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, transparent, rgba(255,209,102,.95) 40%, rgba(255,80,60,.8) 70%, transparent); background-size:250% 100%; animation:pp-farol 5s linear infinite}
+body.pp-modo[data-pp-tema="wec"] .ov .btn-primary,body.pp-modo[data-pp-tema="wec"] .ov .btn-gold{box-shadow:0 0 26px -8px rgba(255,209,102,.6)}
+
+/* ═══ DTM: engenharia, prata, laranja de sinalização e a malha da grade ═══ */
+.pp[data-tema="dtm"],body.pp-modo[data-pp-tema="dtm"] .ov,body.pp-modo[data-pp-tema="dtm"] .toast{
+  --pp-fundo:#0b0c0e; --pp-trilho:#0e0f12; --pp-painel:#15171a; --pp-painel2:#1d2024; --pp-borda:rgba(255,255,255,.09); --pp-borda2:rgba(201,206,214,.32);
+  --pp-cor:#ff5a1f; --pp-cor2:#c9ced6; --pp-barra:#c9ced6; --pp-acao:#ff5a1f; --pp-acao-tx:#fff; --pp-tinta:#f3f4f6; --pp-suave:#a6abb3; --pp-fraca:#7d838c;
+  --pp-larg:86%; --pp-ital:normal; --pp-peso:800; --pp-raio:2px;
+  --pp-forma:polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  --pp-luz:linear-gradient(160deg, rgba(201,206,214,.05), transparent 45%);
+  --pp-textura:radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 1.6px) 0 0/8px 8px;
+  --pp-entrada:pp-e-dtm; --pp-janela:pp-j-dtm;
+}
+.pp[data-tema="dtm"] .chx-p{background:var(--pp-textura), var(--pp-luz), var(--pp-painel)}
+.pp[data-tema="dtm"] .chx-p::before{content:''; position:absolute; left:20px; top:0; width:40px; height:3px; background:var(--pp-cor)}
+.pp[data-tema="dtm"] .chx-p-cab h2{letter-spacing:-.005em}
+.pp[data-tema="dtm"] .pp-geral{background:linear-gradient(160deg, #e4e7eb, #9aa1ab); border-radius:2px}
+.pp[data-tema="dtm"] .pp-geral b{color:#0b0c0e}
+.pp[data-tema="dtm"] .pp-geral span{color:#2a2e34; font-weight:700}
+.pp[data-tema="dtm"] .pp-geral::after{content:''; position:absolute; left:0; bottom:0; width:100%; height:4px; background:var(--pp-cor)}
+.pp[data-tema="dtm"] .chx-barra s i{background:linear-gradient(90deg, #8f96a0, #e4e7eb)}
+.pp[data-tema="dtm"] .pp-torre li{border-radius:0}
+.pp[data-tema="dtm"] .pp-torre li b{background:#c9ced6; color:#0b0c0e}
+.pp[data-tema="dtm"] .pp-torre li.eu b{background:var(--pp-cor); color:#fff}
+.pp[data-tema="dtm"] .chx-et > button,.pp[data-tema="dtm"] .chx-et > div{border-radius:0}
+.pp-orn-dtm i{position:absolute; top:-20%; height:140%; width:var(--w, 8%); right:var(--x); transform:skewX(-28deg); opacity:.55;
+  background:linear-gradient(180deg, rgba(228,231,235,.0), rgba(228,231,235,.35) 50%, rgba(228,231,235,0))}
+.pp-orn-dtm b{position:absolute; left:0; right:0; bottom:0; height:46%; opacity:.5;
+  background:radial-gradient(circle at 3px 3px, rgba(0,0,0,.65) 2px, transparent 2.6px) 0 0/7px 7px;
+  -webkit-mask:linear-gradient(0deg, #000, transparent); mask:linear-gradient(0deg, #000, transparent)}
+.pp-anima .pp-orn-dtm i{animation:pp-lamina .7s var(--ease-out) both; animation-delay:calc(var(--n, 0) * 80ms + 100ms)}
+@keyframes pp-lamina{from{opacity:0; transform:skewX(-28deg) translateX(160%)}}
+@keyframes pp-e-dtm{from{opacity:0; transform:translateY(-14px)}}
+@keyframes pp-j-dtm{from{opacity:0; transform:translateY(-18px)}}
+body.pp-modo[data-pp-tema="dtm"] .mhd::before{content:''; position:absolute; left:0; top:0; width:100%; height:3px; background:linear-gradient(90deg, var(--pp-cor) 0 60px, #c9ced6 60px 100%)}
+body.pp-modo[data-pp-tema="dtm"] .ov .btn-primary,body.pp-modo[data-pp-tema="dtm"] .ov .btn-gold{border-radius:2px}
+body.pp-modo[data-pp-tema="dtm"] .ov .yr-b,body.pp-modo[data-pp-tema="dtm"] .ov .ch-opt{border-radius:2px}
