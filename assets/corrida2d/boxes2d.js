@@ -41,7 +41,7 @@
         c.vagaBox = B.ini + 110 + ((C2D.semente('box:' + (c.eq || c.id)) % 9) / 9) * Math.max(40, B.comp - 240);
         /* as paradas planejadas da IA, espalhadas pela corrida como no motor clássico */
         c.plano = [];
-        if(c.ia && S.paradas2d > 0 && S.N >= 4){
+        if((c.ia || c.boxAuto) && S.paradas2d > 0 && S.N >= 4){
           const rnd = C2D.rng(C2D.semente('plano:' + c.id + ':' + S.semente));
           for(let q = 1; q <= S.paradas2d; q++){
             const base = Math.round(S.N * q / (S.paradas2d + 1));
@@ -93,16 +93,22 @@
       const P = S.P, B = P.box;
       /* pedido de box (jogador) ou plano (IA) */
       if(!c.box && c.estado === 'pista'){
-        const plano = c.ia && c.plano.length && c.voltas + 1 >= c.plano[0];
+        const auto = c.ia || c.boxAuto;
+        /* a parada planejada; sob safety car vale antecipar (parar custa menos com o pelotão devagar) */
+        const sobSC = (S.sc || S.vsc) && S.N - c.voltas > 2 && c.plano.length && c.voltas + 1 >= c.plano[0] - Math.max(2, Math.round(S.N * .25));
+        const plano = auto && c.plano.length && (c.voltas + 1 >= c.plano[0] || sobSC);
         const resta = S.N - c.voltas;
-        const precisa = c.ia && ((c.pneu.gasto > 1.08 && resta > 2) || (c.dano > .38 && resta > 2) || (S.tanque < Infinity && c.comb * S.tanque < 1.15) || (C2D.Boxes.trocaPorChuva(S, c) && resta > 1));
-        const quer = c.pedirBox || (plano && resta > 1) || precisa;
+        const precisa = auto && ((c.pneu.gasto > 1.08 && resta > 2) || (c.dano > .38 && resta > 2) || (S.tanque < Infinity && c.comb * S.tanque < 1.15) || (C2D.Boxes.trocaPorChuva(S, c) && resta > 1));
+        /* box automático do jogador: a equipe chama (o botão Box mostra o pneu; tocar de novo troca ou cancela) */
+        if(!c.ia && c.boxAuto && (plano || precisa) && !c.pedirBox && !c.cancelouChamada){ c.pedirBox = true; c.boxPneu = C2D.Boxes.pneuParaBox(S, c); c.chamado = true; S.eventos.push({ t: S.t, tipo: 'chamadoBox', a: c.id }); }
+        const quer = c.pedirBox || (c.ia && ((plano && resta > 1) || precisa));
         const q = ((c.s - B.ini) % P.L + P.L) % P.L;
         if(quer && q < 40 && c.voltas < S.N){
           c.box = { fase: 'entrando', ate: 0 };
           c.fantasma = true;     /* na pit lane ninguém encosta em ninguém (simplificação) */
           c.boxPneu = c.boxPneu || C2D.Boxes.pneuParaBox(S, c);
-          if(c.ia && plano) c.plano.shift();
+          if(plano) c.plano.shift();
+          c.chamado = false; c.cancelouChamada = false;
           S.eventos.push({ t: S.t, tipo: 'entraBox', a: c.id, volta: c.voltas + 1 });
         }
       }

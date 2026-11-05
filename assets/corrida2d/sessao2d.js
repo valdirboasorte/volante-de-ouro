@@ -22,6 +22,7 @@
         if(o.ia) c.ia = C2D.IA.criar(Object.assign({ semente: C2D.semente(S.semente + ':' + (o.id || k)) }, o.ia));
         if(o.destino) c.destino = Object.assign({}, o.destino);
         if(o.pneuIni) c.pneuIni = o.pneuIni;
+        if(o.boxAuto) c.boxAuto = true;
         if(o.pneu0) c.pneu0 = o.pneu0;
         c.eq = o.eq || ''; c.cc = o.cc || '';
         if(o.me) S.eu = c;
@@ -31,7 +32,8 @@
       S.melhorSet = [Infinity, Infinity, Infinity]; S.melhorVolta = Infinity;
       S.amb.carros = S.carros;
       S.ano = opc.ano;
-      if(S.tipo === 'corrida') C2D.Corrida.preparar(S, { voltas: opc.voltas });
+      S.limitesModo = opc.limites || 'tolerante';
+      if(S.tipo === 'corrida') C2D.Corrida.preparar(S, { voltas: opc.voltas, limiteAvisos: S.limitesModo === 'rigoroso' ? 3 : 5, passoPunicao: S.limitesModo === 'rigoroso' ? 1 : 2 });
       if(S.tipo === 'corrida' && C2D.Boxes) C2D.Boxes.preparar(S, Object.assign({ sk: opc.sk, ano: opc.ano, nivel: opc.nivel || 0, fracao: 1, wet: (opc.w || 0) > .3 }, opc.boxes || {}));
       if(opc.clima) S.clima = opc.clima;
       if(S.tipo === 'corrida' && C2D.Boost){
@@ -75,7 +77,10 @@
         if(c.estado === 'fora' && c.v < .3){ c.px = c.x; c.py = c.y; c.ppsi = c.psi; continue; }
         const s0 = c.sTot;
         let cmd;
-        if(c === S.eu && !c.autopiloto) cmd = inp || { steer: 0, acel: 0, freio: 0 };
+        if(c === S.eu && !c.autopiloto){
+          cmd = inp || { steer: 0, acel: 0, freio: 0 };
+          if(c.assist.freioAuto && largou && !c.box && C2D.Assist) cmd = C2D.Assist.freio(S, c, cmd);
+        }
         else cmd = c.ia ? C2D.IA.comandar(c.ia, c, P, S.amb) : { steer: 0, acel: 0, freio: 1 };
         /* antes da luz verde o carro fica no freio (o acelerador só faz barulho) */
         if(!largou) cmd = { steer: cmd.steer, acel: 0, freio: 1, giro: cmd.acel };
@@ -148,15 +153,22 @@
     /* limites da pista e carro parado */
     limites(S, c, cmd, dt){
       const P = S.P;
-      /* as quatro rodas para fora da linha branca: a volta não vale */
-      const fora = Math.abs(c.d) - c.sp.larg / 2 > P.meia && c.piso !== C2D.PISO.PIT;
-      if(fora && !c.fora && c.ini != null && !c.invalida){ c.invalida = true; c.avisos++; S.eventos.push({ t: S.t, tipo: 'limites', a: c.id }); }
+      /* limites da pista. Rigoroso: as quatro rodas para fora da linha branca (a zebra fica
+         fora). Tolerante (padrão): a zebra é pista, e só conta quem fica inteiro na grama, na
+         brita ou no escape por um instante, andando. Desligado: nada conta. */
+      const modo = S.limitesModo || 'tolerante';
+      const margem = modo === 'rigoroso' ? 0 : 1.5;
+      const fora = modo !== 'desligado' && Math.abs(c.d) - c.sp.larg / 2 > P.meia + margem && c.piso !== C2D.PISO.PIT;
+      c.tFora = fora ? (c.tFora || 0) + dt : 0;
+      const conta = modo === 'rigoroso' ? fora : c.tFora > .35 && c.v > 12;
+      if(conta && !c.foraContou && c.ini != null && !c.invalida){ c.invalida = true; c.avisos++; S.eventos.push({ t: S.t, tipo: 'limites', a: c.id, n: c.avisos }); }
+      if(!fora) c.foraContou = false; else if(conta) c.foraContou = true;
       c.fora = fora;
       /* parado de lado, de ré ou preso no muro */
       const rel = Math.abs(C2D.ang(c.psi - P.hd[c.i]));
       const preso = c.v < 1.5 && (cmd.acel > .3 || rel > 1.6) && S.estado === 'pista';
       c.parado = preso ? c.parado + dt : 0;
-      if(c.ia && c.parado > 2.5) C2D.Sessao.voltarPista(S, c);
+      if((c.ia && c.parado > 2.5) || (c === S.eu && c.assist.freioAuto && c.parado > 3)) C2D.Sessao.voltarPista(S, c);
     },
     /* o carro volta ao eixo da pista, parado e apontado para a frente; a volta não vale */
     voltarPista(S, c){

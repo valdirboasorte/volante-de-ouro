@@ -124,3 +124,15 @@ html.c2d-aberto, html.c2d-aberto body{ overflow:hidden; overscroll-behavior:none
 @media (max-width: 560px){ .c2d-boxbtn{ top:calc(max(10px, env(safe-area-inset-top)) + 102px); min-width:70px; height:36px } }
 
 .c2d-boost.pode{ color:#22c46e } .c2d-boost.aberto{ color:#0b0c0e; background:#22c46e; padding:1px 7px; border-radius:6px } .c2d-boost.off{ color:#8a919b }
+
+.c2d-aviso.dica, .c2d-opcoes .c2d-op-sel{ }
+.c2d-opcoes .c2d-op-sel{ justify-content:space-between }
+.c2d-opcoes select{ background:#212429; color:#eef0f2; border:1px solid #353941; border-radius:8px; padding:4px 8px; font:inherit; width:auto; flex:0 0 auto }
+
+/* safety car pulado e relargada */
+.c2d-transicao{ position:absolute; left:50%; top:30%; transform:translateX(-50%); z-index:4; display:grid; gap:4px; text-align:center;
+  background:rgba(245,208,0,.95); color:#15110a; padding:12px 18px; border-radius:12px; font-size:15px; max-width:calc(100% - 32px) }
+.c2d-transicao span{ font-weight:800; font-variant-numeric:tabular-nums }
+.c2d-contagem{ position:absolute; inset:0; z-index:4; display:grid; place-content:center; text-align:center; gap:4px; background:rgba(11,12,14,.35); pointer-events:none }
+.c2d-contagem span{ font-size:16px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#eef0f2 }
+.c2d-contagem b{ font-size:96px; line-height:1; font-weight:800; color:#22c46e; font-variant-numeric:tabular-nums; text-shadow:0 4px 18px rgba(0,0,0,.6) }

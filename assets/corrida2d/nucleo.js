@@ -47,11 +47,12 @@
      do fundo não faz o carro pular meia volta. */
   C2D.Relogio = function(){
     return { acc: 0, ult: null,
-      quadro(agora){
+      quadro(agora, escala){
         if(this.ult == null){ this.ult = agora; return 0; }
         let dt = (agora - this.ult) / 1000; this.ult = agora;
         if(dt > .1) dt = .1; if(dt < 0) dt = 0;
-        this.acc += dt;
+        /* velocidade do jogo: 0,7 faz a corrida inteira (você e os rivais) andar em câmera lenta */
+        this.acc += dt * (escala || 1);
         const n = Math.floor(this.acc / C2D.DT);
         this.acc -= n * C2D.DT;
         return n;

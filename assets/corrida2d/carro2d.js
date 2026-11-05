@@ -75,7 +75,7 @@
       for(let g = 1; g <= sp.marchas; g++) sp.vMarcha.push(sp.vmax * 1.03 * Math.pow(g / sp.marchas, .72));
       return {
         id: opc.id || 'ME', nome: opc.nome || '', cor: opc.cor || '#e10600', me: !!opc.me, sp, k,
-        assist: Object.assign({ abs: true, tc: true, direcao: true, estab: true }, opc.assist || {}),
+        assist: Object.assign({ abs: true, tc: true, direcao: true, estab: true, freioAuto: false }, opc.assist || {}), danoMult: opc.danoMult || 1,
         x: 0, y: 0, psi: 0, vx: 0, vy: 0, r: 0, delta: 0,
         px: 0, py: 0, ppsi: 0,
         i: 0, s: 0, sTot: 0, d: 0, piso: 0, pisoF: 0, pisoR: 0,
@@ -172,9 +172,13 @@
         const livre = capT * Math.sqrt(1 - usoLat * usoLat);
         if(c.assist.tc) ped = Math.min(ped, livre * .96);
         if(c.assist.estab && Math.abs(c.ar) > sp.apR * 1.1) ped *= .6;
+        /* e saindo de frente: alivia o acelerador para a frente voltar a morder */
+        if(c.assist.estab && v > 8 && Math.abs(c.af) > sp.ap * 1.02) ped *= .3;
         if(ped > capT){ c.patinaR = true; ped = capT * .9; }
         Fxr += ped;
-      }
+        /* a fração da potência que chegou às rodas (a energia contada gasta por ela) */
+        c.potFrac = Math.min(1.3, ped * Math.max(v, 3) / Math.max(1, m * sp.pm));
+      } else c.potFrac = 0;
       /* elipse de atrito: o que sobra para virar */
       const elipse = (Fy, Fx, capX, capY, solto) => {
         const u = capX > 0 ? Math.min(1, Math.abs(Fx) / capX) : 1;
@@ -259,7 +263,7 @@
         c.vx = nvx * cs + nvy * sn; c.vy = -nvx * sn + nvy * cs;
         const imp = -vn;
         c.batida = Math.max(c.batida, imp);
-        if(imp > 4) c.dano = Math.min(1, c.dano + (imp - 4) * .012);
+        if(imp > 4) c.dano = Math.min(1, c.dano + (imp - 4) * .012 * (c.danoMult || 1));
       }
     },
 
@@ -331,7 +335,7 @@
       A.vx = nAx * ca + nAy * sa; A.vy = -nAx * sa + nAy * ca;
       B.vx = nBx * cb + nBy * sb; B.vy = -nBx * sb + nBy * cb;
       const imp = -vn;
-      if(imp > 3){ const dn = (imp - 3) * .015; A.dano = Math.min(1, A.dano + dn); B.dano = Math.min(1, B.dano + dn); }
+      if(imp > 3){ const dn = (imp - 3) * .015; A.dano = Math.min(1, A.dano + dn * (A.danoMult || 1)); B.dano = Math.min(1, B.dano + dn * (B.danoMult || 1)); }
       A.toque = Math.max(A.toque || 0, imp); B.toque = Math.max(B.toque || 0, imp);
       return imp > 1.5 ? { a: A.id, b: B.id, v: imp } : null;
     },

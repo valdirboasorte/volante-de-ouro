@@ -87,7 +87,23 @@
       const a = C2D.Pista.ponto(P, s, d - 1.2), b = C2D.Pista.ponto(P, s, d + 1.2), c = C2D.Pista.ponto(P, s - .8, d + 1.2), e = C2D.Pista.ponto(P, s - .8, d - 1.2);
       grid.moveTo(e.x, e.y); grid.lineTo(a.x, a.y); grid.lineTo(b.x, b.y); grid.lineTo(c.x, c.y);
     }
-    return { pedacos, pit, muretaPit, largada, grid };
+    /* placas de freada: 100, 50 e 0 m antes do ponto de freada das curvas fortes, por fora */
+    const placas = new Path2D(), faixas = new Path2D();
+    for(const z of (P.zonas || [])){
+      if(!(z.q > .3)) continue;
+      const s0 = z.i * P.ds, fora = (P.k[z.fim % n] || 0) > 0 ? -1 : 1;
+      [[100, 3], [50, 2], [0, 1]].forEach(([dist, nf]) => {
+        const sc = s0 - dist, dd = fora * (m + Math.min(3.2, (fora > 0 ? P.escE : P.escD)[Math.floor(((sc % P.L) + P.L) % P.L / P.ds) % n] * .5 + 1.2));
+        const q = (a, b) => C2D.Pista.ponto(P, sc + a, dd + b);
+        const c0 = q(-1.1, -.7), c1 = q(1.1, -.7), c2 = q(1.1, .7), c3 = q(-1.1, .7);
+        placas.moveTo(c0.x, c0.y); placas.lineTo(c1.x, c1.y); placas.lineTo(c2.x, c2.y); placas.lineTo(c3.x, c3.y); placas.closePath();
+        for(let f = 0; f < nf; f++){
+          const a = -.8 + f * .55, b0 = q(a, -.55), b1 = q(a + .3, -.55), b2 = q(a + .3, .55), b3 = q(a, .55);
+          faixas.moveTo(b0.x, b0.y); faixas.lineTo(b1.x, b1.y); faixas.lineTo(b2.x, b2.y); faixas.lineTo(b3.x, b3.y); faixas.closePath();
+        }
+      });
+    }
+    return { pedacos, pit, muretaPit, largada, grid, placas, faixas };
   }
 
   /* ── os carros: desenhados uma vez por tipo e cor ── */
@@ -209,10 +225,14 @@
       const fx = foco.px + (foco.x - foco.px) * alfa, fy = foco.py + (foco.y - foco.py) * alfa;
       const fpsi = foco.ppsi + C2D.ang(foco.psi - foco.ppsi) * alfa;
       const cam = R.cam, v = foco.v || 0;
-      const olhar = Math.min(38, v * .32);
+      /* na câmera que persegue o carro fica fixo embaixo e a pista à frente ocupa a tela;
+         no mapa fixo a câmera olha à frente do carro */
+      const persegue = R.modo === 'perseguir';
+      const olhar = persegue ? Math.min(14, v * .12) : Math.min(58, v * .46);
       const ax = fx + Math.cos(fpsi) * olhar, ay = fy + Math.sin(fpsi) * olhar;
-      /* zoom pela diagonal da tela: no celular em pé o carro não some, no monitor dá para ver longe */
-      const zAlvo = Math.sqrt(W * H) / 52 / (1 + v / 80);
+      /* zoom pela diagonal da tela, abrindo com a velocidade: a 300 km/h dá para ver uns 130 m
+         à frente (mais que a distância de freada), e o carro continua visível no celular */
+      const zAlvo = Math.sqrt(W * H) / 52 / (1 + v / 45);
       if(!cam.ok){ cam.x = ax; cam.y = ay; cam.ang = fpsi; cam.z = zAlvo; cam.ok = true; }
       const k = Math.min(1, (dt || .016) * 5);
       cam.x += (ax - cam.x) * k; cam.y += (ay - cam.y) * k; cam.z += (zAlvo - cam.z) * Math.min(1, (dt || .016) * 1.5);
@@ -220,7 +240,7 @@
       const rot = R.modo === 'perseguir' ? cam.ang - Math.PI / 2 : 0;
       const z = cam.z;
       /* o carro fica um pouco abaixo do meio na câmera que persegue */
-      const ox = W / 2, oy = R.modo === 'perseguir' ? H * .6 : H / 2;
+      const ox = W / 2, oy = persegue ? H * .72 : H / 2;
       ctx.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
       ctx.fillStyle = P.tipo === 'street' ? COR.rua : P.oval ? COR.fundoOval : COR.grama;
       ctx.fillRect(0, 0, W, H);
@@ -240,6 +260,24 @@
       ctx.strokeStyle = COR.muro; ctx.lineWidth = .5; ctx.stroke(R.pista.muretaPit);
       for(const q of R.pista.largada){ ctx.fillStyle = q.branco ? '#f4f4f4' : '#151515'; ctx.fill(q.path); }
       ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = .18; ctx.stroke(R.pista.grid);
+      ctx.fillStyle = '#f2f2f2'; ctx.fill(R.pista.placas); ctx.fillStyle = '#1b1c1f'; ctx.fill(R.pista.faixas);
+      /* a linha de trajetória à frente: verde acelera, amarela alivia, vermelha freia */
+      if(R.linha && R.S && C2D.Assist && foco.estado !== 'fora' && !foco.box){
+        const pontos = Math.min(P.n - 1, Math.round(Math.max(120, (foco.v || 0) * 4.5) / P.ds));
+        const cores = C2D.Assist.cores(R.S, foco, pontos), L = P.linha;
+        const caminhos = [new Path2D(), new Path2D(), new Path2D()];
+        let ant = -1;
+        for(let q = 0; q < pontos; q++){
+          const a = (foco.i + q) % P.n, b = (a + 1) % P.n, cor = cores[q];
+          if(cor !== ant){ caminhos[cor].moveTo(L.x[a], L.y[a]); ant = cor; }
+          caminhos[cor].lineTo(L.x[b], L.y[b]);
+          if(q + 1 < pontos && cores[q + 1] !== cor) caminhos[cores[q + 1]].moveTo(L.x[b], L.y[b]);
+        }
+        ctx.lineCap = 'round'; ctx.lineWidth = .75;
+        ctx.strokeStyle = 'rgba(34,196,110,.55)'; ctx.stroke(caminhos[0]);
+        ctx.strokeStyle = 'rgba(245,208,0,.7)'; ctx.stroke(caminhos[1]);
+        ctx.strokeStyle = 'rgba(226,35,26,.8)'; ctx.stroke(caminhos[2]);
+      }
       /* marcas de pneu */
       if(R.nMarcas){
         ctx.strokeStyle = COR.marca; ctx.lineWidth = .3; ctx.lineCap = 'round';

@@ -5,6 +5,23 @@
 (function(){
   const rows = [
     /* corrida interativa 2D (2026-11-05) */
+    ["Pular o safety car (avança até a relargada)","Skip the safety car (fast-forward to the restart)","Saltar el safety car (avanza hasta la relanzada)","セーフティカーをスキップ（リスタートまで早送り）"],
+    ["Safety car na pista · avançando até a relargada…","Safety car on track · fast-forwarding to the restart…","Safety car en pista · avanzando hasta la relanzada…","セーフティカー導入中・リスタートまで早送り…"],
+    ["Safety car virtual · avançando até a bandeira verde…","Virtual safety car · fast-forwarding to the green flag…","Safety car virtual · avanzando hasta la bandera verde…","バーチャルセーフティカー・グリーンフラッグまで早送り…"],
+    ["Relargada em","Restart in","Relanzada en","リスタートまで"],
+    ["Bandeira verde!","Green flag!","¡Bandera verde!","グリーンフラッグ！"],
+    ["Limites de pista","Track limits","Límites de pista","トラックリミット"],
+    ["Tolerante","Lenient","Tolerante","寛容"],
+    ["Rigoroso","Strict","Estricto","厳格"],
+    ["Desligado","Off","Desactivado","オフ"],
+    ["Limites de pista: aviso {0} de {1}","Track limits: warning {0} of {1}","Límites de pista: aviso {0} de {1}","トラックリミット：警告 {0}/{1}"],
+    ["Box automático (a equipe chama)","Automatic pit stops (the team calls you in)","Box automático (el equipo te llama)","自動ピットイン（チームが呼ぶ）"],
+    ["A equipe chama: box nesta volta ({0})","The team calls: box this lap ({0})","El equipo llama: box en esta vuelta ({0})","チームから：このラップでピットイン（{0}）"],
+    ["Freio assistido","Braking assist","Frenada asistida","ブレーキアシスト"],
+    ["Linha de trajetória","Racing line","Línea de trazada","レーシングライン"],
+    ["Danos reduzidos no meu carro","Reduced damage on my car","Daños reducidos en mi coche","自車のダメージ軽減"],
+    ["Velocidade do jogo","Game speed","Velocidad del juego","ゲーム速度"],
+    ["Freio assistido e linha de trajetória ligados · mude na pausa (II ou Esc)","Braking assist and racing line on · change them in the pause menu (II or Esc)","Frenada asistida y línea de trazada activadas · cámbialas en la pausa (II o Esc)","ブレーキアシストとレーシングラインがオン・一時停止メニュー（IIまたはEsc）で変更"],
     ["Lançadas","Flying laps","Lanzadas","アタック周"],
     ["Posição","Position","Posición","順位"],
     ["Pole dos rivais","Rivals' pole","Pole de los rivales","ライバルのポール"],

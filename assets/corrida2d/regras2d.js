@@ -50,6 +50,7 @@
       opc = opc || {};
       S.N = Math.max(1, opc.voltas || 5);
       S.limiteAvisos = opc.limiteAvisos != null ? opc.limiteAvisos : 3;
+      S.passoPunicao = opc.passoPunicao || 1;
       S.bandeira = null; S.tFim = null; S.acabou = false; S.lider = null;
       S.fl = { t: Infinity, id: null, volta: null };
       for(const c of S.carros){
@@ -120,7 +121,8 @@
         /* volta mais rápida (válida) */
         if(c.melhor < S.fl.t){ S.fl = { t: c.melhor, id: c.id, volta: c.voltas }; }
         /* limites da pista: três avisos, depois 5 segundos a cada vez */
-        const devidas = Math.max(0, c.avisos - S.limiteAvisos);
+        /* depois do limite de avisos, 5 s a cada aviso (rigoroso) ou a cada dois (tolerante) */
+        const devidas = c.avisos > S.limiteAvisos ? Math.floor((c.avisos - S.limiteAvisos - 1) / (S.passoPunicao || 1)) + 1 : 0;
         while((c.avisosPunidos || 0) < devidas){
           c.avisosPunidos = (c.avisosPunidos || 0) + 1; c.penal += 5;
           S.eventos.push({ t: S.t, tipo: 'punicao', a: c.id, seg: 5, motivo: 'limites' });

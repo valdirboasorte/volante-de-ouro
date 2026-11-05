@@ -11,7 +11,7 @@ const { carregar } = require('./base');
 const RAIZ = path.join(__dirname, '..');
 function carregar2D(opts){
   const J = carregar(Object.assign({ silencioso: true }, opts || {}));
-  for(const m of ['nucleo', 'pista2d', 'carro2d', 'ia2d', 'regras2d', 'entrada2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'tela2d', 'carreira2d'])
+  for(const m of ['nucleo', 'pista2d', 'carro2d', 'ia2d', 'regras2d', 'entrada2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'])
     vm.runInContext(fs.readFileSync(path.join(RAIZ, 'assets', 'corrida2d', m + '.js'), 'utf8'), J.ctx, { filename: 'corrida2d/' + m + '.js' });
   return J;
 }
@@ -89,6 +89,43 @@ for(const [trk, ano, sk, tol] of CASOS){
   ok(r.fora < .01, `${trk} ${ano} ${sk}: a IA passou ${(r.fora * 100).toFixed(1)}% da volta fora da pista`);
   ok(r.muro === 0 || trk === 'mc', `${trk} ${ano} ${sk}: a IA bateu no muro ${r.muro} vez(es)`);
 }
+
+/* 4. as ajudas: quem só vira e acelera, sem nunca frear, completa as voltas com o freio
+   assistido (e o controle de estabilidade), e sem ele sai da pista */
+for(const [trk, sk, ano, ajuda] of [['br_int', 'f1', 2024, true], ['mc', 'f1', 2024, true], ['us_lbh', 'indy', 2024, true], ['br_int', 'f1', 2024, false]]){
+  const r = J.run(`(() => {
+    const S = C2D.Sessao.criar({ trkId: '${trk}', ano: ${ano}, sk: '${sk}', nivel: 0, tipo: 'treino', semLargada: true,
+      carros: [{ id: 'ME', me: true, assist: { freioAuto: ${ajuda} } }] });
+    const c = S.eu, ia = C2D.IA.criar({ ritmo: 1 });
+    let muro = 0, t = 0;
+    while(c.voltas < 3 && t < 400){
+      const base = C2D.IA.comandar(ia, c, S.P, S.amb);
+      C2D.Sessao.passo(S, { steer: base.steer, acel: 1, freio: 0, uma: {} }, C2D.DT); t += C2D.DT;
+      if(c.batida > 3) muro++;
+    }
+    return { voltas: c.voltas, muro, melhor: c.melhor, Tref: S.P.Tref };
+  })()`);
+  if(ajuda) ok(r.voltas >= 3 && r.muro === 0 && r.melhor < r.Tref * 1.15, `${trk}: com o freio assistido, só acelerando, ${r.voltas} voltas e ${r.muro} batidas (melhor ${r.melhor && r.melhor.toFixed(2)})`);
+  else ok(r.muro > 0 || r.voltas < 3, `${trk}: sem o freio assistido, só acelerando, o carro devia sair da pista`);
+}
+
+/* 5. limites de pista: no tolerante a zebra é pista e um toque rápido na grama não conta;
+   as punições vêm mais tarde (6º aviso, depois a cada dois); o rigoroso é a regra estrita */
+const r5 = J.run(`(() => {
+  const caso = (modo, dExtra, seg) => {
+    const S = C2D.Sessao.criar({ trkId: 'br_int', ano: 2024, sk: 'f1', nivel: 0, tipo: 'corrida', voltas: 5, carros: [{ id: 'ME', me: true }], limites: modo, semLargada: true });
+    const c = S.eu; c.ini = 0; c.v = 50; c.piso = 0; c.d = S.P.meia + c.sp.larg / 2 + dExtra;
+    for(let t = 0; t < seg; t += C2D.DT) C2D.Sessao.limites(S, c, { acel: 1 }, C2D.DT);
+    return c.avisos;
+  };
+  const pun = (modo, a) => { const S = C2D.Sessao.criar({ trkId: 'br_int', ano: 2024, sk: 'f1', nivel: 0, tipo: 'corrida', voltas: 5, carros: [{ id: 'ME', me: true }], limites: modo, semLargada: true });
+    S.eu.avisos = a; C2D.Corrida.depois(S, C2D.DT); return S.eu.penal; };
+  return { tz: caso('tolerante', 1.05, 1), tg: caso('tolerante', 2.6, .2), tl: caso('tolerante', 2.6, .8), rz: caso('rigoroso', 1.05, 1), dl: caso('desligado', 2.6, .8),
+           t5: pun('tolerante', 5), t6: pun('tolerante', 6), t8: pun('tolerante', 8), r4: pun('rigoroso', 4) };
+})()`);
+ok(r5.tz === 0 && r5.tg === 0 && r5.tl === 1, 'tolerante: zebra e toque rápido na grama não contam, saída longa conta');
+ok(r5.rz === 1 && r5.dl === 0, 'rigoroso conta a zebra; desligado não conta nada');
+ok(r5.t5 === 0 && r5.t6 === 5 && r5.t8 === 10 && r5.r4 === 5, `punições: tolerante ${r5.t5}/${r5.t6}/${r5.t8} s, rigoroso ${r5.r4} s no 4º aviso`);
 
 console.log(falhas ? falhas + ' falha(s) de ' + n : `corrida 2D: ${r1.feitas} pistas montadas (${r1.longas.length} estradas longas de fora), ${n} verificações, tudo certo`);
 process.exitCode = falhas ? 1 : 0;

@@ -56,7 +56,7 @@
       return { ini: s, fim: (s + 50) % P.L, lado: P.k[z.i] > 0 ? -1 : 1 };
     },
     dentro(s, ini, fim, L){ const q = ((s - ini) % L + L) % L, comp = ((fim - ini) % L + L) % L; return q <= comp; },
-    energiaVolta(P){ return P.Tref * .78; },
+    energiaVolta(P){ return P.Tref * .8; },
 
     /* antes da física de cada carro */
     antes(S, c, cmd, dt){
@@ -113,7 +113,7 @@
       /* energia contada */
       if(c.energia != null){
         const porSeg = 1 / (S.boost.porVolta * S.N);
-        const gasto = (cmd.acel || 0) * c.potF * porSeg * dt * (c.ia ? .97 : 1);
+        const gasto = (c.potFrac != null ? c.potFrac : (cmd.acel || 0)) * porSeg * dt * (c.ia ? .97 : 1);
         const volta = B.energia.tipo === 'bateria' ? (cmd.freio || 0) * porSeg * dt * .22 : 0;
         c.energia = Math.max(0, c.energia - gasto + volta);
         if(c.energia <= 0) c.potF *= B.energia.pane ? .2 : .55;
