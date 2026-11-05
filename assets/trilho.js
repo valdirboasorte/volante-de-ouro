@@ -58,8 +58,8 @@
         b.classList.toggle('on', on);
         if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
         if(it.k === 'mp') b.hidden = !mpLigado();
-        /* só com os ícones (tela do chefe), o nome aparece ao passar o mouse */
-        if(tela === 'chefe') b.title = it.nome; else b.removeAttribute('title');
+        /* só com os ícones (telas do chefe e da carreira), o nome aparece ao passar o mouse */
+        if(tela === 'chefe' || (tela === 'career' && !document.body.classList.contains('pp-antigo'))) b.title = it.nome; else b.removeAttribute('title');
       });
     }
   };
@@ -87,17 +87,17 @@
     body.com-trilho #conteudo{margin-left:var(--trilho); margin-right:0; max-width:none;
       padding-left:clamp(20px,2.4vw,40px); padding-right:clamp(20px,2.4vw,40px)}
     body.com-trilho .mpp-conteudo{max-width:none}
-    body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{padding-left:0; padding-right:0}
+    body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="career"]:not(.pp-antigo) #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{padding-left:0; padding-right:0}
     /* na abertura, o texto encosta no trilho em vez de ficar centrado (sem o vão escuro entre os dois) */
     body.com-trilho .ini-conteudo{margin-left:0; padding-left:clamp(28px,3.4vw,64px)}
     /* a página do multiplayer usa este trilho no lugar do dela */
     body.com-trilho .mpp{grid-template-columns:minmax(0,1fr)}
     body.com-trilho .mpp::before,body.com-trilho .mpp-nav{display:none}
-    /* na tela do chefe (que tem o menu da equipe) o trilho fica só com os ícones */
-    body.com-trilho[data-tela="chefe"]{--trilho:72px}
-    body.com-trilho[data-tela="chefe"] .trilho{padding-left:10px; padding-right:10px}
-    body.com-trilho[data-tela="chefe"] .trilho-i{justify-content:center; padding:0}
-    body.com-trilho[data-tela="chefe"] .trilho-i span,body.com-trilho[data-tela="chefe"] .trilho-lema{display:none}
+    /* nas telas do chefe e da carreira (que têm menu próprio) o trilho fica só com os ícones */
+    body.com-trilho[data-tela="chefe"],body.com-trilho[data-tela="career"]:not(.pp-antigo){--trilho:72px}
+    body.com-trilho[data-tela="chefe"] .trilho,body.com-trilho[data-tela="career"]:not(.pp-antigo) .trilho{padding-left:10px; padding-right:10px}
+    body.com-trilho[data-tela="chefe"] .trilho-i,body.com-trilho[data-tela="career"]:not(.pp-antigo) .trilho-i{justify-content:center; padding:0}
+    body.com-trilho[data-tela="chefe"] .trilho-i span,body.com-trilho[data-tela="chefe"] .trilho-lema,body.com-trilho[data-tela="career"]:not(.pp-antigo) .trilho-i span,body.com-trilho[data-tela="career"]:not(.pp-antigo) .trilho-lema{display:none}
     @media (max-width:1100px){
       body.com-trilho{--trilho:0px}
       .trilho{position:static; width:auto; flex-direction:row; gap:4px; padding:6px var(--m); overflow-x:auto; overflow-y:hidden}
@@ -107,10 +107,10 @@
       .trilho-lema{display:none}
       /* na abertura do celular o topo fica sobre a foto, e os botões dos modos já estão ali */
       body.com-trilho[data-tela="intro"] .trilho{display:none}
-      body.com-trilho[data-tela="chefe"] .trilho-i{padding:0 12px}
-      body.com-trilho[data-tela="chefe"] .trilho-i span{display:inline}
+      body.com-trilho[data-tela="chefe"] .trilho-i,body.com-trilho[data-tela="career"]:not(.pp-antigo) .trilho-i{padding:0 12px}
+      body.com-trilho[data-tela="chefe"] .trilho-i span,body.com-trilho[data-tela="career"]:not(.pp-antigo) .trilho-i span{display:inline}
       body.com-trilho #conteudo{margin-left:auto; margin-right:auto; max-width:1240px; padding-left:var(--m); padding-right:var(--m)}
-      body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{max-width:none; padding-left:0; padding-right:0}
+      body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="career"]:not(.pp-antigo) #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{max-width:none; padding-left:0; padding-right:0}
     }
     @media (prefers-reduced-motion:reduce){ .trilho-i{transition:none} .trilho-i:hover{transform:none} }
   `;

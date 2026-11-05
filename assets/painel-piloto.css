@@ -1,0 +1,199 @@
+/* Painel da carreira de piloto.
+   Usa a folha do chefe (.chx: trilho em texto, placar no alto, blocos separados por fio) e
+   acrescenta só o que é do piloto: a capa com o geral, as habilidades, os números e a vitrine.
+   Os blocos ficam um degrau de tom acima do carbono: a profundidade vem do tom, não da sombra. */
+
+#scr-career.pp-on > .hub{display:none}
+body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
+.pp{--pp-bloco:#111316}
+html[data-theme="light"] .pp{--pp-bloco:#fff}
+.pp .chx-g > *, .pp .chx-col > *{background:var(--pp-bloco)}
+.pp .chx-g > .chx-capa{background:#101215}
+.pp .chx-pg > *{box-shadow:none}
+.pp .chx-pg{gap:1px; background:var(--regua)}
+.pp .chx-pg > .chx-p{background:var(--pp-bloco)}
+.pp .chx-topo{background:var(--bg)}
+.pp .chx-main{padding-bottom:24px}
+.pp-deposito{display:none}
+
+/* o trilho: o piloto no alto, as áreas em texto, os ajustes da carreira no pé */
+.pp .chx-equipe span{font-variant-numeric:tabular-nums}
+.pp .chx-equipe span span{display:inline; margin:0}
+.pp-ajustes{display:grid}
+.pp-ajustes button{display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-height:40px; padding:0 18px; text-align:left; font-size:13px; color:var(--soft);
+  box-shadow:inset -1px 0 0 var(--regua), inset 0 1px 0 var(--regua); transition:color .15s var(--ease-out), background .15s var(--ease-out)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-ajustes b{font-size:14px; font-weight:700; color:var(--ink)}
+.pp-ajustes button:active{background:var(--s2)}
+@media (hover:hover) and (pointer:fine){ .pp-ajustes button:hover{background:var(--s1); color:var(--ink)} }
+
+/* a capa: a foto do carro da equipe naquele ano, o piloto e o geral; no pé, a situação profissional */
+.pp-capa{min-height:430px}
+.pp-capa-tx{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:22px; align-items:end; padding:0 24px}
+.pp-ret{position:relative; margin:0; width:118px; height:148px; background:var(--tc); display:grid; place-items:center; overflow:hidden}
+.pp-ret > span{font-size:46px; font-weight:800; font-stretch:72%; color:#fff; line-height:1}
+.pp-ret img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 16%}
+.pp-ret i{position:absolute; left:0; bottom:0; min-width:40px; padding:5px 8px 4px; background:rgba(11,12,14,.88); color:#fff; font-style:normal; font-size:17px; font-weight:800;
+  font-stretch:75%; line-height:1; text-align:center; font-variant-numeric:tabular-nums}
+.pp-nome{min-width:0}
+.pp-nome h2{max-width:none; overflow-wrap:anywhere}
+.pp-meta{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:12px 0 0; font-size:15px; color:#dfe3e7}
+.pp-meta .country-flag{width:24px; height:18px}
+.pp-meta .papel-chip{margin:0}
+.pp-meta s{width:3px; height:3px; background:#8d949c; text-decoration:none}
+.pp-nota-capa{margin:8px 0 0; font-size:14px; color:#f0c12e}
+.pp-geral{display:grid; justify-items:end; align-self:end; text-align:right; padding:14px 18px 12px; background:rgba(11,12,14,.86)}
+.pp-geral b{font-size:clamp(84px,7.4vw,116px); line-height:.78; font-weight:800; font-stretch:72%; color:#fff; font-variant-numeric:tabular-nums}
+.pp-geral span{font-size:13px; color:#c3c8ce; margin-top:10px}
+.pp-faixa{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); margin:0}
+.pp-faixa > div{min-width:0; padding:12px 18px 13px; box-shadow:inset 1px 0 0 rgba(255,255,255,.08), inset 0 1px 0 rgba(255,255,255,.08)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-faixa dt{font-size:12px; color:#8d949c}
+.pp-faixa dd{margin:4px 0 0; font-size:19px; line-height:1.05; font-weight:800; font-stretch:78%; color:#eef0f2; overflow-wrap:anywhere}
+.pp-faixa dd small{font-size:13px; font-weight:600; font-stretch:normal; color:#aab0b8}
+.pp-faixa s{display:block; height:3px; margin-top:7px; background:rgba(255,255,255,.14); text-decoration:none}
+.pp-faixa s i{display:block; height:100%; background:#eef0f2; transform-origin:left}
+
+/* a próxima etapa: os botões que valem para o fim de semana */
+.pp-prox .chx-fatos dd b{font-weight:700}
+.pp .chx-prox-cab h2{word-spacing:.12em}
+.pp-acoes{display:grid; gap:6px; margin-top:auto}
+.pp-acoes .chx-acao{margin-top:0}
+.pp-acoes .chx-acao2{margin-top:0}
+.pp-link{justify-self:center; font-size:14px; font-weight:600; color:var(--soft); padding:6px 4px; text-decoration:underline; text-decoration-color:var(--s4);
+  text-underline-offset:.25em; transition:color .15s var(--ease-out)}
+.pp-link:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){ .pp-link:hover{color:var(--ink); text-decoration-color:currentColor} }
+.pp-fim p{margin:0; font-size:15px; line-height:1.5; color:var(--soft)}
+.pp-fim h2{font-size:30px; font-weight:800; font-stretch:72%; line-height:.95; text-transform:uppercase; margin:0}
+
+/* blocos: cabeçalho com o atalho, dados em linhas */
+.pp .chx-p-cab h2 .chx-ir{font-size:16px}
+.pp-sub{margin:4px 0 0; font-size:13px; color:var(--faint)}
+.pp-h3{margin:4px 0 0; font-size:13px; font-weight:600; color:var(--soft)}
+.pp-vazio{margin:0; font-size:15px; color:var(--soft); line-height:1.5}
+.pp-botoes{display:flex; flex-wrap:wrap; gap:8px}
+.pp .pp-botoes .btn{border-radius:0}
+
+/* habilidades: as barras enchem quando a página abre */
+.pp .chx-barra s i{transform-origin:left}
+.pp-anima .chx-barra s i,.pp-anima .pp-faixa s i{animation:pp-enche .7s var(--ease-out) both; animation-delay:calc(var(--i, 0) * 40ms + 80ms)}
+@keyframes pp-enche{from{transform:scaleX(0)}}
+.pp-grupos{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px 28px}
+.pp-grupos > div{display:grid; gap:12px; align-content:start}
+.pp-forca{margin:0; font-size:14px; color:var(--soft); line-height:1.5}
+.pp-forca b{color:var(--ink); font-weight:700}
+
+/* números: rótulo embaixo, tabular */
+.pp-nums{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 18px; margin:0}
+.pp-nums div{display:flex; flex-direction:column-reverse; min-width:0}
+.pp-nums dd{margin:0; font-size:30px; line-height:1; font-weight:800; font-stretch:72%; font-variant-numeric:tabular-nums}
+.pp-nums dt{font-size:13px; color:var(--faint); margin-top:4px}
+.pp-nums .ouro dd{color:var(--gold)}
+.pp-nums .neg dd{color:var(--red-txt)}
+.pp-nums-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+/* notícias recentes */
+.pp-nots{list-style:none; margin:0; padding:0; display:grid}
+.pp-nots li{display:grid; grid-template-columns:30px minmax(0,1fr); gap:4px 12px; padding:11px 0; box-shadow:inset 0 -1px 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-nots li:first-child{padding-top:2px}
+.pp-nots .pav,.pp-nots .pic{width:30px; height:30px; display:grid; place-items:center; overflow:hidden; background:var(--s3); color:#fff; font-size:12px; font-weight:800; object-fit:cover}
+.pp-nots .pic .ico{width:16px; height:16px; fill:var(--soft)}
+.pp-nots header{display:flex; align-items:baseline; gap:8px; min-width:0}
+.pp-nots header b{font-size:14px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pp-nots header span{font-size:12px; color:var(--faint); flex:none}
+.pp-nots p{grid-column:2; margin:0; font-size:14px; line-height:1.45; color:var(--soft); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+
+/* histórico e conquistas */
+.pp-tab{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums}
+.pp-tab th{font-size:12px; font-weight:600; color:var(--faint); text-align:left; padding:0 10px 8px 0}
+.pp-tab td{font-size:14px; padding:9px 10px 9px 0; box-shadow:inset 0 -1px 0 var(--regua); white-space:nowrap} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-tab td.n,.pp-tab th.n{text-align:right; padding-right:0}
+.pp-tab td.ano{font-weight:800; font-stretch:80%; font-size:15px}
+.pp-tab td.eq{white-space:normal; min-width:0}
+.pp-tab td.cl{font-weight:800}
+.pp-tab tr.campeao td.cl,.pp-tab tr.campeao td.ano{color:var(--gold)}
+.pp-tab .stripe{display:inline-block; width:4px; height:14px; margin-right:8px; vertical-align:-2px}
+.pp-tab tbody tr{cursor:pointer; transition:background .15s var(--ease-out)}
+@media (hover:hover) and (pointer:fine){ .pp-tab tbody tr:hover td{background:var(--s1)} }
+.pp-stats tbody tr{cursor:default}
+.pp-stats td{padding:8px 10px 8px 0; color:var(--soft)}
+.pp-stats td.n{font-size:21px; line-height:1; font-weight:800; font-stretch:72%; color:var(--ink); padding-right:0; padding-left:14px}
+.pp-stats td.n small{font-size:13px; color:var(--faint); font-weight:600}
+.pp-stats td.ouro{color:var(--gold)}
+.pp-stats td.neg{color:var(--red-txt)}
+@media (hover:hover) and (pointer:fine){ .pp-stats tbody tr:hover td{background:none} }
+.pp .chx-et .posbox{border-radius:0}
+.pp-conq{list-style:none; margin:0; padding:0; display:grid}
+.pp-conq li{display:grid; grid-template-columns:28px minmax(0,1fr); gap:12px; align-items:center; padding:10px 0; box-shadow:inset 0 -1px 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-conq li:first-child{padding-top:2px}
+.pp-conq .ico{width:22px; height:22px; fill:var(--soft)}
+.pp-conq .ouro .ico{fill:var(--gold)}
+.pp-conq .prata .ico{fill:#c9ccd1}
+.pp-conq .bronze .ico{fill:#c98a52}
+.pp-conq b{display:block; font-size:15px; font-weight:700}
+.pp-conq small{display:block; font-size:13px; color:var(--soft); margin-top:2px}
+
+/* as tabelas antigas (retrospecto, classificação, imprensa) dentro da folha */
+.pp-slot{min-width:0}
+.pp-slot > .tbl-scroll,.pp-slot > .tabpane{display:block; margin:0}
+.pp-slot table.rt,.pp-slot table.st,.pp-slot table.hs{width:100%}
+.pp-slot .sumbar{border-radius:0; margin:0}
+.pp-slot .sumbar .sm{border-radius:0}
+.pp-slot .curve{margin:0; padding:0}
+.pp .chx-fatos-2 dd{font-size:18px}
+.pp .posbox{border-radius:0}
+.pp table.rt tbody tr.next{border-left:0; background:var(--s2)}
+.pp table.rt th,.pp table.st th,.pp table.hs th{background:var(--pp-bloco)}
+.pp .h2h{border-radius:0}
+.pp .post{border-radius:0; border-left:0; background:var(--s1)}
+.pp-slot [style*="max-height"]{max-height:none !important; overflow:visible !important}
+
+/* pessoas (equipe) */
+.pp-gente{display:grid}
+.pp-gente > div{display:grid; grid-template-columns:22px minmax(0,1fr) 44px; gap:10px; align-items:center; padding:9px 0; box-shadow:inset 0 -1px 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-gente b{display:block; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pp-gente small{display:block; font-size:13px; color:var(--soft); margin-top:2px}
+.pp-gente small.tenso{color:var(--red-txt)}
+.pp-gente s{height:3px; background:var(--s3); text-decoration:none}
+.pp-gente s i{display:block; height:100%; background:var(--ink)}
+.pp-eq{display:grid; grid-template-columns:8px minmax(0,1fr); gap:14px}
+.pp-eq s{background:var(--tc); text-decoration:none}
+.pp-eq h3{margin:0; font-size:34px; line-height:.92; font-weight:800; font-stretch:72%; text-transform:uppercase}
+.pp-eq p{margin:6px 0 0; font-size:14px; color:var(--soft)}
+
+/* a troca de página */
+.pp-anima{animation:pp-entra .24s var(--ease-out) both}
+@keyframes pp-entra{from{opacity:0; transform:translateY(6px)}}
+.sem-mov .pp-anima,.sem-mov .pp-anima .chx-barra s i,.sem-mov .pp-anima .pp-faixa s i{animation:none}
+.sem-mov .pp-ajustes button,.sem-mov .pp-tab tbody tr{transition:none}
+
+/* no celular, os ajustes que moram no pé do trilho */
+.pp-movel{display:none}
+
+@media (max-width:1240px){
+  .pp-grupos{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pp-nums-4{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:980px){
+  .pp-movel{display:flex; flex-wrap:wrap; gap:8px; padding:16px; background:var(--bg)}
+  .pp-movel .btn{border-radius:0}
+}
+@media (max-width:700px){
+  .pp-capa{min-height:0}
+  .pp-capa-tx{grid-template-columns:auto minmax(0,1fr); gap:14px; padding:0 16px; align-items:end}
+  .pp-ret{width:84px; height:106px}
+  .pp-ret > span{font-size:34px}
+  .pp-geral{grid-column:1/-1; grid-row:1; justify-items:start; text-align:left; display:flex; align-items:baseline; gap:10px; padding:0; background:none}
+  .pp-geral b{font-size:72px}
+  .pp-geral span{margin:0}
+  .pp-capa .chx-capa-tx h2,.pp-nome h2{font-size:44px}
+  .pp-meta{font-size:14px; margin-top:8px}
+  .pp-faixa{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pp-faixa > div{padding:11px 16px 12px}
+  .pp-grupos{grid-template-columns:minmax(0,1fr)}
+  .pp-nums,.pp-nums-4{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pp-nums dd{font-size:26px}
+  .pp-tab .col-cat{display:none}
+  .pp .chx-chips.pp-chips-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pp .chx-chips.pp-chips-3 .chx-chip{box-shadow:inset 1px 0 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+  .pp .chx-chips.pp-chips-3 .chx-chip:first-child{box-shadow:none}
+}
