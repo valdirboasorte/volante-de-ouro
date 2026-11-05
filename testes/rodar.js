@@ -65,6 +65,8 @@ const testes = [
   ['F1 depois de 2026: equipes vendidas e novas', 'f1-futuro.js'],
   ['corrida volta a volta', 'prova.js'],
   ['corrida ao vivo e fim de semana', 'gp.js'],
+  ['corrida interativa 2D: pista e física', 'corrida2d.js'],
+  ['corrida interativa 2D: IA e campeonato', 'corrida2d-corrida.js'],
   ['piloto machucado', 'lesao.js'],
   ['proposta é o campeonato corrido', 'oferta.js'],
   ['acontecimentos durante a temporada', 'eventos.js'],

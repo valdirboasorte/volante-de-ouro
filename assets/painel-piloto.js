@@ -116,6 +116,7 @@
       <div class="chx-rail-pe">${emMP ? '' : `<div class="pp-ajustes">
           <button onclick="UI.difModal()"><span>Dificuldade</span><b>${esc(Engine.dif().n)}</b></button>
           <button onclick="Game.toggleFast()" title="No modo rápido a equipe monta o carro e define o treino da pré-temporada"><span>Modo</span><b>${S.opts.fast ? 'Rápido' : 'Completo'}</b></button>
+          ${window.Corrida2D && !S.opts.fast ? `<button onclick="Corrida2D.trocarModo()" title="Antes de cada sessão: simulação clássica ou corrida interativa 2D"><span>Corrida</span><b>${Corrida2D.rotuloModo()}</b></button>` : ''}
         </div>`}
         <button class="chx-sair" onclick="PP.trocarTela()">Usar a tela antiga</button>
         <button class="chx-sair" onclick="UI.confirmQuit()">Sair para o início</button>
@@ -548,7 +549,7 @@
   function movel(){
     const emMP = Game.emMP();
     return `<div class="pp-movel">${emMP ? '' : `<button class="btn btn-ghost btn-sm" onclick="UI.difModal()">${esc(Engine.dif().n)}</button>
-      <button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()">${S.opts.fast ? 'Rápido' : 'Completo'}</button>`}
+      <button class="btn btn-ghost btn-sm" onclick="Game.toggleFast()">${S.opts.fast ? 'Rápido' : 'Completo'}</button>${window.Corrida2D && !S.opts.fast ? `<button class="btn btn-ghost btn-sm" onclick="Corrida2D.trocarModo()">Corrida: ${Corrida2D.rotuloModo()}</button>` : ''}`}
       <button class="btn btn-ghost btn-sm" onclick="PP.trocarTela()">Tela antiga</button>
       <button class="btn btn-ghost btn-sm" onclick="UI.confirmQuit()">Sair</button></div>`;
   }
