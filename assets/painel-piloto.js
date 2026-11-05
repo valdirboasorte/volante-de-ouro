@@ -160,7 +160,7 @@
   };
   function capa(){
     const d = S.driver, sea = S.season, t = S.team || { name: '', color: '#3a3f46' }, foto = fotoCapa();
-    const ret = tenta(() => Fotos.piloto(d.name), null);
+    const rosto = rostoHtml(d, t.color), ret = rosto.commons;
     const papel = papelTxt(), din = dinheiro();
     const faixa = [
       ['Fama', `<span data-conta="${d.fame}" data-i18n-ignore>${d.fame}</span>`, `<s><i style="width:${clamp(d.fame, 0, 100)}%"></i></s>`],
@@ -176,7 +176,7 @@
       <img src="${esc(foto.src)}" alt="${esc(foto.alt)}" decoding="async"${foto.externa ? ` referrerpolicy="no-referrer" onerror="PP.fotoFalhou(this)"` : ''}>
       <div class="pp-orn pp-orn-${PP.tema}" aria-hidden="true">${orn}</div>
       <div class="pp-capa-tx">
-        <figure class="pp-ret" aria-hidden="true"><span data-i18n-ignore>${esc(Fotos.iniciais(d.name))}</span>${ret ? `<img src="${esc(ret.url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${d.num}</i></figure>
+        <button type="button" class="pp-ret" onclick="PP.retAbrir()" title="Editar retrato" aria-label="Editar retrato"><span data-i18n-ignore aria-hidden="true">${esc(Fotos.iniciais(d.name))}</span>${rosto.html}<i aria-hidden="true">${d.num}</i></button>
         <div class="pp-nome"><h2 data-i18n-ignore>${esc(d.name)}</h2>
           <p class="pp-meta">${fg(d.cc)}<span>${esc(nomePais(d.cc))}</span><s></s><span>${d.age} anos</span><s></s><span data-i18n-ignore>${esc(t.name || '—')}</span><s></s><span>${esc(sea.cat)}</span> <span>${sea.year}</span>${papel ? `<span class="papel-chip">${esc(papel)}</span>` : ''}</p>
           ${S.papel && S.papel.tipo !== 'livre' ? `<p class="pp-nota-capa">Você não é titular: só corre se for chamado.</p>` : ''}
@@ -430,7 +430,7 @@
       return `<div class="chx-g chx-visao">
           <section class="chx-p" aria-label="Habilidades">${cab('Habilidades', null, `<span>Geral</span> <b>${d.ovr}</b>`)}${grupos}
             <div class="pp-botoes"><button class="btn btn-ghost btn-sm" onclick="UI.fichaModal()">Ficha completa</button>${tracos ? `<button class="btn btn-ghost btn-sm" onclick="UI.tracosModal()">Como você anda</button>` : ''}</div></section>
-          <section class="chx-p" aria-label="Situação">${cab('Situação')}${situacao}${sl ? `<div>${sl}</div>` : ''}</section>
+          <section class="chx-p" aria-label="Situação">${cab('Situação')}${situacao}${sl ? `<div>${sl}</div>` : ''}<div class="pp-botoes"><button class="btn btn-ghost btn-sm" onclick="PP.retAbrir()">Editar retrato</button></div></section>
         </div>
         <div class="chx-g chx-visao">
           <section class="chx-p" aria-label="Histórico da carreira">${cab('Histórico da carreira')}${slot('pane-hist')}</section>
@@ -688,8 +688,155 @@
     const antes = document.body && document.body.dataset.tela;
     if(nome === 'career' && antes !== 'career'){ PP.pag = 'inicio'; PP.anima = true; }
     if(nome !== 'career') document.body.classList.remove('pp-modo');
-    return show.apply(this, arguments);
+    const r = show.apply(this, arguments);
+    if(nome === 'new') tenta(() => passoNovo());
+    return r;
   };
+
+  /* ═══ o retrato do piloto ═══
+     Um rosto desenhado (montado pelo jogador, nunca gerado) ou uma foto que ele escolhe.
+     Fica neste navegador (vdo_retrato), fora do save: não pesa na carreira, não vai para o
+     multiplayer nem para a internet. A chave liga o retrato ao piloto da carreira atual. */
+  const PELES = ['#f3d5bd', '#e6b897', '#cf9a72', '#a8693f', '#7b4a2b', '#4e2f1d'];
+  const CABELOS = ['#16110d', '#3a2315', '#6a4224', '#a5692f', '#d8b35e', '#a3a8ae'];
+  const ESTILOS = [['curto', 'Curto'], ['topete', 'Topete'], ['comprido', 'Comprido'], ['cacheado', 'Cacheado'], ['careca', 'Careca']];
+  const BARBAS = [['nenhuma', 'Nenhuma'], ['curta', 'Curta'], ['cheia', 'Cheia']];
+  const chaveDe = d => d ? [d.name, d.cc, d.num].join('|') : '';
+  function lerRetrato(){ try { return JSON.parse(localStorage.getItem('vdo_retrato') || 'null'); } catch(e){ return null; } }
+  function retratoDe(s){ const r = lerRetrato(); return r && s && s.driver && r.chave === chaveDe(s.driver) ? r : null; }
+  function gravarRetrato(r){
+    try { localStorage.setItem('vdo_retrato', JSON.stringify(r)); return true; }
+    catch(e){ UI.toast('Não coube no navegador. Tente uma foto menor.'); return false; }
+  }
+  /* sem retrato escolhido, um rosto desenhado e estável para o piloto (sai do nome, não da nacionalidade) */
+  function avatarPadrao(d){
+    const h = tenta(() => seedOf(String(d.name) + ':' + d.num), 7) >>> 0;
+    return { pele: h % PELES.length, cor: (h >> 3) % CABELOS.length, estilo: ESTILOS[(h >> 6) % 4][0], barba: BARBAS[(h >> 9) % 3][0] };
+  }
+  function avatarSvg(a, cor){
+    a = Object.assign({ pele: 1, cor: 1, estilo: 'curto', barba: 'nenhuma' }, a || {});
+    const pele = PELES[a.pele] || PELES[1], cab = CABELOS[a.cor] || CABELOS[1], sombra = 'rgba(0,0,0,.16)';
+    const atras = a.estilo === 'comprido' ? `<path d="M33 96C27 60 33 29 60 28s34 31 27 68z" fill="${cab}"/>` : '';
+    const frente = {
+      curto: `<path d="M36 62C34 40 47 30 60 30s26 10 24 32c-3-11-11-17-24-17S39 51 36 62z" fill="${cab}"/>`,
+      topete: `<path d="M35 63C32 38 45 24 62 25c14 1 26 11 23 37-3-12-9-17-17-18 4-6 1-10-6-11-7 4-15 7-27 30z" fill="${cab}"/>`,
+      comprido: `<path d="M37 62C35 41 47 31 60 31s25 10 23 31c-4-10-12-16-23-16S41 52 37 62z" fill="${cab}"/>`,
+      cacheado: `<g fill="${cab}">${[[40, 52, 9], [48, 40, 10], [60, 35, 11], [72, 40, 10], [80, 52, 9], [37, 63, 6], [83, 63, 6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>`,
+      careca: `<path d="M44 44q16-8 32 0" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    }[a.estilo] || '';
+    const barba = {
+      curta: `<path d="M40 74c2 17 11 25 20 25s18-8 20-25c-4 11-10 15-20 15s-16-4-20-15z" fill="${cab}" opacity=".85"/>`,
+      cheia: `<path d="M38 66c0 25 10 37 22 37s22-12 22-37c-3 12-9 19-22 19s-19-7-22-19z" fill="${cab}"/><path d="M52 84q8 4 16 0" stroke="${pele}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+    }[a.barba] || '';
+    return `<svg class="pp-avatar" viewBox="0 0 120 150" aria-hidden="true"><rect width="120" height="150" fill="${esc(cor || '#3a3f46')}"/>
+      ${atras}<path d="M60 104c-22 0-44 10-50 46h100c-6-36-28-46-50-46z" fill="#15171b"/>
+      <path d="M44 106l16 17 16-17" fill="none" stroke="${esc(cor || '#3a3f46')}" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M48 89h24v17c-7 6-17 6-24 0z" fill="${pele}"/><path d="M48 95h24v5c-8 4-16 4-24 0z" fill="${sombra}"/>
+      <ellipse cx="38" cy="68" rx="4.5" ry="7" fill="${pele}"/><ellipse cx="82" cy="68" rx="4.5" ry="7" fill="${pele}"/>
+      <ellipse cx="60" cy="65" rx="22" ry="27" fill="${pele}"/>
+      <path d="M47 57h9M64 57h9" stroke="${cab}" stroke-width="2.6" stroke-linecap="round"/>
+      <ellipse cx="51.5" cy="65" rx="2.6" ry="2.3" fill="#1b1410"/><ellipse cx="68.5" cy="65" rx="2.6" ry="2.3" fill="#1b1410"/>
+      <path d="M60 67q-3 7 0 9" stroke="${sombra}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M53 82q7 4 14 0" stroke="#7a3b2e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      ${barba}${frente}</svg>`;
+  }
+  /* o rosto que a capa mostra: o escolhido, a foto real do Commons ou o desenho padrão */
+  function rostoHtml(d, cor){
+    const meu = retratoDe(S);
+    if(meu && meu.tipo === 'foto' && meu.foto) return { html: `<img src="${meu.foto}" alt="">`, commons: null };
+    if(meu) return { html: avatarSvg(meu.avatar, cor), commons: null };
+    const f = tenta(() => Fotos.piloto(d.name), null);
+    if(f) return { html: `${avatarSvg(avatarPadrao(d), cor)}<img src="${esc(f.url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">`, commons: f };
+    return { html: avatarSvg(avatarPadrao(d), cor), commons: null };
+  }
+
+  /* o editor: o mesmo na nova carreira e na janela do perfil */
+  PP.retEd = null;
+  function editorHtml(cor){
+    const e = PP.retEd, a = e.avatar;
+    const prev = e.tipo === 'foto' && e.foto ? `<img src="${e.foto}" alt="">` : avatarSvg(a, cor);
+    const sw = (lista, k, rot) => `<div class="pp-sw" role="group" aria-label="${rot}">${lista.map((c, i) => `<button type="button" style="--c:${c}" aria-pressed="${a[k] === i}" aria-label="${rot} ${i + 1}" onclick="PP.retSet('${k}', ${i})"></button>`).join('')}</div>`;
+    const seg = (lista, k) => `<div class="pp-seg" role="group">${lista.map(([v, nm]) => `<button type="button" aria-pressed="${a[k] === v}" onclick="PP.retSet('${k}', '${v}')">${nm}</button>`).join('')}</div>`;
+    return `<div class="pp-reted">
+      <figure class="pp-reted-prev" style="--tc:${esc(cor)}">${prev}</figure>
+      <div class="pp-reted-ops">
+        <div class="pp-seg pp-reted-tipo" role="group" aria-label="Retrato">
+          <button type="button" aria-pressed="${e.tipo !== 'foto'}" onclick="PP.retTipo('avatar')">Desenho</button>
+          <button type="button" aria-pressed="${e.tipo === 'foto'}" onclick="PP.retTipo('foto')">Foto minha</button>
+        </div>
+        ${e.tipo === 'foto' ? `<label class="btn btn-ghost btn-sm pp-file">Escolher foto<input type="file" accept="image/*" onchange="PP.retFoto(this)"></label>
+          <p class="pp-sub">A foto fica só neste navegador. Não vai para o save nem para a internet.</p>`
+        : `<p class="pp-h3">Tom de pele</p>${sw(PELES, 'pele', 'Tom de pele')}
+          <p class="pp-h3">Cabelo</p>${seg(ESTILOS, 'estilo')}
+          <p class="pp-h3">Cor do cabelo</p>${sw(CABELOS, 'cor', 'Cor do cabelo')}
+          <p class="pp-h3">Barba</p>${seg(BARBAS, 'barba')}`}
+      </div>
+    </div>`;
+  }
+  const corAtual = () => (PP.retCtx === 'novo' ? '#3a3f46' : (S && S.team && S.team.color) || '#3a3f46');
+  function redesenharEditor(){ const box = $(PP.retCtx === 'novo' ? 'ppRetEdNovo' : 'ppRetEd'); if(box && PP.retEd) box.innerHTML = editorHtml(corAtual()); }
+  PP.retSet = function(k, v){ if(!PP.retEd) return; PP.retEd.avatar[k] = v; PP.retEd.tipo = 'avatar'; PP.retEd.mexeu = true; redesenharEditor(); };
+  PP.retTipo = function(t){ if(!PP.retEd) return; PP.retEd.tipo = t; PP.retEd.mexeu = true; redesenharEditor(); };
+  /* a foto escolhida vira um retrato de 240 × 300, recortada no centro e um pouco acima (onde o rosto costuma estar) */
+  PP.retFoto = function(input){
+    const f = input.files && input.files[0]; if(!f) return;
+    if(!/^image\//.test(f.type)) return UI.toast('Escolha uma imagem.');
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const W = 240, H = 300, c = document.createElement('canvas'); c.width = W; c.height = H;
+        const k = Math.max(W / img.width, H / img.height), w = img.width * k, h = img.height * k;
+        c.getContext('2d').drawImage(img, (W - w) / 2, (H - h) * .3, w, h);
+        PP.retEd.foto = c.toDataURL('image/jpeg', .84); PP.retEd.tipo = 'foto'; PP.retEd.mexeu = true;
+        redesenharEditor();
+      };
+      img.onerror = () => UI.toast('Escolha uma imagem.');
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(f);
+  };
+  /* a janela do perfil */
+  PP.retAbrir = function(){
+    if(!S || !S.driver) return;
+    const meu = retratoDe(S);
+    PP.retCtx = 'carreira';
+    PP.retEd = { tipo: meu ? meu.tipo : 'avatar', avatar: Object.assign(avatarPadrao(S.driver), meu && meu.avatar || {}), foto: meu && meu.foto || null };
+    UI.modal(UI.head('Retrato do piloto', `<span data-i18n-ignore>${esc(S.driver.name)}</span>`) +
+      `<div class="mbd"><div id="ppRetEd">${editorHtml(corAtual())}</div></div>
+       <div class="mft">${meu ? '<button class="btn btn-ghost" onclick="PP.retRemover()">Voltar ao padrão</button>' : ''}<span class="sp"></span>
+         <button class="btn btn-primary" onclick="PP.retSalvar()">Salvar retrato</button></div>`);
+  };
+  PP.retSalvar = function(){
+    const e = PP.retEd; if(!e || !S) return;
+    if(e.tipo === 'foto' && !e.foto) return UI.toast('Escolha uma imagem.');
+    if(gravarRetrato({ chave: chaveDe(S.driver), tipo: e.tipo, avatar: e.avatar, foto: e.tipo === 'foto' ? e.foto : null })){ UI.close(); UI.render(); }
+  };
+  PP.retRemover = function(){ try { localStorage.removeItem('vdo_retrato'); } catch(e){} UI.close(); UI.render(); };
+  /* na nova carreira: um passo a mais, logo depois do nome e do número */
+  function passoNovo(){
+    const sec = $('scr-new'); if(!sec) return;
+    if(!PP.retEd || PP.retCtx !== 'novo'){ PP.retCtx = 'novo'; PP.retEd = { tipo: 'avatar', avatar: { pele: 1, cor: 1, estilo: 'curto', barba: 'nenhuma' }, foto: null }; }
+    let p = sec.querySelector('.pp-passo-ret');
+    if(!p){
+      const primeiro = sec.querySelector('.passo'); if(!primeiro) return;
+      primeiro.insertAdjacentHTML('afterend', `<div class="passo pp-passo-ret"><div class="passo-n"><span>Retrato</span></div>
+        <div class="card pad"><p class="pp-sub" style="margin:0 0 12px">Monte o rosto do seu piloto ou use uma foto sua. Dá para mudar depois, no Perfil do piloto.</p><div id="ppRetEdNovo"></div></div></div>`);
+    }
+    redesenharEditor();
+  }
+  /* ao assinar o contrato, o retrato montado no formulário passa a ser o do novo piloto */
+  if(typeof Game !== 'undefined' && Game.start){
+    const comecar = Game.start;
+    Game.start = function(){
+      const ed = PP.retCtx === 'novo' ? PP.retEd : null;
+      const r = comecar.apply(this, arguments);
+      if(ed && S && S.driver && document.body.dataset.tela === 'career')
+        gravarRetrato({ chave: chaveDe(S.driver), tipo: ed.tipo === 'foto' && ed.foto ? 'foto' : 'avatar', avatar: ed.avatar, foto: ed.tipo === 'foto' ? ed.foto : null });
+      if(ed && S && document.body.dataset.tela === 'career'){ PP.retEd = null; PP.retCtx = null; UI.render(); }
+      return r;
+    };
+  }
 
   window.PP = PP;
 })();

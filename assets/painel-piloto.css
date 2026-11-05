@@ -122,7 +122,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
   box-shadow:0 14px 30px -16px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.12)}
 .pp-ret > span{font-size:48px; font-weight:800; font-stretch:72%; color:#fff; line-height:1}
 .pp-ret img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 16%}
-.pp-ret i{position:absolute; left:0; bottom:0; min-width:42px; padding:5px 8px 4px; background:rgba(7,8,10,.88); color:#fff; font-style:normal; font-size:17px; font-weight:800;
+.pp-ret i{position:absolute; z-index:1; left:0; bottom:0; min-width:42px; padding:5px 8px 4px; background:rgba(7,8,10,.88); color:#fff; font-style:normal; font-size:17px; font-weight:800;
   font-stretch:75%; line-height:1; text-align:center; font-variant-numeric:tabular-nums}
 .pp-nome{min-width:0}
 .pp-capa h2{margin:0; font-size:clamp(56px,6.4vw,104px); line-height:.82; text-transform:var(--pp-caixa); letter-spacing:-.005em; overflow-wrap:anywhere; text-shadow:0 2px 30px rgba(0,0,0,.45)}
@@ -637,3 +637,29 @@ body.pp-modo[data-pp-tema="wec"] .ov .btn-primary,body.pp-modo[data-pp-tema="wec
 body.pp-modo[data-pp-tema="dtm"] .mhd::before{content:''; position:absolute; left:0; top:0; width:100%; height:3px; background:linear-gradient(90deg, var(--pp-cor) 0 60px, #c9ced6 60px 100%)}
 body.pp-modo[data-pp-tema="dtm"] .ov .btn-primary,body.pp-modo[data-pp-tema="dtm"] .ov .btn-gold{border-radius:2px}
 body.pp-modo[data-pp-tema="dtm"] .ov .yr-b,body.pp-modo[data-pp-tema="dtm"] .ov .ch-opt{border-radius:2px}
+
+/* ═══ o retrato do piloto: o rosto desenhado ou a foto escolhida ═══ */
+button.pp-ret{cursor:pointer; padding:0; border:0; font:inherit; transition:transform .14s var(--ease-out), box-shadow .15s var(--ease-out)}
+button.pp-ret:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){ button.pp-ret:hover{box-shadow:0 14px 30px -16px rgba(0,0,0,.9), inset 0 0 0 2px var(--pp-cor)} } /* foco do retrato (taste-skill-ignore) */
+.pp-ret .pp-avatar{position:absolute; inset:0; width:100%; height:100%}
+.pp-reted{display:grid; grid-template-columns:150px minmax(0,1fr); gap:22px; align-items:start}
+.pp-reted-prev{margin:0; width:150px; height:188px; overflow:hidden; border-radius:10px; background:var(--tc, #3a3f46); box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)} /* contorno (taste-skill-ignore) */
+.pp-reted-prev svg,.pp-reted-prev img{display:block; width:100%; height:100%; object-fit:cover}
+.pp-reted-ops{display:grid; gap:8px; min-width:0}
+.pp-reted-ops .pp-h3{margin:8px 0 0; font-size:13px; font-weight:600; color:var(--pp-suave, var(--soft))}
+.pp-reted .pp-sub{margin:4px 0 0; font-size:13px; color:var(--pp-fraca, var(--faint))}
+.pp-sw{display:flex; flex-wrap:wrap; gap:9px}
+.pp-sw button{width:30px; height:30px; border-radius:50%; background:var(--c); box-shadow:inset 0 0 0 2px rgba(0,0,0,.25); transition:transform .12s var(--ease-out), box-shadow .15s var(--ease-out)} /* amostra (taste-skill-ignore) */
+.pp-sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--pp-fundo, var(--bg)), 0 0 0 4px var(--pp-cor, var(--accent))} /* escolhida (taste-skill-ignore) */
+.pp-sw button:active{transform:scale(.9)}
+.pp-seg{display:flex; flex-wrap:wrap; gap:6px}
+.pp-seg button{min-height:36px; padding:0 13px; border-radius:8px; background:var(--pp-painel2, var(--s2)); color:var(--pp-tinta, var(--ink)); font-size:14px; font-weight:600;
+  transition:background-color .15s var(--ease-out), color .15s var(--ease-out), transform .12s var(--ease-out)}
+.pp-seg button:active{transform:scale(.97)}
+.pp-seg button[aria-pressed="true"]{background:var(--pp-acao, var(--acao)); color:var(--pp-acao-tx, #fff)}
+@media (hover:hover) and (pointer:fine){ .pp-seg button:not([aria-pressed="true"]):hover{background:var(--pp-painel, var(--s3))} }
+.pp-reted-tipo{margin-bottom:4px}
+.pp-file{position:relative; justify-self:start; cursor:pointer; overflow:hidden}
+.pp-file input{position:absolute; inset:0; opacity:0; cursor:pointer}
+@media (max-width:560px){ .pp-reted{grid-template-columns:104px minmax(0,1fr); gap:14px} .pp-reted-prev{width:104px; height:130px} }

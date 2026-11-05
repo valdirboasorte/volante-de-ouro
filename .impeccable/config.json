@@ -11,6 +11,12 @@
         ],
         "createdAt": "2026-11-05T06:42:23.389Z",
         "reason": "Claude: the flagged rules are full-width top bands (left:0; right:0; top:0) of the IndyCar tricolour, not side tabs"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "chakra petch",
+        "createdAt": "2026-11-05T07:30:52.469Z",
+        "reason": "Claude: user's brief asked for geometric, futuristic type in the Formula E theme; loaded only when that theme is active"
       }
     ]
   }
