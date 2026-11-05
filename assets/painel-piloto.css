@@ -10,7 +10,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
 
 /* ═══ tokens do tema (Volante de Ouro é o padrão) ═══ */
 /* os tokens valem para a folha e para as janelas abertas durante a carreira (body.pp-modo) */
-.pp,body.pp-modo .ov{
+.pp,body.pp-modo .ov,body.pp-modo .toast{
   --pp-fundo:#0b0c0e; --pp-trilho:#0f1113; --pp-painel:#15171b; --pp-painel2:#1c1f24; --pp-borda:rgba(255,255,255,.07); --pp-borda2:rgba(255,255,255,.14);
   --pp-cor:#f0c12e; --pp-cor2:#b98f14; --pp-barra:#eef0f2; --pp-acao:#f0c12e; --pp-acao-tx:#15110a;
   --pp-tinta:#eef0f2; --pp-suave:#a8aeb7; --pp-fraca:#80868f;
@@ -26,7 +26,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
   --rule:rgba(255,255,255,.08); --rule2:rgba(255,255,255,.14); --regua:rgba(255,255,255,.07); --regua-forte:rgba(255,255,255,.15);
 }
 .pp{color-scheme:dark; color:var(--pp-tinta); background:var(--pp-fundo)}
-.pp[data-tema="f1"],body.pp-modo[data-pp-tema="f1"] .ov{
+.pp[data-tema="f1"],body.pp-modo[data-pp-tema="f1"] .ov,body.pp-modo[data-pp-tema="f1"] .toast{
   --pp-fundo:#08090b; --pp-trilho:#0c0d10; --pp-painel:#121317; --pp-painel2:#1a1b20; --pp-borda:rgba(255,255,255,.06); --pp-borda2:rgba(255,255,255,.16);
   --pp-cor:#ff2b1c; --pp-cor2:#e10600; --pp-barra:#ff2b1c; --pp-acao:#e10600; --pp-acao-tx:#fff; --pp-tinta:#f4f5f7; --pp-suave:#aab0b9;
   --pp-larg:64%; --pp-ital:italic; --pp-peso:900; --pp-raio:3px;
@@ -35,7 +35,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
   --pp-textura:repeating-linear-gradient(45deg, rgba(255,255,255,.016) 0 2px, transparent 2px 5px), repeating-linear-gradient(-45deg, rgba(0,0,0,.35) 0 2px, transparent 2px 5px);
   --pp-entrada:pp-e-f1;
 }
-.pp[data-tema="nascar"],body.pp-modo[data-pp-tema="nascar"] .ov{
+.pp[data-tema="nascar"],body.pp-modo[data-pp-tema="nascar"] .ov,body.pp-modo[data-pp-tema="nascar"] .toast{
   --pp-fundo:#0e0e0f; --pp-trilho:#121213; --pp-painel:#19191b; --pp-painel2:#222225; --pp-borda:rgba(255,255,255,.09); --pp-borda2:rgba(255,210,0,.35);
   --pp-cor:#ffd200; --pp-cor2:#e4002b; --pp-barra:#ffd200; --pp-acao:#ffd200; --pp-acao-tx:#111; --pp-tinta:#f6f6f2; --pp-suave:#b4b4ad;
   --pp-larg:125%; --pp-ital:normal; --pp-peso:900; --pp-raio:6px;
@@ -43,7 +43,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
   --pp-textura:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   --pp-entrada:pp-e-nascar;
 }
-.pp[data-tema="fe"],body.pp-modo[data-pp-tema="fe"] .ov{
+.pp[data-tema="fe"],body.pp-modo[data-pp-tema="fe"] .ov,body.pp-modo[data-pp-tema="fe"] .toast{
   --pp-fundo:#04060c; --pp-trilho:#060a14; --pp-painel:#0a1020; --pp-painel2:#0f1830; --pp-borda:rgba(0,229,255,.14); --pp-borda2:rgba(0,229,255,.4);
   --pp-cor:#00e5ff; --pp-cor2:#2f6bff; --pp-barra:#00e5ff; --pp-acao:#00e5ff; --pp-acao-tx:#03121a; --pp-tinta:#eef6ff; --pp-suave:#9fb2c8; --pp-fraca:#71839a;
   --pp-fonte:'Chakra Petch', var(--f-latin, 'Archivo'), system-ui, sans-serif; --pp-larg:100%; --pp-ital:normal; --pp-peso:700; --pp-raio:18px;
@@ -52,7 +52,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
   --pp-sombra:inset 0 1px 0 rgba(0,229,255,.12), 0 24px 50px -30px rgba(0,30,80,.9);
   --pp-entrada:pp-e-fe;
 }
-.pp[data-tema="indy"],body.pp-modo[data-pp-tema="indy"] .ov{
+.pp[data-tema="indy"],body.pp-modo[data-pp-tema="indy"] .ov,body.pp-modo[data-pp-tema="indy"] .toast{
   --pp-fundo:#060a14; --pp-trilho:#09101f; --pp-painel:#0e1628; --pp-painel2:#142037; --pp-borda:rgba(174,186,204,.13); --pp-borda2:rgba(174,186,204,.3);
   --pp-cor:#ff4157; --pp-cor2:#1f6fe5; --pp-barra:#3d8ef7; --pp-acao:#e4002b; --pp-acao-tx:#fff; --pp-tinta:#f2f5fa; --pp-suave:#a7b3c6; --pp-fraca:#7a879b;
   --pp-larg:100%; --pp-ital:italic; --pp-peso:900; --pp-raio:10px;
@@ -519,3 +519,19 @@ body.pp-modo[data-pp-tema="indy"] .mhd::before{content:''; position:absolute; le
 body.pp-modo[data-pp-tema="base"] .mhd::before{content:''; position:absolute; left:24px; right:24px; top:0; height:3px; background:linear-gradient(90deg, #f0c12e, transparent)}
 @media (prefers-reduced-motion:reduce){ body.pp-modo .ov.on .modal{animation:pp-fade .18s ease both} body.pp-modo .mhd::before{animation:none} }
 .sem-mov body.pp-modo .ov.on .modal,.sem-mov body.pp-modo .mhd::before{animation:none}
+
+/* escolhas marcadas nas janelas (ajustes da garagem, programa do treino, opções de evento):
+   a cor de ação da categoria, com o texto de contraste dela */
+body.pp-modo .ov .yr-b,body.pp-modo .ov .ch-opt{background:var(--pp-painel); color:var(--pp-tinta); border-radius:calc(var(--pp-raio) * .5);
+  transition:background-color .15s var(--ease-out), color .15s var(--ease-out), transform .12s var(--ease-out)}
+body.pp-modo .ov .yr-b:active,body.pp-modo .ov .ch-opt:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){ body.pp-modo .ov .yr-b:not(.sel):hover,body.pp-modo .ov .ch-opt:not(.sel):hover{background:color-mix(in srgb, var(--pp-cor) 14%, var(--pp-painel))} }
+body.pp-modo .ov .yr-b.sel,body.pp-modo .ov .ch-opt.sel{background:var(--pp-acao); color:var(--pp-acao-tx)}
+body.pp-modo[data-pp-tema="f1"] .ov .yr-b,body.pp-modo[data-pp-tema="f1"] .ov .ch-opt{border-radius:0}
+body.pp-modo .ov .aj-leg{background:var(--pp-painel); border-radius:calc(var(--pp-raio) * .5)}
+body.pp-modo .ov .aj-exp span{color:var(--pp-cor)}
+body.pp-modo .ov .lbl{color:var(--pp-suave)}
+/* o aviso flutuante */
+body.pp-modo .toast{background:var(--pp-painel2); color:var(--pp-tinta); border:1px solid var(--pp-borda2); border-radius:calc(var(--pp-raio) * .6);
+  box-shadow:inset 0 -2px 0 var(--pp-cor), 0 18px 40px -16px rgba(0,0,0,.9)} /* flutua (taste-skill-ignore) */
+body.pp-modo[data-pp-tema="fe"] .toast{box-shadow:inset 0 -2px 0 var(--pp-cor), 0 0 24px -8px rgba(0,229,255,.55)}
