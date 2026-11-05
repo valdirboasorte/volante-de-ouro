@@ -77,7 +77,7 @@
       const ent2 = Object.assign({}, ent, { carros: ent.carros.map(c => Object.assign({}, c, { ritmo: (c.ritmo != null ? c.ritmo : 60) - fx.W.car * (fx.car[c.id] || 0) })) });
       const carros = C2D.Corrida.montarGrid(ent2, { nivel: C2D.Carreira.nivelIA(), voltas: N }).map(o => {
         o.k = fx.k[o.id] || 1;
-        if(o.me){ o.mods = C2D.Carreira.mods(false); o.nome = o.nome || (S.driver && S.driver.name) || 'Você'; }
+        if(o.me){ o.mods = C2D.Carreira.mods(false); o.nome = o.nome || (S.driver && S.driver.name) || 'Você'; if(S.driver && S.driver.num != null) o.num = S.driver.num; }
         const e = ent.carros.find(c => c.id === o.id) || {};
         if(e.pneuIni) o.pneuIni = e.pneuIni;
         if(e.pneu0) o.pneu0 = e.pneu0;

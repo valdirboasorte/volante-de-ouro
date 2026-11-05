@@ -133,7 +133,9 @@
 
       /* ── zebras: onde a curva aperta ── */
       const zeb = new Uint8Array(n);
-      for(let i = 0; i < n; i++) if(Math.abs(k[i]) > 1 / 300) for(let q = -4; q <= 4; q++) zeb[(i + q + n) % n] = 1;
+      /* na rua a zebra só aparece nas curvas fechadas; nos mistos, em toda curva de verdade */
+      const kz = tipo === 'street' ? 1 / 70 : 1 / 300;
+      for(let i = 0; i < n; i++) if(Math.abs(k[i]) > kz) for(let q = -4; q <= 4; q++) zeb[(i + q + n) % n] = 1;
       if(oval) zeb.fill(0);
       P.zebra = zeb;
 

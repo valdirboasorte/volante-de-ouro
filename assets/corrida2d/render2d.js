@@ -20,7 +20,7 @@
     const pt = (i, d) => { i = (i % n + n) % n; return [x[i] + nx[i] * d, y[i] + ny[i] * d]; };
     const pedacos = P.pedacos.map(pd => {
       const asf = new Path2D(), linhas = new Path2D(), zebV = new Path2D(), zebB = new Path2D();
-      const escapes = { 2: new Path2D(), 3: new Path2D(), 4: new Path2D() }, muros = new Path2D();
+      const escapes = { 2: new Path2D(), 3: new Path2D(), 4: new Path2D() }, muros = new Path2D(), murosFora = new Path2D();
       /* asfalto: borda esquerda para a frente, borda direita para trás */
       for(let i = pd.i0; i <= pd.i1 + 1; i++){ const p = pt(i, m); i === pd.i0 ? asf.moveTo(p[0], p[1]) : asf.lineTo(p[0], p[1]); }
       for(let i = pd.i1 + 1; i >= pd.i0; i--){ const p = pt(i, -m); asf.lineTo(p[0], p[1]); }
@@ -38,7 +38,12 @@
           path.closePath();
           i = j + 1;
         }
-        for(let q = pd.i0; q <= pd.i1 + 1; q++){ const p = pt(q, lado * (m + esc[q % n] + .35)); q === pd.i0 ? muros.moveTo(p[0], p[1]) : muros.lineTo(p[0], p[1]); }
+        /* do lado dos boxes, ao longo da pit lane, a barreira dá lugar ao prédio */
+        const pulaBox = q => lado === Math.sign(P.box.lado) && P.box.dEm((q % n) * P.ds) != null && !P.kart && P.box.comp > 260;
+        let novo = true;
+        for(let q = pd.i0; q <= pd.i1 + 1; q++){ if(pulaBox(q)){ novo = true; continue; } const p = pt(q, lado * (m + esc[q % n] + .35)); novo ? muros.moveTo(p[0], p[1]) : muros.lineTo(p[0], p[1]); novo = false; }
+        novo = true;
+        for(let q = pd.i0; q <= pd.i1 + 1; q++){ if(pulaBox(q)){ novo = true; continue; } const p = pt(q, lado * (m + esc[q % n] + 1.0)); novo ? murosFora.moveTo(p[0], p[1]) : murosFora.lineTo(p[0], p[1]); novo = false; }
       }
       /* linhas brancas das bordas */
       for(const lado of [1, -1]){
@@ -57,8 +62,9 @@
           }
         }
       }
-      return Object.assign({}, pd, { asf, linhas, zebV, zebB, escapes, muros });
+      return Object.assign({}, pd, { asf, linhas, zebV, zebB, escapes, muros, murosFora });
     });
+    pedacos.forEach((p, k) => p.idx = k);
     /* pit lane, a faixa de largada e o grid */
     const pit = new Path2D(), muretaPit = new Path2D();
     const B = P.box;
@@ -174,7 +180,9 @@
       opc = opc || {};
       const R = { cv: canvas, ctx: canvas.getContext('2d'), P, pista: montarPista(P), sprites: new Map(),
                   cam: { x: 0, y: 0, ang: 0, z: 6, ok: false }, modo: opc.camera || 'perseguir', dpr: 1, dprMax: opc.dprMax || 2,
-                  marcas: new Float32Array(6 * 1600), nMarcas: 0, iMarca: 0, rodasAnt: new Map(), particulas: [], tempos: [], escala: 1 };
+                  marcas: new Float32Array(6 * 1600), nMarcas: 0, iMarca: 0, rodasAnt: new Map(), particulas: [], tempos: [], escala: 1,
+                  cen: C2D.Cenario ? C2D.Cenario.montar(P) : null, chuva: null };
+      R.visivel = (x0, y0, x1, y1) => x1 > R.cam.x - R.raio && x0 < R.cam.x + R.raio && y1 > R.cam.y - R.raio && y0 < R.cam.y + R.raio;
       C2D.Render.redimensionar(R);
       return R;
     },
@@ -185,6 +193,7 @@
       cv.width = Math.round(R.W * R.dpr); cv.height = Math.round(R.H * R.dpr);
     },
     sprite(R, c){
+      if(C2D.Arte) return C2D.Arte.carro(c, c.pneu && c.pneu.c);
       const k = c.sp.tipo + '|' + c.cor + '|' + (c.me ? 1 : 0);
       let s = R.sprites.get(k);
       if(!s){ s = desenharCarro(c.sp, c.cor, c.me); R.sprites.set(k, s); }
@@ -213,6 +222,11 @@
       /* poeira na grama e na brita, faísca no muro */
       if((c.piso === PISO.GRAMA || c.piso === PISO.BRITA) && c.v > 6 && R.particulas.length < 220 && Math.random() < .5)
         R.particulas.push({ x: c.x - cs * sp.b, y: c.y - sn * sp.b, vx: -c.vx * .1 * cs, vy: -c.vx * .1 * sn, t: 0, d: .9, r: 1.2, cor: c.piso === PISO.BRITA ? '200,180,140' : '120,100,70' });
+      if(marca > .35 && c.v > 8 && R.particulas.length < 240 && Math.random() < .35)
+        R.particulas.push({ x: c.x - cs * sp.b, y: c.y - sn * sp.b, vx: (Math.random() - .5) * 2, vy: (Math.random() - .5) * 2, t: 0, d: 1.3, r: 1.0, cor: '210,212,216', cresce: 2.2 });
+      const wet = R.S && R.S.amb && R.S.amb.w || 0;
+      if(wet > .3 && c.v > 25 && R.particulas.length < 260 && Math.random() < .45 * wet)
+        R.particulas.push({ x: c.x - cs * (sp.b + .8), y: c.y - sn * (sp.b + .8), vx: -cs * c.v * .25 + (Math.random() - .5) * 3, vy: -sn * c.v * .25 + (Math.random() - .5) * 3, t: 0, d: .7, r: 1.1, cor: '225,232,240', cresce: 2.8 });
       if(c.batida > 3 && R.particulas.length < 260) for(let k = 0; k < 6; k++)
         R.particulas.push({ x: c.x, y: c.y, vx: (Math.random() - .5) * 14, vy: (Math.random() - .5) * 14, t: 0, d: .35, r: .25, cor: '255,200,90' });
     },
@@ -242,21 +256,25 @@
       /* o carro fica um pouco abaixo do meio na câmera que persegue */
       const ox = W / 2, oy = persegue ? H * .72 : H / 2;
       ctx.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
-      ctx.fillStyle = P.tipo === 'street' ? COR.rua : P.oval ? COR.fundoOval : COR.grama;
-      ctx.fillRect(0, 0, W, H);
       ctx.translate(ox, oy); ctx.rotate(rot); ctx.scale(z, -z); ctx.translate(-cam.x, -cam.y);
       /* o que aparece: um círculo em volta da câmera */
       const raio = Math.hypot(W, H) / z * .62 + 10;
+      R.raio = raio;
       const vis = R.pista.pedacos.filter(p => p.x1 > cam.x - raio && p.x0 < cam.x + raio && p.y1 > cam.y - raio && p.y0 < cam.y + raio);
-      for(const p of vis){ ctx.fillStyle = COR.grama2; ctx.fill(p.escapes[2]); ctx.fillStyle = COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = COR.escape; ctx.fill(p.escapes[4]); }
+      const CEN = C2D.Cenario, pad = (nome, mpp) => CEN ? CEN.padrao(ctx, nome, mpp) : null;
+      /* o chão (grama cortada, ou a calçada da cidade) */
+      ctx.fillStyle = (CEN && CEN.fundo(ctx, P)) || (P.tipo === 'street' ? COR.rua : P.oval ? COR.fundoOval : COR.grama);
+      ctx.fillRect(cam.x - raio, cam.y - raio, raio * 2, raio * 2);
+      for(const p of vis){ ctx.fillStyle = pad('grama', .25) || COR.grama2; ctx.fill(p.escapes[2]); ctx.fillStyle = pad('brita', .06) || COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = pad('escape', .1) || COR.escape; ctx.fill(p.escapes[4]); }
       ctx.lineJoin = 'round';
-      ctx.fillStyle = COR.asfaltoPit; ctx.fill(R.pista.pit);
-      for(const p of vis){ ctx.fillStyle = COR.asfalto; ctx.fill(p.asf); }
+      ctx.fillStyle = pad('escape', .1) || COR.asfaltoPit; ctx.fill(R.pista.pit);
+      for(const p of vis){ ctx.fillStyle = pad('asfalto', 1 / 16) || COR.asfalto; ctx.fill(p.asf); }
+      if(R.cen) CEN.chao(ctx, R, vis);
       for(const p of vis){ ctx.fillStyle = COR.zebraV; ctx.fill(p.zebV); ctx.fillStyle = COR.zebraB; ctx.fill(p.zebB); }
       ctx.strokeStyle = COR.linha; ctx.lineWidth = .22;
       for(const p of vis) ctx.stroke(p.linhas);
-      ctx.strokeStyle = P.tipo === 'street' || P.oval ? COR.muro : COR.pneus; ctx.lineWidth = .7;
-      for(const p of vis) ctx.stroke(p.muros);
+      if(R.cen) CEN.barreiras(ctx, R, vis);
+      else { ctx.strokeStyle = P.tipo === 'street' || P.oval ? COR.muro : COR.pneus; ctx.lineWidth = .7; for(const p of vis) ctx.stroke(p.muros); }
       ctx.strokeStyle = COR.muro; ctx.lineWidth = .5; ctx.stroke(R.pista.muretaPit);
       for(const q of R.pista.largada){ ctx.fillStyle = q.branco ? '#f4f4f4' : '#151515'; ctx.fill(q.path); }
       ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = .18; ctx.stroke(R.pista.grid);
@@ -291,11 +309,24 @@
         if(Math.abs(cx - cam.x) > raio || Math.abs(cy - cam.y) > raio) continue;
         const cp = c.ppsi + C2D.ang(c.psi - c.ppsi) * alfa;
         const s = C2D.Render.sprite(R, c);
+        /* a sombra cai sempre para o mesmo lado do mundo (o sol não gira com a câmera) */
+        if(C2D.Arte){ const sb = C2D.Arte.sombra(c); ctx.save(); ctx.translate(cx + .45, cy - .45); ctx.rotate(cp); ctx.globalAlpha = c.estado === 'fora' ? .3 : .8; ctx.drawImage(sb.cv, -sb.w / 2, -sb.h / 2, sb.w, sb.h); ctx.restore(); }
         ctx.save(); ctx.translate(cx, cy); ctx.rotate(cp);
         if(c.estado === 'fora') ctx.globalAlpha = .45;
-        ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-c.sp.comp / 2 + .25, -c.sp.larg / 2 - .25, c.sp.comp, c.sp.larg);
+        if(!C2D.Arte){ ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-c.sp.comp / 2 + .25, -c.sp.larg / 2 - .25, c.sp.comp, c.sp.larg); }
+        /* o mundo tem y para cima: desvira o desenho para o número não sair espelhado */
+        ctx.scale(1, -1);
         ctx.drawImage(s.cv, -s.w / 2, -s.h / 2, s.w, s.h);
+        /* a luz de chuva piscando na traseira */
+        if((R.S && R.S.amb && R.S.amb.w || 0) > .3 && ((performance.now() / 250 | 0) % 2)){ ctx.fillStyle = 'rgba(255,40,40,.95)'; ctx.beginPath(); ctx.arc(-c.sp.comp / 2 + .05, 0, .18, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(255,40,40,.25)'; ctx.beginPath(); ctx.arc(-c.sp.comp / 2 + .05, 0, .55, 0, Math.PI * 2); ctx.fill(); }
         ctx.restore();
+        /* o seu carro: uma seta dourada à frente quando a câmera está longe */
+        if(c === foco && z < 7 && c.estado !== 'fora'){
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(cp);
+          const d = c.sp.comp / 2 + 1.4, t = .9 / Math.max(.6, z / 6);
+          ctx.fillStyle = 'rgba(240,193,46,.9)'; ctx.beginPath(); ctx.moveTo(d + t * 1.2, 0); ctx.lineTo(d, t * .7); ctx.lineTo(d + t * .35, 0); ctx.lineTo(d, -t * .7); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
       }
       /* poeira e faíscas */
       const dd = dt || .016;
@@ -304,8 +335,28 @@
         p.x += p.vx * dd; p.y += p.vy * dd;
         const a = 1 - p.t / p.d;
         ctx.fillStyle = 'rgba(' + p.cor + ',' + (a * .5).toFixed(3) + ')';
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1.5 - a * .5), 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1.5 - a * .5) * (p.cresce ? 1 + (1 - a) * p.cresce : 1), 0, Math.PI * 2); ctx.fill();
       }
+      if(R.cen){ R.luzes = R.S ? R.S.luzes : 0; C2D.Cenario.alto(ctx, R, vis); }
+      /* chuva: céu escuro, gotas caindo e a vinheta */
+      const wet = R.S && R.S.amb && R.S.amb.w || 0;
+      ctx.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
+      if(wet > .12){
+        ctx.fillStyle = 'rgba(16,24,36,' + (wet * .28).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
+        if(!R.chuva || R.chuva.W !== W){ const r = C2D.rng(5); R.chuva = { W, gotas: Array.from({ length: 140 }, () => [r() * W, r() * H, 8 + r() * 14, .4 + r() * .6]) }; }
+        const tt = (typeof performance !== 'undefined' ? performance.now() : 0) / 1000;
+        ctx.strokeStyle = 'rgba(200,215,230,' + (.18 + wet * .25).toFixed(3) + ')'; ctx.lineWidth = 1; ctx.beginPath();
+        const n = Math.round(R.chuva.gotas.length * Math.min(1, wet * 1.3));
+        for(let q = 0; q < n; q++){ const gt = R.chuva.gotas[q], yy = (gt[1] + tt * 900 * gt[3]) % (H + 30) - 15, xx = (gt[0] + yy * .25) % W; ctx.moveTo(xx, yy); ctx.lineTo(xx - gt[2] * .25, yy - gt[2]); }
+        ctx.stroke();
+      }
+      if(!R.vinheta || R.vinheta.W !== W || R.vinheta.H !== H){
+        const cv = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(Math.max(1, Math.round(W / 2)), Math.max(1, Math.round(H / 2))) : Object.assign(document.createElement('canvas'), { width: Math.max(1, Math.round(W / 2)), height: Math.max(1, Math.round(H / 2)) });
+        const g = cv.getContext('2d'), gr = g.createRadialGradient(cv.width / 2, cv.height * .55, Math.min(cv.width, cv.height) * .35, cv.width / 2, cv.height / 2, Math.hypot(cv.width, cv.height) * .62);
+        gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.38)'); g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+        R.vinheta = { cv, W, H };
+      }
+      ctx.drawImage(R.vinheta.cv, 0, 0, W, H);
       /* tempo de desenho, para baixar a resolução em aparelho fraco */
       if(t0){ R.tempos.push(performance.now() - t0); if(R.tempos.length > 90) R.tempos.shift(); }
     },

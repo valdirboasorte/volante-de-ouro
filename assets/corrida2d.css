@@ -136,3 +136,14 @@ html.c2d-aberto, html.c2d-aberto body{ overflow:hidden; overscroll-behavior:none
 .c2d-contagem{ position:absolute; inset:0; z-index:4; display:grid; place-content:center; text-align:center; gap:4px; background:rgba(11,12,14,.35); pointer-events:none }
 .c2d-contagem span{ font-size:16px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#eef0f2 }
 .c2d-contagem b{ font-size:96px; line-height:1; font-weight:800; color:#22c46e; font-variant-numeric:tabular-nums; text-shadow:0 4px 18px rgba(0,0,0,.6) }
+
+/* garagem */
+.c2d-garagem{ overflow:auto; padding:max(16px, env(safe-area-inset-top)) 16px 24px; touch-action:auto; user-select:text }
+.c2d-gar-topo{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; margin:0 auto 14px; max-width:1260px }
+.c2d-gar-topo h2{ margin:0; font-size:28px; font-weight:800; text-transform:uppercase; font-variation-settings:'wdth' 72 }
+.c2d-gar-topo p{ margin:0; color:#a8aeb7; flex:1 1 260px }
+.c2d-gar-topo .c2d-btn{ padding:0 18px }
+.c2d-gar-grade{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap:12px; max-width:1260px; margin:0 auto }
+.c2d-gar-card{ background:#141619; border:1px solid #25282e; border-radius:12px; overflow:hidden; display:grid }
+.c2d-gar-card canvas{ display:block; width:100% !important; height:auto !important; aspect-ratio:4 / 3 }
+.c2d-gar-card b{ padding:9px 12px; font-size:14px; letter-spacing:.02em }

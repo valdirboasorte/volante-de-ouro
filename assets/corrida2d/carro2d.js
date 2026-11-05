@@ -66,6 +66,7 @@
         banco: P.oval ? .35 / k2 : 0
       });
       sp.Iz = md.m * sp.a * sp.b;
+      sp.estilo = C2D.Arte ? C2D.Arte.estilo(opc.sk || 'f1', opc.ano || P.ano, opc.nivel || 0, P.kart) : null;
       /* a deriva do pico do pneu traseiro (mais firme que o dianteiro) */
       sp.apR = sp.ap / AJ.Br;
       sp.B = Math.tan(Math.PI / (2 * sp.C)) / sp.ap;

@@ -25,6 +25,8 @@
         if(o.boxAuto) c.boxAuto = true;
         if(o.pneu0) c.pneu0 = o.pneu0;
         c.eq = o.eq || ''; c.cc = o.cc || '';
+        c.num = o.num != null ? o.num : (C2D.semente('num:' + (o.id || k)) % 98) + 2;
+        if(o.cor2) c.cor2 = o.cor2;
         if(o.me) S.eu = c;
         S.carros.push(c);
       });

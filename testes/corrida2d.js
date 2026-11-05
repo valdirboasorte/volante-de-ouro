@@ -11,7 +11,7 @@ const { carregar } = require('./base');
 const RAIZ = path.join(__dirname, '..');
 function carregar2D(opts){
   const J = carregar(Object.assign({ silencioso: true }, opts || {}));
-  for(const m of ['nucleo', 'pista2d', 'carro2d', 'ia2d', 'regras2d', 'entrada2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'])
+  for(const m of ['nucleo', 'pista2d', 'carro2d', 'ia2d', 'regras2d', 'entrada2d', 'arte2d', 'cenario2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'])
     vm.runInContext(fs.readFileSync(path.join(RAIZ, 'assets', 'corrida2d', m + '.js'), 'utf8'), J.ctx, { filename: 'corrida2d/' + m + '.js' });
   return J;
 }

@@ -98,6 +98,7 @@
             <label><input type="checkbox" data-o="norte"> Mapa fixo (norte para cima)</label>
             <label><input type="checkbox" data-o="faixa"> Toque: faixa de volante</label>
           </div>
+          <button class="c2d-btn" data-m="garagem" type="button">Garagem: ver todos os carros</button>
           <p class="c2d-ajuda">Teclado: setas ou WASD · Shift: ultrapassagem · R: voltar à pista · C: câmera · P ou Esc: pausa. Controle: alavanca, gatilhos, Start.</p>
           <button class="c2d-btn c2d-btn-sair" data-m="sair" type="button">${opc.textoSair || 'Sair do treino'}</button>
         </div>
@@ -109,6 +110,46 @@
 
     /* abre um treino livre (a fase do protótipo): opc { trkId, ano, sk, nivel, nome, cor, titulo, aoFim } */
     abrirTreino(opc){ return C2D.Tela.abrir(Object.assign({ tipo: 'treino' }, opc || {})); },
+    /* a garagem: todos os carros, de cada categoria e época, lado a lado */
+    GARAGEM: [
+      ['Fórmula 1 · 2022 em diante', 'f1', 2024, 0], ['Fórmula 1 · 2017 a 2021', 'f1', 2019, 0], ['Fórmula 1 · 2009 a 2016', 'f1', 2012, 0], ['Fórmula 1 · 1994 a 2008', 'f1', 2000, 0],
+      ['Fórmula 1 · 1983 a 1993', 'f1', 1988, 0], ['Fórmula 1 · 1978 a 1982', 'f1', 1980, 0], ['Fórmula 1 · 1967 a 1977', 'f1', 1975, 0], ['Fórmula 1 · até 1966', 'f1', 1960, 0],
+      ['Fórmula 2', 'f1', 2024, 1], ['Fórmula 3', 'f1', 2024, 2], ['Fórmula 4', 'f1', 2024, 3], ['Fórmula Ford', 'f1', 1985, 3],
+      ['IndyCar · 2018 em diante', 'indy', 2024, 0], ['IndyCar · 2012 a 2017', 'indy', 2014, 0], ['Fórmula E · Gen3', 'fe', 2024, 0], ['Fórmula E · Gen2', 'fe', 2020, 0],
+      ['Fórmula E · Gen1', 'fe', 2015, 0], ['NASCAR Cup', 'nascar', 2024, 0], ['Stock Car', 'stock', 2024, 0], ['DTM · GT3', 'dtm', 2024, 0],
+      ['DTM · Classe 1', 'dtm', 2015, 0], ['Endurance · Hypercar', 'wec', 2024, 0], ['Endurance · LMP', 'wec', 2015, 0], ['Kart', 'f1', 2024, 4]
+    ],
+    garagem(){
+      if(document.getElementById('c2dGaragem')) return;
+      const el = document.createElement('div');
+      el.id = 'c2dGaragem'; el.className = 'c2d c2d-garagem'; el.style.zIndex = 9100;
+      el.innerHTML = '<div class="c2d-gar-topo"><h2>Garagem</h2><p>Os carros de cada categoria e época, com três pinturas de equipe.</p><button class="c2d-btn" type="button" data-fechar>Fechar</button></div><div class="c2d-gar-grade"></div>';
+      document.body.appendChild(el);
+      document.documentElement.classList.add('c2d-aberto');
+      el.querySelector('[data-fechar]').addEventListener('click', () => { el.remove(); if(!C2D.Tela.aberta) document.documentElement.classList.remove('c2d-aberto'); });
+      const grade = el.querySelector('.c2d-gar-grade');
+      const pinturas = [['#e2231a', 'Rossa'], ['#00a19c', 'Verde Água'], ['#1e41ff', 'Azul Real'], ['#ff8000', 'Laranja'], ['#f2f2f2', 'Branca'], ['#2b4562', 'Marinho']];
+      C2D.Tela.GARAGEM.forEach(([nome, sk, ano, nivel], k) => {
+        const card = document.createElement('div'); card.className = 'c2d-gar-card';
+        const cv = document.createElement('canvas'); card.appendChild(cv);
+        const tit = document.createElement('b'); tit.textContent = nome; card.appendChild(tit);
+        grade.appendChild(card);
+        const md = C2D.Carro.modelo(sk, ano, nivel, nivel >= 4);
+        const dpr = Math.min(2, devicePixelRatio || 1), W = 360, H = 270;
+        cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+        const g = cv.getContext('2d'); g.scale(dpr, dpr);
+        g.fillStyle = C2D.Cenario ? C2D.Cenario.padrao(g, 'asfalto', 1) : '#383b40'; g.fillRect(0, 0, W, H);
+        const est = C2D.Arte.estilo(sk, ano, nivel, nivel >= 4);
+        for(let q = 0; q < 3; q++){
+          const [cor, eq] = pinturas[(k + q * 2) % pinturas.length];
+          const car = { sp: { comp: md.comp, larg: md.larg, estilo: est }, cor, eq, id: eq + k, num: (k * 7 + q * 13) % 90 + 3, me: q === 1, pneu: { c: ['S', 'M', 'H'][q] } };
+          const sp = C2D.Arte.carro(car, ['S', 'M', 'H'][q]), sb = C2D.Arte.sombra(car);
+          const esc = Math.min((W - 24) / 6.4, (H / 3 - 16) / 2.6), cx = W / 2, cy = H / 6 + q * H / 3;
+          g.save(); g.translate(cx + 3, cy + 3); g.globalAlpha = .7; g.drawImage(sb.cv, -sb.w / 2 * esc, -sb.h / 2 * esc, sb.w * esc, sb.h * esc); g.restore();
+          g.drawImage(sp.cv, cx - sp.w / 2 * esc, cy - sp.h / 2 * esc, sp.w * esc, sp.h * esc);
+        }
+      });
+    },
     /* corrida: opc { trkId, ano, sk, nivel, voltas, carros (C2D.Corrida.montarGrid), titulo, aoFim(res, notasDe, S) } */
     abrirCorrida(opc){ return C2D.Tela.abrir(Object.assign({ tipo: 'corrida', titulo: 'Corrida', textoSair: 'Abandonar a corrida' }, opc || {})); },
     abrir(opc){
@@ -417,6 +458,7 @@
         T.simulando = true; T.el.querySelector('.c2d-simulando').hidden = false; return;
       }
       if(m === 'concluir') return C2D.Tela.fechar();
+      if(m === 'garagem') return C2D.Tela.garagem();
       if(m === 'reiniciar'){ const o = T.opc; C2D.Tela.fechar(true); return C2D.Tela.abrirTreino(o); }
       if(m === 'sair') return C2D.Tela.fechar();
     },
