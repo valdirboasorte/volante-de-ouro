@@ -52,6 +52,8 @@
     ["Usar a tela antiga","Use the old screen","Usar la pantalla antigua","旧画面を使う"],
     ["Tela antiga","Old screen","Pantalla antigua","旧画面"],
     ["Tela nova","New screen","Pantalla nueva","新しい画面"],
+    ["Foto da categoria","Series photo","Foto de la categoría","カテゴリーの写真"],
+    ["Ritmo da temporada","Season pace","Ritmo de la temporada","シーズンの推移"],
     ["Continuar a classificação","Continue qualifying","Continuar la clasificación","予選を続ける"],
     ["O calendário aparece quando a temporada começar.","The calendar will appear when the season starts.","El calendario aparecerá cuando empiece la temporada.","シーズンが始まるとカレンダーが表示されます。"],
     ["Você deve {0} parcela(s) de {1}.","You owe {0} instalment(s) of {1}.","Debes {0} cuota(s) de {1}.","{1}の返済が残り{0}回あります。"],

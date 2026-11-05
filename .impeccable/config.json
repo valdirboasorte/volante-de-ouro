@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "assets/painel-piloto.css"
+        ],
+        "createdAt": "2026-11-05T06:42:23.389Z",
+        "reason": "Claude: the flagged rules are full-width top bands (left:0; right:0; top:0) of the IndyCar tricolour, not side tabs"
+      }
+    ]
+  }
+}

@@ -15,7 +15,7 @@
   ];
   /* as peças que as funções antigas desenham por id */
   const LEGADO = ['retroBox', 'sumBar', 'curveBox', 'pane-drv', 'pane-con', 'pane-hist', 'pane-mid'];
-  const PP = { pag: 'inicio', anima: true, topo: false };
+  const PP = { pag: 'inicio', anima: true, topo: false, tema: 'base' };
   const renderAntigo = UI.render;
 
   const $ = id => document.getElementById(id);
@@ -67,9 +67,18 @@
     if(b && b.salario > 0) return ['Salário', fmtD(b.salario)];
     return ['Saldo', fmtD(n(S.money && S.money.saldo))];
   }
+  /* as fotos de cada categoria com ambiente próprio (livres, do Commons, com crédito na capa).
+     Na F1 a capa é o carro de verdade da equipe naquele ano; sem ele, a foto de época. */
+  const FOTO_TEMA = {
+    nascar: { src: "assets/temas/2018-coke-zero-sugar-400-beginning-from.jpg", alt: 'Largada das 400 milhas de Daytona, 2018', pagina: "https://commons.wikimedia.org/wiki/File:2018_Coke_Zero_Sugar_400_beginning_from_frontstretch.jpg", autor: "Dough4872", lic: "CC BY-SA 3.0" },
+    fe: { src: "assets/temas/2023-04-21-motorsport-abb-fia-formula.jpg", alt: 'Fórmula E no E-Prix de Berlim, 2023', pagina: "https://commons.wikimedia.org/wiki/File:2023-04-21_Motorsport,_ABB_FIA_Formula_E_World_Championship,_Berlin_E-Prix_2023_1DX_0749_by_Stepro.jpg", autor: "Steffen Prößdorf", lic: "CC BY-SA 4.0" },
+    indy: { src: "assets/temas/2020-indycar-harvestgp-race2.jpg", alt: 'Largada da IndyCar em Indianápolis, 2020', pagina: "https://commons.wikimedia.org/wiki/File:2020-IndyCar-HarvestGP-Race2.jpg", autor: "Doctorindy", lic: "CC BY-SA 4.0" }
+  };
   function fotoCapa(){
-    const ep = UIC.fotoEpoca(S.year);
-    if(!S.team || S.team.livre) return ep;
+    const ep = UIC.fotoEpoca(S.year), ft = FOTO_TEMA[PP.tema];
+    if(ft) return { src: ft.src, alt: ft.alt,
+      credito: `<span>Foto da categoria</span>: <a href="${esc(ft.pagina)}" target="_blank" rel="noopener noreferrer" data-i18n-ignore>${esc(ft.alt)}</a> · <span data-i18n-ignore>${esc(ft.autor)}, ${esc(ft.lic)}</span>, via Wikimedia Commons` };
+    if(PP.tema !== 'f1' || !S.team || S.team.livre) return ep;
     const tm = companheiro();
     const k = tenta(() => Fotos.carro(S.team.name, S.year, [S.driver.name, tm && tm.name].filter(Boolean), S.season.cat), null);
     if(!k) return ep;
@@ -81,7 +90,7 @@
     img.onerror = null;
     const ep = UIC.fotoEpoca(S ? S.year : 2000);
     img.src = ep.src; img.alt = ep.alt;
-    const c = img.parentNode && img.parentNode.querySelector('.chx-credito .carro');
+    const c = img.parentNode && img.parentNode.querySelector('.pp-credito .carro');
     if(c) c.textContent = ep.credito;
   };
   function pedirFotos(){
@@ -128,38 +137,78 @@
   const cab = (titulo, pg, dado) => `<div class="chx-p-cab"><h2>${pg ? `<button class="chx-ir" onclick="PP.ir('${pg}')">${titulo}</button>` : titulo}</h2>${dado ? `<p>${dado}</p>` : ''}</div>`;
   const barra = (nome, v, i) => `<div class="chx-barra" style="--i:${i}"><span>${nome}</span><b>${Math.round(v)}</b><s><i style="width:${clamp(v, 0, 100)}%"></i></s></div>`;
   const fatos = linhas => `<dl class="chx-fatos">${linhas.filter(Boolean).map(([a, b, cl]) => `<div class="${cl || ''}"><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>`;
-  const nums = (itens, cls) => `<dl class="pp-nums${cls ? ' ' + cls : ''}">${itens.filter(Boolean).map(([v, r, c]) => `<div class="${c || ''}"><dt>${r}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+  const nums = (itens, cls) => `<dl class="pp-nums${cls ? ' ' + cls : ''}">${itens.filter(Boolean).map(([v, r, c]) => `<div class="${c || ''}"><dt>${r}</dt><dd${typeof v === 'number' ? ` data-conta="${v}" data-i18n-ignore` : ''}>${v}</dd></div>`).join('')}</dl>`;
   const slot = id => `<div class="pp-slot" data-slot="${id}"></div>`;
 
+  /* os enfeites de cada categoria na capa: só desenho, nada de dado */
+  const ORNAMENTOS = {
+    f1: () => [8, 19, 31, 46, 58, 71, 83].map((y, k) => `<i style="--y:${y}%;--d:${-k * .37}s;--t:${2.2 + (k % 3) * .45}s"></i>`).join('') + '<b></b>',
+    nascar: d => `<div class="pp-xadrez"><i></i></div><div class="pp-portanum" data-i18n-ignore>${d.num}</div>`,
+    fe: () => {
+      const rotas = ['M0 70 H180 L230 120 H460 L500 80 H760 L800 120 H1000', 'M0 470 H120 L170 420 H380 L420 460 H640', 'M1000 300 H860 L820 260 H650 L610 300 H520',
+        'M300 560 V500 L340 460 H560', 'M1000 520 H900 L860 480 H720', 'M640 0 V40 L680 80 H900'];
+      return `<svg viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice">${rotas.map(r => `<path d="${r}"/>`).join('')}${
+        rotas.map((r, k) => `<path class="e" d="${r}" style="--d:${-k * .9}s;--t:${4 + (k % 3)}s"/>`).join('')}</svg>`;
+    },
+    indy: () => '<i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i>'
+  };
   function capa(){
-    const d = S.driver, t = S.team || { name: '', color: '#3a3f46' }, foto = fotoCapa();
+    const d = S.driver, sea = S.season, t = S.team || { name: '', color: '#3a3f46' }, foto = fotoCapa();
     const ret = tenta(() => Fotos.piloto(d.name), null);
     const papel = papelTxt(), din = dinheiro();
     const faixa = [
-      ['Fama', `${d.fame}`, `<s><i style="width:${clamp(d.fame, 0, 100)}%"></i></s>`],
-      ['Moral', `${d.morale}`, `<s><i style="width:${clamp(d.morale, 0, 100)}%"></i></s>`],
-      ['Equipe', `<span data-i18n-ignore>${esc(t.name || '—')}</span>`],
+      ['Fama', `<span data-conta="${d.fame}" data-i18n-ignore>${d.fame}</span>`, `<s><i style="width:${clamp(d.fame, 0, 100)}%"></i></s>`],
+      ['Moral', `<span data-conta="${d.morale}" data-i18n-ignore>${d.morale}</span>`, `<s><i style="width:${clamp(d.morale, 0, 100)}%"></i></s>`],
       ['Contrato', `<span>${contratoTxt()}</span>`],
       din ? [din[0], `<span data-i18n-ignore>${din[1]}</span>`] : null,
       ['Fase', `<span>${fase()}</span>`]
     ].filter(Boolean);
     const cred = [`<span class="carro">${foto.credito}</span>`];
     if(ret) cred.push(`<span><span>Retrato:</span> <span data-i18n-ignore>${Fotos.credito(Engine.sobrenome(d.name), ret)}${ret.pagina ? ', via Wikimedia Commons' : ''}</span></span>`);
-    return `<section class="chx-capa pp-capa" style="--tc:${esc(t.color)}" aria-label="O piloto">
+    const orn = ORNAMENTOS[PP.tema] ? ORNAMENTOS[PP.tema](d) : '';
+    return `<section class="pp-capa" style="--tc:${esc(t.color)}" aria-label="O piloto">
       <img src="${esc(foto.src)}" alt="${esc(foto.alt)}" decoding="async"${foto.externa ? ` referrerpolicy="no-referrer" onerror="PP.fotoFalhou(this)"` : ''}>
+      <div class="pp-orn pp-orn-${PP.tema}" aria-hidden="true">${orn}</div>
       <div class="pp-capa-tx">
         <figure class="pp-ret" aria-hidden="true"><span data-i18n-ignore>${esc(Fotos.iniciais(d.name))}</span>${ret ? `<img src="${esc(ret.url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<i>${d.num}</i></figure>
-        <div class="pp-nome chx-capa-tx" style="padding:0"><h2 data-i18n-ignore>${esc(d.name)}</h2>
-          <p class="pp-meta">${fg(d.cc)}<span>${esc(nomePais(d.cc))}</span><s></s><span>${d.age} anos</span>${papel ? `<span class="papel-chip">${esc(papel)}</span>` : ''}</p>
+        <div class="pp-nome"><h2 data-i18n-ignore>${esc(d.name)}</h2>
+          <p class="pp-meta">${fg(d.cc)}<span>${esc(nomePais(d.cc))}</span><s></s><span>${d.age} anos</span><s></s><span data-i18n-ignore>${esc(t.name || '—')}</span><s></s><span>${esc(sea.cat)}</span> <span>${sea.year}</span>${papel ? `<span class="papel-chip">${esc(papel)}</span>` : ''}</p>
           ${S.papel && S.papel.tipo !== 'livre' ? `<p class="pp-nota-capa">Você não é titular: só corre se for chamado.</p>` : ''}
         </div>
-        <div class="pp-geral"><b>${d.ovr}</b><span>Geral</span></div>
+        <div class="pp-geral"><svg class="pp-anel" viewBox="0 0 100 100" aria-hidden="true"><circle class="t" cx="50" cy="50" r="46"/><circle class="v" cx="50" cy="50" r="46" pathLength="100" style="stroke-dasharray:${clamp(d.ovr, 0, 100)} 100"/></svg><b data-conta="${d.ovr}" data-i18n-ignore>${d.ovr}</b><span>Geral</span></div>
       </div>
-      <div class="chx-capa-pe">
-        <dl class="pp-faixa">${faixa.map(([a, b, x], i) => `<div style="--i:${i}"><dt>${a}</dt><dd>${b}</dd>${x || ''}</div>`).join('')}</dl>
-        <p class="chx-credito">${cred.join(' · ')}</p>
-      </div>
+      <dl class="pp-faixa">${faixa.map(([a, b, x], i) => `<div style="--i:${i}"><dt>${a}</dt><dd>${b}</dd>${x || ''}</div>`).join('')}</dl>
+      <p class="pp-credito">${cred.join(' · ')}</p>
     </section>`;
+  }
+
+  /* a classificação do campeonato como torre de tempos: os primeiros e você */
+  function torre(){
+    const sea = S.season, st = tenta(() => Engine.standings(sea), []) || [];
+    if(!st.length) return '';
+    const iEu = st.findIndex(x => x.me);
+    let lista = st.slice(0, 7).map((x, i) => [x, i]);
+    if(iEu >= 7) lista = st.slice(0, 5).map((x, i) => [x, i]).concat([[null, -1], [st[iEu], iEu]]);
+    const li = lista.map(([x, i], k) => x ? `<li class="${x.me ? 'eu' : ''}" style="--tc:${esc(x.team && x.team.color || '#555')};--i:${k}"><b>${i + 1}</b><s></s><span data-i18n-ignore>${esc(Engine.sobrenome(x.name))}</span><em>${x.pts}</em></li>`
+      : '<li class="sep" aria-hidden="true"></li>').join('');
+    return `<section class="chx-p pp-torre" aria-label="Classificação">${cab('Classificação', 'resultados', `<span>${sea.year}</span>`)}<ol>${li}</ol></section>`;
+  }
+
+  /* o ritmo da temporada: a posição no campeonato etapa a etapa, como um traço de telemetria */
+  function ritmo(){
+    const rs = S.season.results.filter(r => r.champ);
+    let corpo;
+    if(!rs.length) corpo = '<p class="pp-vazio">Nenhuma etapa disputada ainda.</p>';
+    else {
+      const nn = rs.length, maxP = Math.max(...rs.map(r => r.champ), 5), W = 600, H = 150;
+      const x = i => nn === 1 ? W / 2 : (i / (nn - 1)) * W, y = q => 8 + ((q - 1) / ((maxP - 1) || 1)) * (H - 16);
+      const pts = rs.map((r, i) => [x(i), y(r.champ)]);
+      const ln = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ');
+      corpo = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line class="gl" x1="0" y1="8" x2="${W}" y2="8" vector-effect="non-scaling-stroke"/><line class="gl" x1="0" y1="${H - 8}" x2="${W}" y2="${H - 8}" vector-effect="non-scaling-stroke"/>
+        <path class="ar" d="${ln} L${pts[pts.length - 1][0].toFixed(1)},${H} L${pts[0][0].toFixed(1)},${H} Z"/><path class="ln" d="${ln}" vector-effect="non-scaling-stroke"/></svg>
+        <div class="eixo"><span>1º (topo)</span><span>${ord(maxP)} (base)</span></div>`;
+    }
+    return `<section class="chx-p pp-ritmo" aria-label="Ritmo da temporada">${cab('Ritmo da temporada', 'resultados', '<span>Sua posição no campeonato, etapa a etapa</span>')}${corpo}</section>`;
   }
 
   /* o botão do fim de semana e o que mais se pode fazer antes dele (igual à barra de ações de antes) */
@@ -231,37 +280,42 @@
 
   function blocoHabilidades(resumo){
     const a = S.driver.attr, f = tenta(() => Engine.ficha(), null);
-    let forca = '';
+    let forca = '', barras;
     if(f){
       const o = FICHA_KEYS.slice().sort((x, y) => f[y] - f[x]);
       forca = `<p class="pp-forca"><span>Forte em</span>: <b>${esc(FICHA[o[0]].n)}</b> · <b>${esc(FICHA[o[1]].n)}</b><br><span>Fraco em</span>: <b>${esc(FICHA[o[o.length - 1]].n)}</b></p>`;
-    }
-    return `<section class="chx-p" aria-label="Habilidades">
+      const L = [['Ritmo de corrida', a.pace], [FICHA.quali.n, f.quali], ['Consistência', a.cons], ['Chuva', a.wet], ['Ultrapassagem', a.race], [FICHA.defesa.n, f.defesa],
+        [FICHA.pneu.n, f.pneu], [FICHA.adapt.n, f.adapt], [FICHA.feedback.n, f.feedback], [FICHA.cabeca.n, f.cabeca], ['Desenvolvimento', a.dev]];
+      barras = L.map(([nm, v], i) => barra(nm, v, i)).join('');
+    } else barras = barra('Ritmo', a.pace, 0) + barra('Ultrapassagem', a.race, 1) + barra('Consistência', a.cons, 2) + barra('Chuva', a.wet, 3) + barra('Desenvolvimento', a.dev, 4);
+    return `<section class="chx-p pp-hab" aria-label="Habilidades">
       ${cab('Habilidades', resumo ? 'perfil' : null, `<span>Geral</span> <b>${S.driver.ovr}</b>`)}
-      <div class="chx-barras">${barra('Ritmo', a.pace, 0)}${barra('Ultrapassagem', a.race, 1)}${barra('Consistência', a.cons, 2)}${barra('Chuva', a.wet, 3)}${barra('Desenvolvimento', a.dev, 4)}</div>
+      <div class="chx-barras">${barras}</div>
       ${forca}
+    </section>`;
+  }
+
+  /* no Início: temporada e carreira lado a lado, uma linha por número */
+  const conta = v => typeof v === 'number' ? `<span data-conta="${v}" data-i18n-ignore>${v}</span>` : v;
+  function blocoEstatisticas(){
+    const s = Engine.summary(S.season), c = S.career;
+    const L = [['Vitórias', s.wins, c.wins, 'ouro'], ['Pódios', s.podiums, c.podiums], ['Poles', s.poles, c.poles],
+      ['Voltas mais rápidas', s.fls, c.fls], ['Abandonos', s.dnfs, n(c.dnfs), 'neg'],
+      [S.season && !S.season.isTop ? 'Provas · topo' : 'Provas', `${conta(s.races)}<small>/${s.total}</small>`, c.gps]];
+    return `<section class="chx-p" aria-label="Estatísticas">
+      ${cab('Estatísticas', 'estatisticas')}
+      <table class="pp-tab pp-stats"><thead><tr><th></th><th class="n">${S.season.year}</th><th class="n">Carreira</th></tr></thead>
+        <tbody>${L.map(([r, a, b, cl]) => `<tr><td>${r}</td><td class="n${cl && n(a) ? ' ' + cl : ''}">${conta(a)}</td><td class="n${cl && n(b) ? ' ' + cl : ''}">${conta(b)}</td></tr>`).join('')}</tbody></table>
     </section>`;
   }
 
   function numerosTemporada(){
     const s = Engine.summary(S.season);
-    return nums([[s.wins, 'Vitórias', s.wins ? 'ouro' : ''], [s.podiums, 'Pódios'], [s.poles, 'Poles'], [s.fls, 'Voltas mais rápidas'], [s.dnfs, 'Abandonos', s.dnfs ? 'neg' : ''], [`${s.races}<small style="font-size:15px;color:var(--faint)">/${s.total}</small>`, 'Etapas']]);
+    return nums([[s.wins, 'Vitórias', s.wins ? 'ouro' : ''], [s.podiums, 'Pódios'], [s.poles, 'Poles'], [s.fls, 'Voltas mais rápidas'], [s.dnfs, 'Abandonos', s.dnfs ? 'neg' : ''], [`${s.races}<small style="font-size:15px;color:var(--pp-fraca)">/${s.total}</small>`, 'Etapas']]);
   }
   function numerosCarreira(){
     const c = S.career;
     return nums([[c.wins, 'Vitórias', c.wins ? 'ouro' : ''], [c.podiums, 'Pódios'], [c.poles, 'Poles'], [c.fls, 'Voltas mais rápidas'], [n(c.dnfs), 'Abandonos', c.dnfs ? 'neg' : ''], [c.gps, S.season && !S.season.isTop ? 'Provas · topo' : 'Provas']]);
-  }
-  /* no Início: temporada e carreira lado a lado, uma linha por número */
-  function blocoEstatisticas(){
-    const s = Engine.summary(S.season), c = S.career;
-    const L = [['Vitórias', s.wins, c.wins, 'ouro'], ['Pódios', s.podiums, c.podiums], ['Poles', s.poles, c.poles],
-      ['Voltas mais rápidas', s.fls, c.fls], ['Abandonos', s.dnfs, n(c.dnfs), 'neg'],
-      [S.season && !S.season.isTop ? 'Provas · topo' : 'Provas', `${s.races}<small>/${s.total}</small>`, c.gps]];
-    return `<section class="chx-p" aria-label="Estatísticas">
-      ${cab('Estatísticas', 'estatisticas')}
-      <table class="pp-tab pp-stats"><thead><tr><th></th><th class="n">${S.season.year}</th><th class="n">Carreira</th></tr></thead>
-        <tbody>${L.map(([r, a, b, cl]) => `<tr class="${cl || ''}"><td>${r}</td><td class="n${cl && n(parseInt(a, 10)) ? ' ' + cl : ''}">${a}</td><td class="n${cl && n(b) ? ' ' + cl : ''}">${b}</td></tr>`).join('')}</tbody></table>
-    </section>`;
   }
 
   function noticias(max){
@@ -339,10 +393,10 @@
   /* ── as páginas ── */
   const PAGINAS = {
     inicio(){
-      return `<div class="chx-g chx-visao">${capa()}${cartaoProxima()}</div>
+      return `${capa()}
+        <div class="pp-linha pp-l1">${cartaoProxima()}${blocoHabilidades(true)}<div class="pp-col">${torre()}${ritmo()}</div></div>
         ${faixaTemporada()}
-        <div class="chx-g chx-3">${blocoHabilidades(true)}${blocoEstatisticas()}${blocoNoticias()}</div>
-        <div class="chx-g chx-2">${blocoHistorico()}${blocoConquistas(5)}</div>
+        <div class="pp-linha pp-l2">${blocoEstatisticas()}<div class="pp-col">${blocoHistorico()}${blocoConquistas(4)}</div>${blocoNoticias()}</div>
         ${movel()}`;
     },
     perfil(){
@@ -493,18 +547,73 @@
       <button class="btn btn-ghost btn-sm" onclick="UI.confirmQuit()">Sair</button></div>`;
   }
 
+  /* ── o ambiente da categoria ── */
+  const TEMAS = { f1: 'Fórmula 1', nascar: 'NASCAR', fe: 'Fórmula E', indy: 'IndyCar' };
+  /* o tema vem da categoria real: só a principal de cada série tem ambiente próprio; a base
+     (kart, fórmulas de acesso, divisões de baixo) e as séries sem ambiente usam o do Volante de Ouro.
+     Uma série nova ganha ambiente com uma entrada em TEMAS, outra em FOTO_TEMA e o bloco dela no CSS. */
+  function temaDe(){ const sea = S.season; return sea && sea.isTop && TEMAS[S.series] ? S.series : 'base'; }
+  const semMov = () => document.documentElement.classList.contains('sem-mov') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function fonteTema(tema){
+    if(tema !== 'fe' || document.getElementById('ppFonteFE')) return;
+    const l = document.createElement('link');
+    l.id = 'ppFonteFE'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap';
+    document.head.appendChild(l);
+  }
+  /* a abertura da categoria: só quando a carreira entra num ambiente diferente do último que este navegador mostrou */
+  function abertura(tema, raiz){
+    let antes = null;
+    try { antes = localStorage.getItem('vdo_painel_tema'); localStorage.setItem('vdo_painel_tema', tema); } catch(e){ return; }
+    if(antes === tema || semMov() || document.body.dataset.tela !== 'career') return;
+    const sea = S.season, nome = TEMAS[tema];
+    raiz.insertAdjacentHTML('beforeend', `<div class="pp-intro" aria-hidden="true"><div>${nome ? `<b data-i18n-ignore>${nome}</b>` : `<b>${esc(sea.cat)}</b>`}<span><span data-i18n-ignore>${esc(S.team ? S.team.name : '')}</span> · <span>temporada</span> <span>${sea.year}</span></span></div></div>`);
+    setTimeout(() => { const e = raiz.querySelector('.pp-intro'); if(e) e.remove(); }, 1250);
+  }
+  /* os números sobem de zero quando a página abre (não a cada corrida simulada) */
+  function contar(raiz){
+    if(semMov()) return;
+    raiz.querySelectorAll('[data-conta]').forEach(e => {
+      const fim = +e.dataset.conta; if(!(fim > 0)) return;
+      const t0 = performance.now(), dur = 700;
+      e.textContent = '0';
+      const passo = t => { const p = Math.min(1, (t - t0) / dur); e.textContent = String(Math.round(fim * (1 - Math.pow(1 - p, 3)))); if(p < 1) requestAnimationFrame(passo); };
+      requestAnimationFrame(passo);
+    });
+  }
+  /* o traçado da próxima etapa se desenha, e um ponto dá a volta nele */
+  function tracado(raiz, anima){
+    const p = raiz.querySelector('.pp-prox .chx-tracado path'); if(!p) return;
+    p.id = 'ppTr';
+    if(semMov()) return;
+    if(anima && p.animate){
+      p.setAttribute('pathLength', '1'); p.style.strokeDasharray = '1';
+      p.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 1500, easing: 'cubic-bezier(0.23, 1, 0.32, 1)', fill: 'both' });
+    }
+    const svg = p.ownerSVGElement;
+    if(svg) svg.insertAdjacentHTML('beforeend', '<circle class="pp-volta" r="5"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#ppTr"/></animateMotion></circle>');
+  }
+
   /* ── desenhar ── */
   function desenhar(){
     guardar();
+    const tema = PP.tema = temaDe(), raiz = $('scr-career').querySelector('.pp');
+    raiz.dataset.tema = tema; fonteTema(tema);
+    /* as janelas abertas daqui herdam o ambiente da categoria */
+    document.body.classList.add('pp-modo'); document.body.dataset.ppTema = tema;
     $('ppRail').innerHTML = trilho();
     $('ppTopo').innerHTML = topo();
-    const pg = PAGINAS[PP.pag] ? PP.pag : 'inicio';
-    $('ppPrincipal').innerHTML = `<div class="chx-pg${PP.anima ? ' pp-anima' : ''}" data-pg="${pg}">${PAGINAS[pg]()}</div>`;
+    const pg = PAGINAS[PP.pag] ? PP.pag : 'inicio', anima = PP.anima;
+    $('ppPrincipal').innerHTML = `<div class="chx-pg${anima ? ' pp-anima' : ''}" data-pg="${pg}">${PAGINAS[pg]()}</div>`;
+    /* cada painel entra na sua vez, com o movimento da categoria */
+    $('ppPrincipal').querySelectorAll('.pp-capa, .chx-p').forEach((e, i) => { e.classList.add('pp-entra'); e.style.setProperty('--i', Math.min(i, 9)); });
     encaixar();
     /* as peças de antes enchem os encaixes */
     UI.retro(); UI.sumBar(); UI.curve(); UI.panes();
     PP.anima = false;
+    if(anima) contar($('ppPrincipal'));
+    tracado($('ppPrincipal'), anima);
     if(PP.pag === 'inicio') pedirFotos();
+    abertura(tema, raiz);
   }
 
   /* se algum dado inesperado (um save muito antigo, uma série nova) quebrar a folha,
@@ -538,7 +647,7 @@
     const sec = $('scr-career'), hub = sec && sec.querySelector('.hub'), pp = sec && sec.querySelector('.pp');
     if(sec) sec.classList.remove('pp-on');
     if(pp) pp.style.display = 'none';
-    document.body.classList.add('pp-antigo');
+    document.body.classList.add('pp-antigo'); document.body.classList.remove('pp-modo');
     if(hub && LEGADO.some(id => { const e = $(id); return e && !hub.contains(e); })) devolver(hub);
     renderAntigo.apply(UI, args);
     const bar = $('actBar');
@@ -572,6 +681,7 @@
   UI.show = function(nome){
     const antes = document.body && document.body.dataset.tela;
     if(nome === 'career' && antes !== 'career'){ PP.pag = 'inicio'; PP.anima = true; }
+    if(nome !== 'career') document.body.classList.remove('pp-modo');
     return show.apply(this, arguments);
   };
 

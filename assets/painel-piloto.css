@@ -1,199 +1,521 @@
-/* Painel da carreira de piloto.
-   Usa a folha do chefe (.chx: trilho em texto, placar no alto, blocos separados por fio) e
-   acrescenta só o que é do piloto: a capa com o geral, as habilidades, os números e a vitrine.
-   Os blocos ficam um degrau de tom acima do carbono: a profundidade vem do tom, não da sombra. */
+/* Painel da carreira de piloto, com a identidade da categoria em que o jogador corre.
+   Um esqueleto só (trilho, placar, capa, painéis) e cinco ambientes que mudam fonte, superfície,
+   textura, formas, cores e movimento: F1, NASCAR, Fórmula E, IndyCar e o do próprio Volante de
+   Ouro (as outras categorias e a base). O tema vem de data-tema no .pp, escolhido pelo JS a
+   partir da categoria real da carreira. A carreira fica sempre escura, como a transmissão. */
 
 #scr-career.pp-on > .hub{display:none}
 body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
-.pp{--pp-bloco:#111316}
-html[data-theme="light"] .pp{--pp-bloco:#fff}
-.pp .chx-g > *, .pp .chx-col > *{background:var(--pp-bloco)}
-.pp .chx-g > .chx-capa{background:#101215}
-.pp .chx-pg > *{box-shadow:none}
-.pp .chx-pg{gap:1px; background:var(--regua)}
-.pp .chx-pg > .chx-p{background:var(--pp-bloco)}
-.pp .chx-topo{background:var(--bg)}
-.pp .chx-main{padding-bottom:24px}
 .pp-deposito{display:none}
 
-/* o trilho: o piloto no alto, as áreas em texto, os ajustes da carreira no pé */
+/* ═══ tokens do tema (Volante de Ouro é o padrão) ═══ */
+/* os tokens valem para a folha e para as janelas abertas durante a carreira (body.pp-modo) */
+.pp,body.pp-modo .ov{
+  --pp-fundo:#0b0c0e; --pp-trilho:#0f1113; --pp-painel:#15171b; --pp-painel2:#1c1f24; --pp-borda:rgba(255,255,255,.07); --pp-borda2:rgba(255,255,255,.14);
+  --pp-cor:#f0c12e; --pp-cor2:#b98f14; --pp-barra:#eef0f2; --pp-acao:#f0c12e; --pp-acao-tx:#15110a;
+  --pp-tinta:#eef0f2; --pp-suave:#a8aeb7; --pp-fraca:#80868f;
+  --pp-fonte:var(--f-latin, 'Archivo', system-ui, sans-serif); --pp-larg:72%; --pp-ital:normal; --pp-peso:800; --pp-caixa:uppercase;
+  --pp-raio:14px; --pp-forma:none;
+  --pp-luz:radial-gradient(120% 90% at 0% 0%, rgba(240,193,46,.06), transparent 55%);
+  --pp-textura:none;
+  --pp-sombra:inset 0 1px 0 rgba(255,255,255,.05), 0 22px 44px -28px rgba(0,0,0,.9);
+  --pp-entrada:pp-e-base;
+  /* as tabelas e janelas de antes, que moram nas páginas, herdam o ambiente */
+  --bg:var(--pp-fundo); --rail:var(--pp-trilho); --s1:var(--pp-painel); --s2:var(--pp-painel2); --s3:#272b32; --s4:#323740;
+  --ink:var(--pp-tinta); --soft:var(--pp-suave); --faint:var(--pp-fraca); --gold:var(--pp-cor); --accent-txt:var(--pp-cor);
+  --rule:rgba(255,255,255,.08); --rule2:rgba(255,255,255,.14); --regua:rgba(255,255,255,.07); --regua-forte:rgba(255,255,255,.15);
+}
+.pp{color-scheme:dark; color:var(--pp-tinta); background:var(--pp-fundo)}
+.pp[data-tema="f1"],body.pp-modo[data-pp-tema="f1"] .ov{
+  --pp-fundo:#08090b; --pp-trilho:#0c0d10; --pp-painel:#121317; --pp-painel2:#1a1b20; --pp-borda:rgba(255,255,255,.06); --pp-borda2:rgba(255,255,255,.16);
+  --pp-cor:#ff2b1c; --pp-cor2:#e10600; --pp-barra:#ff2b1c; --pp-acao:#e10600; --pp-acao-tx:#fff; --pp-tinta:#f4f5f7; --pp-suave:#aab0b9;
+  --pp-larg:64%; --pp-ital:italic; --pp-peso:900; --pp-raio:3px;
+  --pp-forma:polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+  --pp-luz:radial-gradient(90% 70% at 0% 0%, rgba(225,6,0,.10), transparent 60%);
+  --pp-textura:repeating-linear-gradient(45deg, rgba(255,255,255,.016) 0 2px, transparent 2px 5px), repeating-linear-gradient(-45deg, rgba(0,0,0,.35) 0 2px, transparent 2px 5px);
+  --pp-entrada:pp-e-f1;
+}
+.pp[data-tema="nascar"],body.pp-modo[data-pp-tema="nascar"] .ov{
+  --pp-fundo:#0e0e0f; --pp-trilho:#121213; --pp-painel:#19191b; --pp-painel2:#222225; --pp-borda:rgba(255,255,255,.09); --pp-borda2:rgba(255,210,0,.35);
+  --pp-cor:#ffd200; --pp-cor2:#e4002b; --pp-barra:#ffd200; --pp-acao:#ffd200; --pp-acao-tx:#111; --pp-tinta:#f6f6f2; --pp-suave:#b4b4ad;
+  --pp-larg:125%; --pp-ital:normal; --pp-peso:900; --pp-raio:6px;
+  --pp-luz:linear-gradient(180deg, rgba(255,210,0,.05), transparent 40%);
+  --pp-textura:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  --pp-entrada:pp-e-nascar;
+}
+.pp[data-tema="fe"],body.pp-modo[data-pp-tema="fe"] .ov{
+  --pp-fundo:#04060c; --pp-trilho:#060a14; --pp-painel:#0a1020; --pp-painel2:#0f1830; --pp-borda:rgba(0,229,255,.14); --pp-borda2:rgba(0,229,255,.4);
+  --pp-cor:#00e5ff; --pp-cor2:#2f6bff; --pp-barra:#00e5ff; --pp-acao:#00e5ff; --pp-acao-tx:#03121a; --pp-tinta:#eef6ff; --pp-suave:#9fb2c8; --pp-fraca:#71839a;
+  --pp-fonte:'Chakra Petch', var(--f-latin, 'Archivo'), system-ui, sans-serif; --pp-larg:100%; --pp-ital:normal; --pp-peso:700; --pp-raio:18px;
+  --pp-luz:radial-gradient(100% 80% at 100% 0%, rgba(47,107,255,.14), transparent 60%);
+  --pp-textura:linear-gradient(rgba(0,229,255,.035) 1px, transparent 1px) 0 0/30px 30px, linear-gradient(90deg, rgba(0,229,255,.035) 1px, transparent 1px) 0 0/30px 30px;
+  --pp-sombra:inset 0 1px 0 rgba(0,229,255,.12), 0 24px 50px -30px rgba(0,30,80,.9);
+  --pp-entrada:pp-e-fe;
+}
+.pp[data-tema="indy"],body.pp-modo[data-pp-tema="indy"] .ov{
+  --pp-fundo:#060a14; --pp-trilho:#09101f; --pp-painel:#0e1628; --pp-painel2:#142037; --pp-borda:rgba(174,186,204,.13); --pp-borda2:rgba(174,186,204,.3);
+  --pp-cor:#ff4157; --pp-cor2:#1f6fe5; --pp-barra:#3d8ef7; --pp-acao:#e4002b; --pp-acao-tx:#fff; --pp-tinta:#f2f5fa; --pp-suave:#a7b3c6; --pp-fraca:#7a879b;
+  --pp-larg:100%; --pp-ital:italic; --pp-peso:900; --pp-raio:10px;
+  --pp-luz:linear-gradient(180deg, rgba(255,255,255,.04), transparent 35%);
+  --pp-textura:repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+  --pp-entrada:pp-e-indy;
+}
+
+/* ═══ casca: trilho, placar e a folha ═══ */
+.pp.chx{background:var(--pp-fundo)}
+.pp.chx::before{background:var(--pp-trilho); box-shadow:inset -1px 0 0 var(--pp-borda)}
+.pp .chx-rail{background:var(--pp-trilho); box-shadow:inset -1px 0 0 var(--pp-borda)}
+.pp .chx-main{padding:0 0 28px; background:var(--pp-textura), var(--pp-fundo)}
+.pp .chx-topo{background:transparent; box-shadow:inset 0 -1px 0 var(--pp-borda)}
+.pp .chx-equipe{box-shadow:inset -1px -1px 0 var(--pp-borda)}
 .pp .chx-equipe span{font-variant-numeric:tabular-nums}
 .pp .chx-equipe span span{display:inline; margin:0}
+.pp .chx-nav button{position:relative; transition:color .15s var(--ease-out), background-color .15s var(--ease-out)}
+.pp .chx-nav button[aria-current="page"]{color:var(--pp-cor); background:color-mix(in srgb, var(--pp-cor) 10%, transparent); box-shadow:inset 3px 0 0 var(--pp-cor)}
+@media (hover:hover) and (pointer:fine){ .pp .chx-nav button:not([aria-current="page"]):hover{background:var(--pp-painel); color:var(--pp-tinta)} }
+.pp .chx-rail-pe,.pp .chx-sair,.pp-ajustes button{box-shadow:inset -1px 0 0 var(--pp-borda), inset 0 1px 0 var(--pp-borda)} /* fio de 1px, não é sombra (taste-skill-ignore) */
+.pp .chx-chip{box-shadow:inset 1px 0 0 var(--pp-borda)} /* fio de 1px (taste-skill-ignore) */
 .pp-ajustes{display:grid}
-.pp-ajustes button{display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-height:40px; padding:0 18px; text-align:left; font-size:13px; color:var(--soft);
-  box-shadow:inset -1px 0 0 var(--regua), inset 0 1px 0 var(--regua); transition:color .15s var(--ease-out), background .15s var(--ease-out)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
-.pp-ajustes b{font-size:14px; font-weight:700; color:var(--ink)}
-.pp-ajustes button:active{background:var(--s2)}
-@media (hover:hover) and (pointer:fine){ .pp-ajustes button:hover{background:var(--s1); color:var(--ink)} }
+.pp-ajustes button{display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-height:40px; padding:0 18px; text-align:left; font-size:13px; color:var(--pp-suave);
+  transition:color .15s var(--ease-out), background-color .15s var(--ease-out)}
+.pp-ajustes b{font-size:14px; font-weight:700; color:var(--pp-tinta)}
+.pp-ajustes button:active,.pp .chx-sair:active{transform:scale(.98)}
+@media (hover:hover) and (pointer:fine){ .pp-ajustes button:hover{background:var(--pp-painel); color:var(--pp-tinta)} }
 
-/* a capa: a foto do carro da equipe naquele ano, o piloto e o geral; no pé, a situação profissional */
-.pp-capa{min-height:430px}
-.pp-capa-tx{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:22px; align-items:end; padding:0 24px}
-.pp-ret{position:relative; margin:0; width:118px; height:148px; background:var(--tc); display:grid; place-items:center; overflow:hidden}
-.pp-ret > span{font-size:46px; font-weight:800; font-stretch:72%; color:#fff; line-height:1}
+/* a voz da categoria: títulos, números grandes e placar usam a fonte do tema */
+.pp .chx-topo h1,.pp-capa h2,.pp .chx-p-cab h2,.pp .chx-prox-cab h2,.pp-geral b,.pp .chx-chip b,.pp-nums dd,.pp-stats td.n,.pp-torre b,.pp-torre em,
+.pp .chx-equipe b,.pp-eq h3,.pp-fim h2,.pp-intro b{font-family:var(--pp-fonte); font-stretch:var(--pp-larg); font-style:var(--pp-ital); font-weight:var(--pp-peso)}
+.pp .chx-topo h1{font-size:34px; text-transform:var(--pp-caixa); letter-spacing:0}
+.pp .chx-chip b{font-size:25px}
+
+/* a folha vira um pátio de painéis com profundidade, não uma grade de fios */
+.pp .chx-pg{display:grid; gap:16px; padding:18px; background:none}
+.pp .chx-pg > *{box-shadow:none}
+.pp .chx-g,.pp .chx-col{gap:16px; background:none}
+.pp .chx-g > *,.pp .chx-col > *{background:none}
+.pp-linha{display:grid; gap:16px; min-width:0}
+.pp-l1{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(260px,.9fr)}
+.pp-l2{grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr) minmax(0,1fr); align-items:start}
+.pp-col{display:grid; gap:16px; align-content:start; min-width:0}
+.pp .chx-topo{padding-right:10px}
+.pp-hab .chx-barras{gap:10px}
+.pp .chx-p{position:relative; isolation:isolate; overflow:hidden; min-width:0; padding:18px 20px 20px; border:1px solid var(--pp-borda); border-radius:var(--pp-raio);
+  background:var(--pp-luz), var(--pp-painel); box-shadow:var(--pp-sombra); clip-path:var(--pp-forma)}
+.pp .chx-p > h2,.pp .chx-p-cab{box-shadow:none; padding-bottom:10px; border-bottom:1px solid var(--pp-borda)}
+.pp .chx-p-cab h2,.pp .chx-p > h2{font-size:18px; letter-spacing:.01em; text-transform:var(--pp-caixa)}
+.pp .chx-p-cab p{color:var(--pp-suave)}
+.pp .chx-p-cab p b{color:var(--pp-cor)}
+.pp .chx-ir{color:inherit}
+
+/* ═══ capa ═══ */
+.pp-capa{position:relative; isolation:isolate; overflow:hidden; min-height:clamp(440px,56vh,580px); display:flex; flex-direction:column; justify-content:flex-end;
+  border:1px solid var(--pp-borda); border-radius:var(--pp-raio); background:#0b0c0e; box-shadow:var(--pp-sombra); clip-path:var(--pp-forma); color:#fff}
+.pp-capa > img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 55%; z-index:-3; transform-origin:62% 50%;
+  animation:pp-respira 26s ease-in-out infinite alternate}
+/* véu neutro sob o texto da foto, e a luz da categoria por cima */
+.pp-capa::before{content:''; position:absolute; inset:0; z-index:-2; pointer-events:none;
+  background:linear-gradient(90deg, rgba(7,8,10,.94) 0%, rgba(7,8,10,.62) 36%, rgba(7,8,10,.08) 70%), linear-gradient(0deg, rgba(7,8,10,.96) 0%, rgba(7,8,10,.25) 42%, transparent 70%)}
+.pp-capa::after{content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(70% 90% at 0% 100%, color-mix(in srgb, var(--pp-cor2) 30%, transparent), transparent 60%); opacity:.7}
+.pp-orn{position:absolute; inset:0; z-index:-1; overflow:hidden; pointer-events:none}
+.pp-capa-tx{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:24px; align-items:end; padding:0 28px 22px}
+.pp-ret{position:relative; margin:0; width:120px; height:150px; background:var(--tc); display:grid; place-items:center; overflow:hidden; border-radius:calc(var(--pp-raio) * .6);
+  box-shadow:0 14px 30px -16px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.12)}
+.pp-ret > span{font-size:48px; font-weight:800; font-stretch:72%; color:#fff; line-height:1}
 .pp-ret img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 16%}
-.pp-ret i{position:absolute; left:0; bottom:0; min-width:40px; padding:5px 8px 4px; background:rgba(11,12,14,.88); color:#fff; font-style:normal; font-size:17px; font-weight:800;
+.pp-ret i{position:absolute; left:0; bottom:0; min-width:42px; padding:5px 8px 4px; background:rgba(7,8,10,.88); color:#fff; font-style:normal; font-size:17px; font-weight:800;
   font-stretch:75%; line-height:1; text-align:center; font-variant-numeric:tabular-nums}
 .pp-nome{min-width:0}
-.pp-nome h2{max-width:none; overflow-wrap:anywhere}
-.pp-meta{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:12px 0 0; font-size:15px; color:#dfe3e7}
+.pp-capa h2{margin:0; font-size:clamp(56px,6.4vw,104px); line-height:.82; text-transform:var(--pp-caixa); letter-spacing:-.005em; overflow-wrap:anywhere; text-shadow:0 2px 30px rgba(0,0,0,.45)}
+.pp-meta{display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; margin:14px 0 0; font-size:15px; color:#e2e6ea}
 .pp-meta .country-flag{width:24px; height:18px}
+.pp-meta s{width:4px; height:4px; background:var(--pp-cor); text-decoration:none; border-radius:2px}
 .pp-meta .papel-chip{margin:0}
-.pp-meta s{width:3px; height:3px; background:#8d949c; text-decoration:none}
-.pp-nota-capa{margin:8px 0 0; font-size:14px; color:#f0c12e}
-.pp-geral{display:grid; justify-items:end; align-self:end; text-align:right; padding:14px 18px 12px; background:rgba(11,12,14,.86)}
-.pp-geral b{font-size:clamp(84px,7.4vw,116px); line-height:.78; font-weight:800; font-stretch:72%; color:#fff; font-variant-numeric:tabular-nums}
-.pp-geral span{font-size:13px; color:#c3c8ce; margin-top:10px}
-.pp-faixa{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); margin:0}
-.pp-faixa > div{min-width:0; padding:12px 18px 13px; box-shadow:inset 1px 0 0 rgba(255,255,255,.08), inset 0 1px 0 rgba(255,255,255,.08)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
-.pp-faixa dt{font-size:12px; color:#8d949c}
-.pp-faixa dd{margin:4px 0 0; font-size:19px; line-height:1.05; font-weight:800; font-stretch:78%; color:#eef0f2; overflow-wrap:anywhere}
-.pp-faixa dd small{font-size:13px; font-weight:600; font-stretch:normal; color:#aab0b8}
-.pp-faixa s{display:block; height:3px; margin-top:7px; background:rgba(255,255,255,.14); text-decoration:none}
-.pp-faixa s i{display:block; height:100%; background:#eef0f2; transform-origin:left}
+.pp-nota-capa{margin:8px 0 0; font-size:14px; color:var(--pp-cor)}
+.pp-geral{position:relative; display:grid; justify-items:center; align-self:end; padding:16px 22px 14px; min-width:132px; background:rgba(7,8,10,.82); border-radius:calc(var(--pp-raio) * .6)}
+.pp-geral b{font-size:clamp(78px,7vw,112px); line-height:.8; color:#fff; font-variant-numeric:tabular-nums}
+.pp-geral span{font-size:13px; color:#c7ccd2; margin-top:10px}
+.pp-anel{display:none}
+.pp-faixa{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); margin:0; background:rgba(7,8,10,.78); border-top:1px solid rgba(255,255,255,.08)}
+.pp-faixa > div{position:relative; min-width:0; padding:13px 20px 14px}
+.pp-faixa > div + div::before{content:''; position:absolute; left:0; top:14px; bottom:14px; width:1px; background:rgba(255,255,255,.09)}
+.pp-faixa dt{font-size:12px; color:#9aa1aa}
+.pp-faixa dd{margin:4px 0 0; font-size:20px; line-height:1.05; font-weight:800; font-stretch:80%; color:#f2f4f6; overflow-wrap:anywhere}
+.pp-faixa s{display:block; height:3px; margin-top:8px; background:rgba(255,255,255,.12); text-decoration:none; border-radius:2px; overflow:hidden}
+.pp-faixa s i{display:block; height:100%; background:var(--pp-barra); transform-origin:left}
+.pp-credito{margin:0; padding:8px 20px 10px; font-size:12px; line-height:1.4; color:#a9b0b8; background:rgba(7,8,10,.86)}
+.pp-credito a{color:inherit; text-decoration:underline; text-underline-offset:.2em}
 
-/* a próxima etapa: os botões que valem para o fim de semana */
-.pp-prox .chx-fatos dd b{font-weight:700}
-.pp .chx-prox-cab h2{word-spacing:.12em}
-.pp-acoes{display:grid; gap:6px; margin-top:auto}
-.pp-acoes .chx-acao{margin-top:0}
-.pp-acoes .chx-acao2{margin-top:0}
-.pp-link{justify-self:center; font-size:14px; font-weight:600; color:var(--soft); padding:6px 4px; text-decoration:underline; text-decoration-color:var(--s4);
+/* ═══ próxima etapa ═══ */
+.pp-prox{display:grid; gap:14px; align-content:start}
+.pp .chx-prox-cab h2{font-size:32px; text-transform:var(--pp-caixa); word-spacing:.12em}
+.pp .chx-tracado{box-shadow:none; border-top:1px solid var(--pp-borda); border-bottom:1px solid var(--pp-borda); padding:12px 0 8px}
+.pp .chx-tracado svg{max-width:280px; height:170px; overflow:visible}
+.pp .chx-tracado path{stroke:var(--pp-tinta); stroke-width:2.6; vector-effect:none}
+.pp .chx-tracado .pp-volta{fill:var(--pp-cor); filter:drop-shadow(0 0 6px var(--pp-cor))}
+.pp .chx-fatos div{box-shadow:inset 0 -1px 0 var(--pp-borda)} /* fio de 1px (taste-skill-ignore) */
+.pp .chx-fatos dt{color:var(--pp-fraca)}
+.pp-acoes{display:grid; gap:8px; margin-top:4px}
+.pp .chx-acao{width:100%; min-height:56px; justify-content:center; border-radius:calc(var(--pp-raio) * .6); background:var(--pp-acao); color:var(--pp-acao-tx); font-size:17px;
+  transition:transform .14s var(--ease-out), filter .15s var(--ease-out)}
+.pp .chx-acao:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){ .pp .chx-acao:hover{filter:brightness(1.08)} }
+.pp .chx-acao2{width:100%; min-height:44px; justify-content:center; border-radius:calc(var(--pp-raio) * .6); background:var(--pp-painel2); color:var(--pp-tinta)}
+.pp-link{justify-self:center; font-size:14px; font-weight:600; color:var(--pp-suave); padding:6px 4px; text-decoration:underline; text-decoration-color:var(--pp-borda2);
   text-underline-offset:.25em; transition:color .15s var(--ease-out)}
 .pp-link:active{transform:scale(.97)}
-@media (hover:hover) and (pointer:fine){ .pp-link:hover{color:var(--ink); text-decoration-color:currentColor} }
-.pp-fim p{margin:0; font-size:15px; line-height:1.5; color:var(--soft)}
-.pp-fim h2{font-size:30px; font-weight:800; font-stretch:72%; line-height:.95; text-transform:uppercase; margin:0}
+@media (hover:hover) and (pointer:fine){ .pp-link:hover{color:var(--pp-tinta); text-decoration-color:currentColor} }
+.pp-fim p{margin:0; font-size:15px; line-height:1.5; color:var(--pp-suave)}
+.pp-fim h2{font-size:32px; line-height:.95; text-transform:var(--pp-caixa); margin:0}
 
-/* blocos: cabeçalho com o atalho, dados em linhas */
-.pp .chx-p-cab h2 .chx-ir{font-size:16px}
-.pp-sub{margin:4px 0 0; font-size:13px; color:var(--faint)}
-.pp-h3{margin:4px 0 0; font-size:13px; font-weight:600; color:var(--soft)}
-.pp-vazio{margin:0; font-size:15px; color:var(--soft); line-height:1.5}
-.pp-botoes{display:flex; flex-wrap:wrap; gap:8px}
-.pp .pp-botoes .btn{border-radius:0}
+/* ═══ torre de classificação ═══ */
+.pp-torre ol{list-style:none; margin:0; padding:0; display:grid; gap:4px}
+.pp-torre li{display:grid; grid-template-columns:34px 4px minmax(0,1fr) auto; gap:10px; align-items:center; min-height:34px; padding:0 12px 0 0; background:var(--pp-painel2);
+  border-radius:calc(var(--pp-raio) * .4); overflow:hidden}
+.pp-torre li b{height:100%; display:grid; place-items:center; font-size:16px; background:rgba(255,255,255,.06); color:var(--pp-tinta)}
+.pp-torre li s{height:60%; background:var(--tc); text-decoration:none; border-radius:2px}
+.pp-torre li span{font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pp-torre li em{font-style:var(--pp-ital); font-size:16px; font-variant-numeric:tabular-nums}
+.pp-torre li.eu{background:color-mix(in srgb, var(--pp-cor) 20%, var(--pp-painel2)); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--pp-cor) 50%, transparent)}
+.pp-torre li.eu b{background:var(--pp-cor); color:var(--pp-acao-tx)}
+.pp-torre li.sep{min-height:10px; background:none; justify-items:center}
 
-/* habilidades: as barras enchem quando a página abre */
-.pp .chx-barra s i{transform-origin:left}
-.pp-anima .chx-barra s i,.pp-anima .pp-faixa s i{animation:pp-enche .7s var(--ease-out) both; animation-delay:calc(var(--i, 0) * 40ms + 80ms)}
-@keyframes pp-enche{from{transform:scaleX(0)}}
+/* ═══ blocos de dados ═══ */
+.pp .chx-barras{display:grid; gap:12px}
+.pp .chx-barra span{color:var(--pp-suave)}
+.pp .chx-barra b{font-size:20px; font-family:var(--pp-fonte); font-stretch:var(--pp-larg); font-style:var(--pp-ital)}
+.pp .chx-barra s{height:5px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden}
+.pp .chx-barra s i{background:var(--pp-barra); transform-origin:left; border-radius:3px}
 .pp-grupos{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px 28px}
 .pp-grupos > div{display:grid; gap:12px; align-content:start}
-.pp-forca{margin:0; font-size:14px; color:var(--soft); line-height:1.5}
-.pp-forca b{color:var(--ink); font-weight:700}
-
-/* números: rótulo embaixo, tabular */
-.pp-nums{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 18px; margin:0}
+.pp-forca{margin:0; font-size:14px; color:var(--pp-suave); line-height:1.55}
+.pp-forca b{color:var(--pp-tinta); font-weight:700}
+.pp-sub{margin:4px 0 0; font-size:13px; color:var(--pp-fraca)}
+.pp-h3{margin:4px 0 0; font-size:13px; font-weight:600; color:var(--pp-suave)}
+.pp-vazio{margin:0; font-size:15px; color:var(--pp-suave); line-height:1.5}
+.pp-botoes{display:flex; flex-wrap:wrap; gap:8px}
+.pp .pp-botoes .btn{border-radius:calc(var(--pp-raio) * .5)}
+.pp-nums{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px 18px; margin:0}
 .pp-nums div{display:flex; flex-direction:column-reverse; min-width:0}
-.pp-nums dd{margin:0; font-size:30px; line-height:1; font-weight:800; font-stretch:72%; font-variant-numeric:tabular-nums}
-.pp-nums dt{font-size:13px; color:var(--faint); margin-top:4px}
-.pp-nums .ouro dd{color:var(--gold)}
+.pp-nums dd{margin:0; font-size:34px; line-height:1; font-variant-numeric:tabular-nums}
+.pp-nums dt{font-size:13px; color:var(--pp-fraca); margin-top:5px}
+.pp-nums .ouro dd{color:#f0c12e}
 .pp-nums .neg dd{color:var(--red-txt)}
 .pp-nums-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-
-/* notícias recentes */
-.pp-nots{list-style:none; margin:0; padding:0; display:grid}
-.pp-nots li{display:grid; grid-template-columns:30px minmax(0,1fr); gap:4px 12px; padding:11px 0; box-shadow:inset 0 -1px 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
-.pp-nots li:first-child{padding-top:2px}
-.pp-nots .pav,.pp-nots .pic{width:30px; height:30px; display:grid; place-items:center; overflow:hidden; background:var(--s3); color:#fff; font-size:12px; font-weight:800; object-fit:cover}
-.pp-nots .pic .ico{width:16px; height:16px; fill:var(--soft)}
-.pp-nots header{display:flex; align-items:baseline; gap:8px; min-width:0}
-.pp-nots header b{font-size:14px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.pp-nots header span{font-size:12px; color:var(--faint); flex:none}
-.pp-nots p{grid-column:2; margin:0; font-size:14px; line-height:1.45; color:var(--soft); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
-
-/* histórico e conquistas */
 .pp-tab{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums}
-.pp-tab th{font-size:12px; font-weight:600; color:var(--faint); text-align:left; padding:0 10px 8px 0}
-.pp-tab td{font-size:14px; padding:9px 10px 9px 0; box-shadow:inset 0 -1px 0 var(--regua); white-space:nowrap} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-tab th{font-size:12px; font-weight:600; color:var(--pp-fraca); text-align:left; padding:0 10px 8px 0}
+.pp-tab td{font-size:14px; padding:9px 10px 9px 0; border-bottom:1px solid var(--pp-borda); white-space:nowrap} /* tabela de verdade (taste-skill-ignore) */
 .pp-tab td.n,.pp-tab th.n{text-align:right; padding-right:0}
 .pp-tab td.ano{font-weight:800; font-stretch:80%; font-size:15px}
 .pp-tab td.eq{white-space:normal; min-width:0}
 .pp-tab td.cl{font-weight:800}
-.pp-tab tr.campeao td.cl,.pp-tab tr.campeao td.ano{color:var(--gold)}
-.pp-tab .stripe{display:inline-block; width:4px; height:14px; margin-right:8px; vertical-align:-2px}
-.pp-tab tbody tr{cursor:pointer; transition:background .15s var(--ease-out)}
-@media (hover:hover) and (pointer:fine){ .pp-tab tbody tr:hover td{background:var(--s1)} }
+.pp-tab tr.campeao td.cl,.pp-tab tr.campeao td.ano{color:#f0c12e}
+.pp-tab .stripe{display:inline-block; width:4px; height:14px; margin-right:8px; vertical-align:-2px; border-radius:2px}
+.pp-tab tbody tr{cursor:pointer; transition:background-color .15s var(--ease-out)}
+@media (hover:hover) and (pointer:fine){ .pp-tab tbody tr:hover td{background:color-mix(in srgb, var(--pp-cor) 7%, transparent)} }
 .pp-stats tbody tr{cursor:default}
-.pp-stats td{padding:8px 10px 8px 0; color:var(--soft)}
-.pp-stats td.n{font-size:21px; line-height:1; font-weight:800; font-stretch:72%; color:var(--ink); padding-right:0; padding-left:14px}
-.pp-stats td.n small{font-size:13px; color:var(--faint); font-weight:600}
-.pp-stats td.ouro{color:var(--gold)}
+.pp-stats td{padding:8px 10px 8px 0; color:var(--pp-suave)}
+.pp-stats td.n{font-size:23px; line-height:1; color:var(--pp-tinta); padding-right:0; padding-left:14px}
+.pp-stats td.n small{font-size:13px; color:var(--pp-fraca); font-weight:600; font-style:normal}
+.pp-stats td.ouro{color:#f0c12e}
 .pp-stats td.neg{color:var(--red-txt)}
 @media (hover:hover) and (pointer:fine){ .pp-stats tbody tr:hover td{background:none} }
-.pp .chx-et .posbox{border-radius:0}
+.pp-nots{list-style:none; margin:0; padding:0; display:grid}
+.pp-nots li{display:grid; grid-template-columns:32px minmax(0,1fr); gap:4px 12px; padding:12px 0; border-bottom:1px solid var(--pp-borda)}
+.pp-nots li:first-child{padding-top:2px}
+.pp-nots .pav,.pp-nots .pic{width:32px; height:32px; display:grid; place-items:center; overflow:hidden; background:var(--pp-painel2); color:#fff; font-size:12px; font-weight:800; object-fit:cover; border-radius:50%}
+.pp-nots .pic .ico{width:16px; height:16px; fill:var(--pp-suave)}
+.pp-nots header{display:flex; align-items:baseline; gap:8px; min-width:0}
+.pp-nots header b{font-size:14px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pp-nots header span{font-size:12px; color:var(--pp-fraca); flex:none}
+.pp-nots p{grid-column:2; margin:0; font-size:14px; line-height:1.45; color:var(--pp-suave); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
 .pp-conq{list-style:none; margin:0; padding:0; display:grid}
-.pp-conq li{display:grid; grid-template-columns:28px minmax(0,1fr); gap:12px; align-items:center; padding:10px 0; box-shadow:inset 0 -1px 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
+.pp-conq li{display:grid; grid-template-columns:30px minmax(0,1fr); gap:12px; align-items:center; padding:11px 0; border-bottom:1px solid var(--pp-borda)}
 .pp-conq li:first-child{padding-top:2px}
-.pp-conq .ico{width:22px; height:22px; fill:var(--soft)}
-.pp-conq .ouro .ico{fill:var(--gold)}
+.pp-conq .ico{width:24px; height:24px; fill:var(--pp-suave)}
+.pp-conq .ouro .ico{fill:#f0c12e}
 .pp-conq .prata .ico{fill:#c9ccd1}
 .pp-conq .bronze .ico{fill:#c98a52}
 .pp-conq b{display:block; font-size:15px; font-weight:700}
-.pp-conq small{display:block; font-size:13px; color:var(--soft); margin-top:2px}
+.pp-conq small{display:block; font-size:13px; color:var(--pp-suave); margin-top:2px}
+.pp-gente{display:grid}
+.pp-gente > div{display:grid; grid-template-columns:22px minmax(0,1fr) 44px; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--pp-borda)}
+.pp-gente b{display:block; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pp-gente small{display:block; font-size:13px; color:var(--pp-suave); margin-top:2px}
+.pp-gente small.tenso{color:var(--red-txt)}
+.pp-gente s{height:4px; background:rgba(255,255,255,.08); text-decoration:none; border-radius:2px; overflow:hidden}
+.pp-gente s i{display:block; height:100%; background:var(--pp-barra)}
+.pp-eq{display:grid; grid-template-columns:8px minmax(0,1fr); gap:14px}
+.pp-eq s{background:var(--tc); text-decoration:none; border-radius:2px}
+.pp-eq h3{margin:0; font-size:38px; line-height:.9; text-transform:var(--pp-caixa)}
+.pp-eq p{margin:6px 0 0; font-size:14px; color:var(--pp-suave)}
 
-/* as tabelas antigas (retrospecto, classificação, imprensa) dentro da folha */
+/* ritmo da temporada: a posição no campeonato etapa a etapa, desenhada como telemetria */
+.pp-ritmo svg{display:block; width:100%; height:120px; overflow:visible}
+.pp-ritmo .gl{stroke:var(--pp-borda); stroke-width:1}
+.pp-ritmo .ln{fill:none; stroke:var(--pp-barra); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round}
+.pp-ritmo .ar{fill:color-mix(in srgb, var(--pp-barra) 14%, transparent)}
+.pp-ritmo .pt{fill:var(--pp-fundo); stroke:var(--pp-barra); stroke-width:2}
+.pp-ritmo .eixo{display:flex; justify-content:space-between; font-size:12px; color:var(--pp-fraca); margin-top:6px}
+
+/* faixa da temporada */
+.pp .chx-etapas{gap:4px; background:none; box-shadow:none}
+.pp .chx-et > button,.pp .chx-et > div{background:var(--pp-painel2); border-radius:calc(var(--pp-raio) * .4)}
+.pp .chx-et.futura > div{background:transparent; box-shadow:inset 0 0 0 1px var(--pp-borda)} /* contorno de estado (taste-skill-ignore) */
+.pp .chx-et.prox > div{background:transparent; box-shadow:inset 0 0 0 2px var(--pp-cor)} /* contorno de estado (taste-skill-ignore) */
+.pp .chx-et .posbox{border-radius:3px}
+.pp .chx-et .posbox.p1{background:#f0c12e; color:#15110a}
+@media (hover:hover) and (pointer:fine){ .pp .chx-et > button:hover{background:color-mix(in srgb, var(--pp-cor) 16%, var(--pp-painel2))} }
+
+/* as peças de antes dentro dos painéis */
 .pp-slot{min-width:0}
 .pp-slot > .tbl-scroll,.pp-slot > .tabpane{display:block; margin:0}
 .pp-slot table.rt,.pp-slot table.st,.pp-slot table.hs{width:100%}
-.pp-slot .sumbar{border-radius:0; margin:0}
-.pp-slot .sumbar .sm{border-radius:0}
+.pp-slot .sumbar{border-radius:0; margin:0; background:none}
+.pp-slot .sumbar .sm{border-radius:calc(var(--pp-raio) * .4)}
 .pp-slot .curve{margin:0; padding:0}
-.pp .chx-fatos-2 dd{font-size:18px}
-.pp .posbox{border-radius:0}
-.pp table.rt tbody tr.next{border-left:0; background:var(--s2)}
-.pp table.rt th,.pp table.st th,.pp table.hs th{background:var(--pp-bloco)}
-.pp .h2h{border-radius:0}
-.pp .post{border-radius:0; border-left:0; background:var(--s1)}
 .pp-slot [style*="max-height"]{max-height:none !important; overflow:visible !important}
-
-/* pessoas (equipe) */
-.pp-gente{display:grid}
-.pp-gente > div{display:grid; grid-template-columns:22px minmax(0,1fr) 44px; gap:10px; align-items:center; padding:9px 0; box-shadow:inset 0 -1px 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
-.pp-gente b{display:block; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.pp-gente small{display:block; font-size:13px; color:var(--soft); margin-top:2px}
-.pp-gente small.tenso{color:var(--red-txt)}
-.pp-gente s{height:3px; background:var(--s3); text-decoration:none}
-.pp-gente s i{display:block; height:100%; background:var(--ink)}
-.pp-eq{display:grid; grid-template-columns:8px minmax(0,1fr); gap:14px}
-.pp-eq s{background:var(--tc); text-decoration:none}
-.pp-eq h3{margin:0; font-size:34px; line-height:.92; font-weight:800; font-stretch:72%; text-transform:uppercase}
-.pp-eq p{margin:6px 0 0; font-size:14px; color:var(--soft)}
-
-/* a troca de página */
-.pp-anima{animation:pp-entra .24s var(--ease-out) both}
-@keyframes pp-entra{from{opacity:0; transform:translateY(6px)}}
-.sem-mov .pp-anima,.sem-mov .pp-anima .chx-barra s i,.sem-mov .pp-anima .pp-faixa s i{animation:none}
-.sem-mov .pp-ajustes button,.sem-mov .pp-tab tbody tr{transition:none}
-
-/* no celular, os ajustes que moram no pé do trilho */
+.pp .chx-fatos-2 dd{font-size:18px}
+.pp .posbox{border-radius:3px}
+.pp table.rt tbody tr.next{border-left:0; background:color-mix(in srgb, var(--pp-cor) 10%, transparent)}
+.pp table.rt th,.pp table.st th,.pp table.hs th{background:var(--pp-painel)}
+.pp table.st tr.me{background:color-mix(in srgb, var(--pp-cor) 16%, transparent)}
+.pp .post{border-radius:calc(var(--pp-raio) * .5); border-left:0; background:var(--pp-painel2)}
 .pp-movel{display:none}
 
+/* ═══ F1: telemetria, carbono e cortes em ângulo ═══ */
+.pp[data-tema="f1"] .chx-p::before{content:''; position:absolute; left:0; top:0; width:72px; height:3px; background:var(--pp-cor2)}
+.pp[data-tema="f1"] .chx-p-cab h2::before{content:''; display:inline-block; width:10px; height:15px; margin-right:9px; background:var(--pp-cor2); transform:skewX(-20deg); vertical-align:-1px}
+.pp[data-tema="f1"] .pp-geral{clip-path:polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); background:linear-gradient(135deg, #e10600, #9a0400); padding:16px 30px 14px}
+.pp[data-tema="f1"] .pp-geral span{color:#ffd9d6}
+.pp[data-tema="f1"] .chx-acao{clip-path:polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); border-radius:0}
+.pp[data-tema="f1"] .pp-torre li{border-radius:0}
+.pp[data-tema="f1"] .pp-torre li b{background:#f4f5f7; color:#08090b}
+.pp[data-tema="f1"] .pp-torre li.eu b{background:var(--pp-cor2); color:#fff}
+.pp[data-tema="f1"] .chx-et > button,.pp[data-tema="f1"] .chx-et > div{transform:skewX(-8deg); border-radius:0}
+.pp[data-tema="f1"] .chx-et > * > *{transform:skewX(8deg)}
+.pp-orn-f1 i{position:absolute; left:0; height:1px; width:46%; top:var(--y); opacity:.5; background:linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent);
+  transform:translateX(-110%); animation:pp-velo var(--t, 2.8s) linear infinite; animation-delay:var(--d)}
+.pp-orn-f1 b{position:absolute; left:-6%; bottom:-30%; width:34%; height:120%; background:linear-gradient(180deg, rgba(225,6,0,.0), rgba(225,6,0,.55)); transform:skewX(-24deg); mix-blend-mode:screen}
+
+/* ═══ NASCAR: asfalto, número de porta e bandeira quadriculada ═══ */
+.pp[data-tema="nascar"] .chx-p{border-width:2px; background:var(--pp-textura), var(--pp-luz), var(--pp-painel)}
+.pp[data-tema="nascar"] .chx-p-cab{border-bottom:3px solid var(--pp-cor)}
+.pp[data-tema="nascar"] .chx-p-cab h2{font-size:17px; letter-spacing:.02em}
+.pp[data-tema="nascar"] .chx-p-cab h2::before{content:''; display:inline-block; width:24px; height:14px; margin-right:10px; vertical-align:-1px; opacity:.9;
+  background:conic-gradient(#f6f6f2 25%, #111 0 50%, #f6f6f2 0 75%, #111 0) 0 0/7px 7px}
+.pp[data-tema="nascar"] .pp-geral{background:var(--pp-cor); border:3px solid #111; border-radius:6px}
+.pp[data-tema="nascar"] .pp-geral b{color:#111}
+.pp[data-tema="nascar"] .pp-geral span{color:#3a3300; font-weight:700}
+.pp[data-tema="nascar"] .chx-acao{border:3px solid #111; box-shadow:0 0 0 2px var(--pp-cor)}
+.pp[data-tema="nascar"] .pp-torre li{border-radius:3px; background:#101011}
+.pp[data-tema="nascar"] .pp-torre li b{background:#111; color:var(--pp-cor); font-size:18px}
+.pp[data-tema="nascar"] .pp-torre li.eu{background:var(--pp-cor); color:#111; box-shadow:none}
+.pp[data-tema="nascar"] .pp-torre li.eu b{background:#111; color:var(--pp-cor)}
+.pp[data-tema="nascar"] .pp-faixa{border-top:3px solid var(--pp-cor)}
+.pp-portanum{position:absolute; right:3%; top:-6%; font-size:clamp(220px,30vw,460px); line-height:.8; font-weight:900; font-stretch:125%; font-style:italic; color:transparent;
+  -webkit-text-stroke:3px rgba(255,210,0,.6); letter-spacing:-.04em; font-variant-numeric:tabular-nums}
+.pp-xadrez{position:absolute; left:0; right:0; top:0; height:18px; overflow:hidden; opacity:.9}
+.pp-xadrez i{position:absolute; inset:0 -36px 0 0; background:conic-gradient(#f6f6f2 25%, #111 0 50%, #f6f6f2 0 75%, #111 0) 0 0/18px 18px; animation:pp-bandeira 2.4s linear infinite}
+
+/* ═══ Fórmula E: energia, circuitos e luz ═══ */
+.pp[data-tema="fe"] .chx-p{background:var(--pp-luz), var(--pp-painel)}
+.pp[data-tema="fe"] .chx-p::after{content:''; position:absolute; left:0; right:0; top:0; height:1px; z-index:1;
+  background:linear-gradient(90deg, transparent 0%, transparent 35%, var(--pp-cor) 50%, transparent 65%, transparent 100%); background-size:300% 100%; animation:pp-corrente 4.5s linear infinite}
+.pp[data-tema="fe"] .chx-p-cab h2{letter-spacing:.04em}
+.pp[data-tema="fe"] .chx-p-cab h2::before{content:''; display:inline-block; width:7px; height:7px; margin-right:10px; border-radius:50%; background:var(--pp-cor);
+  box-shadow:0 0 10px var(--pp-cor); vertical-align:2px; animation:pp-pulso 2.2s ease-in-out infinite}
+.pp[data-tema="fe"] .chx-barra s i{background:linear-gradient(90deg, var(--pp-cor2), var(--pp-cor));
+  -webkit-mask:repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px); mask:repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px)}
+.pp[data-tema="fe"] .pp-geral{background:rgba(3,8,18,.7); border-radius:50%; width:170px; height:170px; padding:0; align-content:center; min-width:0}
+.pp[data-tema="fe"] .pp-geral b{font-size:62px; color:#eef6ff}
+.pp[data-tema="fe"] .pp-geral span{margin-top:4px; color:var(--pp-cor)}
+.pp[data-tema="fe"] .pp-anel{display:block; position:absolute; inset:-6px; width:calc(100% + 12px); height:calc(100% + 12px); transform:rotate(-90deg)}
+.pp-anel circle{fill:none; stroke-width:5}
+.pp-anel .t{stroke:rgba(0,229,255,.14)}
+.pp-anel .v{stroke:var(--pp-cor); stroke-linecap:round; filter:drop-shadow(0 0 6px rgba(0,229,255,.7))}
+.pp[data-tema="fe"] .chx-acao{box-shadow:0 0 26px -4px rgba(0,229,255,.55)}
+.pp[data-tema="fe"] .pp-torre li{border-radius:10px; background:rgba(0,229,255,.04); box-shadow:inset 0 0 0 1px var(--pp-borda)} /* contorno (taste-skill-ignore) */
+.pp[data-tema="fe"] .pp-torre li b{background:none; color:var(--pp-cor)}
+.pp[data-tema="fe"] .pp-torre li.eu{box-shadow:inset 0 0 0 1px var(--pp-cor), 0 0 18px -6px var(--pp-cor)}
+.pp[data-tema="fe"] .pp-torre li.eu b{background:none; color:var(--pp-cor)}
+.pp[data-tema="fe"] .chx-et > button,.pp[data-tema="fe"] .chx-et > div{border-radius:10px}
+.pp-orn-fe svg{position:absolute; inset:0; width:100%; height:100%}
+.pp-orn-fe path{fill:none; stroke:rgba(0,229,255,.16); stroke-width:1.2}
+.pp-orn-fe path.e{stroke:var(--pp-cor); stroke-width:2; stroke-dasharray:60 900; filter:drop-shadow(0 0 4px var(--pp-cor)); animation:pp-energia var(--t, 5s) linear infinite; animation-delay:var(--d)}
+
+/* ═══ IndyCar: tradição, listras e a torre de Indianápolis ═══ */
+.pp[data-tema="indy"] .chx-p{background:var(--pp-textura), var(--pp-luz), var(--pp-painel)}
+.pp[data-tema="indy"] .chx-p::before{content:''; position:absolute; left:0; right:0; top:0; height:3px;
+  background:linear-gradient(90deg, #e4002b 0 33.3%, #f2f5fa 33.3% 66.6%, #1f6fe5 66.6% 100%); opacity:.9}
+.pp[data-tema="indy"] .pp-geral{background:#0a1226; border:1px solid rgba(174,186,204,.35); padding-top:22px}
+.pp[data-tema="indy"] .pp-geral::before{content:''; position:absolute; left:0; right:0; top:0; height:6px; border-radius:inherit; border-bottom-left-radius:0; border-bottom-right-radius:0;
+  background:linear-gradient(90deg, #e4002b 0 33.3%, #f2f5fa 33.3% 66.6%, #1f6fe5 66.6% 100%)}
+.pp[data-tema="indy"] .pp-torre ol{gap:2px; background:#050811; padding:6px; border-radius:8px; box-shadow:inset 0 0 0 1px var(--pp-borda)} /* contorno (taste-skill-ignore) */
+.pp[data-tema="indy"] .pp-torre li{background:#0b1324; border-radius:4px}
+.pp[data-tema="indy"] .pp-torre li b{background:none; color:#fff; font-size:19px}
+.pp[data-tema="indy"] .pp-torre li.eu{background:#e4002b; box-shadow:none}
+.pp[data-tema="indy"] .pp-torre li.eu b{background:none; color:#fff}
+.pp-orn-indy i{position:absolute; top:-10%; bottom:-10%; width:26px; transform:skewX(-18deg) translateX(var(--x)); opacity:.75}
+.pp-orn-indy i:nth-child(1){right:20%; background:#e4002b}
+.pp-orn-indy i:nth-child(2){right:calc(20% - 34px); background:#f2f5fa; width:10px}
+.pp-orn-indy i:nth-child(3){right:calc(20% - 68px); background:#1f6fe5}
+
+/* ═══ Volante de Ouro (as outras categorias e a base) ═══ */
+.pp[data-tema="base"] .chx-p::before{content:''; position:absolute; left:20px; right:20px; top:0; height:1px; background:linear-gradient(90deg, rgba(240,193,46,.5), transparent)}
+.pp[data-tema="base"] .pp-geral{box-shadow:inset 0 -3px 0 var(--pp-cor)}
+
+/* ═══ abertura de categoria (rara: quando a carreira entra num ambiente novo) ═══ */
+.pp-intro{position:fixed; inset:0; z-index:90; display:grid; place-items:center; pointer-events:none; background:var(--pp-fundo); color:var(--pp-tinta);
+  animation:pp-intro 1.15s var(--ease-out) both}
+.pp-intro div{text-align:center; animation:pp-intro-tx 1.15s var(--ease-out) both}
+.pp-intro b{display:block; font-size:clamp(56px,10vw,150px); line-height:.85; text-transform:var(--pp-caixa); color:var(--pp-cor)}
+.pp-intro span{display:block; margin-top:14px; font-size:16px; color:var(--pp-suave)}
+
+/* ═══ movimento ═══ */
+.pp-entra{animation:none}
+.pp-anima .pp-entra{animation:var(--pp-entrada) .32s var(--ease-out) both; animation-delay:calc(var(--i, 0) * 45ms)}
+.pp-anima .chx-barra s i,.pp-anima .pp-faixa s i{animation:pp-enche .75s var(--ease-out) both; animation-delay:calc(var(--i, 0) * 40ms + 160ms)}
+.pp-anima[data-tema="fe"] .chx-barra s i,.pp[data-tema="fe"] .pp-anima .chx-barra s i{animation-timing-function:steps(12, end); animation-duration:.9s}
+.pp-anima .pp-torre li{animation:pp-torre .3s var(--ease-out) both; animation-delay:calc(var(--i, 0) * 50ms + 200ms)}
+.pp-anima .pp-portanum{animation:pp-porta .7s var(--ease-out) both}
+.pp-anima .pp-orn-indy i{animation:pp-listra .6s var(--ease-out) both; animation-delay:calc(var(--n, 0) * 70ms + 120ms)}
+.pp-anima .pp-anel .v{animation:pp-anel 1.2s var(--ease-out) both; animation-delay:.25s}
+.pp-anima .pp-ritmo svg{animation:pp-desenha 1.3s var(--ease-out) both; animation-delay:.35s}
+@keyframes pp-anel{from{stroke-dasharray:0 100}}
+@keyframes pp-desenha{from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0 0 0)}}
+@keyframes pp-e-base{from{opacity:0; transform:translateY(14px)}}
+@keyframes pp-e-f1{from{opacity:0; transform:translateX(34px) skewX(-6deg)}}
+@keyframes pp-e-nascar{from{opacity:0; clip-path:inset(0 100% 0 0)} to{opacity:1; clip-path:inset(0 0 0 0)}}
+@keyframes pp-e-fe{from{opacity:0; transform:translateY(10px); filter:blur(6px)}}
+@keyframes pp-e-indy{from{opacity:0; transform:translateX(-40px)}}
+@keyframes pp-enche{from{transform:scaleX(0)}}
+@keyframes pp-torre{from{opacity:0; transform:translateX(18px)}}
+@keyframes pp-porta{from{opacity:0; transform:translateX(12%) skewX(-10deg)}}
+@keyframes pp-listra{from{opacity:0; transform:skewX(-18deg) translateX(120%)}}
+@keyframes pp-respira{from{transform:scale(1.02)} to{transform:scale(1.08) translateX(-1.4%)}}
+@keyframes pp-velo{to{transform:translateX(330%)}}
+@keyframes pp-bandeira{to{transform:translateX(-36px)}}
+@keyframes pp-corrente{from{background-position:100% 0} to{background-position:-200% 0}}
+@keyframes pp-pulso{50%{opacity:.35}}
+@keyframes pp-energia{from{stroke-dashoffset:960} to{stroke-dashoffset:0}}
+@keyframes pp-intro{0%{clip-path:inset(0 0 0 100%)} 28%{clip-path:inset(0 0 0 0)} 72%{clip-path:inset(0 0 0 0); opacity:1} 100%{clip-path:inset(0 100% 0 0); opacity:1}}
+@keyframes pp-intro-tx{0%{opacity:0; transform:translateX(60px)} 30%{opacity:1; transform:none} 75%{opacity:1} 100%{opacity:0; transform:translateX(-40px)}}
+
+/* movimento reduzido (do sistema ou da chave do jogo): sem deslocamento nem laços, só um esmaecer curto */
+@media (prefers-reduced-motion:reduce){
+  .pp *,.pp *::before,.pp *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important}
+  .pp-anima .pp-entra{animation:pp-fade .2s ease both !important}
+  .pp-intro{display:none}
+}
+.sem-mov .pp *,.sem-mov .pp *::before,.sem-mov .pp *::after{animation:none !important; transition:none !important}
+.sem-mov .pp-intro{display:none}
+@keyframes pp-fade{from{opacity:0}}
+
+/* ═══ telas menores ═══ */
 @media (max-width:1240px){
+  .pp-l1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pp-l1 > .pp-col{grid-column:1/-1; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start}
+  .pp-l2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .pp-l2 > :last-child{grid-column:1/-1}
   .pp-grupos{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pp-nums-4{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (max-width:980px){
-  .pp-movel{display:flex; flex-wrap:wrap; gap:8px; padding:16px; background:var(--bg)}
-  .pp-movel .btn{border-radius:0}
+  .pp .chx-nav button[aria-current="page"]{background:none; box-shadow:inset 0 -3px 0 var(--pp-cor)}
+  .pp-movel{display:flex; flex-wrap:wrap; gap:8px; padding:4px 0 0}
+  .pp-movel .btn{border-radius:calc(var(--pp-raio) * .5)}
 }
 @media (max-width:700px){
-  .pp-capa{min-height:0}
-  .pp-capa-tx{grid-template-columns:auto minmax(0,1fr); gap:14px; padding:0 16px; align-items:end}
-  .pp-ret{width:84px; height:106px}
-  .pp-ret > span{font-size:34px}
-  .pp-geral{grid-column:1/-1; grid-row:1; justify-items:start; text-align:left; display:flex; align-items:baseline; gap:10px; padding:0; background:none}
-  .pp-geral b{font-size:72px}
-  .pp-geral span{margin:0}
-  .pp-capa .chx-capa-tx h2,.pp-nome h2{font-size:44px}
+  .pp .chx-pg{padding:12px; gap:12px}
+  .pp-linha,.pp .chx-g{gap:12px}
+  .pp-l1,.pp-l2,.pp-l1 > .pp-col{grid-template-columns:minmax(0,1fr)}
+  .pp-l2 > :last-child{grid-column:auto}
+  /* no celular a capa vira um cartaz: a foto ocupa o alto, o nome entra no pé dela, o geral no canto */
+  .pp-capa{min-height:0; justify-content:flex-start; padding-top:min(64vw,300px)}
+  .pp-capa > img{height:min(74vw,340px); bottom:auto}
+  .pp-capa::before{background:linear-gradient(0deg, #08090b 0%, rgba(8,9,11,.9) calc(100% - min(74vw,340px) + 30px), rgba(8,9,11,.15) calc(100% - min(74vw,340px) + 140px), rgba(8,9,11,0) 100%)}
+  .pp-capa-tx{grid-template-columns:auto minmax(0,1fr); gap:14px; padding:0 16px 16px}
+  .pp-ret{width:76px; height:96px}
+  .pp-ret > span{font-size:32px}
+  .pp-capa h2{font-size:46px}
+  .pp[data-tema="nascar"] .pp-capa h2{font-size:min(8.4vw,40px); overflow-wrap:normal}
+  .pp[data-tema="nascar"] .chx-equipe b{font-size:19px}
   .pp-meta{font-size:14px; margin-top:8px}
-  .pp-faixa{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .pp-faixa > div{padding:11px 16px 12px}
+  .pp-geral{position:absolute; right:12px; top:12px; padding:10px 14px 9px; min-width:0}
+  .pp-geral b{font-size:54px}
+  .pp-geral span{margin-top:6px}
+  .pp[data-tema="fe"] .pp-geral{width:112px; height:112px; padding:0}
+  .pp[data-tema="fe"] .pp-geral b{font-size:40px}
+  .pp-faixa{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none}
+  .pp-faixa::-webkit-scrollbar{display:none}
+  .pp-faixa > div{flex:0 0 auto; min-width:136px; scroll-snap-align:start; padding:12px 16px}
+  .pp-portanum{font-size:56vw; top:0}
+  .pp .chx-p{padding:16px}
+  .pp .chx-prox-cab h2{font-size:28px}
+  .pp .chx-tracado svg{height:130px}
   .pp-grupos{grid-template-columns:minmax(0,1fr)}
   .pp-nums,.pp-nums-4{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .pp-nums dd{font-size:26px}
+  .pp-nums dd{font-size:28px}
   .pp-tab .col-cat{display:none}
+  .pp .chx-topo h1{font-size:28px}
   .pp .chx-chips.pp-chips-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .pp .chx-chips.pp-chips-3 .chx-chip{box-shadow:inset 1px 0 0 var(--regua)} /* fio de 1px da folha, não é sombra (taste-skill-ignore) */
-  .pp .chx-chips.pp-chips-3 .chx-chip:first-child{box-shadow:none}
 }
+
+/* ═══ as janelas da carreira no ambiente da categoria ═══
+   Toda janela do jogo usa a mesma moldura (.ov > .modal > .mhd, .mbd, .mft); aqui ela ganha a
+   superfície, a voz e a entrada da categoria. Só vale na tela nova da carreira (body.pp-modo). */
+body.pp-modo .ov{background:rgba(3,4,6,.8); color-scheme:dark}
+body.pp-modo .ov .modal{position:relative; isolation:isolate; color:var(--pp-tinta); background:var(--pp-textura), var(--pp-luz), var(--pp-painel); border:1px solid var(--pp-borda2);
+  border-radius:var(--pp-raio); clip-path:var(--pp-forma); box-shadow:0 40px 90px -30px rgba(0,0,0,.95)} /* janela: flutua (taste-skill-ignore) */
+body.pp-modo .ov.on .modal{animation:var(--pp-janela, pp-j-base) .32s var(--ease-out) both}
+body.pp-modo .mhd{border-top:0; position:relative; padding-top:26px; border-bottom:1px solid var(--pp-borda)}
+body.pp-modo .mhd h2{font-family:var(--pp-fonte); font-stretch:var(--pp-larg); font-style:var(--pp-ital); font-weight:var(--pp-peso); text-transform:var(--pp-caixa); letter-spacing:0; word-spacing:.12em}
+body.pp-modo .mhd .sb{color:var(--pp-suave)}
+body.pp-modo .mft{background:transparent; border-top:1px solid var(--pp-borda)}
+body.pp-modo .mclose{color:var(--pp-suave)}
+body.pp-modo .ov .btn-primary,body.pp-modo .ov .btn-gold{background:var(--pp-acao); color:var(--pp-acao-tx); border-radius:calc(var(--pp-raio) * .6)}
+body.pp-modo .ov .btn-ghost{background:var(--pp-painel2); color:var(--pp-tinta); border-radius:calc(var(--pp-raio) * .6)}
+body.pp-modo .ov .btn{transition:transform .14s var(--ease-out), filter .15s var(--ease-out), background-color .15s var(--ease-out)}
+body.pp-modo .ov .btn:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){ body.pp-modo .ov .btn-primary:hover,body.pp-modo .ov .btn-gold:hover{filter:brightness(1.08)} }
+body.pp-modo .ov .res-nar,body.pp-modo .ov .offer,body.pp-modo .ov .dil,body.pp-modo .ov .post,body.pp-modo .ov .ch-card,body.pp-modo .ov .sty,body.pp-modo .ov .mini > div{
+  background:var(--pp-painel2); border-radius:calc(var(--pp-raio) * .5)}
+body.pp-modo .ov .res-nar,body.pp-modo .ov .post{border-left-color:var(--pp-cor)}
+body.pp-modo .ov .res-nar em{color:var(--pp-cor)}
+body.pp-modo .ov .offer,body.pp-modo .ov .dil{transition:background-color .15s var(--ease-out), transform .12s var(--ease-out)}
+body.pp-modo .ov .offer:active,body.pp-modo .ov .dil:active{transform:scale(.99)}
+@media (hover:hover) and (pointer:fine){ body.pp-modo .ov .offer:hover,body.pp-modo .ov .dil:hover{background:color-mix(in srgb, var(--pp-cor) 12%, var(--pp-painel2))} }
+body.pp-modo .ov .attr .bar i,body.pp-modo .ov .bar i{background:var(--pp-barra)}
+body.pp-modo .ov .pill{border-radius:calc(var(--pp-raio) * .4)}
+body.pp-modo .ov table.rt th,body.pp-modo .ov table.st th,body.pp-modo .ov table.hs th{background:var(--pp-painel)}
+body.pp-modo .ov .posbox{border-radius:3px}
+/* a entrada da janela, uma para cada categoria */
+body.pp-modo[data-pp-tema="f1"] .ov{--pp-janela:pp-j-f1}
+body.pp-modo[data-pp-tema="nascar"] .ov{--pp-janela:pp-j-nascar}
+body.pp-modo[data-pp-tema="fe"] .ov{--pp-janela:pp-j-fe}
+body.pp-modo[data-pp-tema="indy"] .ov{--pp-janela:pp-j-indy}
+@keyframes pp-j-base{from{opacity:0; transform:translateY(18px) scale(.98)}}
+@keyframes pp-j-f1{from{opacity:0; transform:translateX(44px) skewX(-5deg)}}
+@keyframes pp-j-nascar{from{opacity:0; clip-path:inset(0 100% 0 0)} to{opacity:1; clip-path:inset(0 0 0 0)}}
+@keyframes pp-j-fe{from{opacity:0; transform:scale(.96); filter:blur(8px)}}
+@keyframes pp-j-indy{from{opacity:0; transform:translateX(-44px)}}
+/* F1: o traço vermelho e o corte em ângulo */
+body.pp-modo[data-pp-tema="f1"] .mhd::before{content:''; position:absolute; left:24px; top:0; width:84px; height:4px; background:#e10600}
+body.pp-modo[data-pp-tema="f1"] .ov .btn-primary,body.pp-modo[data-pp-tema="f1"] .ov .btn-gold{border-radius:0; clip-path:polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%)}
+/* NASCAR: a bandeira quadriculada no alto e botões de borda grossa */
+body.pp-modo[data-pp-tema="nascar"] .mhd::before{content:''; position:absolute; left:0; right:0; top:0; height:10px; opacity:.9;
+  background:conic-gradient(#f6f6f2 25%, #111 0 50%, #f6f6f2 0 75%, #111 0) 0 0/10px 10px}
+body.pp-modo[data-pp-tema="nascar"] .mhd{border-bottom:3px solid var(--pp-cor)}
+body.pp-modo[data-pp-tema="nascar"] .ov .btn-primary,body.pp-modo[data-pp-tema="nascar"] .ov .btn-gold{border:3px solid #111; box-shadow:0 0 0 2px var(--pp-cor)}
+/* Fórmula E: a corrente que percorre o alto da janela e o brilho no botão */
+body.pp-modo[data-pp-tema="fe"] .mhd::before{content:''; position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, transparent 0%, transparent 35%, var(--pp-cor) 50%, transparent 65%, transparent 100%); background-size:300% 100%; animation:pp-corrente 3.5s linear infinite}
+body.pp-modo[data-pp-tema="fe"] .ov .btn-primary,body.pp-modo[data-pp-tema="fe"] .ov .btn-gold{box-shadow:0 0 24px -6px rgba(0,229,255,.6)}
+body.pp-modo[data-pp-tema="fe"] .ov .attr .bar i{-webkit-mask:repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px); mask:repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 12px)}
+/* IndyCar: as três cores no alto */
+body.pp-modo[data-pp-tema="indy"] .mhd::before{content:''; position:absolute; left:0; right:0; top:0; height:4px;
+  background:linear-gradient(90deg, #e4002b 0 33.3%, #f2f5fa 33.3% 66.6%, #1f6fe5 66.6% 100%)}
+/* Volante de Ouro: o fio dourado */
+body.pp-modo[data-pp-tema="base"] .mhd::before{content:''; position:absolute; left:24px; right:24px; top:0; height:3px; background:linear-gradient(90deg, #f0c12e, transparent)}
+@media (prefers-reduced-motion:reduce){ body.pp-modo .ov.on .modal{animation:pp-fade .18s ease both} body.pp-modo .mhd::before{animation:none} }
+.sem-mov body.pp-modo .ov.on .modal,.sem-mov body.pp-modo .mhd::before{animation:none}
