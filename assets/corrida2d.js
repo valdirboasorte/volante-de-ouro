@@ -3,7 +3,7 @@
    em 2D. Fica fora dos <script> embutidos: a versão do jogo (o hash do multiplayer) não
    muda. Para testar o protótipo: abra o jogo com ?pista2d=1 (opcional: &trk=br_int&ano=2024&sk=f1). */
 (function(){
-  const V = '20261105-c6a3';
+  const V = '20261106-c9a1';
   const MODULOS = ['nucleo', 'pista2d', 'carro2d', 'dano2d', 'ia2d', 'regras2d', 'entrada2d', 'arte2d', 'estilos2d', 'cenario2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'];
   let carregando = null;
 

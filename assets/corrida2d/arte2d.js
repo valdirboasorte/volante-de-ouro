@@ -396,7 +396,13 @@
       g.restore();
       /* o que foi arrancado: a estrutura aparecendo e o cubo da roda */
       if(faltam) C2D.Arte.buracos(g, faltam, L, W, est);
-      s = { cv, w: cw / ESC, h: ch / ESC };
+      /* o contorno escuro em volta do carro inteiro (lê contra asfalto, grama e brita) */
+      const oc = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(cw, ch) : Object.assign(document.createElement('canvas'), { width: cw, height: ch });
+      const go = oc.getContext('2d');
+      for(const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2], [1.4, 1.4], [-1.4, -1.4], [1.4, -1.4], [-1.4, 1.4]]) go.drawImage(cv, dx, dy);
+      go.globalCompositeOperation = 'source-in'; go.fillStyle = 'rgba(8,9,11,.8)'; go.fillRect(0, 0, cw, ch);
+      go.globalCompositeOperation = 'source-over'; go.drawImage(cv, 0, 0);
+      s = { cv: oc, w: cw / ESC, h: ch / ESC };
       C2D.Arte._cache.set(k, s);
       if(C2D.Arte._cache.size > 90) C2D.Arte._cache.delete(C2D.Arte._cache.keys().next().value);
       return s;
@@ -446,10 +452,13 @@
       const E = 10, mx = sp.comp / 2 + .8, my = sp.larg / 2 + .8, cw = Math.ceil(mx * 2 * E), ch = Math.ceil(my * 2 * E);
       const cv = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(cw, ch) : Object.assign(document.createElement('canvas'), { width: cw, height: ch });
       const g = cv.getContext('2d');
-      g.filter = 'blur(' + Math.round(E * .35) + 'px)';
       g.translate(cw / 2, ch / 2); g.scale(E, E);
-      g.fillStyle = 'rgba(0,0,0,.5)';
-      ret(g, -sp.comp / 2 + .1, sp.comp / 2 - .1, -sp.larg / 2 + .05, sp.larg / 2 - .05, .3); g.fill();
+      /* a sombra larga e macia, e por cima a de contato, mais firme, colada no carro */
+      g.filter = 'blur(' + Math.round(E * .4) + 'px)'; g.fillStyle = 'rgba(0,0,0,.42)';
+      ret(g, -sp.comp / 2, sp.comp / 2, -sp.larg / 2, sp.larg / 2, .35); g.fill();
+      g.filter = 'blur(' + Math.max(1, Math.round(E * .12)) + 'px)'; g.fillStyle = 'rgba(0,0,0,.38)';
+      ret(g, -sp.comp / 2 + .25, sp.comp / 2 - .25, -sp.larg / 2 + .15, sp.larg / 2 - .15, .25); g.fill();
+      g.filter = 'none';
       s = { cv, w: cw / E, h: ch / E };
       C2D.Arte._sombras.set(k, s);
       return s;

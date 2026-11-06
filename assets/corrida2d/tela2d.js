@@ -125,9 +125,9 @@
         + '<input class="c2d-gar-busca" type="search" placeholder="Procurar carro ou campeonato" aria-label="Procurar carro ou campeonato">'
         + '<button class="c2d-btn" type="button" data-fechar>Fechar</button></div><div class="c2d-gar-lista"></div>';
       document.body.appendChild(el);
-      document.documentElement.classList.add('c2d-aberto');
+      C2D.Tela.fundoParado(true);
       let obs = null;
-      const fechar = () => { if(obs) obs.disconnect(); el.remove(); if(!C2D.Tela.aberta) document.documentElement.classList.remove('c2d-aberto'); };
+      const fechar = () => { if(obs) obs.disconnect(); el.remove(); if(!C2D.Tela.aberta) C2D.Tela.fundoParado(false); };
       el.querySelector('[data-fechar]').addEventListener('click', fechar);
       const lista = el.querySelector('.c2d-gar-lista');
       const pinturas = [['#e2231a', 'Rossa'], ['#00a19c', 'Verde Água'], ['#1e41ff', 'Azul Real'], ['#ff8000', 'Laranja'], ['#f2f2f2', 'Branca'], ['#2b4562', 'Marinho'], ['#f5d000', 'Amarela'], ['#006f62', 'Verde']];
@@ -210,7 +210,7 @@
       el.id = 'c2d'; el.className = 'c2d';
       el.innerHTML = html(opc);
       document.body.appendChild(el);
-      document.documentElement.classList.add('c2d-aberto');
+      C2D.Tela.fundoParado(true);
       const T = { el, opc, p, rodando: true, pausa: false, raf: 0, ultHud: 0, rel: C2D.Relogio(), resumo: null };
       C2D.Tela.aberta = T;
       /* monta a sessão depois de pintar a camada (a pista leva uns décimos para ficar pronta) */
@@ -307,7 +307,11 @@
         C2D.Tela.progressoSC(T);
         if((!(S.sc || S.vsc) || S.acabou) && agora - T.scDesde > 1400) C2D.Tela.fimSC(T);
       } else if(!T.pausa && !T.fimMostrado){
-        if(S.tipo === 'corrida' && T.p.pularSC && (S.sc || S.vsc) && S.eu.estado === 'pista' && !S.acabou) C2D.Tela.inicioSC(T);
+        /* a cortina só abre quando o jogador já está na fila do safety car */
+        if(S.tipo === 'corrida' && T.p.pularSC && (S.sc || S.vsc) && S.eu.estado === 'pista' && !S.acabou){
+          T.filaSC = T.filaSC || {};
+          if(C2D.Corrida.naFilaSC(S, S.eu, dtReal, T.filaSC, T.R.scS)){ T.filaSC = null; C2D.Tela.inicioSC(T); }
+        } else T.filaSC = null;
         const n = T.rel.quadro(agora, T.escala);
         for(let k = 0; k < n; k++){
           const inp = C2D.Entrada.ler(T.E, C2D.DT, S.eu.v);
@@ -331,6 +335,16 @@
         const media = tm.reduce((a, b) => a + b, 0) / tm.length;
         if(media > 11 && T.R.escala > .55){ T.R.escala = Math.max(.55, T.R.escala - .15); T.R.tempos.length = 0; C2D.Render.redimensionar(T.R); }
       }
+      /* o intervalo real entre os quadros (inclui a pintura na placa de vídeo, que o tempo do JS
+         não vê): abaixo de ~45 quadros por segundo por dois segundos seguidos, a resolução cai */
+      if(!T.pausa && !T.simulando && !T.pulandoSC && dtReal > 0 && dtReal < .25){
+        const iv = T.intervalos = T.intervalos || [];
+        iv.push(dtReal); if(iv.length > 120) iv.shift();
+        if(iv.length >= 120 && T.R.escala > .7){
+          const ord = iv.slice().sort((a, b) => a - b), med = ord[60];
+          if(med > .022){ T.R.escala = Math.max(.7, T.R.escala - .15); iv.length = 0; C2D.Render.redimensionar(T.R); }
+        }
+      }
       if(agora - T.ultHud > 100){ T.ultHud = agora; C2D.Tela.painel(T); }
     },
 
@@ -339,7 +353,7 @@
       const vel = Math.round(Math.max(0, c.vx) * 3.6);
       const set = (k, v) => { if(h[k] && h[k].__v !== v){ h[k].__v = v; h[k].textContent = v; } };
       set('vel', String(vel));
-      set('marcha', c.sp.marchas <= 1 ? (c.vx > .5 ? 'D' : 'N') : (c.vx < .3 ? 'N' : String(c.marcha)));
+      set('marcha', c.re ? 'R' : c.sp.marchas <= 1 ? (c.vx > .5 ? 'D' : 'N') : (c.vx < .3 ? 'N' : String(c.marcha)));
       const fr = c.sp.rpm ? lim(c.rpm / c.sp.rpm, 0, 1) : lim(c.vx / c.sp.vmax, 0, 1);
       const acesas = Math.round(fr * T.rpm.length);
       T.rpm.forEach((n, i) => { const on = i < acesas; if(n.__on !== on){ n.__on = on; n.classList.toggle('on', on); } });
@@ -416,7 +430,9 @@
       else if(T.fimSessao) aviso = h.aviso.__v;
       else if(c.box && c.box.fase === 'parado') aviso = 'Parada: ' + Math.max(0, c.box.ate - S.t).toFixed(1) + ' s';
       else if(c.box) aviso = 'Pit lane: limitador ligado';
-      else if(c.chamado && c.pedirBox) aviso = 'A equipe chama: box nesta volta (' + Gp.nomePneu(c.boxPneu) + ')';
+      /* o box é você que entra: a entrada perto, o lado dela e o pneu que a equipe preparou */
+      else if((c.pedirBox || c.chamado) && S.regras && C2D.Tela.entradaBox(S, c) != null) aviso = (S.P.box.lado > 0 ? 'Entrada dos boxes à esquerda em ' : 'Entrada dos boxes à direita em ') + C2D.Tela.entradaBox(S, c) + ' m (' + Gp.nomePneu(c.boxPneu) + ')';
+      else if(c.chamado && c.pedirBox) aviso = 'A equipe chama: entre nos boxes nesta volta (' + Gp.nomePneu(c.boxPneu) + ')';
       else if(S.tipo === 'corrida' && c.estado === 'fora') aviso = 'Carro destruído: você está fora da corrida';
       else if(c.destruido && S.tipo !== 'corrida') aviso = 'Carro destruído: toque em Voltar à pista para recomeçar';
       else if(S.avisoDano && S.t - S.avisoDano.t < 3.5) aviso = S.avisoDano.txt;
@@ -500,6 +516,21 @@
       T.scFimV = S.sc ? S.sc.ateVolta : null; T.scFimT = S.vsc ? S.vsc.ate : null;
       C2D.Tela.progressoSC(T);
     },
+    /* a página do jogo por baixo: parada enquanto a corrida ou a garagem estão abertas (o CSS
+       esconde e pausa as animações; os vídeos que tocavam param e voltam a tocar no fim) */
+    fundoParado(sim){
+      document.documentElement.classList.toggle('c2d-aberto', !!sim);
+      document.querySelectorAll('video').forEach(v => {
+        if(sim){ if(!v.paused){ v.__c2d = true; try { v.pause(); } catch(e){} } }
+        else if(v.__c2d){ v.__c2d = false; try { const p = v.play(); if(p && p.catch) p.catch(() => {}); } catch(e){} }
+      });
+    },
+    /* a distância até a entrada dos boxes, quando está perto (até 300 m); senão null */
+    entradaBox(S, c){
+      const P = S.P, B = P.box; if(!B || c.box) return null;
+      const falta = ((B.ini - c.s) % P.L + P.L) % P.L;
+      return falta <= 300 ? Math.max(0, Math.round(falta / 10) * 10) : null;
+    },
     progressoSC(T){
       const S = T.S, lid = S.lider;
       let f = 1;
@@ -564,6 +595,9 @@
         /* o carro do jogador segue no piloto automático, no ritmo do nível dos rivais */
         const c = T.S.eu; c.ia = c.ia || C2D.IA.criar({ ritmo: (C2D.NIVEIS[T.opc.nivelRivais] || C2D.NIVEIS.medio).ritmo, semente: 99 }); c.autopiloto = true;
         C2D.Tela.pausar(T, false);
+        /* instantâneo: projeta o resto da corrida; se falhar, simula passo a passo como antes */
+        try { C2D.Corrida.projetar(T.S); T.rel.zerar(); return C2D.Tela.mostrarResultado(T); }
+        catch(e){ if(typeof console !== 'undefined') console.warn('projetar falhou', e); }
         T.simulando = true; T.el.querySelector('.c2d-simulando').hidden = false; return;
       }
       if(m === 'concluir') return C2D.Tela.fechar();
@@ -598,7 +632,7 @@
       document.removeEventListener('visibilitychange', T.visib);
       window.removeEventListener('resize', T.redim);
       T.el.remove();
-      document.documentElement.classList.remove('c2d-aberto');
+      if(!document.getElementById('c2dGaragem')) C2D.Tela.fundoParado(false);
       C2D.Tela.aberta = null;
       const S = T.S, c = S && S.eu;
       if(S && S.tipo === 'corrida'){

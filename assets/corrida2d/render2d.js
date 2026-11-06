@@ -10,7 +10,7 @@
 
   const COR = {
     grama: '#2f5130', grama2: '#335834', brita: '#b9a47a', escape: '#4a4d52', asfalto: '#3a3d42', asfaltoPit: '#45484e',
-    linha: '#e8e8e8', zebraV: '#d8261c', zebraB: '#f2f2f2', muro: '#a9adb3', pneus: '#1b1c1f', rua: '#2a2d31', fundoOval: '#2c4a2d',
+    linha: '#eeede8', zebraV: '#d6311f', zebraB: '#f4f2ec', muro: '#a9adb3', pneus: '#1b1c1f', rua: '#2a2d31', fundoOval: '#2c4a2d',
     marca: 'rgba(18,18,20,.42)'
   };
 
@@ -20,7 +20,10 @@
     const pt = (i, d) => { i = (i % n + n) % n; return [x[i] + nx[i] * d, y[i] + ny[i] * d]; };
     const pedacos = P.pedacos.map(pd => {
       const asf = new Path2D(), linhas = new Path2D(), zebV = new Path2D(), zebB = new Path2D();
+      /* (só desenho) as bordas do asfalto, as bordas da zebra e as nervuras dela */
+      const bordas = new Path2D(), zebFora = new Path2D(), zebDentro = new Path2D(), zebNerv = new Path2D();
       const escapes = { 2: new Path2D(), 3: new Path2D(), 4: new Path2D() }, muros = new Path2D(), murosFora = new Path2D();
+      const cinta = new Path2D(), guard = new Path2D();
       /* asfalto: borda esquerda para a frente, borda direita para trás */
       for(let i = pd.i0; i <= pd.i1 + 1; i++){ const p = pt(i, m); i === pd.i0 ? asf.moveTo(p[0], p[1]) : asf.lineTo(p[0], p[1]); }
       for(let i = pd.i1 + 1; i >= pd.i0; i--){ const p = pt(i, -m); asf.lineTo(p[0], p[1]); }
@@ -44,10 +47,26 @@
         for(let q = pd.i0; q <= pd.i1 + 1; q++){ if(pulaBox(q)){ novo = true; continue; } const p = pt(q, lado * (m + esc[q % n] + .35)); novo ? muros.moveTo(p[0], p[1]) : muros.lineTo(p[0], p[1]); novo = false; }
         novo = true;
         for(let q = pd.i0; q <= pd.i1 + 1; q++){ if(pulaBox(q)){ novo = true; continue; } const p = pt(q, lado * (m + esc[q % n] + 1.0)); novo ? murosFora.moveTo(p[0], p[1]) : murosFora.lineTo(p[0], p[1]); novo = false; }
+        /* (só desenho) a cinta na frente dos pneus, virada para a pista, e o guard-rail atrás */
+        novo = true;
+        for(let q = pd.i0; q <= pd.i1 + 1; q++){ if(pulaBox(q)){ novo = true; continue; } const p = pt(q, lado * (m + esc[q % n] + .02)); novo ? cinta.moveTo(p[0], p[1]) : cinta.lineTo(p[0], p[1]); novo = false; }
+        novo = true;
+        for(let q = pd.i0; q <= pd.i1 + 1; q++){ if(pulaBox(q)){ novo = true; continue; } const p = pt(q, lado * (m + esc[q % n] + 1.55)); novo ? guard.moveTo(p[0], p[1]) : guard.lineTo(p[0], p[1]); novo = false; }
       }
       /* linhas brancas das bordas */
       for(const lado of [1, -1]){
         for(let i = pd.i0; i <= pd.i1 + 1; i++){ const p = pt(i, lado * (m - .2)); i === pd.i0 ? linhas.moveTo(p[0], p[1]) : linhas.lineTo(p[0], p[1]); }
+        for(let i = pd.i0; i <= pd.i1 + 1; i++){ const p = pt(i, lado * m); i === pd.i0 ? bordas.moveTo(p[0], p[1]) : bordas.lineTo(p[0], p[1]); }
+        /* a zebra contínua: a borda de fora (a sombra dela cai na grama) e a de dentro */
+        let aberto = false;
+        for(let i = pd.i0; i <= pd.i1 + 1; i++){
+          const z = P.zebra[i % n] && (i <= pd.i1 || P.zebra[(i - 1 + n) % n]);
+          if(!z){ aberto = false; continue; }
+          const a = pt(i, lado * (m + 1.2)), b = pt(i, lado * (m + .02));
+          if(!aberto){ zebFora.moveTo(a[0], a[1]); aberto = true; } else zebFora.lineTo(a[0], a[1]);
+          if(aberto && zebDentro.__ult === i - 1) zebDentro.lineTo(b[0], b[1]); else zebDentro.moveTo(b[0], b[1]);
+          zebDentro.__ult = i;
+        }
       }
       /* zebras: listras de ~1,3 m por fora da linha branca */
       for(let i = pd.i0; i <= pd.i1; i++){
@@ -59,10 +78,13 @@
             const L0 = [a0[0] + (b0[0] - a0[0]) * f0, a0[1] + (b0[1] - a0[1]) * f0], L1 = [a0[0] + (b0[0] - a0[0]) * f1, a0[1] + (b0[1] - a0[1]) * f1];
             const E0 = [a1[0] + (b1[0] - a1[0]) * f0, a1[1] + (b1[1] - a1[1]) * f0], E1 = [a1[0] + (b1[0] - a1[0]) * f1, a1[1] + (b1[1] - a1[1]) * f1];
             cor.moveTo(L0[0], L0[1]); cor.lineTo(L1[0], L1[1]); cor.lineTo(E1[0], E1[1]); cor.lineTo(E0[0], E0[1]); cor.closePath();
+            /* a nervura no meio de cada listra (o relevo que trepida) */
+            const fm = (f0 + f1) / 2, Mi = [a0[0] + (b0[0] - a0[0]) * fm, a0[1] + (b0[1] - a0[1]) * fm], Me = [a1[0] + (b1[0] - a1[0]) * fm, a1[1] + (b1[1] - a1[1]) * fm];
+            zebNerv.moveTo(Mi[0] + (Me[0] - Mi[0]) * .12, Mi[1] + (Me[1] - Mi[1]) * .12); zebNerv.lineTo(Mi[0] + (Me[0] - Mi[0]) * .88, Mi[1] + (Me[1] - Mi[1]) * .88);
           }
         }
       }
-      return Object.assign({}, pd, { asf, linhas, zebV, zebB, escapes, muros, murosFora });
+      return Object.assign({}, pd, { asf, linhas, zebV, zebB, escapes, muros, murosFora, bordas, zebFora, zebDentro, zebNerv, cinta, guard });
     });
     pedacos.forEach((p, k) => p.idx = k);
     /* pit lane, a faixa de largada e o grid */
@@ -178,8 +200,9 @@
     COR,
     criar(canvas, P, opc){
       opc = opc || {};
-      const R = { cv: canvas, ctx: canvas.getContext('2d'), P, pista: montarPista(P), sprites: new Map(),
-                  cam: { x: 0, y: 0, ang: 0, z: 6, ok: false }, modo: opc.camera || 'perseguir', dpr: 1, dprMax: opc.dprMax || 2,
+      /* canvas opaco: o chão cobre tudo a cada quadro, e o navegador não mistura com o que está atrás */
+      const R = { cv: canvas, ctx: canvas.getContext('2d', { alpha: false }), P, pista: montarPista(P), sprites: new Map(),
+                  cam: { x: 0, y: 0, ang: 0, z: 6, ok: false }, modo: opc.camera || 'perseguir', dpr: 1, dprMax: opc.dprMax || 1.5,
                   marcas: new Float32Array(6 * 1600), nMarcas: 0, iMarca: 0, rodasAnt: new Map(), particulas: [], tempos: [], escala: 1,
                   cen: C2D.Cenario ? C2D.Cenario.montar(P) : null, chuva: null };
       R.visivel = (x0, y0, x1, y1) => x1 > R.cam.x - R.raio && x0 < R.cam.x + R.raio && y1 > R.cam.y - R.raio && y0 < R.cam.y + R.raio;
@@ -285,12 +308,23 @@
       /* o chão (grama cortada, ou a calçada da cidade) */
       ctx.fillStyle = (CEN && CEN.fundo(ctx, P)) || (P.tipo === 'street' ? COR.rua : P.oval ? COR.fundoOval : COR.grama);
       ctx.fillRect(cam.x - raio, cam.y - raio, raio * 2, raio * 2);
-      for(const p of vis){ ctx.fillStyle = pad('grama', .25) || COR.grama2; ctx.fill(p.escapes[2]); ctx.fillStyle = pad('brita', .06) || COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = pad('escape', .1) || COR.escape; ctx.fill(p.escapes[4]); }
+      const rua = P.tipo === 'street';
+      for(const p of vis){ if(rua){ ctx.fillStyle = pad('grama', .25) || COR.grama2; ctx.fill(p.escapes[2]); } ctx.fillStyle = pad('brita', .05) || COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = pad('escape', 1 / 14) || COR.escape; ctx.fill(p.escapes[4]); }
       ctx.lineJoin = 'round';
-      ctx.fillStyle = pad('escape', .1) || COR.asfaltoPit; ctx.fill(R.pista.pit);
+      /* a sombra de contato do asfalto na grama e na brita (a pista fica um pouco acima) */
+      ctx.lineCap = 'butt';
+      ctx.strokeStyle = 'rgba(8,16,8,.2)'; ctx.lineWidth = 1.6; for(const p of vis) ctx.stroke(p.bordas);
+      ctx.fillStyle = pad('escape', 1 / 14) || COR.asfaltoPit; ctx.fill(R.pista.pit);
       for(const p of vis){ ctx.fillStyle = P.terra ? pad('terra', 1 / 14) || '#7a5136' : pad('asfalto', 1 / 16) || COR.asfalto; ctx.fill(p.asf); }
+      /* a variação larga do asfalto (remendos e o desgaste) e o escurecido nas bordas */
+      ctx.strokeStyle = 'rgba(0,0,0,.16)'; ctx.lineWidth = 1.1; for(const p of vis) ctx.stroke(p.bordas);
       if(R.cen) CEN.chao(ctx, R, vis);
+      /* a zebra: sombra para fora, as listras, as nervuras, o brilho na borda de dentro e o contorno */
+      ctx.strokeStyle = 'rgba(10,18,10,.32)'; ctx.lineWidth = .5; for(const p of vis) ctx.stroke(p.zebFora);
       for(const p of vis){ ctx.fillStyle = COR.zebraV; ctx.fill(p.zebV); ctx.fillStyle = COR.zebraB; ctx.fill(p.zebB); }
+      ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = .09; for(const p of vis) ctx.stroke(p.zebNerv);
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = .07; for(const p of vis) ctx.stroke(p.zebDentro);
+      ctx.strokeStyle = 'rgba(40,10,8,.45)'; ctx.lineWidth = .07; for(const p of vis) ctx.stroke(p.zebFora);
       /* a terra não tem linha pintada */
       if(!P.terra){ ctx.strokeStyle = COR.linha; ctx.lineWidth = .22; for(const p of vis) ctx.stroke(p.linhas); }
       if(R.cen) CEN.barreiras(ctx, R, vis);

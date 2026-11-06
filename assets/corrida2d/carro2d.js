@@ -163,14 +163,22 @@
       const brkCoef = G * (sp.b0 * (1 - .18 * w) + 1.1 * sp.aero * v * v) * m / Fz;
       const acel = lim(inp.acel || 0, 0, 1), freio = lim(inp.freio || 0, 0, 1);
       c.acel = acel; c.freio = freio;
+      /* marcha à ré (só o jogador, c.reOk vem da sessão): parado, com o freio apertado e sem acelerar, engata */
+      if(c.reOk !== true){ c.re = false; c.reT = 0; }
+      else if(!c.re){
+        if(v < .8 && freio > .5 && acel === 0){ c.reT = (c.reT || 0) + dt; if(c.reT > .35){ c.re = true; c.reT = 0; } } else c.reT = 0;
+      } else if((acel > 0 && c.vx > -.35) || c.vx > .5) c.re = false;
+      const re = c.re === true;
+      /* na ré o acelerador freia o recuo e o freio empurra para trás */
+      const frF = re ? (acel > 0 ? acel : 0) : freio, acF = re ? 0 : acel;
       const capF = brkCoef * Fzf * PISOS[c.pisoF][0] * chuva * (dm ? dm.freioF : 1), capR = brkCoef * Fzr * PISOS[c.pisoR][0] * chuva * (dm ? dm.freioR : 1);
       const capT = muR * 1.55 * Fzr;
       let Fxf = 0, Fxr = 0;
       c.travF = false; c.patinaR = false;
-      if(freio > 0 && v > .3){
+      if(frF > 0 && v > .3){
         /* repartição puxada para a frente, como nos carros de verdade: a frente trava
            antes da traseira (o carro sai de frente, não roda) */
-        const pedido = freio * (capF + capR) * 1.04 * sg, parteF = Math.min(.8, capF / Math.max(1, capF + capR) + .08);
+        const pedido = frF * (capF + capR) * 1.04 * sg, parteF = Math.min(.8, capF / Math.max(1, capF + capR) + .08);
         let bf = pedido * parteF, br = pedido * (1 - parteF);
         /* controle de estabilidade: traseira escorregando, alivia o freio de trás */
         if(c.assist.estab && Math.abs(c.ar) > sp.apR * .9) br *= .35;
@@ -179,8 +187,12 @@
         if(Math.abs(br) > capR){ br = Math.sign(br) * capR * .85; }
         Fxf = -bf; Fxr = -br;
       }
-      if(acel > 0){
-        let ped = acel * m * sp.pm * (c.potF || 1) * (dm ? dm.pot : 1 - .25 * c.dano) * (c.potencia != null ? c.potencia : 1) / Math.max(v, 3);
+      if(re && freio > 0 && acel === 0 && c.vx > -8){
+        /* ré: cerca de .4 g na traseira, sumindo perto de 8 m/s */
+        Fxr -= Math.min(freio * .4 * m * G, capT) * lim((8 + c.vx) / 2, 0, 1);
+      }
+      if(acF > 0){
+        let ped = acF * m * sp.pm * (c.potF || 1) * (dm ? dm.pot : 1 - .25 * c.dano) * (c.potencia != null ? c.potencia : 1) / Math.max(v, 3);
         /* controle de tração: não pede mais do que o pneu traseiro dá, virando o quanto vira */
         const usoLat = Math.min(.98, Math.abs(Fyr) / Math.max(1, muR * Fzr));
         const livre = capT * Math.sqrt(1 - usoLat * usoLat);
@@ -223,10 +235,10 @@
         const kin = 1 - v / 6;
         r += (vx * Math.tan(dl) / sp.L - r) * kin * .5;
         vy += (0 - vy) * kin * .35;
-        if(freio > 0 && Math.abs(vx) < .6 && acel === 0){ vx = 0; vy = 0; r = 0; }
+        if(!re && freio > 0 && Math.abs(vx) < .6 && acel === 0){ vx = 0; vy = 0; r = 0; }
       }
       /* sem marcha à ré pelo acelerador: o freio parado só segura o carro */
-      if(vx < -2) vx = -2;
+      if(re){ if(vx < -8) vx = -8; } else if(vx < -2) vx = -2;
       c.vx = vx; c.vy = vy; c.r = r;
       c.psi += r * dt;
       c.x += (vx * cs - vy * sn) * dt;

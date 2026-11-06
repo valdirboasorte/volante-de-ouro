@@ -103,8 +103,14 @@
         if(!c.ia && c.boxAuto && (plano || precisa) && !c.pedirBox && !c.cancelouChamada){ c.pedirBox = true; c.boxPneu = C2D.Boxes.pneuParaBox(S, c); c.chamado = true; S.eventos.push({ t: S.t, tipo: 'chamadoBox', a: c.id }); }
         const quer = c.pedirBox || (c.ia && ((plano && resta > 1) || precisa));
         const q = ((c.s - B.ini) % P.L + P.L) % P.L;
-        if(quer && q < 40 && c.voltas < S.N){
+        /* jogador no volante: só para se ele mesmo vira o carro para a pit lane na entrada (o chamado é só conselho) */
+        const manual = c === S.eu && !c.autopiloto && !c.ia;
+        const entra = manual
+          ? q < 100 && Math.sign(c.d) === Math.sign(B.lado) && Math.abs(c.d) > P.meia + .5
+          : quer && q < 40;
+        if(entra && c.voltas < S.N){
           c.box = { fase: 'entrando', ate: 0 };
+          c.re = false; c.reOk = false;
           c.fantasma = true;     /* na pit lane ninguém encosta em ninguém (simplificação) */
           c.boxPneu = c.boxPneu || C2D.Boxes.pneuParaBox(S, c);
           if(plano) c.plano.shift();

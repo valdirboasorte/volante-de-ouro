@@ -4,6 +4,10 @@
    Gerado a partir das tabelas de tradução revisadas; os nomes próprios ficam fora. */
 (function(){
   const rows = [
+    /* corrida 2D: o box é o jogador que entra (2026-11-06) */
+    ["A equipe chama: entre nos boxes nesta volta ({0})", "The team calls: pit this lap ({0})", "El equipo llama: entra en boxes en esta vuelta ({0})", "チームから：このラップでピットへ（{0}）"],
+    ["Entrada dos boxes à esquerda em {0} m ({1})", "Pit entry on the left in {0} m ({1})", "Entrada a boxes a la izquierda en {0} m ({1})", "ピット入口は左、あと{0} m（{1}）"],
+    ["Entrada dos boxes à direita em {0} m ({1})", "Pit entry on the right in {0} m ({1})", "Entrada a boxes a la derecha en {0} m ({1})", "ピット入口は右、あと{0} m（{1}）"],
     /* corrida 2D: a cortina do safety car (2026-11-05) */
     ["Acidente com", "Crash involving", "Accidente de", "クラッシュ："],
     ["Destroços na pista", "Debris on track", "Restos en la pista", "コース上にデブリ"],

@@ -81,9 +81,11 @@
         let cmd;
         if(c === S.eu && !c.autopiloto){
           cmd = inp || { steer: 0, acel: 0, freio: 0 };
-          if(c.assist.freioAuto && largou && !c.box && C2D.Assist) cmd = C2D.Assist.freio(S, c, cmd);
+          /* a ré: na corrida, no treino e na classificação (fora dos boxes e com o carro inteiro) */
+          c.reOk = largou && !c.box && !c.destruido && c.estado !== 'fora' && c.estado !== 'chegou';
+          if(c.assist.freioAuto && largou && !c.box && !c.re && C2D.Assist) cmd = C2D.Assist.freio(S, c, cmd);
         }
-        else cmd = c.ia ? C2D.IA.comandar(c.ia, c, P, S.amb) : { steer: 0, acel: 0, freio: 1 };
+        else { c.reOk = false; cmd = c.ia ? C2D.IA.comandar(c.ia, c, P, S.amb) : { steer: 0, acel: 0, freio: 1 }; }
         /* antes da luz verde o carro fica no freio (o acelerador só faz barulho) */
         if(!largou) cmd = { steer: cmd.steer, acel: 0, freio: 1, giro: cmd.acel };
         else if(corrida){

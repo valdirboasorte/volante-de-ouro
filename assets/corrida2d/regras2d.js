@@ -158,6 +158,110 @@
         || (a.estado === 'chegou' && b.estado === 'chegou' ? (b.voltas - a.voltas) || ((a.fim + a.penal) - (b.fim + b.penal)) : b.sTot - a.sTot));
     },
 
+    /* ── projetar o resto da corrida (o "simular até a bandeirada" instantâneo) ──
+       Cada carro segue no ritmo da mediana das próprias voltas válidas (sem volta, a mediana de
+       todos corrigida pela força do carro, ou a volta de referência da pista); cada volta leva
+       um ruído de ±0,3%, determinístico. Cada parada que falta custa o tempo do box:
+       (comprimento da pit lane ÷ limitador − ÷ ritmo de corrida) + o tempo parado.
+       O azar sorteado e ainda não ocorrido vira abandono na volta marcada. Quem seria dobrado
+       termina com menos voltas, na primeira linha depois do vencedor, como na corrida real. */
+    projetar(S){
+      const P = S.P, L = P.L, N = S.N, rnd = C2D.rng(C2D.semente('proj:' + S.semente));
+      const med = v => { const a = v.slice().sort((x, y) => x - y), n = a.length; return n ? (n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2) : null; };
+      const validas = c => (c.historico || []).filter(h => h.valida && h.t > 20).map(h => h.t);
+      const todas = []; for(const c of S.carros) todas.push(...validas(c));
+      const medAll = med(todas);
+      let ref = 0; if(P.seco && P.seco.v) for(let i = 0; i < P.n; i++) ref += P.ds / Math.max(8, P.seco.v[i]);
+      ref = ref > 20 ? ref * 1.04 : 90;
+      const prj = [];
+      for(const c of S.carros){
+        if(c.estado !== 'pista') continue;
+        const dst = c.destino, restam = Math.max(0, N * L - Math.max(0, c.sTot));
+        /* o azar marcado: o carro abandona na volta sorteada */
+        if(dst && dst.volta <= N){
+          const vfim = dst.feito ? c.voltas + 1 : Math.max(c.voltas + 1, dst.volta);
+          c.voltas = Math.max(c.voltas, vfim - 1);
+          c.sTot = Math.max(c.sTot, (vfim - 1 + .5) * L);
+          dst.feito = true; c.estado = 'fora'; c.foraTipo = dst.tipo === 'MEC' ? 'MEC' : 'ACID'; c.foraVolta = vfim; c.fantasma = true; c.foraT = S.t; c.v = 0;
+          S.eventos.push({ t: S.t, tipo: 'abandono', a: c.id, motivo: c.foraTipo, volta: vfim });
+          continue;
+        }
+        let ritmo = med(validas(c));
+        if(ritmo == null) ritmo = medAll != null ? medAll / Math.max(.8, c.k || 1) : ref / ((c.ia && c.ia.ritmo) || .97);
+        const nParadas = c.plano ? c.plano.length : 0;
+        const vRitmo = L / ritmo, lim = (S.regras && S.regras.limite) || 22;
+        const perda = P.box && P.box.comp ? Math.max(0, P.box.comp * (1 / lim - 1 / vRitmo)) + ((S.regras && S.regras.parado) || 3) : 22;
+        let t = 0, falta = restam / L;
+        while(falta > 0){ const f = Math.min(1, falta); t += ritmo * f * (1 + (rnd() - .5) * .006); falta -= f; }
+        t += nParadas * perda;
+        prj.push({ c, ritmo, tfin: S.t + t, nParadas });
+      }
+      const jaTem = S.carros.some(c => c.estado === 'chegou');
+      if(!prj.length && !jaTem){ S.bandeira = 'quadriculada'; S.tFim = S.t; S.acabou = true; S.sc = null; S.vsc = null; return S; }
+      const tLider = S.bandeira === 'quadriculada' && S.tFim != null ? S.tFim : Math.min(...prj.map(q => q.tfin));
+      if(S.bandeira !== 'quadriculada'){
+        const lid = prj.find(q => q.tfin === tLider);
+        S.bandeira = 'quadriculada'; S.tFim = tLider; S.eventos.push({ t: tLider, tipo: 'bandeirada', a: lid.c.id });
+      }
+      for(const q of prj.slice().sort((a, b) => a.tfin - b.tfin)){
+        const c = q.c, x = Math.max(0, Math.floor((q.tfin - tLider) / q.ritmo));
+        const voltas = Math.max(c.voltas, N - x), fim = Math.max(c.ini != null ? c.ini : S.t, q.tfin - x * q.ritmo);
+        /* as marcas da volta até a linha final (a torre lê as diferenças delas) */
+        const t0 = S.t, d0 = Math.max(0, c.sTot), total = voltas * K;
+        for(let i = c.cp.length; i < total; i++){
+          const f = ((i + 1) * (L / K) - d0) / Math.max(1, voltas * L - d0);
+          c.cp[i] = t0 + (fim - t0) * Math.max(0, Math.min(1, f));
+        }
+        c.paradas = (c.paradas || 0) + q.nParadas;
+        if(q.nParadas && c.pneus && c.pneus.length) for(let k = 0; k < q.nParadas; k++) c.pneus.push(c.pneus[c.pneus.length - 1]);
+        if(c.plano) c.plano.length = 0;
+        /* a volta mais rápida: um pouco melhor que o ritmo do carro */
+        if(voltas > c.voltas || isFinite(c.melhor)){
+          const mv = Math.min(c.melhor, q.ritmo * (1 - .004 * rnd()));
+          c.melhor = mv;
+          if(mv < S.fl.t) S.fl = { t: mv, id: c.id, volta: voltas };
+        }
+        c.voltas = voltas; c.voltaFeita = voltas; c.fim = fim; c.estado = 'chegou'; c.fantasma = true; c.sTot = voltas * L; c.v = 0;
+        S.eventos.push({ t: fim, tipo: 'chegada', a: c.id, pos: null });
+      }
+      S.sc = null; S.vsc = null;
+      S.acabou = true;
+      S.ordem = C2D.Corrida.ordem(S);
+      S.ordem.forEach((c, k) => c.pos = k + 1);
+      S.lider = S.ordem[0];
+      return S;
+    },
+
+    /* o jogador já está na fila do safety car? (a cortina só abre então.) est guarda o estado entre
+       chamadas; scS é a posição do safety car desenhado (mesma unidade de sTot). */
+    naFilaSC(S, c, dt, est, scS){
+      const L = S.P.L;
+      if(est.t0 == null) est.t0 = S.t;
+      if(c.estado !== 'pista') return false;
+      /* no piloto automático ninguém está olhando: a cortina abre logo */
+      if(c.autopiloto) return true;
+      if(c.box){ est.acc = 0; return false; }
+      let cond = false;
+      if(S.sc){
+        const desde = S.sc.desde != null ? S.sc.desde : est.t0;
+        if(S.t - desde > 45) return true;
+        let a = null;
+        for(let k = c.pos - 2; k >= 0; k--){ const o = S.ordem[k]; if(o && o.estado === 'pista' && !o.box){ a = o; break; } }
+        if(a) cond = (a.sTot - c.sTot) < 30 && c.v - a.v < 3;
+        else cond = (scS != null && (((scS - c.sTot) % L) + L) % L < 35) || S.t - desde > 8;
+        est.acc = cond ? (est.acc || 0) + dt : 0;
+        return est.acc >= 1;
+      }
+      if(S.vsc){
+        if(S.t - est.t0 > 15) return true;
+        const teto = C2D.Boxes.tetoSC(S, c);
+        cond = c.v <= teto * 1.1;
+        est.acc = cond ? (est.acc || 0) + dt : 0;
+        return est.acc >= 1.5;
+      }
+      return false;
+    },
+
     /* a torre: posição, diferença para o líder e para o da frente */
     torre(S){
       const ord = S.ordem, L = S.P.L, lider = ord[0];
