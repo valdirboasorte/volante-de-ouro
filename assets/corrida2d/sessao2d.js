@@ -14,7 +14,7 @@
                   estado: opc.semLargada ? 'pista' : 'luzes', luzes: 0, verdeEm: null, eventos: [], semente: opc.semente || 1 };
       S.rnd = C2D.rng(S.semente);
       (opc.carros || [{ id: 'ME', me: true }]).forEach((o, k) => {
-        const c = C2D.Carro.criar(P, Object.assign({ sk: opc.sk, ano: opc.ano, nivel: opc.nivel || 0 }, o));
+        const c = C2D.Carro.criar(P, Object.assign({ sk: opc.sk, ano: opc.ano, nivel: opc.nivel || 0, cat: opc.cat }, o));
         const vg = C2D.Pista.vaga(P, o.grid || k + 1);
         C2D.Carro.posicionar(c, P, vg.s, vg.d); c.dLargada = vg.d;
         Object.assign(c, { voltas: 0, ini: null, setor: 0, tSetor: null, setores: [null, null, null], ultSet: [null, null, null], melhorSet: [Infinity, Infinity, Infinity],
@@ -94,6 +94,8 @@
           /* atrás do pace car: limitador de velocidade para todos, sem ultrapassar */
           if(lancada){ const vp = C2D.Boost.vPace(S, c); if(c.v > vp) cmd = Object.assign({}, cmd, { acel: 0, freio: Math.min(1, (c.v - vp) * .2) }); }
         }
+        /* carro destruído (roda arrancada): o piloto só segura o carro até parar */
+        if(c.destruido) cmd = { steer: (cmd.steer || 0) * .3, acel: 0, freio: .45 };
         C2D.Carro.passo(c, P, cmd, dt, S.amb);
         if(S.regras) C2D.Boxes.depois(S, c, c.sTot - s0);
         C2D.Sessao.cronometrar(S, c, s0, dt);
@@ -106,6 +108,8 @@
         S.ultToque = S.ultToque || {};
         if(t.v > 3.5 && !(S.ultToque[k] > S.t - 1.5)){ S.ultToque[k] = S.t; S.eventos.push({ t: S.t, tipo: 'toque', a: t.a, b: t.b, v: +t.v.toFixed(1) }); }
       }
+      /* o dano de cada batida nas peças, e os destroços */
+      if(C2D.Dano) C2D.Dano.processar(S, dt);
       S.t += dt; S.passos++;
       if(corrida){ C2D.Corrida.depois(S, dt); if(S.regras) C2D.Boxes.controle(S); }
     },
@@ -175,6 +179,9 @@
     /* o carro volta ao eixo da pista, parado e apontado para a frente; a volta não vale */
     voltarPista(S, c){
       const P = S.P;
+      /* na corrida, carro destruído não volta; no treino e na classificação a equipe entrega o carro consertado */
+      if(c.destruido && S.tipo === 'corrida') return;
+      if(c.destruido && C2D.Dano) C2D.Dano.reparar(c, true);
       const lado = lim(c.d, -P.meia * .5, P.meia * .5);
       const sTot = c.sTot;
       C2D.Carro.posicionar(c, P, c.s, lado);

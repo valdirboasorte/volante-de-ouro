@@ -90,7 +90,7 @@
       const trk = (typeof TRACKS !== 'undefined' && TRACKS[ent.trkId]) || { id: ent.trkId, type: P.tipo, rainP: .2 };
       const clima = Gp.clima(ent, trk, P.Tref, fx.Ncl, P.oval);
       return C2D.Tela.abrirCorrida({
-        trkId: ent.trkId, ano: ent.ano, sk: ent.sk, nivel: ent.nivel, voltas: N, carros, semente: ent.seed || 7, w: clima.w0,
+        trkId: ent.trkId, ano: ent.ano, sk: ent.sk, nivel: ent.nivel, cat: ent.cat || sea.cat, voltas: N, carros, semente: ent.seed || 7, w: clima.w0,
         boxes: { sk: ent.sk, ano: ent.ano, nivel: ent.nivel, fracao: N / fx.Ncl, Ncl: fx.Ncl, wet, pista: clima.pista }, clima,
         titulo: 'Corrida', gp: ent.gp ? 'GP ' + ent.gp : '', nivelRivais: C2D.Carreira.nivelIA(), textoConcluir: 'Continuar',
         aoFim: (res, notasDe) => aoFim(res, notasDe)
@@ -119,7 +119,7 @@
       const tempos = {}; rivais.forEach((o, k) => tempos[o.id] = ord[k]);
       const meuK = fx.k.ME || 1;
       return C2D.Tela.abrir({
-        tipo: 'classificacao', trkId: trk.id, ano, sk, nivel, w: wet ? .7 : 0, semente: (sea.gpSeed && sea.gpSeed[rd]) || 7,
+        tipo: 'classificacao', trkId: trk.id, ano, sk, nivel, cat: sea.cat, w: wet ? .7 : 0, semente: (sea.gpSeed && sea.gpSeed[rd]) || 7,
         titulo: 'Sessão de classificação', gp: 'GP ' + trk.gp, limiteVoltas: 3, textoSair: 'Encerrar a classificação',
         carros: [{ id: 'ME', me: true, nome: S.driver.name, cor: (S.team && S.team.color) || '#e2231a', k: meuK, mods: C2D.Carreira.mods(true) }],
         referencia: ord[0],
@@ -164,7 +164,7 @@
       const wet = Engine.climaDe ? !!Engine.climaDe(sea, rd) : false;
       const fx = C2D.Carreira.fatores(sea, ['ME'], P, sk, ano, nivel, wet);
       return C2D.Tela.abrir({
-        tipo: 'treino', trkId: trk.id, ano, sk, nivel, w: wet ? .6 : 0, titulo: 'Treino livre', gp: 'GP ' + trk.gp, textoSair: 'Encerrar o treino',
+        tipo: 'treino', trkId: trk.id, ano, sk, nivel, cat: sea.cat, w: wet ? .6 : 0, titulo: 'Treino livre', gp: 'GP ' + trk.gp, textoSair: 'Encerrar o treino',
         carros: [{ id: 'ME', me: true, nome: S.driver.name, cor: (S.team && S.team.color) || '#e2231a', k: fx.k.ME || 1, mods: C2D.Carreira.mods(false) }],
         aoFim: resumo => {
           original.call(Game, k);

@@ -10,7 +10,9 @@
   /* preferências do aparelho (fora do save): câmera, assistências, tipo de controle de toque */
   const PREF_K = 'vdo_c2d';
   const PADRAO = { camera: 'perseguir', abs: true, tc: true, estab: true, direcao: true, toque: 'botoes', freioAuto: true, linha: true, danosRed: true, ritmo: 1, boxAuto: true,
-                   pularSC: true, limites: 'tolerante' };
+                   pularSC: true, limites: 'tolerante', zoom: 1.6 };
+  /* as distâncias da câmera (1 = a antiga, a mais longe) */
+  const ZOOMS = [1, 1.25, 1.6, 2.2, 2.8];
   const pref = () => { try { return Object.assign({}, PADRAO, JSON.parse(localStorage.getItem(PREF_K) || '{}')); } catch(e){ return Object.assign({}, PADRAO); } };
   const salvarPref = p => { try { localStorage.setItem(PREF_K, JSON.stringify(p)); } catch(e){} };
   C2D.pref = pref;
@@ -49,6 +51,7 @@
             <span class="c2d-pneu" data-c2d="pneu" hidden><i data-i18n-ignore data-c2d="pneuC">M</i><b data-i18n-ignore data-c2d="pneuG">0%</b></span>
             <span class="c2d-comb" data-c2d="comb" hidden><span class="c2d-rot">Comb.</span> <b data-i18n-ignore data-c2d="combV">—</b></span>
             <span class="c2d-boost" data-c2d="boost" hidden></span>
+            <span class="c2d-danos" data-c2d="danos" hidden></span>
           </div>
         </div>
       </div>
@@ -68,7 +71,7 @@
       </div>
       <div class="c2d-luzes" hidden>${'<i></i>'.repeat(5)}</div>
       <div class="c2d-simulando" hidden><b>Simulando a corrida…</b><span data-i18n-ignore data-c2d="simVolta"></span></div>
-      <div class="c2d-transicao" hidden><b data-c2d="transTexto"></b><span data-i18n-ignore data-c2d="transVolta"></span></div>
+      <div class="c2d-cortina" hidden aria-live="polite"><div class="c2d-cortina-tx"><b data-i18n-ignore data-c2d="scTitulo">SAFETY CAR</b><span data-c2d="scMotivo"></span><span data-c2d="scSub"></span><span class="c2d-cortina-barra"><i data-c2d="scBarra"></i></span><small><span>Volta</span> <span data-i18n-ignore data-c2d="scVolta"></span></small></div></div>
       <div class="c2d-contagem" hidden><span>Relargada em</span><b data-i18n-ignore data-c2d="contagem">3</b></div>
       <div class="c2d-resultado" hidden>
         <div class="c2d-menu-caixa c2d-res-caixa">
@@ -90,6 +93,7 @@
             <label><input type="checkbox" data-o="boxAuto"> Box automático (a equipe chama)</label>
             <label><input type="checkbox" data-o="pularSC"> Pular o safety car (avança até a relargada)</label>
             <label class="c2d-op-sel">Limites de pista <select data-o="limites"><option value="tolerante">Tolerante</option><option value="rigoroso">Rigoroso</option><option value="desligado">Desligado</option></select></label>
+            <label class="c2d-op-sel">Distância da câmera <select data-o="zoom"><option value="2.8">Colada no carro</option><option value="2.2">Bem perto</option><option value="1.6">Perto</option><option value="1.25">Média</option><option value="1">Longe</option></select></label>
             <label class="c2d-op-sel">Velocidade do jogo <select data-o="ritmo"><option value="1">100%</option><option value="0.85">85%</option><option value="0.7">70%</option></select></label>
             <label><input type="checkbox" data-o="abs"> Freio ABS</label>
             <label><input type="checkbox" data-o="tc"> Controle de tração</label>
@@ -110,45 +114,91 @@
 
     /* abre um treino livre (a fase do protótipo): opc { trkId, ano, sk, nivel, nome, cor, titulo, aoFim } */
     abrirTreino(opc){ return C2D.Tela.abrir(Object.assign({ tipo: 'treino' }, opc || {})); },
-    /* a garagem: todos os carros, de cada categoria e época, lado a lado */
-    GARAGEM: [
-      ['Fórmula 1 · 2022 em diante', 'f1', 2024, 0], ['Fórmula 1 · 2017 a 2021', 'f1', 2019, 0], ['Fórmula 1 · 2009 a 2016', 'f1', 2012, 0], ['Fórmula 1 · 1994 a 2008', 'f1', 2000, 0],
-      ['Fórmula 1 · 1983 a 1993', 'f1', 1988, 0], ['Fórmula 1 · 1978 a 1982', 'f1', 1980, 0], ['Fórmula 1 · 1967 a 1977', 'f1', 1975, 0], ['Fórmula 1 · até 1966', 'f1', 1960, 0],
-      ['Fórmula 2', 'f1', 2024, 1], ['Fórmula 3', 'f1', 2024, 2], ['Fórmula 4', 'f1', 2024, 3], ['Fórmula Ford', 'f1', 1985, 3],
-      ['IndyCar · 2018 em diante', 'indy', 2024, 0], ['IndyCar · 2012 a 2017', 'indy', 2014, 0], ['Fórmula E · Gen3', 'fe', 2024, 0], ['Fórmula E · Gen2', 'fe', 2020, 0],
-      ['Fórmula E · Gen1', 'fe', 2015, 0], ['NASCAR Cup', 'nascar', 2024, 0], ['Stock Car', 'stock', 2024, 0], ['DTM · GT3', 'dtm', 2024, 0],
-      ['DTM · Classe 1', 'dtm', 2015, 0], ['Endurance · Hypercar', 'wec', 2024, 0], ['Endurance · LMP', 'wec', 2015, 0], ['Kart', 'f1', 2024, 4]
-    ],
+    /* a garagem: todos os carros do catálogo (estilos2d.js), por família, na mesma escala,
+       com o nome do carro de verdade e os campeonatos e anos em que ele correu */
     garagem(){
       if(document.getElementById('c2dGaragem')) return;
+      const E = C2D.Estilos;
       const el = document.createElement('div');
       el.id = 'c2dGaragem'; el.className = 'c2d c2d-garagem'; el.style.zIndex = 9100;
-      el.innerHTML = '<div class="c2d-gar-topo"><h2>Garagem</h2><p>Os carros de cada categoria e época, com três pinturas de equipe.</p><button class="c2d-btn" type="button" data-fechar>Fechar</button></div><div class="c2d-gar-grade"></div>';
+      el.innerHTML = '<div class="c2d-gar-topo"><h2>Garagem</h2><p>Os carros de todas as categorias do modo piloto, cada um com o chassi e a época dele. Todos na mesma escala.</p>'
+        + '<input class="c2d-gar-busca" type="search" placeholder="Procurar carro ou campeonato" aria-label="Procurar carro ou campeonato">'
+        + '<button class="c2d-btn" type="button" data-fechar>Fechar</button></div><div class="c2d-gar-lista"></div>';
       document.body.appendChild(el);
       document.documentElement.classList.add('c2d-aberto');
-      el.querySelector('[data-fechar]').addEventListener('click', () => { el.remove(); if(!C2D.Tela.aberta) document.documentElement.classList.remove('c2d-aberto'); });
-      const grade = el.querySelector('.c2d-gar-grade');
-      const pinturas = [['#e2231a', 'Rossa'], ['#00a19c', 'Verde Água'], ['#1e41ff', 'Azul Real'], ['#ff8000', 'Laranja'], ['#f2f2f2', 'Branca'], ['#2b4562', 'Marinho']];
-      C2D.Tela.GARAGEM.forEach(([nome, sk, ano, nivel], k) => {
-        const card = document.createElement('div'); card.className = 'c2d-gar-card';
-        const cv = document.createElement('canvas'); card.appendChild(cv);
-        const tit = document.createElement('b'); tit.textContent = nome; card.appendChild(tit);
-        grade.appendChild(card);
-        const md = C2D.Carro.modelo(sk, ano, nivel, nivel >= 4);
-        const dpr = Math.min(2, devicePixelRatio || 1), W = 360, H = 270;
-        cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      let obs = null;
+      const fechar = () => { if(obs) obs.disconnect(); el.remove(); if(!C2D.Tela.aberta) document.documentElement.classList.remove('c2d-aberto'); };
+      el.querySelector('[data-fechar]').addEventListener('click', fechar);
+      const lista = el.querySelector('.c2d-gar-lista');
+      const pinturas = [['#e2231a', 'Rossa'], ['#00a19c', 'Verde Água'], ['#1e41ff', 'Azul Real'], ['#ff8000', 'Laranja'], ['#f2f2f2', 'Branca'], ['#2b4562', 'Marinho'], ['#f5d000', 'Amarela'], ['#006f62', 'Verde']];
+      const usos = E.usos();
+      const grupos = new Map(E.GRUPOS.map(([n]) => [n, []]));
+      Object.keys(E.DEF).filter(est => !E.DEF[est].oculto).forEach(est => { const gn = E.grupoDe(est); if(!grupos.has(gn)) grupos.set(gn, []); grupos.get(gn).push(est); });
+      const cards = [];
+      /* o desenho de cada cartão só quando ele aparece na tela */
+      const desenhar = card => {
+        if(card._feito) return; card._feito = true;
+        const est = card._est, k = card._k, d = E.DEF[est], cv = card.querySelector('canvas');
+        const dpr = Math.min(2, devicePixelRatio || 1), W = 340, H = 168;
+        cv.width = W * dpr; cv.height = H * dpr;
         const g = cv.getContext('2d'); g.scale(dpr, dpr);
-        g.fillStyle = C2D.Cenario ? C2D.Cenario.padrao(g, 'asfalto', 1) : '#383b40'; g.fillRect(0, 0, W, H);
-        const est = C2D.Arte.estilo(sk, ano, nivel, nivel >= 4);
-        for(let q = 0; q < 3; q++){
-          const [cor, eq] = pinturas[(k + q * 2) % pinturas.length];
-          const car = { sp: { comp: md.comp, larg: md.larg, estilo: est }, cor, eq, id: eq + k, num: (k * 7 + q * 13) % 90 + 3, me: q === 1, pneu: { c: ['S', 'M', 'H'][q] } };
-          const sp = C2D.Arte.carro(car, ['S', 'M', 'H'][q]), sb = C2D.Arte.sombra(car);
-          const esc = Math.min((W - 24) / 6.4, (H / 3 - 16) / 2.6), cx = W / 2, cy = H / 6 + q * H / 3;
+        const terra = /^(midget|sprint|late-model-terra|jalopy)/.test(est);
+        g.fillStyle = C2D.Cenario ? C2D.Cenario.padrao(g, terra ? 'terra' : 'asfalto', 1) : '#383b40'; g.fillRect(0, 0, W, H);
+        const dm = E.dims(est) || { comp: 4.5, larg: 1.9 };
+        /* a mesma escala para todos: dá para ver o kart pequeno e o NASCAR enorme */
+        const esc = (W - 40) / 6.1;
+        for(let q = 0; q < 2; q++){
+          const [cor, eq] = pinturas[(k * 3 + q * 5) % pinturas.length];
+          const car = { sp: { comp: dm.comp, larg: dm.larg, estilo: est }, cor, eq: eq + k, id: eq + k, num: (k * 7 + q * 13) % 90 + 3, me: q === 1 };
+          const sp = C2D.Arte.carro(car, ['S', 'M'][q]), sb = C2D.Arte.sombra(car);
+          const cx = W / 2, cy = H / 4 + q * H / 2;
           g.save(); g.translate(cx + 3, cy + 3); g.globalAlpha = .7; g.drawImage(sb.cv, -sb.w / 2 * esc, -sb.h / 2 * esc, sb.w * esc, sb.h * esc); g.restore();
           g.drawImage(sp.cv, cx - sp.w / 2 * esc, cy - sp.h / 2 * esc, sp.w * esc, sp.h * esc);
         }
+        if(d && d.dims){ g.font = '600 11px Archivo, system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,.55)'; g.textAlign = 'right'; g.fillText(d.dims[0].toFixed(1) + ' m', W - 10, H - 8); }
+      };
+      obs = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ desenhar(e.target); obs.unobserve(e.target); } }), { root: el, rootMargin: '300px' }) : null;
+      let k = 0;
+      for(const [gn, ests] of grupos){
+        if(!ests.length) continue;
+        const sec = document.createElement('section'); sec.className = 'c2d-gar-grupo';
+        const h = document.createElement('h3'); h.textContent = gn; sec.appendChild(h);
+        const grade = document.createElement('div'); grade.className = 'c2d-gar-grade'; sec.appendChild(grade);
+        ests.sort((a, b) => E.anoDe(a) - E.anoDe(b));
+        for(const est of ests){
+          const d = E.DEF[est], lu = usos[est] || [];
+          const card = document.createElement('div'); card.className = 'c2d-gar-card'; card._est = est; card._k = k++;
+          card.appendChild(document.createElement('canvas'));
+          const tit = document.createElement('b'); tit.textContent = d.nome || est; card.appendChild(tit);
+          const us = document.createElement('div'); us.className = 'c2d-gar-usos';
+          lu.slice(0, 6).forEach(u => {
+            const s = document.createElement('span');
+            const n = document.createElement('span'); n.textContent = u.n; s.appendChild(n);
+            s.appendChild(document.createTextNode(' ' + (u.de === u.ate ? u.de : u.de + '–' + u.ate)));
+            us.appendChild(s);
+          });
+          if(lu.length > 6){ const s = document.createElement('span'); s.textContent = '+' + (lu.length - 6); us.appendChild(s); }
+          /* os carros só das categorias de base: os degraus da escada em que eles aparecem */
+          if(!lu.length) (d.esc || []).forEach(([n, de, ate]) => {
+            const s = document.createElement('span');
+            const b = document.createElement('span'); b.textContent = n; s.appendChild(b);
+            if(de) s.appendChild(document.createTextNode(' ' + de + '–' + ate));
+            us.appendChild(s);
+          });
+          card.appendChild(us);
+          card._busca = ((d.nome || '') + ' ' + lu.map(u => u.n).concat((d.esc || []).map(x => x[0])).join(' ')).toLowerCase();
+          grade.appendChild(card); cards.push(card);
+          if(obs) obs.observe(card); else desenhar(card);
+        }
+        lista.appendChild(sec);
+      }
+      /* a busca: pelo nome do carro ou pelo campeonato (também no texto mostrado, já traduzido) */
+      el.querySelector('.c2d-gar-busca').addEventListener('input', ev => {
+        const t = ev.target.value.trim().toLowerCase();
+        cards.forEach(c => { c.hidden = !!t && c._busca.indexOf(t) < 0 && c.textContent.toLowerCase().indexOf(t) < 0; });
+        lista.querySelectorAll('.c2d-gar-grupo').forEach(s => { s.hidden = !s.querySelector('.c2d-gar-card:not([hidden])'); });
       });
+      C2D.Tela._garagem = { el, cards, desenhar };
     },
     /* corrida: opc { trkId, ano, sk, nivel, voltas, carros (C2D.Corrida.montarGrid), titulo, aoFim(res, notasDe, S) } */
     abrirCorrida(opc){ return C2D.Tela.abrir(Object.assign({ tipo: 'corrida', titulo: 'Corrida', textoSair: 'Abandonar a corrida' }, opc || {})); },
@@ -177,12 +227,13 @@
       const { el, opc, p } = T;
       const assist = { abs: p.abs, tc: p.tc, estab: p.estab, direcao: p.direcao, freioAuto: p.freioAuto };
       const carros = (opc.carros || [{ id: 'ME', me: true, nome: opc.nome || 'Você', cor: opc.cor }]).map(o => o.me ? Object.assign({}, o, { assist, danoMult: p.danosRed ? .3 : 1, boxAuto: !!p.boxAuto }) : o);
-      const S = T.S = C2D.Sessao.criar({ trkId: opc.trkId, ano: opc.ano, sk: opc.sk, nivel: opc.nivel, tipo: opc.tipo, semente: opc.semente || 7,
+      const S = T.S = C2D.Sessao.criar({ trkId: opc.trkId, ano: opc.ano, sk: opc.sk, nivel: opc.nivel, cat: opc.cat, tipo: opc.tipo, semente: opc.semente || 7,
         voltas: opc.voltas, w: opc.w || 0, carros, boxes: opc.boxes, clima: opc.clima, limites: p.limites });
       T.abrev = new Map(S.carros.map(c => [c, C2D.Tela.abreviar(c.nome || c.id)]));
       T.linhasTorre = [];
       T.R = C2D.Render.criar($(el, '.c2d-mundo'), S.P, { camera: p.camera });
-      T.R.S = S; T.R.linha = !!p.linha; T.escala = +p.ritmo || 1;
+      T.R.S = S; T.R.linha = !!p.linha; T.escala = +p.ritmo || 1; T.R.zoom = +p.zoom || 1.6;
+      $(el, '.c2d-mundo').addEventListener('wheel', ev => { ev.preventDefault(); C2D.Tela.acao(T, ev.deltaY < 0 ? 'zoomMais' : 'zoomMenos'); }, { passive: false });
       /* a dica da largada: quais ajudas estão ligadas e onde mudar */
       T.dicaAte = (p.freioAuto || p.linha) ? 9 : 0;
       T.M = C2D.Render.minimapa($(el, '.c2d-mapa'), S.P);
@@ -241,16 +292,20 @@
         /* a relargada: tudo parado por três segundos, depois a bandeira verde é sua */
         const dt = T.ultQc ? Math.min(.1, (agora - T.ultQc) / 1000) : 0; T.ultQc = agora;
         T.contagem -= dt; T.rel.zerar();
-        const n = Math.max(1, Math.ceil(T.contagem));
+        /* (os décimos a mais são da cortina saindo: o número começa no 3) */
+        const n = Math.max(1, Math.min(3, Math.ceil(T.contagem)));
         if(T.h.contagem.textContent !== String(n)) T.h.contagem.textContent = String(n);
         if(T.contagem <= 0){ T.el.querySelector('.c2d-contagem').hidden = true; T.verdeAte = S.t + 3; T.ultQc = null; }
       } else if(T.pulandoSC && !T.pausa){
-        /* safety car: avança depressa até a relargada, com o seu carro seguindo o pelotão */
-        const fim = performance.now() + 12;
-        while((S.sc || S.vsc) && !S.acabou && performance.now() < fim) for(let k = 0; k < 40 && (S.sc || S.vsc); k++) C2D.Sessao.passo(S, null, C2D.DT);
+        /* safety car: atrás da cortina a corrida anda sem desenhar até a relargada, com o seu
+           carro seguindo o pelotão (ninguém vê o jogo acelerado) */
+        /* (enquanto a cortina entra, pouco por quadro para a animação ficar lisa; fechada, o máximo) */
+        const fim = performance.now() + (agora - T.scDesde > 420 ? 75 : 10);
+        /* atrás do safety car todo mundo anda devagar e em fila: o passo pode ser de 60 Hz (metade do custo) */
+        while((S.sc || S.vsc) && !S.acabou && performance.now() < fim) for(let k = 0; k < 40 && (S.sc || S.vsc); k++) C2D.Sessao.passo(S, null, C2D.DT * 2);
         T.rel.zerar();
-        T.h.transVolta.textContent = (S.lider ? Math.min(S.N, S.lider.voltas + 1) : 1) + ' / ' + S.N;
-        if(!(S.sc || S.vsc) || S.acabou) C2D.Tela.fimSC(T);
+        C2D.Tela.progressoSC(T);
+        if((!(S.sc || S.vsc) || S.acabou) && agora - T.scDesde > 1400) C2D.Tela.fimSC(T);
       } else if(!T.pausa && !T.fimMostrado){
         if(S.tipo === 'corrida' && T.p.pularSC && (S.sc || S.vsc) && S.eu.estado === 'pista' && !S.acabou) C2D.Tela.inicioSC(T);
         const n = T.rel.quadro(agora, T.escala);
@@ -267,7 +322,9 @@
         h.__v = h.textContent;
         setTimeout(() => { if(C2D.Tela.aberta === T) C2D.Tela.fechar(); }, 1800);
       }
-      C2D.Render.quadro(T.R, S.carros, S.eu, T.pausa ? 1 : T.rel.alfa, T.pausa ? 0 : dtReal);
+      /* com a cortina fechada não precisa desenhar a pista */
+      const coberto = T.pulandoSC && agora - T.scDesde > 420;
+      if(!coberto) C2D.Render.quadro(T.R, S.carros, S.eu, T.pausa ? 1 : T.rel.alfa, T.pausa ? 0 : dtReal);
       /* aparelho fraco: a resolução cai até o desenho caber no quadro */
       const tm = T.R.tempos;
       if(tm.length >= 90 && !T.pausa){
@@ -336,6 +393,21 @@
         if(c.energia != null){ const me = C2D.Boost.metaEnergia(S, c); txt += (txt ? ' · ' : '') + 'Energia ' + Math.round(me.agora * 100) + '%' + (me.agora < me.meta - .02 ? ' (poupe)' : ''); }
         if(h.boost.__v !== txt + cls){ h.boost.__v = txt + cls; h.boost.textContent = txt; h.boost.className = cls; h.boost.hidden = !txt; }
       }
+      /* danos: o carro visto de cima, a frente para cima; cada peça com a cor do estado dela */
+      if(h.danos && c.partes){
+        const P = c.partes, est = k => !P[k] ? '' : P[k].solta ? 'solta' : c.furo === k ? 'furo' : P[k].h > .9 ? 'ok' : P[k].h > .6 ? 'leve' : P[k].h > .3 ? 'medio' : 'grave';
+        const assin = Object.keys(P).map(est).join() + (c.furo || '');
+        if(h.danos.__v !== assin){
+          h.danos.__v = assin;
+          const algum = Object.keys(P).some(k => est(k) !== 'ok');
+          h.danos.hidden = !algum;
+          if(algum){
+            const f = P.asaD ? 'asaD' : P.bico ? 'bico' : 'paraF', t = P.asaT ? 'asaT' : P.paraT ? 'paraT' : '', m = P.carenagem ? 'carenagem' : '';
+            const cel = (k, cls) => '<i class="' + cls + ' d-' + (k ? est(k) || 'ok' : 'nada') + '"' + (k && C2D.Dano.PECA[k] ? ' title="' + C2D.Dano.PECA[k].nome + '"' : '') + '></i>';
+            h.danos.innerHTML = cel('FE', 'r') + cel(f, 'a') + cel('FD', 'r') + cel(P.latE ? 'latE' : '', 'l') + cel(m, 'm') + cel(P.latD ? 'latD' : '', 'l') + cel('TE', 'r') + cel(t, 'a') + cel('TD', 'r');
+          }
+        }
+      }
       /* avisos */
       let aviso = '';
       if(S.t < (T.dicaAte || 0) && !T.fimSessao) aviso = 'Freio assistido e linha de trajetória ligados · mude na pausa (II ou Esc)';
@@ -345,6 +417,9 @@
       else if(c.box && c.box.fase === 'parado') aviso = 'Parada: ' + Math.max(0, c.box.ate - S.t).toFixed(1) + ' s';
       else if(c.box) aviso = 'Pit lane: limitador ligado';
       else if(c.chamado && c.pedirBox) aviso = 'A equipe chama: box nesta volta (' + Gp.nomePneu(c.boxPneu) + ')';
+      else if(S.tipo === 'corrida' && c.estado === 'fora') aviso = 'Carro destruído: você está fora da corrida';
+      else if(c.destruido && S.tipo !== 'corrida') aviso = 'Carro destruído: toque em Voltar à pista para recomeçar';
+      else if(S.avisoDano && S.t - S.avisoDano.t < 3.5) aviso = S.avisoDano.txt;
       else if(S.eventos.length && S.eventos[S.eventos.length - 1].tipo === 'punicao' && S.eventos[S.eventos.length - 1].a === c.id && S.t - S.eventos[S.eventos.length - 1].t < 4) aviso = '+5 s de punição';
       else if(T.verdeAte && S.t < T.verdeAte) aviso = 'Bandeira verde!';
       else if(S.tipo === 'corrida' && c.invalida && c.ini != null && S.limitesModo !== 'desligado') aviso = 'Limites de pista: aviso ' + c.avisos + ' de ' + S.limiteAvisos;
@@ -409,16 +484,45 @@
       c.autoAntesSC = !!c.autopiloto; c.iaAntesSC = c.ia || null;
       c.ia = C2D.IA.criar({ ritmo: (C2D.NIVEIS[T.opc.nivelRivais] || C2D.NIVEIS.medio).ritmo, semente: 77 });
       c.autopiloto = true;
-      T.h.transTexto.textContent = S.vsc && !S.sc ? 'Safety car virtual · avançando até a bandeira verde…' : 'Safety car na pista · avançando até a relargada…';
-      T.el.querySelector('.c2d-transicao').hidden = false;
+      /* a cortina, como a da troca de categoria: entra da direita com o nome grande */
+      const vsc = !!(S.vsc && !S.sc), card = T.el.querySelector('.c2d-cortina');
+      card.classList.toggle('vsc', vsc); card.classList.remove('sai'); card.hidden = false;
+      card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+      T.h.scTitulo.textContent = vsc ? 'VIRTUAL SAFETY CAR' : 'SAFETY CAR';
+      /* o motivo: o carro do acidente, ou os destroços na pista */
+      const ev = S.eventos.slice().reverse().find(e => e.tipo === 'sc' || e.tipo === 'vsc');
+      const quem = ev && S.carros.find(q => q.id === ev.a);
+      T.h.scMotivo.innerHTML = '';
+      if(quem){ const a = document.createElement('span'); a.textContent = 'Acidente com'; const b = document.createElement('span'); b.setAttribute('data-i18n-ignore', ''); b.textContent = ' ' + (quem.nome || quem.id); T.h.scMotivo.append(a, b); }
+      else { const a = document.createElement('span'); a.textContent = 'Destroços na pista'; T.h.scMotivo.append(a); }
+      T.h.scSub.textContent = vsc ? 'Bandeira amarela em toda a pista: todos 30% mais devagar' : 'O pelotão se agrupa atrás do safety car';
+      T.scDesde = performance.now(); T.scT0 = S.t; T.scS0 = S.lider ? S.lider.sTot / S.P.L : 0;
+      T.scFimV = S.sc ? S.sc.ateVolta : null; T.scFimT = S.vsc ? S.vsc.ate : null;
+      C2D.Tela.progressoSC(T);
+    },
+    progressoSC(T){
+      const S = T.S, lid = S.lider;
+      let f = 1;
+      if(S.sc && T.scFimV != null && lid) f = (lid.sTot / S.P.L - T.scS0) / Math.max(.5, T.scFimV - T.scS0);
+      else if(S.vsc && T.scFimT != null) f = (S.t - T.scT0) / Math.max(1, T.scFimT - T.scT0);
+      f = Math.max(0, Math.min(1, f));
+      const w = Math.round(f * 100) + '%';
+      if(T.h.scBarra.__w !== w){ T.h.scBarra.__w = w; T.h.scBarra.style.width = w; }
+      const v = (lid ? Math.min(S.N, lid.voltas + 1) : 1) + ' / ' + S.N;
+      if(T.h.scVolta.__v !== v){ T.h.scVolta.__v = v; T.h.scVolta.textContent = v; }
     },
     fimSC(T){
       const S = T.S, c = S.eu;
       T.pulandoSC = false;
       c.autopiloto = c.autoAntesSC; c.ia = c.iaAntesSC; c.autoAntesSC = null; c.iaAntesSC = null;
-      T.el.querySelector('.c2d-transicao').hidden = true;
+      /* a cortina sai pela esquerda e mostra o pelotão já agrupado, parado para a relargada */
+      const card = T.el.querySelector('.c2d-cortina');
+      card.classList.add('sai');
+      setTimeout(() => { card.hidden = true; card.classList.remove('sai'); }, 480);
+      T.R.cam.ok = false; T.R.particulas.length = 0;
+      C2D.Render.quadro(T.R, S.carros, S.eu, 1, 0);
       if(S.acabou) return;
-      T.contagem = 3; T.ultQc = null;
+      T.contagem = 3.4; T.ultQc = null;
       T.h.contagem.textContent = '3';
       T.el.querySelector('.c2d-contagem').hidden = false;
       C2D.Entrada.ler(T.E, 0);
@@ -442,6 +546,11 @@
         C2D.Tela.painel(T);
       }
       if(a === 'camera'){ C2D.Tela.opcao(T, 'norte', T.R.modo !== 'norte'); const i = T.el.querySelector('[data-o="norte"]'); if(i) i.checked = T.R.modo === 'norte'; }
+      if(a === 'zoomMais' || a === 'zoomMenos'){
+        const atual = +T.p.zoom || 1.6, k = ZOOMS.reduce((m, z, q) => Math.abs(z - atual) < Math.abs(ZOOMS[m] - atual) ? q : m, 0);
+        const novo = ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, k + (a === 'zoomMais' ? 1 : -1)))];
+        C2D.Tela.opcao(T, 'zoom', novo); const i = T.el.querySelector('[data-o="zoom"]'); if(i) i.value = String(novo);
+      }
     },
     pausar(T, v){
       T.pausa = !!v;
@@ -469,6 +578,7 @@
       else if(k === 'linha'){ p.linha = !!v; T.R.linha = !!v; }
       else if(k === 'danosRed'){ p.danosRed = !!v; if(T.S && T.S.eu) T.S.eu.danoMult = v ? .3 : 1; }
       else if(k === 'ritmo'){ p.ritmo = v; T.escala = v; }
+      else if(k === 'zoom'){ p.zoom = v; T.R.zoom = v; }
       else if(k === 'boxAuto'){ p.boxAuto = !!v; if(T.S && T.S.eu) T.S.eu.boxAuto = !!v; }
       else if(k === 'pularSC'){ p.pularSC = !!v; }
       else if(k === 'limites'){ p.limites = v; if(T.S){ T.S.limitesModo = v; T.S.limiteAvisos = v === 'rigoroso' ? 3 : 5; T.S.passoPunicao = v === 'rigoroso' ? 1 : 2; } }

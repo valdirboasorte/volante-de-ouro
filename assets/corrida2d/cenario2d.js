@@ -26,6 +26,13 @@
     g.fillStyle = '#383b40'; g.fillRect(0, 0, 128, 128);
     ruido(g, 128, 128, 2600, ['rgba(255,255,255,.05)', 'rgba(0,0,0,.12)', 'rgba(255,255,255,.03)', 'rgba(0,0,0,.07)'], 1.2);
     TEX.asfalto = c;
+    /* terra batida (as milhas de terra): barro avermelhado, com sulcos e torrões */
+    c = novoCanvas(128, 128); g = c.getContext('2d');
+    g.fillStyle = '#7a5136'; g.fillRect(0, 0, 128, 128);
+    ruido(g, 128, 128, 1800, ['rgba(60,36,22,.35)', 'rgba(150,110,78,.28)', 'rgba(95,62,40,.4)', 'rgba(170,128,92,.18)'], 1.8);
+    g.strokeStyle = 'rgba(55,33,20,.18)'; g.lineWidth = 1;
+    for(let k = 0; k < 128; k += 7){ g.beginPath(); g.moveTo(0, k + 2 * Math.sin(k)); g.lineTo(128, k + 2 * Math.cos(k)); g.stroke(); }
+    TEX.terra = c;
     /* brita */
     c = novoCanvas(64, 64); g = c.getContext('2d');
     g.fillStyle = '#b7a37c'; g.fillRect(0, 0, 64, 64);
@@ -116,8 +123,9 @@
           }
         }
       }
-      /* barreiras por tipo: pneus (mistos), concreto (rua), SAFER (oval) */
-      const barreira = { tipo: rua ? 'concreto' : oval ? 'safer' : kart ? 'pneus' : 'pneus' };
+      /* barreiras por tipo: pneus (mistos), concreto (rua), SAFER (oval, a partir de 2002; antes, e nas
+         milhas de terra, o muro de concreto) */
+      const barreira = { tipo: rua ? 'concreto' : oval ? (P.terra || (P.ano || 2024) < 2002 ? 'concreto' : 'safer') : 'pneus' };
       /* borracha na trajetória (o asfalto escurece onde todo mundo passa) */
       const borracha = P.pedacos.map(pd => { const p = new Path2D(); for(let i = pd.i0; i <= pd.i1 + 1; i++){ const j = i % n; i === pd.i0 ? p.moveTo(P.linha.x[j], P.linha.y[j]) : p.lineTo(P.linha.x[j], P.linha.y[j]); } return p; });
       /* arquibancadas: a reta da largada (do lado oposto aos boxes) e as freadas fortes */
@@ -200,10 +208,10 @@
     /* o que fica por cima do chão e por baixo dos carros */
     chao(ctx, R, vis){
       const C = R.cen, P = R.P;
-      /* borracha na trajetória */
-      ctx.strokeStyle = 'rgba(12,12,14,.16)'; ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      /* borracha na trajetória (na terra, o sulco mais escuro e úmido por onde todo mundo passa) */
+      ctx.strokeStyle = P.terra ? 'rgba(40,22,12,.22)' : 'rgba(12,12,14,.16)'; ctx.lineWidth = P.terra ? 4 : 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       for(const p of vis) ctx.stroke(C.borracha[p.idx]);
-      ctx.strokeStyle = 'rgba(12,12,14,.1)'; ctx.lineWidth = 1.2;
+      ctx.strokeStyle = P.terra ? 'rgba(40,22,12,.14)' : 'rgba(12,12,14,.1)'; ctx.lineWidth = 1.2;
       for(const p of vis) ctx.stroke(C.borracha[p.idx]);
       /* arquibancadas e prédio dos boxes (baixos: por baixo das copas) */
       for(const a of C.arquib){

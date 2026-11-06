@@ -54,6 +54,13 @@
     criar(P, opc){
       opc = opc || {};
       const md = modelo(opc.sk || 'f1', opc.ano || P.ano, opc.nivel || 0, P.kart);
+      /* o carro de verdade daquela categoria naquele ano (o catálogo de estilos2d.js); sem a
+         categoria, o da série e do nível */
+      const ano = opc.ano || P.ano;
+      let est = C2D.Estilos && opc.cat ? C2D.Estilos.daCategoria(opc.cat, ano, P.kart, opc.eq || opc.id) : null;
+      if(!est && C2D.Arte) est = C2D.Arte.estilo(opc.sk || 'f1', ano, opc.nivel || 0, P.kart);
+      const dm = est && C2D.Estilos ? C2D.Estilos.dims(est) : null;
+      if(dm){ md.comp = Math.max(dm.comp, md.L + .5); md.larg = dm.larg; }
       const fis = P.fis, f = P.f || 1, k = opc.k || 1, mods = opc.mods || {};
       /* semelhança dinâmica: com tudo isso o carro anda 1/k mais devagar em cada ponto */
       const k2 = k * k, k3 = k2 * k;
@@ -66,7 +73,7 @@
         banco: P.oval ? .35 / k2 : 0
       });
       sp.Iz = md.m * sp.a * sp.b;
-      sp.estilo = C2D.Arte ? C2D.Arte.estilo(opc.sk || 'f1', opc.ano || P.ano, opc.nivel || 0, P.kart) : null;
+      sp.estilo = est;
       /* a deriva do pico do pneu traseiro (mais firme que o dianteiro) */
       sp.apR = sp.ap / AJ.Br;
       sp.B = Math.tan(Math.PI / (2 * sp.C)) / sp.ap;
@@ -74,7 +81,7 @@
       /* as relações de marcha (só o mostrador e o som: a potência é constante) */
       sp.vMarcha = [];
       for(let g = 1; g <= sp.marchas; g++) sp.vMarcha.push(sp.vmax * 1.03 * Math.pow(g / sp.marchas, .72));
-      return {
+      const c = {
         id: opc.id || 'ME', nome: opc.nome || '', cor: opc.cor || '#e10600', me: !!opc.me, sp, k,
         assist: Object.assign({ abs: true, tc: true, direcao: true, estab: true, freioAuto: false }, opc.assist || {}), danoMult: opc.danoMult || 1,
         x: 0, y: 0, psi: 0, vx: 0, vy: 0, r: 0, delta: 0,
@@ -83,6 +90,9 @@
         acel: 0, freio: 0, ax: 0, ay: 0, af: 0, ar: 0, travF: false, patinaR: false, deslize: 0,
         marcha: 1, rpm: 0, v: 0, dano: 0, batida: 0, molhado: 0
       };
+      /* as peças (asa, bico, para-choques, rodas): o dano por peça de dano2d.js */
+      if(C2D.Dano) C2D.Dano.preparar(c);
+      return c;
     },
 
     /* o esterço máximo: com a direção progressiva, o volante todo virado leva o carro
@@ -118,20 +128,23 @@
       c.pisoR = C2D.Pista.piso(P, c.i, c.s, dR);
       c.piso = C2D.Pista.piso(P, c.i, c.s, c.d);
       const chuva = (1 - .2 * w * (2 - sp.chuva)) * (c.aderPneu || 1);
-      /* dano: a asa da frente quebrada tira aderência da frente; o resto tira potência */
-      const muF = (sp.mu * chuva + sp.banco) * PISOS[c.pisoF][0] * (1 - .16 * c.dano), muR = (sp.mu * chuva + sp.banco) * PISOS[c.pisoR][0] * (1 - .06 * c.dano);
+      /* dano por peça (dano2d.js): rodas e suspensão tiram aderência do eixo; sem ele, o dano geral */
+      const dm = c.dm;
+      const muF = (sp.mu * chuva + sp.banco) * PISOS[c.pisoF][0] * (dm ? dm.muF : 1 - .16 * c.dano), muR = (sp.mu * chuva + sp.banco) * PISOS[c.pisoR][0] * (dm ? dm.muR : 1 - .06 * c.dano);
       const arrastoPiso = (PISOS[c.pisoF][1] + PISOS[c.pisoR][1]) / 2;
 
       /* ── cargas: peso, asa e transferência longitudinal ── */
       const D = sp.mu > 0 ? m * G * sp.aero * (c.aeroF || 1) * (1 - .15 * w) * v * v / sp.mu : 0;
-      const Fz = m * G + D;
-      let Fzf = m * G * sp.b / sp.L + D * (sp.fw + AJ.aeroF) - m * c.ax * sp.h * AJ.transf / sp.L;
+      /* a asa da frente quebrada tira a carga da frente (o carro sai de frente); a de trás, a de trás */
+      const pF = sp.fw + AJ.aeroF, DF = D * pF * (dm ? dm.aF : 1), DR = D * (1 - pF) * (dm ? dm.aR : 1);
+      const Fz = m * G + DF + DR;
+      let Fzf = m * G * sp.b / sp.L + DF - m * c.ax * sp.h * AJ.transf / sp.L;
       Fzf = lim(Fzf, Fz * .12, Fz * .88);
       const Fzr = Fz - Fzf;
 
       /* ── direção: esterço máximo que cai com a velocidade ── */
       const dmax = C2D.Carro.dmax(c, v, chuva);
-      const alvoD = lim(inp.steer || 0, -1, 1) * dmax;
+      const alvoD = lim(inp.steer || 0, -1, 1) * dmax + (dm && v > 2 ? dm.puxa : 0);
       c.delta = rampa(c.delta, alvoD, 2.2 + 6 / (1 + v / 10), dt);
       const dl = c.delta;
 
@@ -150,7 +163,7 @@
       const brkCoef = G * (sp.b0 * (1 - .18 * w) + 1.1 * sp.aero * v * v) * m / Fz;
       const acel = lim(inp.acel || 0, 0, 1), freio = lim(inp.freio || 0, 0, 1);
       c.acel = acel; c.freio = freio;
-      const capF = brkCoef * Fzf * PISOS[c.pisoF][0] * chuva, capR = brkCoef * Fzr * PISOS[c.pisoR][0] * chuva;
+      const capF = brkCoef * Fzf * PISOS[c.pisoF][0] * chuva * (dm ? dm.freioF : 1), capR = brkCoef * Fzr * PISOS[c.pisoR][0] * chuva * (dm ? dm.freioR : 1);
       const capT = muR * 1.55 * Fzr;
       let Fxf = 0, Fxr = 0;
       c.travF = false; c.patinaR = false;
@@ -167,7 +180,7 @@
         Fxf = -bf; Fxr = -br;
       }
       if(acel > 0){
-        let ped = acel * m * sp.pm * (c.potF || 1) * (1 - .25 * c.dano) * (c.potencia != null ? c.potencia : 1) / Math.max(v, 3);
+        let ped = acel * m * sp.pm * (c.potF || 1) * (dm ? dm.pot : 1 - .25 * c.dano) * (c.potencia != null ? c.potencia : 1) / Math.max(v, 3);
         /* controle de tração: não pede mais do que o pneu traseiro dá, virando o quanto vira */
         const usoLat = Math.min(.98, Math.abs(Fyr) / Math.max(1, muR * Fzr));
         const livre = capT * Math.sqrt(1 - usoLat * usoLat);
@@ -196,7 +209,7 @@
       const Mz = sp.a * (Fyf * cd + Fxf * sd) - sp.b * Fyr;
       /* arrasto do ar, rolagem e piso (grama e brita seguram) */
       if(v > .05){
-        const Fa = m * sp.drag * (c.dragF || 1) * v * v + m * G * (.012 + arrastoPiso);
+        const Fa = m * sp.drag * (c.dragF || 1) * (dm ? dm.drag : 1) * v * v + m * G * (.012 + arrastoPiso);
         Fx -= Fa * c.vx / v; Fy -= Fa * c.vy / v * .3;
       }
       const ax = Fx / m, ay = Fy / m;
@@ -262,9 +275,12 @@
         const nvx = vxw + (J * ex + Jt * tx) / sp.m, nvy = vyw + (J * ey + Jt * ty) / sp.m;
         c.r += (rxn * J + rxt * Jt) / sp.Iz;
         c.vx = nvx * cs + nvy * sn; c.vy = -nvx * sn + nvy * cs;
-        const imp = -vn;
+        /* o impacto não passa da velocidade do carro (o giro no canto não soma energia que não existe) */
+        const imp = Math.min(-vn, c.v * 1.05 + 1);
         c.batida = Math.max(c.batida, imp);
-        if(imp > 4) c.dano = Math.min(1, c.dano + (imp - 4) * .012 * (c.danoMult || 1));
+        /* o dano vai para as peças daquele canto (dano2d.js); a força entra pelo muro */
+        if(!(imp > 2 && C2D.Dano && C2D.Dano.anotar(c, lx, ly, imp, ex * cs + ey * sn, -ex * sn + ey * cs)))
+          if(imp > 4) c.dano = Math.min(1, c.dano + (imp - 4) * .012 * (c.danoMult || 1));
       }
     },
 
@@ -335,8 +351,14 @@
       A.r -= (rAn * J + rAt * Jt) / IA * giro; B.r += (rBn * J + rBt * Jt) / IB * giro;
       A.vx = nAx * ca + nAy * sa; A.vy = -nAx * sa + nAy * ca;
       B.vx = nBx * cb + nBy * sb; B.vy = -nBx * sb + nBy * cb;
-      const imp = -vn;
-      if(imp > 3){ const dn = (imp - 3) * .015; A.dano = Math.min(1, A.dano + dn * (A.danoMult || 1)); B.dano = Math.min(1, B.dano + dn * (B.danoMult || 1)); }
+      /* a energia do toque: no máximo a velocidade de um carro em relação ao outro */
+      const imp = Math.min(-vn, Math.hypot(vBx - vAx, vBy - vAy) * 1.15 + 1.5);
+      /* o ponto do toque em cada carro e a direção da força (A é empurrado contra n, B a favor) */
+      const loc = (C, c, s, x, y) => [(x - C.x) * c + (y - C.y) * s, -(x - C.x) * s + (y - C.y) * c];
+      const [aX, aY] = loc(A, ca, sa, pt[0], pt[1]), [bX, bY] = loc(B, cb, sb, pt[0], pt[1]);
+      const okA = imp > 2 && C2D.Dano && C2D.Dano.anotar(A, aX, aY, imp, -(nx * ca + ny * sa), -(-nx * sa + ny * ca));
+      const okB = imp > 2 && C2D.Dano && C2D.Dano.anotar(B, bX, bY, imp, nx * cb + ny * sb, -nx * sb + ny * cb);
+      if(imp > 3){ const dn = (imp - 3) * .015; if(!okA && !A.partes) A.dano = Math.min(1, A.dano + dn * (A.danoMult || 1)); if(!okB && !B.partes) B.dano = Math.min(1, B.dano + dn * (B.danoMult || 1)); }
       A.toque = Math.max(A.toque || 0, imp); B.toque = Math.max(B.toque || 0, imp);
       return imp > 1.5 ? { a: A.id, b: B.id, v: imp } : null;
     },

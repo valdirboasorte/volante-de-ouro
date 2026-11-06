@@ -62,6 +62,11 @@
       try { const g = Pista.de(trkId, ano); return !!g && g.L <= C2D.Pista.MAX_L; } catch(e){ return false; }
     },
     larguraDe(tipo, kart){ return kart ? 8 : LARG[tipo] || 13; },
+    /* as pistas de terra, até o ano em que foram asfaltadas: as milhas de terra de Springfield,
+       Du Quoin, Syracuse e Sacramento; Langhorne (asfaltada em 1965), Trenton (1957), Milwaukee
+       (1954), a milha da feira de Phoenix (até 1963) e a subida de Pikes Peak (asfaltada em 2012) */
+    TERRA: { us_spr: 9999, us_duq: 9999, us_syr: 9999, us_sac: 9999, us_lan: 1964, us_tre: 1956, us_mil: 1953, us_phx: 1963, us_ppk: 2011 },
+    deTerra(trkId, ano){ const a = C2D.Pista.TERRA[trkId]; return !!a && (ano || 2024) <= a; },
 
     /* opc: { sk, nivel, ano } para a física de referência (calibração da trajetória) */
     criar(trkId, ano, opc){
@@ -80,7 +85,7 @@
       const nx = new Float32Array(n), ny = new Float32Array(n);
       for(let i = 0; i < n; i++){ nx[i] = -Math.sin(hd[i]); ny[i] = Math.cos(hd[i]); }
       const w = C2D.Pista.larguraDe(tipo, kart), meia = w / 2;
-      const P = { id: trkId, ano, nome: g.nome || trk.circ || trkId, tipo, kart, oval, real: !!g.real, aprox: g.aprox || [],
+      const P = { id: trkId, ano, nome: g.nome || trk.circ || trkId, tipo, kart, oval, terra: C2D.Pista.deTerra(trkId, ano), real: !!g.real, aprox: g.aprox || [],
                   g, n, ds, L, x, y, hd, k, nx, ny, w, meia, dentro: g.dentro || 1, ladoBox: g.ladoBox || g.dentro || 1 };
 
       /* ── área de escape de cada lado (esquerda = lado positivo da normal) ── */
@@ -136,7 +141,7 @@
       /* na rua a zebra só aparece nas curvas fechadas; nos mistos, em toda curva de verdade */
       const kz = tipo === 'street' ? 1 / 70 : 1 / 300;
       for(let i = 0; i < n; i++) if(Math.abs(k[i]) > kz) for(let q = -4; q <= 4; q++) zeb[(i + q + n) % n] = 1;
-      if(oval) zeb.fill(0);
+      if(oval || P.terra) zeb.fill(0);
       P.zebra = zeb;
 
       /* ── pit lane: do mesmo lugar que o motor da corrida usa (L − 330 até 230) ── */

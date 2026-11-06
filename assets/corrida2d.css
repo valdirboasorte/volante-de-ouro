@@ -112,6 +112,19 @@ html.c2d-aberto, html.c2d-aberto body{ overflow:hidden; overscroll-behavior:none
 .c2d-extra{ grid-column:1 / 3; display:flex; gap:10px; justify-content:center; align-items:center; font-size:13px }
 .c2d-extra:empty{ display:none }
 .c2d-pneu{ display:inline-flex; gap:6px; align-items:center }
+/* o painel de danos: 3 x 3 (rodas nos cantos, asa ou bico em cima, asa ou para-choque embaixo) */
+.c2d-danos{ display:inline-grid; grid-template-columns:7px 12px 7px; grid-template-rows:9px 14px 9px; gap:2px; padding:4px 5px; background:rgba(10,11,13,.72); border-radius:6px }
+.c2d-danos[hidden]{ display:none }
+.c2d-danos i{ display:block; border-radius:2px; background:#4b8f5a }
+.c2d-danos i.a{ border-radius:3px }
+.c2d-danos i.m{ background:rgba(255,255,255,.12) }
+.c2d-danos i.d-nada{ background:transparent }
+.c2d-danos i.d-ok{ background:#3f9a5c }
+.c2d-danos i.d-leve{ background:#e3c33a }
+.c2d-danos i.d-medio{ background:#f08a24 }
+.c2d-danos i.d-grave{ background:#e2231a }
+.c2d-danos i.d-furo{ background:#e2231a; box-shadow:0 0 0 1px #fff inset }
+.c2d-danos i.d-solta{ background:transparent; outline:1px dashed #e2231a; outline-offset:-1px }
 .c2d-pneu i{ width:20px; height:20px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-weight:800; font-size:11px; color:#0b0c0e; background:#ffd60a; border:3px solid #15171a; box-shadow:0 0 0 2px currentColor }
 .c2d-pneu i.c2d-pc-S{ background:#ff3b30; color:#fff } .c2d-pneu i.c2d-pc-M{ background:#ffd60a } .c2d-pneu i.c2d-pc-H{ background:#f2f2f2 }
 .c2d-pneu i.c2d-pc-I{ background:#34c759 } .c2d-pneu i.c2d-pc-W{ background:#0a84ff; color:#fff }
@@ -129,7 +142,26 @@ html.c2d-aberto, html.c2d-aberto body{ overflow:hidden; overscroll-behavior:none
 .c2d-opcoes .c2d-op-sel{ justify-content:space-between }
 .c2d-opcoes select{ background:#212429; color:#eef0f2; border:1px solid #353941; border-radius:8px; padding:4px 8px; font:inherit; width:auto; flex:0 0 auto }
 
-/* safety car pulado e relargada */
+/* safety car pulado: a cortina (como a da troca de categoria), depois a relargada */
+.c2d-cortina{ position:absolute; inset:0; z-index:6; display:grid; place-items:center; pointer-events:none; color:#111214; padding:16px;
+  background:repeating-linear-gradient(-45deg, rgba(0,0,0,.08) 0 26px, transparent 26px 52px), #f5c400;
+  animation:c2d-cortina-entra .38s cubic-bezier(.2,.8,.2,1) both }
+.c2d-cortina[hidden]{ display:none }
+.c2d-cortina.vsc{ background:repeating-linear-gradient(-45deg, rgba(245,196,0,.07) 0 26px, transparent 26px 52px), #121316; color:#f5c400 }
+.c2d-cortina.sai{ animation:c2d-cortina-sai .45s cubic-bezier(.6,0,.4,1) both }
+.c2d-cortina-tx{ display:grid; gap:10px; justify-items:center; text-align:center; animation:c2d-cortina-tx .55s cubic-bezier(.2,.8,.2,1) both }
+.c2d-cortina b{ font-size:clamp(52px, 11vw, 150px); line-height:.86; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:-.01em; font-variation-settings:'wdth' 70 }
+.c2d-cortina-tx > span{ font-size:17px; font-weight:700; max-width:34em }
+.c2d-cortina-tx > span:first-of-type{ font-size:19px; font-weight:800 }
+.c2d-cortina-tx > span.c2d-cortina-barra{ display:block; width:min(320px, 70vw); height:6px; border-radius:3px; background:rgba(0,0,0,.16); overflow:hidden; margin-top:6px }
+.c2d-cortina.vsc .c2d-cortina-barra{ background:rgba(245,196,0,.18) }
+.c2d-cortina-barra i{ display:block; height:100%; width:0; background:currentColor; transition:width .2s linear }
+.c2d-cortina small{ font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; opacity:.78 }
+@keyframes c2d-cortina-entra{ from{ clip-path:inset(0 0 0 100%) } to{ clip-path:inset(0) } }
+@keyframes c2d-cortina-sai{ from{ clip-path:inset(0) } to{ clip-path:inset(0 100% 0 0) } }
+@keyframes c2d-cortina-tx{ from{ opacity:0; transform:translateX(70px) } to{ opacity:1; transform:none } }
+@media (prefers-reduced-motion: reduce){ .c2d-cortina, .c2d-cortina.sai, .c2d-cortina-tx{ animation:none } }
+/* (o aviso antigo de safety car pulado) */
 .c2d-transicao{ position:absolute; left:50%; top:30%; transform:translateX(-50%); z-index:4; display:grid; gap:4px; text-align:center;
   background:rgba(245,208,0,.95); color:#15110a; padding:12px 18px; border-radius:12px; font-size:15px; max-width:calc(100% - 32px) }
 .c2d-transicao span{ font-weight:800; font-variant-numeric:tabular-nums }
@@ -143,7 +175,14 @@ html.c2d-aberto, html.c2d-aberto body{ overflow:hidden; overscroll-behavior:none
 .c2d-gar-topo h2{ margin:0; font-size:28px; font-weight:800; text-transform:uppercase; font-variation-settings:'wdth' 72 }
 .c2d-gar-topo p{ margin:0; color:#a8aeb7; flex:1 1 260px }
 .c2d-gar-topo .c2d-btn{ padding:0 18px }
-.c2d-gar-grade{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap:12px; max-width:1260px; margin:0 auto }
-.c2d-gar-card{ background:#141619; border:1px solid #25282e; border-radius:12px; overflow:hidden; display:grid }
-.c2d-gar-card canvas{ display:block; width:100% !important; height:auto !important; aspect-ratio:4 / 3 }
-.c2d-gar-card b{ padding:9px 12px; font-size:14px; letter-spacing:.02em }
+.c2d-gar-busca{ flex:0 1 280px; min-width:0; height:40px; padding:0 14px; border-radius:10px; border:1px solid #2c3037; background:#14171b; color:#eef0f2; font:inherit; font-size:15px }
+.c2d-gar-busca:focus{ outline:2px solid #f0c12e; outline-offset:1px }
+.c2d-gar-grupo{ max-width:1260px; margin:0 auto 22px }
+.c2d-gar-grupo h3{ margin:0 0 10px; font-size:17px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:#f0c12e; font-variation-settings:'wdth' 80 }
+.c2d-gar-grade{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap:12px; max-width:1260px; margin:0 auto }
+.c2d-gar-card{ background:#141619; border:1px solid #25282e; border-radius:12px; overflow:hidden; display:flex; flex-direction:column }
+.c2d-gar-card[hidden], .c2d-gar-grupo[hidden]{ display:none }
+.c2d-gar-card canvas{ display:block; width:100%; height:auto; aspect-ratio:340 / 168; background:#2b2e33 }
+.c2d-gar-card b{ padding:9px 12px 4px; font-size:14px; line-height:1.3; letter-spacing:.01em }
+.c2d-gar-usos{ display:flex; flex-wrap:wrap; gap:4px 6px; padding:2px 12px 11px; font-size:12px; color:#9aa1ab; font-variant-numeric:tabular-nums }
+.c2d-gar-usos > span{ background:#1d2025; border-radius:6px; padding:2px 7px }

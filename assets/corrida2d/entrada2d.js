@@ -11,7 +11,8 @@
     ArrowLeft: 'esq', KeyA: 'esq', ArrowRight: 'dir', KeyD: 'dir',
     ArrowUp: 'acel', KeyW: 'acel', ArrowDown: 'freio', KeyS: 'freio',
     ShiftLeft: 'boost', ShiftRight: 'boost', KeyE: 'boost',
-    KeyP: 'pausa', Escape: 'pausa', KeyR: 'reset', KeyC: 'camera', KeyB: 'box'
+    KeyP: 'pausa', Escape: 'pausa', KeyR: 'reset', KeyC: 'camera', KeyB: 'box',
+    Equal: 'zoomMais', NumpadAdd: 'zoomMais', Minus: 'zoomMenos', NumpadSubtract: 'zoomMenos'
   };
 
   C2D.Entrada = {
@@ -21,7 +22,7 @@
       E.baixo = ev => {
         const a = TECLAS[ev.code]; if(!a) return;
         ev.preventDefault(); ev.stopPropagation();
-        if(!E.tec[a] && (a === 'pausa' || a === 'reset' || a === 'camera' || a === 'box' || a === 'boost')){ E.uma[a] = true; if(E.aoUma) E.aoUma(a); }
+        if(!E.tec[a] && (a === 'pausa' || a === 'reset' || a === 'camera' || a === 'box' || a === 'boost' || a === 'zoomMais' || a === 'zoomMenos')){ E.uma[a] = true; if(E.aoUma) E.aoUma(a); }
         E.tec[a] = true;
       };
       E.cima = ev => { const a = TECLAS[ev.code]; if(!a) return; ev.preventDefault(); ev.stopPropagation(); E.tec[a] = false; };

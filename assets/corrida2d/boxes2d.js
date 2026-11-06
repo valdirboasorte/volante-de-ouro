@@ -140,13 +140,15 @@
       const rnd = C2D.rng(C2D.semente('parada:' + c.id + ':' + c.paradas + ':' + S.semente));
       const lento = rnd() < (S.ano >= 2005 ? .05 : .08) ? 2 + rnd() * 6 : 0;
       const comb = S.tanque < Infinity ? (1 - c.comb) * 6 : 0;
-      return (S.regras.parado || 3) * (.92 + rnd() * .18) + lento + (c.dano > .2 ? 6 : 0) + comb;
+      /* trocar bico, asa e para-choque leva o tempo de cada peça (dano2d.js) */
+      const reparo = C2D.Dano ? C2D.Dano.tempoReparo(c) : (c.dano > .2 ? 6 : 0);
+      return (S.regras.parado || 3) * (.92 + rnd() * .18) + lento + reparo + comb;
     },
     trocar(S, c){
       const novo = c.boxPneu || C2D.Boxes.pneuParaBox(S, c);
       c.pneu = { c: novo, gasto: 0, voltas: 0 }; c.pneus.push(novo);
       c.paradas++; c.comb = 1;
-      if(c.dano > .2) c.dano = Math.min(c.dano, .1);
+      if(C2D.Dano) C2D.Dano.reparar(c); else if(c.dano > .2) c.dano = Math.min(c.dano, .1);
       S.eventos.push({ t: S.t, tipo: 'boxes', a: c.id, c: novo, volta: c.voltas + 1 });
     },
     trocaPorChuva(S, c){

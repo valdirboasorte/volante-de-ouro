@@ -3,8 +3,8 @@
    em 2D. Fica fora dos <script> embutidos: a versão do jogo (o hash do multiplayer) não
    muda. Para testar o protótipo: abra o jogo com ?pista2d=1 (opcional: &trk=br_int&ano=2024&sk=f1). */
 (function(){
-  const V = '20261105-c3a5';
-  const MODULOS = ['nucleo', 'pista2d', 'carro2d', 'ia2d', 'regras2d', 'entrada2d', 'arte2d', 'cenario2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'];
+  const V = '20261105-c6a3';
+  const MODULOS = ['nucleo', 'pista2d', 'carro2d', 'dano2d', 'ia2d', 'regras2d', 'entrada2d', 'arte2d', 'estilos2d', 'cenario2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'];
   let carregando = null;
 
   function script(src){
@@ -49,7 +49,7 @@
         let g = 1;
         for(let k = 0; k <= n; k++){
           const eu = g === meu;
-          ent.carros.push({ id: eu ? 'ME' : 'r' + k, nome: eu ? 'Você' : nomes[k % nomes.length], cor: eu ? '#e2231a' : cores[k % cores.length], me: eu, grid: g, ritmo: 80 - g * .6, cons: 60 });
+          ent.carros.push({ id: eu ? 'ME' : 'r' + k, nome: eu ? 'Você' : nomes[k % nomes.length], cor: eu ? '#e2231a' : cores[k % cores.length], eq: eu ? 'Você' : 'Equipe ' + (k % 12), me: eu, grid: g, ritmo: 80 - g * .6, cons: 60 });
           g++;
         }
         const carros = C2D.Corrida.montarGrid(ent, { nivel: opc.nivelRivais || C2D.nivelPadrao(), voltas: opc.voltas || 3 });
@@ -160,7 +160,7 @@
   try {
     const q = new URLSearchParams(location.search);
     if(q.has('pista2d')){
-      const base = { trkId: q.get('trk') || 'br_int', ano: +(q.get('ano') || 2024), sk: q.get('sk') || 'f1', nivel: +(q.get('nivel') || 0) };
+      const base = { trkId: q.get('trk') || 'br_int', ano: +(q.get('ano') || 2024), sk: q.get('sk') || 'f1', nivel: +(q.get('nivel') || 0), cat: q.get('cat') || null };
       const abrir = () => q.has('garagem') ? window.Corrida2D.garagem() : (q.has('rivais')
         ? window.Corrida2D.corridaTeste(Object.assign(base, { rivais: +q.get('rivais'), voltas: +(q.get('voltas') || 3), nivelRivais: q.get('ia') || null, largada: +(q.get('largada') || 0) || null }))
         : window.Corrida2D.treino(base)).catch(e => console.error(e));

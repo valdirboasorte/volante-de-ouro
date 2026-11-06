@@ -219,6 +219,22 @@
         }
       }
       R.rodasAnt.set(c, novo);
+      /* na pista de terra, a poeira que sobe atrás de cada carro */
+      if(R.P && R.P.terra && c.piso === PISO.ASF && c.v > 10 && R.particulas.length < 240 && Math.random() < .3 + Math.min(.4, marca))
+        R.particulas.push({ x: c.x - cs * (sp.b + .6), y: c.y - sn * (sp.b + .6), vx: -cs * c.v * .12 + (Math.random() - .5) * 2, vy: -sn * c.v * .12 + (Math.random() - .5) * 2, t: 0, d: 1.2, r: 1.2, cor: '214,184,146', cresce: 2.8 });
+      /* carro avariado: faísca onde arrastra (roda arrancada, asa raspando) e fumaça do motor */
+      if(c.partes && R.particulas.length < 250){
+        const P = c.partes;
+        for(const k of ['FE', 'FD', 'TE', 'TD']) if(P[k] && P[k].solta && c.v > 2 && Math.random() < .7){
+          const lx = k[0] === 'F' ? sp.a : -sp.b, ly = (k[1] === 'E' ? 1 : -1) * sp.larg * .4;
+          for(let q = 0; q < 2; q++) R.particulas.push({ x: c.x + lx * cs - ly * sn, y: c.y + lx * sn + ly * cs, vx: -c.vx * .3 * cs + (Math.random() - .5) * 6, vy: -c.vx * .3 * sn + (Math.random() - .5) * 6, t: 0, d: .3 + Math.random() * .25, r: .12, cor: Math.random() < .5 ? '255,210,110' : '255,150,50' });
+        }
+        if(P.asaD && P.asaD.h < .35 && !P.asaD.solta && c.v > 20 && Math.random() < .18)
+          R.particulas.push({ x: c.x + sp.comp / 2 * cs, y: c.y + sp.comp / 2 * sn, vx: (Math.random() - .5) * 4, vy: (Math.random() - .5) * 4, t: 0, d: .25, r: .1, cor: '255,200,90' });
+        const motor = P.carenagem ? (P.carenagem.solta ? 0 : P.carenagem.h) : 1;
+        if((c.dano > .55 || motor < .4) && c.v > 1 && Math.random() < .5)
+          R.particulas.push({ x: c.x - cs * sp.b * 1.1, y: c.y - sn * sp.b * 1.1, vx: -c.vx * .15 * cs + (Math.random() - .5) * 1.5, vy: -c.vx * .15 * sn + (Math.random() - .5) * 1.5, t: 0, d: 1.6, r: .6, cor: motor < .2 ? '70,72,76' : '150,152,156', cresce: 3 });
+      }
       /* poeira na grama e na brita, faísca no muro */
       if((c.piso === PISO.GRAMA || c.piso === PISO.BRITA) && c.v > 6 && R.particulas.length < 220 && Math.random() < .5)
         R.particulas.push({ x: c.x - cs * sp.b, y: c.y - sn * sp.b, vx: -c.vx * .1 * cs, vy: -c.vx * .1 * sn, t: 0, d: .9, r: 1.2, cor: c.piso === PISO.BRITA ? '200,180,140' : '120,100,70' });
@@ -242,11 +258,15 @@
       /* na câmera que persegue o carro fica fixo embaixo e a pista à frente ocupa a tela;
          no mapa fixo a câmera olha à frente do carro */
       const persegue = R.modo === 'perseguir';
-      const olhar = persegue ? Math.min(14, v * .12) : Math.min(58, v * .46);
+      /* (o quanto olha à frente não passa de uma fração da tela: com a câmera perto, o carro
+         continuaria descendo até sair da tela) */
+      const zAgora = cam.ok ? cam.z : 6;
+      const olhar = persegue ? Math.min(14, v * .12, H * .13 / zAgora) : Math.min(58, v * .46, Math.min(W, H) * .3 / zAgora);
       const ax = fx + Math.cos(fpsi) * olhar, ay = fy + Math.sin(fpsi) * olhar;
       /* zoom pela diagonal da tela, abrindo com a velocidade: a 300 km/h dá para ver uns 130 m
          à frente (mais que a distância de freada), e o carro continua visível no celular */
-      const zAlvo = Math.sqrt(W * H) / 52 / (1 + v / 45);
+      /* (R.zoom: a distância da câmera que o jogador escolheu; 1 = a antiga, mais longe) */
+      const zAlvo = Math.sqrt(W * H) / 52 * (R.zoom || 1) / (1 + v / (45 + 20 * Math.min(1, ((R.zoom || 1) - 1) * 1.5)));
       if(!cam.ok){ cam.x = ax; cam.y = ay; cam.ang = fpsi; cam.z = zAlvo; cam.ok = true; }
       const k = Math.min(1, (dt || .016) * 5);
       cam.x += (ax - cam.x) * k; cam.y += (ay - cam.y) * k; cam.z += (zAlvo - cam.z) * Math.min(1, (dt || .016) * 1.5);
@@ -254,7 +274,7 @@
       const rot = R.modo === 'perseguir' ? cam.ang - Math.PI / 2 : 0;
       const z = cam.z;
       /* o carro fica um pouco abaixo do meio na câmera que persegue */
-      const ox = W / 2, oy = persegue ? H * .72 : H / 2;
+      const ox = W / 2, oy = persegue ? H * (.72 - .08 * Math.min(1, Math.max(0, (R.zoom || 1) - 1))) : H / 2;
       ctx.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
       ctx.translate(ox, oy); ctx.rotate(rot); ctx.scale(z, -z); ctx.translate(-cam.x, -cam.y);
       /* o que aparece: um círculo em volta da câmera */
@@ -268,11 +288,11 @@
       for(const p of vis){ ctx.fillStyle = pad('grama', .25) || COR.grama2; ctx.fill(p.escapes[2]); ctx.fillStyle = pad('brita', .06) || COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = pad('escape', .1) || COR.escape; ctx.fill(p.escapes[4]); }
       ctx.lineJoin = 'round';
       ctx.fillStyle = pad('escape', .1) || COR.asfaltoPit; ctx.fill(R.pista.pit);
-      for(const p of vis){ ctx.fillStyle = pad('asfalto', 1 / 16) || COR.asfalto; ctx.fill(p.asf); }
+      for(const p of vis){ ctx.fillStyle = P.terra ? pad('terra', 1 / 14) || '#7a5136' : pad('asfalto', 1 / 16) || COR.asfalto; ctx.fill(p.asf); }
       if(R.cen) CEN.chao(ctx, R, vis);
       for(const p of vis){ ctx.fillStyle = COR.zebraV; ctx.fill(p.zebV); ctx.fillStyle = COR.zebraB; ctx.fill(p.zebB); }
-      ctx.strokeStyle = COR.linha; ctx.lineWidth = .22;
-      for(const p of vis) ctx.stroke(p.linhas);
+      /* a terra não tem linha pintada */
+      if(!P.terra){ ctx.strokeStyle = COR.linha; ctx.lineWidth = .22; for(const p of vis) ctx.stroke(p.linhas); }
       if(R.cen) CEN.barreiras(ctx, R, vis);
       else { ctx.strokeStyle = P.tipo === 'street' || P.oval ? COR.muro : COR.pneus; ctx.lineWidth = .7; for(const p of vis) ctx.stroke(p.muros); }
       ctx.strokeStyle = COR.muro; ctx.lineWidth = .5; ctx.stroke(R.pista.muretaPit);
@@ -303,6 +323,11 @@
         for(let q = 0; q < R.nMarcas; q++){ const o = q * 6; const mx = R.marcas[o + 2]; if(Math.abs(mx - cam.x) > raio || Math.abs(R.marcas[o + 3] - cam.y) > raio) continue; ctx.moveTo(R.marcas[o], R.marcas[o + 1]); ctx.lineTo(mx, R.marcas[o + 3]); }
         ctx.stroke();
       }
+      /* destroços no chão (e as sombras dos que estão voando) */
+      const det = R.S && R.S.detritos;
+      if(det && det.length) for(const p of det){ if(Math.abs(p.x - cam.x) > raio || Math.abs(p.y - cam.y) > raio) continue; C2D.Render.peca(ctx, p, p.z < .35 ? 0 : 1); }
+      /* o safety car (e o pace car da largada lançada): na frente do líder, com o giroflex */
+      C2D.Render.safetyCar(R, ctx, dt);
       /* carros (sombra, depois o desenho) */
       for(const c of carros){
         const cx = c.px + (c.x - c.px) * alfa, cy = c.py + (c.y - c.py) * alfa;
@@ -313,10 +338,14 @@
         if(C2D.Arte){ const sb = C2D.Arte.sombra(c); ctx.save(); ctx.translate(cx + .45, cy - .45); ctx.rotate(cp); ctx.globalAlpha = c.estado === 'fora' ? .3 : .8; ctx.drawImage(sb.cv, -sb.w / 2, -sb.h / 2, sb.w, sb.h); ctx.restore(); }
         ctx.save(); ctx.translate(cx, cy); ctx.rotate(cp);
         if(c.estado === 'fora') ctx.globalAlpha = .45;
+        const marcasDano = c.marcasDano && c.marcasDano.length ? c.marcasDano : null;
         if(!C2D.Arte){ ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-c.sp.comp / 2 + .25, -c.sp.larg / 2 - .25, c.sp.comp, c.sp.larg); }
         /* o mundo tem y para cima: desvira o desenho para o número não sair espelhado */
         ctx.scale(1, -1);
         ctx.drawImage(s.cv, -s.w / 2, -s.h / 2, s.w, s.h);
+        ctx.scale(1, -1);
+        if(marcasDano) C2D.Render.amassados(ctx, c, marcasDano);
+        ctx.scale(1, -1);
         /* a luz de chuva piscando na traseira */
         if((R.S && R.S.amb && R.S.amb.w || 0) > .3 && ((performance.now() / 250 | 0) % 2)){ ctx.fillStyle = 'rgba(255,40,40,.95)'; ctx.beginPath(); ctx.arc(-c.sp.comp / 2 + .05, 0, .18, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(255,40,40,.25)'; ctx.beginPath(); ctx.arc(-c.sp.comp / 2 + .05, 0, .55, 0, Math.PI * 2); ctx.fill(); }
         ctx.restore();
@@ -328,6 +357,7 @@
           ctx.restore();
         }
       }
+      if(det && det.length) for(const p of det){ if(p.z < .35 || Math.abs(p.x - cam.x) > raio || Math.abs(p.y - cam.y) > raio) continue; C2D.Render.peca(ctx, p, 2); }
       /* poeira e faíscas */
       const dd = dt || .016;
       for(let q = R.particulas.length - 1; q >= 0; q--){
@@ -359,6 +389,95 @@
       ctx.drawImage(R.vinheta.cv, 0, 0, W, H);
       /* tempo de desenho, para baixar a resolução em aparelho fraco */
       if(t0){ R.tempos.push(performance.now() - t0); if(R.tempos.length > 90) R.tempos.shift(); }
+    },
+
+    safetyCar(R, ctx, dt){
+      const S = R.S, P = R.P; if(!S || !C2D.Arte || !S.carros) return;
+      const d = dt || .016;
+      const ativo = !!(S.sc && !S.bandeira) || S.estado === 'lancada';
+      R.scVis = Math.max(0, Math.min(1, (R.scVis || 0) + (ativo ? 2 : -1.2) * d));
+      if(R.scVis <= 0){ R.scS = null; return; }
+      const lid = S.estado === 'lancada' ? S.carros.reduce((a, c) => !a || c.sTot > a.sTot ? c : a, null) : S.lider;
+      if(ativo && lid){
+        const alvo = lid.sTot + 13 + Math.min(8, lid.v * .2);
+        R.scS = R.scS == null || Math.abs(alvo - R.scS) > 90 ? alvo : R.scS + (alvo - R.scS) * Math.min(1, d * 2.5);
+        R.scV = lid.v;
+      } else if(R.scS != null){ R.scV = Math.min(70, (R.scV || 30) + 18 * d); R.scS += R.scV * d; }
+      if(R.scS == null) return;
+      /* na trajetória, entre dois pontos (sem pular de um para o outro) */
+      const L = P.L, sm = ((R.scS % L) + L) % L, u = sm / P.ds, i0 = Math.floor(u) % P.n, i1 = (i0 + 1) % P.n, f = u - Math.floor(u);
+      const x = P.linha.x[i0] + (P.linha.x[i1] - P.linha.x[i0]) * f, y = P.linha.y[i0] + (P.linha.y[i1] - P.linha.y[i0]) * f;
+      const i2 = (i0 + 3) % P.n, hd = Math.atan2(P.linha.y[i2] - P.linha.y[i0], P.linha.x[i2] - P.linha.x[i0]);
+      if(Math.abs(x - R.cam.x) > R.raio + 10 || Math.abs(y - R.cam.y) > R.raio + 10) return;
+      const car = R.scCarro || (R.scCarro = { sp: { comp: 4.6, larg: 1.95, estilo: 'safety-car' }, cor: '#cfd3d9', cor2: '#1d1f23', eq: 'SC', id: 'SC', num: null });
+      const s = C2D.Arte.carro(car, null), sb = C2D.Arte.sombra(car);
+      ctx.save(); ctx.globalAlpha = R.scVis;
+      ctx.save(); ctx.translate(x + .45, y - .45); ctx.rotate(hd); ctx.globalAlpha = R.scVis * .8; ctx.drawImage(sb.cv, -sb.w / 2, -sb.h / 2, sb.w, sb.h); ctx.restore();
+      ctx.translate(x, y); ctx.rotate(hd);
+      ctx.save(); ctx.scale(1, -1); ctx.drawImage(s.cv, -s.w / 2, -s.h / 2, s.w, s.h); ctx.restore();
+      /* o giroflex no teto: laranja e amarelo piscando, com o brilho em volta */
+      const t = (typeof performance !== 'undefined' ? performance.now() : 0) / 1000, pisca = Math.floor(t * 5) % 2;
+      for(const lado of [1, -1]){
+        const aceso = (lado > 0) === !!pisca;
+        ctx.fillStyle = aceso ? (lado > 0 ? '#ffb000' : '#ffe14a') : '#5a4a14';
+        ctx.fillRect(-.62, lado > 0 ? .04 : -.58, .26, .54);
+        if(aceso){ const g = ctx.createRadialGradient(-.5, lado * .32, .05, -.5, lado * .32, 2.2); g.addColorStop(0, 'rgba(255,190,40,.45)'); g.addColorStop(1, 'rgba(255,190,40,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(-.5, lado * .32, 2.2, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.restore();
+    },
+    /* uma peça solta: asa, painel da carroceria, roda ou lasca. fase 0 no chão, 1 a sombra
+       de quem voa, 2 a peça no ar (um pouco maior: mais perto da câmera) */
+    peca(ctx, p, fase){
+      const fade = !p.grande && p.t > 26 ? Math.max(0, 1 - (p.t - 26) / 6) : p.grande && p.t > 90 ? Math.max(0, 1 - (p.t - 90) / 5) : 1;
+      if(fade <= 0) return;
+      const mov = Math.hypot(p.vx, p.vy), rodando = p.tipo === 'roda' && (mov > 1.2 || p.z > .05);
+      const ang = rodando ? Math.atan2(p.vy, p.vx) : p.a;
+      const s = fase === 2 ? 1 + Math.min(.45, p.z * .12) : 1;
+      ctx.save();
+      if(fase === 1){
+        ctx.translate(p.x + .35 + p.z * .5, p.y - .35 - p.z * .5); ctx.rotate(ang);
+        ctx.fillStyle = 'rgba(0,0,0,' + (.32 * fade / (1 + p.z * .3)).toFixed(3) + ')';
+        ctx.beginPath(); ctx.ellipse(0, 0, (p.ao === 'y' ? p.W : p.L) * .55, (p.ao === 'y' ? p.L : p.W) * .55, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore(); return;
+      }
+      ctx.translate(p.x, p.y); ctx.rotate(ang); ctx.scale(s, s);
+      ctx.globalAlpha = fade;
+      const rr = (x0, y0, w, h, r) => { ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x0, y0, w, h, r); else ctx.rect(x0, y0, w, h); };
+      if(fase === 0 && p.grande){ ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(.12, -.12, (p.ao === 'y' ? p.W : p.L) * .55, (p.ao === 'y' ? p.L : p.W) * .55, 0, 0, Math.PI * 2); ctx.fill(); }
+      if(p.tipo === 'asa'){
+        const c = p.W, e = p.L;
+        rr(-c / 2, -e / 2, c, e, .04); ctx.fillStyle = '#16181b'; ctx.fill();
+        ctx.strokeStyle = p.cor; ctx.lineWidth = Math.min(.06, c / 5);
+        ctx.beginPath(); for(let q = 0; q < 2; q++){ const x = -c / 2 + c * (q + 1) / 3; ctx.moveTo(x, -e * .45); ctx.lineTo(x, e * .45 * (p.sem > .4 ? 1 : .6)); } ctx.stroke();
+        ctx.fillStyle = p.cor2; rr(-c / 2 - .05, -e / 2 - .04, c + .1, .06, .02); ctx.fill();
+        if(p.sem > .35){ rr(-c / 2 - .05, e / 2 - .02, c + .1, .06, .02); ctx.fill(); }
+      } else if(p.tipo === 'roda'){
+        if(rodando){ rr(-p.L / 2, -p.W / 2, p.L, p.W, .1); ctx.fillStyle = '#121315'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = .03; ctx.beginPath(); for(let q = -2; q <= 2; q++){ const x = q * p.L / 6 + ((p.t * 9) % (p.L / 6)); ctx.moveTo(x, -p.W / 2 + .03); ctx.lineTo(x, p.W / 2 - .03); } ctx.stroke(); }
+        else { ctx.beginPath(); ctx.arc(0, 0, p.L / 2, 0, Math.PI * 2); ctx.fillStyle = '#121315'; ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, p.L * .3, 0, Math.PI * 2); ctx.fillStyle = '#8d939b'; ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, p.L * .1, 0, Math.PI * 2); ctx.fillStyle = '#3a3e44'; ctx.fill(); }
+      } else if(p.tipo === 'lasca'){
+        ctx.fillStyle = p.cor; ctx.beginPath(); ctx.moveTo(p.L / 2, 0); ctx.lineTo(-p.L / 2, p.W / 2); ctx.lineTo(-p.L / 2 + p.L * .3 * p.sem, -p.W / 2); ctx.closePath(); ctx.fill();
+      } else {
+        /* painel da carroceria: um pedaço rasgado na cor da equipe, com o lado de baixo escuro */
+        const L = p.ao === 'y' ? p.W : p.L, Wd = p.ao === 'y' ? p.L : p.W, j = p.sem;
+        ctx.beginPath(); ctx.moveTo(L / 2, -Wd * (.3 + j * .2)); ctx.lineTo(L * (.2 + j * .2), -Wd / 2); ctx.lineTo(-L / 2, -Wd * (.4 - j * .2)); ctx.lineTo(-L * (.45 - j * .1), Wd / 2); ctx.lineTo(L * (.3 - j * .3), Wd * (.45 - j * .1)); ctx.lineTo(L / 2, Wd * .3); ctx.closePath();
+        ctx.fillStyle = p.cor; ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = .04; ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(-L * .3, -Wd * .3, L * .5, Wd * .15);
+        ctx.strokeStyle = 'rgba(20,20,22,.8)'; ctx.lineWidth = .05; ctx.beginPath(); ctx.moveTo(-L * .2, Wd * .1); ctx.lineTo(L * .15, -Wd * .05); ctx.stroke();
+      }
+      ctx.restore();
+    },
+    /* as marcas das batidas no carro: borracha e tinta raspadas, fibra de carbono aparecendo */
+    amassados(ctx, c, l){
+      /* no fórmula a marca fica no monocoque e nas laterais (o canto da caixa é a roda, no ar) */
+      const aberto = c.fam === 'aberto' || c.fam === 'kart';
+      const hl = c.sp.comp / 2 * (aberto ? .72 : .9), hw = c.sp.larg / 2 * (aberto ? .34 : .82);
+      for(const m of l){
+        const x = Math.max(-hl, Math.min(hl, m.lx)), y = Math.max(-hw, Math.min(hw, m.ly)), r = Math.min(aberto ? .28 : .45, m.r);
+        ctx.fillStyle = 'rgba(14,15,17,.38)'; ctx.beginPath(); ctx.ellipse(x, y, r, r * .5, m.s * 3, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(225,228,232,.4)'; ctx.lineWidth = .022; ctx.beginPath();
+        for(let q = 0; q < 3; q++){ const a = m.s * 6 + q * 1.1, d = r * (.4 + q * .2); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d * .6); }
+        ctx.stroke();
+      }
     },
 
     /* o mapa do circuito, desenhado uma vez; os pontos dos carros a cada quadro */

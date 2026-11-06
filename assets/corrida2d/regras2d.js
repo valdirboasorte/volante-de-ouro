@@ -128,7 +128,8 @@
           S.eventos.push({ t: S.t, tipo: 'punicao', a: c.id, seg: 5, motivo: 'limites' });
         }
         /* batida que deixou o carro parado ou destruído: abandono */
-        if(c.dano >= .85 || (c.destino && c.destino.feito && c.destino.tipo === 'ACID' && c.v < 2 && c.parado > 1.2)) C2D.Corrida.abandonar(S, c, 'ACID');
+        /* (o carro destruído para antes: as peças e o carro ficam onde a batida deixou) */
+        if(((c.destruido || c.dano >= .85) && c.v < 4) || (c.destino && c.destino.feito && c.destino.tipo === 'ACID' && c.v < 2 && c.parado > 1.2)) C2D.Corrida.abandonar(S, c, 'ACID');
       }
       /* fim: todos chegaram, ou um minuto e meio depois do vencedor */
       if(S.bandeira === 'quadriculada' && !S.acabou){

@@ -191,7 +191,9 @@
     }
     /* pneus */
     const op = { sulcos: p.sulcos, arame: p.arame, comp };
-    for(const s of [1, -1]){ pneu(g, p.rF[0], s * p.rF[1], p.rF[2], p.rF[3], op); pneu(g, p.rT[0], s * p.rT[1], p.rT[2], p.rT[3], op); }
+    /* (no desenho o y é o contrário do carro: s = -1 é o lado esquerdo) */
+    const sem = p.semRoda || {};
+    for(const s of [1, -1]){ if(!sem[s < 0 ? 'FE' : 'FD']) pneu(g, p.rF[0], s * p.rF[1], p.rF[2], p.rF[3], op); if(!sem[s < 0 ? 'TE' : 'TD']) pneu(g, p.rT[0], s * p.rT[1], p.rT[2], p.rT[3], op); }
     /* proteção das rodas traseiras (IndyCar 2012–2017) e carenagens (Fórmula E Gen2) */
     if(p.protT){ for(const s of [1, -1]){ g.beginPath(); g.ellipse(p.rT[0] - .55, s * p.rT[1], .32, p.rT[3] * .62, 0, 0, Math.PI * 2); g.fillStyle = gc; g.fill(); } }
     if(p.cobreF){ for(const s of [1, -1]){ g.beginPath(); g.ellipse(p.rF[0], s * (p.rF[1] - .02), p.rF[2] * .62, p.rF[3] * .68, 0, 0, Math.PI * 2); g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .02; g.stroke(); } }
@@ -277,7 +279,7 @@
     }
     if(p.difusor){ g.fillStyle = CARBONO; ret(g, p.motor[1] - .25, p.motor[1] + .05, -.62, .62, .06); g.fill(); g.fillStyle = cor2; ret(g, p.motor[1] - .26, p.motor[1] - .18, -.7, .7, .03); g.fill();
       if(num != null) numero(g, num, p.motor[1] + .5, 0, .26, Math.PI / 2, '#fff'); }
-    if(!p.asaT && !p.difusor && num != null){
+    if(!p.asaT && !p.difusor && num != null && !p.semNumNariz){
       /* os antigos levavam o número num círculo branco no bico */
       g.beginPath(); g.arc(px - .45, 0, Math.min(.2, bw * .75), 0, Math.PI * 2); g.fillStyle = '#f4f4f2'; g.fill();
       numero(g, num, px - .45, 0, Math.min(.22, bw * .85), Math.PI / 2, '#111', 'rgba(255,255,255,0)');
@@ -363,13 +365,16 @@
   }
 
   C2D.Arte = {
-    ESC, estilo, segunda, tom, COMP,
+    ESC, estilo, segunda, tom, COMP, FORM,
+    /* as peças de desenho, para o catálogo de carros (estilos2d.js) */
+    lib: { caminhoSim, ret, corpo, carbono, pneu, capacete, numero, asa, formula, fechado, kart, tom, luz, hash, CARBONO, CARBONO2 },
     /* o desenho guardado do carro c (sprite): { cv, w, h } em metros */
     _cache: new Map(),
     carro(c, comp){
       const sp = c.sp, est = sp.estilo || estilo('f1', 2024, 0, false);
       const cor = c.cor || '#e2231a', cor2 = c.cor2 || segunda(cor, c.eq || c.id), num = c.num != null ? c.num : null;
-      const k = [est, cor, cor2, num, c.me ? 1 : 0, comp || ''].join('|');
+      const falta = c.mascara || '';
+      const k = [est, cor, cor2, num, c.me ? 1 : 0, comp || '', falta].join('|');
       let s = C2D.Arte._cache.get(k);
       if(s) return s;
       const L = sp.comp, W = sp.larg, mx = L / 2 + .45, my = W / 2 + .35;
@@ -381,13 +386,56 @@
       const padrao = hash(c.eq || cor) % 4;
       const compCor = comp ? COMP[comp] : null;
       /* as proporções de cada estilo são de um carro "padrão"; o desenho se ajusta ao tamanho do carro */
-      if(est === 'kart'){ g.scale(L / 1.85, W / 1.35); kart(g, cor, cor2, num, capCor); }
-      else if(FORM[est]){ const base = FORM[est]; const Lb = (base.asaD ? base.asaD.x : base.bico[0]) - (base.asaT ? base.asaT.x - base.asaT.prof : base.motor[1]) ; g.scale(L / Math.max(3, Lb + .05), W / 2); formula(g, base, cor, cor2, num, capCor, compCor, padrao, est); }
+      const E = C2D.Estilos && C2D.Estilos.DEF[est];
+      const faltam = falta ? new Set(falta.split(',')) : null;
+      g.save();
+      if(E && E.f) C2D.Estilos.desenhar(g, E, { cor, cor2, num, capCor, compCor, padrao, L, W, est, faltam });
+      else if(est === 'kart'){ g.scale(L / 1.85, W / 1.35); kart(g, cor, cor2, num, capCor); }
+      else if(FORM[est]){ const base = C2D.Arte.semPecas(FORM[est], faltam); const Lb = (FORM[est].asaD ? FORM[est].asaD.x : FORM[est].bico[0]) - (FORM[est].asaT ? FORM[est].asaT.x - FORM[est].asaT.prof : FORM[est].motor[1]) ; g.scale(L / Math.max(3, Lb + .05), W / 2); formula(g, base, cor, cor2, num, capCor, compCor, padrao, est); }
       else fechado(g, est, L, W, cor, cor2, num, capCor, compCor, padrao);
+      g.restore();
+      /* o que foi arrancado: a estrutura aparecendo e o cubo da roda */
+      if(faltam) C2D.Arte.buracos(g, faltam, L, W, est);
       s = { cv, w: cw / ESC, h: ch / ESC };
       C2D.Arte._cache.set(k, s);
       if(C2D.Arte._cache.size > 90) C2D.Arte._cache.delete(C2D.Arte._cache.keys().next().value);
       return s;
+    },
+    /* a fórmula sem as peças arrancadas */
+    semPecas(base, faltam){
+      if(!faltam) return base;
+      const b = Object.assign({}, base);
+      if(faltam.has('asaD')) b.asaD = null;
+      if(faltam.has('asaT')){ b.asaT = null; b.semNumNariz = true; }
+      const sr = {}; for(const k of ['FE', 'FD', 'TE', 'TD']) if(faltam.has(k)) sr[k] = true;
+      b.semRoda = sr;
+      return b;
+    },
+    /* onde a peça saiu: a estrutura escura aparecendo, cabos, e o cubo no lugar da roda
+       (coordenadas do desenho: x para a frente, y ao contrário do carro) */
+    buracos(g, faltam, L, W, est){
+      const h = W / 2, esc = '#17191c', est2 = '#2c3036';
+      const tira = (x0, x1, y0, y1) => { ret(g, x0, x1, y0, y1, .05); g.fillStyle = esc; g.fill(); g.strokeStyle = est2; g.lineWidth = .03; g.beginPath(); for(let x = x0 + .08; x < x1; x += .16){ g.moveTo(x, y0 + .02); g.lineTo(x + .06, y1 - .02); } g.stroke(); };
+      const fam = C2D.Dano ? C2D.Dano.tipoDe(est).fam : 'aberto';
+      if(faltam.has('paraF')) tira(L / 2 - .38, L / 2 - .02, -h * .78, h * .78);
+      if(faltam.has('paraT')) tira(-L / 2 + .02, -L / 2 + .34, -h * .74, h * .74);
+      if(faltam.has('latE')) tira(-L * .28, L * .22, -h + .02, -h + .26);
+      if(faltam.has('latD')) tira(-L * .28, L * .22, h - .26, h - .02);
+      if(faltam.has('bico')) tira(L / 2 - .5, L / 2 - .05, -.12, .12);
+      if(faltam.has('carenagem')){
+        ret(g, -L * .38, -L * .04, -h * .32, h * .32, .08); g.fillStyle = '#26292e'; g.fill();
+        g.strokeStyle = '#7b8088'; g.lineWidth = .035; g.beginPath();
+        for(let q = 0; q < 4; q++){ const x = -L * .35 + q * L * .08; g.moveTo(x, -h * .22); g.lineTo(x, h * .22); } g.stroke();
+        g.fillStyle = '#b9532a'; ret(g, -L * .37, -L * .3, -h * .12, h * .12, .03); g.fill();
+      }
+      /* a roda arrancada: o cubo e o braço da suspensão quebrado */
+      for(const k of ['FE', 'FD', 'TE', 'TD']){
+        if(!faltam.has(k)) continue;
+        const x = (k[0] === 'F' ? 1 : -1) * L * (k[0] === 'F' ? .32 : .3), y = (k[1] === 'E' ? -1 : 1) * (h - (fam === 'aberto' ? .1 : .22));
+        if(fam !== 'aberto'){ g.beginPath(); g.ellipse(x, y, .42, .2, 0, 0, Math.PI * 2); g.fillStyle = '#0c0d0f'; g.fill(); }
+        g.beginPath(); g.arc(x, y, .11, 0, Math.PI * 2); g.fillStyle = '#9aa0a8'; g.fill();
+        g.strokeStyle = '#3a3e44'; g.lineWidth = .05; g.beginPath(); g.moveTo(x, y); g.lineTo(x * .9, y * .45); g.stroke();
+      }
     },
     /* a sombra macia do carro (um desenho por tamanho) */
     _sombras: new Map(),

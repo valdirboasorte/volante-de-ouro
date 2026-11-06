@@ -28,7 +28,9 @@ const r1 = J.run(`(() => {
 ok(r1.acabou, 'a corrida da IA não chegou ao fim');
 ok(!r1.nan, 'número quebrado no estado dos carros');
 const chegaram = r1.res.ordem.filter(o => !o.fora);
-ok(chegaram.length >= 17, 'poucos carros chegaram: ' + chegaram.length);
+/* 18 podem chegar (uma quebra e uma batida sorteadas); com o dano por peça uma batida forte
+   acaba com a corrida dos dois carros, então até dois abandonos por acidente na pista */
+ok(chegaram.length >= 16, 'poucos carros chegaram: ' + chegaram.length);
 ok((r1.res.ordem.find(o => o.id === 'c7') || {}).fora === 'MEC', 'a quebra marcada não virou abandono');
 ok((r1.res.ordem.find(o => o.id === 'c12') || {}).fora === 'ACID', 'a batida marcada não virou abandono');
 ok(chegaram.every(o => o.voltas >= 4 && o.fim > 0), 'quem chegou tem voltas e tempo');
