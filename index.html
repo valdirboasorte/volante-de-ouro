@@ -337,6 +337,8 @@ body[data-tela="intro"] .wrap{max-width:none; padding:0}
    caminhos de doação em dois campos de tom (sem linha, sem sombra, sem degradê).
    O dourado fica na ação; o QR num quadro branco chapado. */
 #scr-apoio{--ap-d:clamp(34px,4.4vw,68px); --ap-h:clamp(28px,2.8vw,40px); --ap-l:clamp(18px,1.45vw,21px); --ap-t:17px; --ap-n:14px}
+/* no celular o título cresce com a tela e fica sempre em duas linhas, também nos de 320 px */
+@media(max-width:600px){ #scr-apoio{--ap-d:min(8.6vw,34px)} }
 .ap{max-width:1240px; margin:0 auto; padding:clamp(12px,2.4vw,28px) 0 clamp(40px,6vw,80px)}
 .ap-voltar{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 4px; font-size:var(--ap-t); color:var(--soft); background:none}
 .ap-voltar:hover{color:var(--ink)}
@@ -2189,6 +2191,7 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 }
 </style>
 <link rel="stylesheet" href="assets/presenca-web.css?v=20261021-movimento">
+<link rel="stylesheet" href="assets/painel-piloto.css?v=20261112-mov">
 </head>
 <body>
 <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
@@ -2591,6 +2594,8 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 
 <!-- o banco histórico (campeonatos, temporadas, grids reais e fontes), gerado por ferramentas/historico -->
 <script src="dados/historico.js" defer></script>
+<!-- o ano de nascimento de cada pessoa do banco (Wikidata), gerado por ferramentas/historico/nascimentos.mjs -->
+<script src="dados/nascimentos.js?v=20261112-idades3" defer></script>
 <script src="dados/vencedores.js" defer></script>
 <script src="dados/escalacoes.js" defer></script>
 <!-- os traçados que vieram do OpenStreetMap, gerados por ferramentas/pistas-osm.mjs -->
@@ -2618,11 +2623,19 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/complete-common.js" defer></script>
 <script src="assets/i18n/novidades.js?v=20261117-apoio" defer></script>
 <script src="assets/i18n/presenca.js" defer></script>
+<script src="assets/i18n/passado.js?v=20261117-passado" defer></script>
 <script src="assets/i18n/runtime.js?v=20261103-i18n" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
 <script src="assets/multiplayer.js?v=20261103-quali2" defer></script>
-<script src="assets/trilho.js?v=20261103-trilho4" defer></script>
+<script src="assets/trilho.js?v=20261112-mov" defer></script>
+<!-- a idade real de cada piloto em qualquer ano (logo depois do jogo; fora dos blocos, então fora da versão do multiplayer) -->
+<script src="assets/idades.js?v=20261112-idades4" defer></script>
+<script src="assets/correcoes-chefe.js?v=20261112-sl" defer></script>
+<script src="assets/pistas-correcoes.js?v=20261112-pistas3" defer></script>
+<script src="assets/painel-piloto.js?v=20261117-passado" defer></script>
+<script src="assets/passado-piloto.js?v=20261117-passado" defer></script>
 <script src="assets/apoio-pagina.js?v=20261117-apoio3" defer></script>
+<script src="assets/corrida2d.js?v=20261117-aviso" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
 <script src="assets/doacao.js?v=20261117-kofi"></script>
 <script>
@@ -17004,6 +17017,11 @@ const Prova = {
               if(!azulVisto.has(k)){ azulVisto.add(k); ev(t, 'retardatario', s.i, a.i, { volta: s.voltas + 1 }); }
             }
           } else if(!lapando && !s.passe && s.ladoAlvo !== 0 && !s.azulPor && s.estado === 0) s.ladoAlvo = 0;
+          /* com safety car a fila não pode dar a volta e travar em si mesma: em pista curta
+             (Coliseum, Martinsville, Bristol) a fila inteira cabia numa volta, o líder alcançava
+             o último, que esperava o penúltimo, e todo mundo parava. Quem está uma volta à
+             frente não espera o retardatário. */
+          if(!livre && lapando && emSC) livre = true;
           /* tentativa de ultrapassagem: colado, na zona de frenagem */
           const zona = zonaDe[idx];
           if(!livre && !emSC && !sendoLapado && !lapando && zona >= 0 && s.ultimaZona !== zona + 1000 * s.voltas && s.estado === 0 && a.estado === 0 && gap < s.v * .55 + 4){
@@ -17739,6 +17757,11 @@ const Gp = {
           livre = true;
           if(a.azulPor !== s){ a.azulPor = s; a.ladoAlvo = -g.dentro * 2.8; s.ladoAlvo = g.dentro * 2.4; }
         } else if(!lapando && !s.passe && s.ladoAlvo !== 0 && !s.azulPor && s.estado === 0) s.ladoAlvo = 0;
+        /* com safety car a fila não pode dar a volta e travar em si mesma: em pista curta
+           (Coliseum, Martinsville, Bristol) a fila inteira cabia numa volta, o líder alcançava
+           o último, que esperava o penúltimo, e todo mundo parava. Quem está uma volta à
+           frente não espera o retardatário. */
+        if(!livre && lapando && emSC) livre = true;
         seguindo = !lapando && gap < 40;
         const zona = R.zonaDe[idx];
         const manter = (R.ordemEqDe ? R.ordemEqDe[s.c.eq] === 'manter' && s.c.eq === a.c.eq : R.ordemEq === 'manter') && s.c.ctrl && a.c.ctrl;

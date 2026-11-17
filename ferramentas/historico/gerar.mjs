@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { CATALOGO, anosDe } from './catalogo.mjs';
 import { ccDe } from './paises.mjs';
+import { linhaInvalida, equipeDesconhecida, nomeLimpo, equipeLimpa } from './limpeza.mjs';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = join(AQUI, '..', '..');
@@ -179,15 +180,20 @@ for(const c of CATALOGO){
     if(!b){ t.naoImportado = true; continue; }
     if(!b.pagina){ t.tentativas = b.tentativas; continue; }
     t.pagina = b.pagina; t.revid = b.revid; t.baixado = b.baixado; t.via = b.via;
-    const ins = (b.inscritos || []).filter(x => !x.teste);
-    const cls = b.classificacao || [];
+    /* rodapés, legendas e títulos de bloco lidos como inscritos ficam de fora (limpeza.mjs) */
+    const ins = (b.inscritos || []).filter(x => !x.teste && !linhaInvalida(x));
+    const cls = (b.classificacao || []).filter(x => !linhaInvalida(x));
     const porChave = new Map();
     const add = (x, deCls) => {
-      const p = pessoa(x.nome, x.pagina, x.cc, c.id, a, c.nivel, c.jogo);
+      /* "Jay Fogleman 1", "Dana Patten (R)": o marcador grudado no nome sai, a pessoa é a mesma */
+      const p = pessoa(nomeLimpo(x.nome), x.pagina, x.cc, c.id, a, c.nivel, c.jogo);
       let r = porChave.get(p.k);
       if(!r){ r = { p, eqs: [], cons: [], nums: [], carros: [], pos: null, cls: false }; porChave.set(p.k, r); }
       if(x.con && !r.cons.includes(x.con)) r.cons.push(x.con);
-      if(x.eq && !r.eqs.includes(x.eq)) r.eqs.push(x.eq);
+      /* "?", "Privateer", "TBA": sem equipe conhecida, não uma equipe com esse nome */
+      /* e a conta de corridas sai das equipes da NASCAR ("Brewco Motorsports 34") */
+      const eq = x.eq && !equipeDesconhecida(x.eq) ? equipeLimpa(x.eq, c.id) : '';
+      if(eq && !r.eqs.includes(eq)) r.eqs.push(eq);
       if(x.num && !r.nums.includes(x.num)) r.nums.push(x.num);
       const cha = x.con && x.cha && !norm(x.cha).includes(norm(x.con)) ? x.con + ' ' + x.cha : (x.cha || x.con || '');
       const carro = [cha, x.mot].filter(Boolean).join(' · ');

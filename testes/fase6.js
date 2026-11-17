@@ -70,7 +70,7 @@ const numeros = o => JSON.stringify(o, (k, v) => typeof v === 'number' && !Numbe
   const J = H.carregar({ silencioso: true, seed: 44, store });
   J.run(require('./chefe-comum'));
   H.novaCarreira(J, { era: 7, ano: 1998, idade: 16, serie: 'f1', modo: 'realista', cc: 'IT', nome: 'Longo Teste', risco: true });
-  let erro = null, anos = 0, focos = 0, pessoal = 0, nacionais = 0, ofertas = 0;
+  let erro = null, anos = 0, focos = 0, pessoal = 0, nacionais = 0, ofertas = 0, podia = 0;
   const ruins = [];
   try {
     for(let i = 0; i < 30 && !J.run('!!S.retired'); i++){
@@ -78,6 +78,7 @@ const numeros = o => JSON.stringify(o, (k, v) => typeof v === 'number' && !Numbe
       J.run(`(() => { const ks = Object.keys(FOCOS); if(S.season && S.season.round === 0) Game.escolherFoco(ks[${i} % ks.length]);
         if(S.money && S.money.saldo > 3e5 && !(S.pessoal && S.pessoal.fisico)) Game.contratarPessoal('fisico'); UI.close(); })()`);
       if(J.run('Engine.focoAtivo()')) focos++;
+      if(J.run('!!(S.money && S.money.saldo > 3e5)')) podia++;
       if(J.run('!!(S.pessoal && S.pessoal.fisico)')) pessoal++;
       const of = js(J, '(S.patroOfertas || []).map(o => o.cc)');
       ofertas += of.length; nacionais += of.filter(c => c === 'IT').length;
@@ -90,7 +91,9 @@ const numeros = o => JSON.stringify(o, (k, v) => typeof v === 'number' && !Numbe
     if(!J.run('!!S.retired')) J.run('Game.endCareer("escolha"); UI.close();');
   } catch(e){ erro = e.message; }
   ok(!erro && anos >= 8 && !ruins.length, `${anos} temporadas jogadas sem erro e sem número inválido${erro ? ': ' + erro : ''}${ruins.length ? ' · ' + ruins.slice(0, 3).join(', ') : ''}`);
-  ok(focos >= anos - 2 && pessoal >= 1, `foco escolhido em ${focos} anos e preparador físico em ${pessoal}`);
+  /* o preparador custa caro: só se cobra quando a carreira teve dinheiro para ele (com a idade real
+     dos rivais, a semente nem sempre leva o piloto à categoria principal) */
+  ok(focos >= anos - 2 && (pessoal >= 1 || !podia), `foco escolhido em ${focos} anos e preparador físico em ${pessoal}${podia ? '' : ' (o saldo nunca passou de 300 mil)'}`);
   ok(ofertas === 0 || nacionais / ofertas >= .4, `um piloto italiano recebe sobretudo marcas italianas (${nacionais} de ${ofertas})`);
   ok(!!store.vdo_hall && J.run('ExPiloto.pode()'), 'a carreira terminou, foi para a galeria, e a passagem para chefe fica disponível');
   const eq = js(J, 'ExPiloto.equipes()');

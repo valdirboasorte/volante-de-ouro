@@ -17,6 +17,7 @@ import zlib from 'node:zlib';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { naoEPiloto } from './limpeza.mjs';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.join(AQUI, '..', '..');
@@ -97,6 +98,8 @@ function vencedoresDa(html){
       const c = l[col]; if(!c || c.th) continue;
       const t = texto(c.html);
       if(!t || /cancel|not held|abandon|^tba$|^—$|^-$/i.test(t)) continue;
+      /* o rodapé da tabela ("Source:") ocupa todas as colunas: não é uma corrida */
+      if(naoEPiloto(t.replace(/\[[^\]]*\]/g, '').trim())) continue;
       const links = [...c.html.matchAll(/href="\/wiki\/([^"#?]+)"/g)].map(m => decodeURIComponent(m[1]));
       const ids = [...new Set(links.map(p => porPagina.get(p)).filter(i => i != null))];
       if(!ids.length){

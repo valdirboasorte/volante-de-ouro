@@ -42,8 +42,16 @@ const BUSCA = {
   fe_hkg: 'Hong Kong Central Harbourfront Circuit', fe_mar: 'Circuit International Automobile Moulay El Hassan', fe_par: 'Paris Street Circuit Invalides',
   fe_pun: 'Punta del Este Street Circuit', fe_bue: 'Puerto Madero Street Circuit', fe_jak: 'Jakarta International e-Prix Circuit',
   fe_tok: 'Tokyo Street Circuit', fe_dir: 'Riyadh Street Circuit Diriyah', fe_sao: 'São Paulo Street Circuit Anhembi',
-  fe_mia: 'Biscayne Bay Street Circuit', fe_mos: 'Moscow Street Circuit'
+  fe_mia: 'Biscayne Bay Street Circuit', fe_mos: 'Moscow Street Circuit',
+  /* (o OpenStreetMap só tem o circuito novo de Detroit, de 2023) */
+  us_det: 'Detroit street circuit'
 };
+
+const ARQUIVO_FIXO = { us_det: 'Downtown Detroit Street Circuit.svg', us_bel: 'Detroit Grand Prix on Belle Isle 2015.svg',
+  ca_tor: 'Toronto, Ontario street circuit track map 2023.svg' };
+/* o que o mapa não diz e foi conferido à mão: o sentido (pela numeração das curvas) e onde fica a
+   linha de chegada (fração da caixa do traçado, x para leste e y para o norte) */
+const CONFERIDO = { us_det: { sentido: 'anti', sentidoConferido: true, chegadaFrac: [.908, .482] } };
 
 /* o SVG pode vir em UTF-16 (Illustrator): olha a marca de ordem dos bytes */
 function decodificar(b){
@@ -428,7 +436,7 @@ async function tentarArquivo(nomeArq, L, art, noInfobox, via, falta){
   const pts = r.sub.pts.map(p => [p[0], -p[1]]);
   const per = medidas(pts, true).per;
   /* comprimento oficial que o artigo não traz no infobox (o da época em que o jogo corre lá) */
-  const COMP_FIXO = { us_dal: 3901, us_lv: 3650, us_mea: 2707, fe_mos: 2390 };
+  const COMP_FIXO = { us_dal: 3901, us_lv: 3650, us_mea: 2707, fe_mos: 2390, us_det: 4168 };
   if(!L && COMP_FIXO[ID_ATUAL]) L = COMP_FIXO[ID_ATUAL];
   const alvo = L || 3300;
   const e = alvo / per;
@@ -457,6 +465,8 @@ async function tracar(id){
   const falta = m => { if(!motivos.includes(m) && motivos.length < 6) motivos.push(m); };
   const erro = () => motivos.length ? motivos.join('; ') : 'nenhum artigo da Wikipedia com o termo';
   let tentativas = 0, melhor = null, Lref = null;
+  /* o arquivo certo, quando a Commons tem mais de um desenho do circuito (Detroit: o de 1982 e o de 1983 a 1988, o que a F1 usou mais) */
+  if(ARQUIVO_FIXO[id]){ const r = await tentarArquivo(ARQUIVO_FIXO[id], null, { lang: 'en', titulo: termo }, false, 'arquivo escolhido', falta); if(r) return r; }
   const vistos = new Set(), titulos = [];
   for(const lang of langs){
     let arts;
@@ -493,10 +503,12 @@ async function tracar(id){
 
 
 for(const id of ids){
+  /* lido à mão ou de um mapa em imagem (scratchpad tracar.py) e conferido: não refaz nem apaga */
+  if(saida[id] && saida[id].manual) continue;
   let r;
   try { r = await tracar(id); } catch(e){ r = { erro: 'erro: ' + e.message, rede: true }; }
   if(r.rec){
-    saida[id] = r.rec;
+    saida[id] = Object.assign(r.rec, CONFERIDO[id] || {});
     estado[id] = { ok: true, resultado: 'ok: ' + r.nota, arquivo: r.rec.arquivo, licenca: r.rec.licenca, imagem: r.imagem, candidatos: r.candidatos, n: r.n };
     console.log(id, '— ok', r.nota);
   } else {
@@ -507,10 +519,9 @@ for(const id of ids){
 }
 
 /* conferidos a olho contra o circuito de verdade e recusados: o caminho escolhido não é a pista */
+/* (Toronto, Surfers Paradise e Belle Isle foram recusados com o mapa do artigo; agora usam outro arquivo, em ARQUIVO_FIXO) */
 const RECUSADOS = {
-  ca_tor: 'o caminho mistura as ruas da cidade com a pista',
-  au_sur: 'o caminho mistura as ruas da cidade com a pista',
-  us_bel: 'o caminho mistura as ruas da ilha com a pista',
+  au_sur: 'o caminho mistura as ruas da cidade com a pista (os dois mapas da Commons)',
   fe_pun: 'o caminho é a linha da costa e a moldura do mapa',
   it_mod: 'traço dobrado no meio, que não é a pista'
 };

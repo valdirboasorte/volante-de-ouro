@@ -33,7 +33,8 @@ const somaFalsa = o => `({ pos:${o.pos || 1}, champion:${(o.pos || 1) === 1}, wi
 
 {
   /* 1. campeão da F2 (78, 21 anos) — vários mundos, 2021 → 2022 */
-  let com = 0, sem = 0, reserva = 0, motivo = false; const N = 30;
+  /* ficar sem vaga é raro (uns 2 em 100 mundos): com 30 mundos, mais da metade das vezes nenhum caso aparecia */
+  let com = 0, sem = 0, reserva = 0, motivo = false; const N = 100;
   for(let i = 0; i < N; i++){
     const J = noAcesso(1000 + i, { ano: 2021, idade: 21, ovr: 78, pot: 82 });
     const r = J.run(`(() => { const m = Engine.mercadoTopo(${somaFalsa({})}); return { t: m.titulares.length, p: Engine.ofertasPapel(${somaFalsa({})}, m).length, mot: m.motivos.length }; })()`);

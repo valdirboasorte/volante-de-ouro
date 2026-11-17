@@ -143,5 +143,36 @@ for(const [ano, idade] of casos){
   console.log(`  convites: ${vistos} recebidos em 6 carreiras, ${aceitos} aceitos, ${certos} levaram ao campeonato certo — ${exemplos.slice(0, 4).join('; ')}`);
   if(!vistos) falha('nenhum convite de campeonato real em 6 carreiras de piloto forte');
 }
+/* 6. nenhuma nota de tabela no lugar de equipe ou de piloto: o rodapé ("Sources:"),
+   a legenda ("Under caution"), o título de um bloco ("Drivers ineligible to score
+   points", "Am class"), o marcador de quem não tinha equipe ("?", "Privateer", "TBA")
+   e o número do carro na coluna da equipe. As regras completas estão em
+   ferramentas/historico/limpeza.mjs; sem equipe conhecida, o inscrito tem eq: null. */
+{
+  const r = J.run(`(() => {
+    const eqRuim = /:$|^sources?$|\\b(?:in|un)?el[ie]gible\\b|under caution|did not|^\\?+$|^unknown(?: teams?)?$|^tb[acd]$|^n\\/a$|^private(?:ers?| entry| entries| entrants?)?$|^(?:drivers?|teams?)$|^etc\\.?$|\\bclass$|^\\d+$/i;
+    const pilRuim = /:$|^sources?$|^references?$|\\b(?:in|un)?el[ie]gible\\b|\\bdrivers\\b|\\bentries\\b|^drivers?$|under caution|did not|^etc\\.?$|^\\?+$|^\\d+$/i;
+    const marcador = /\\s\\d{1,2}$|\\([A-Z]\\d?\\)$|\\S \\S.*\\s[RJGM]$/, comConta = /\\S \\S.* \\d{1,2}(?: \\/|$)/;
+    const out = []; let n = 0, semEq = 0;
+    for(const c of HIST.C) for(const a in (HIST.T[c.id] || {})){
+      const t = Hist.temporada(c.id, +a); if(!t) continue; n++;
+      for(const x of t.inscritos){
+        if(x.eq == null) semEq++;
+        else if(!x.eq || eqRuim.test(x.eq)) out.push(c.id + ' ' + a + ': equipe "' + x.eq + '"');
+        if(pilRuim.test(x.p.nome)) out.push(c.id + ' ' + a + ': piloto "' + x.p.nome + '"');
+        /* o marcador grudado no nome ("Jay Fogleman 1", "Dana Patten (R)") e a conta de
+           corridas na equipe da NASCAR ("Brewco Motorsports 34 / Michael Waltrip Racing 1") */
+        if(!x.p.nome || x.p.nome === '?' || marcador.test(x.p.nome)) out.push(c.id + ' ' + a + ': nome com marcador "' + x.p.nome + '"');
+        if(x.eq && /^(nascar_|arca$)/.test(c.id) && comConta.test(x.eq)) out.push(c.id + ' ' + a + ': equipe com conta de corridas "' + x.eq + '"');
+      }
+      /* o rodapé não é vencedor de corrida */
+      (Hist.vencedores(c.id, +a) || []).forEach(w => w.forEach(q => { if(pilRuim.test(q.nome)) out.push(c.id + ' ' + a + ': vencedor "' + q.nome + '"'); }));
+    }
+    return { n, semEq, out };
+  })()`);
+  r.out.slice(0, 12).forEach(m => falha('nota de tabela no banco — ' + m));
+  if(r.out.length > 12) falha(`… e mais ${r.out.length - 12} notas de tabela no banco`);
+  console.log(`  ${r.n} temporadas lidas: ${r.out.length} notas de tabela como equipe ou piloto, ${r.semEq} inscritos sem equipe conhecida`);
+}
 console.log(erros ? erros + ' problema(s)' : `banco histórico: escadas sem anacronismo em ${ANOS.length} anos, ${comReal} grids reais na carreira`);
 process.exitCode = erros ? 1 : 0;

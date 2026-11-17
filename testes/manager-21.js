@@ -161,15 +161,19 @@ function equipe(seed, ano, pos, sk, modo){
   ok(r.n1 > r.n0 && r.apos, `o jovem evolui (${r.n0} → ${r.n1.toFixed(1)}) e o veterano se aposenta`);
 }
 
-/* 9. patrocínio renovado pelo preço de hoje */
+/* 9. patrocínio renovado pelo preço de hoje (três mundos: um ano ruim derruba a satisfação e o
+   patrocinador sai, o que é legítimo; quem renova tem de renovar pelo preço de hoje) */
 {
-  const J = equipe(14, 1978, 3);
-  const r = JSON.parse(J.run(`(() => { __inverno(); Chefe.comecarTemporada(); const sea = C.temporada;
-    const x = C.patro[0] || (C.patro.push(Object.assign(Chefe.ofertasPatrocinio(1)[0], { ate: C.ano })), C.patro[0]);
-    x.ate = C.ano; x.sat = 75; x.valor = Math.round(x.valor * .25); x.meta = null; const antes = x.valor;
-    while(sea.round < sea.calendar.length) Chefe.correr(); Chefe.fimDeTemporada();
-    return JSON.stringify({ antes, depois: x.valor, mercado: Chefe.valorMercadoPatro(x, C.ano + 1), f20: Chefe.fatorRepPatro(20), f60: Chefe.fatorRepPatro(60), f100: Chefe.fatorRepPatro(100) }); })()`));
-  ok(r.depois > r.antes * 1.5 && r.depois <= r.antes * 2.5 + 1000, `um contrato defasado é renovado perto do preço de hoje (${r.antes} → ${r.depois}; mercado ${Math.round(r.mercado)})`);
+  const rs = [14, 15, 16].map(seed => {
+    const J = equipe(seed, 1978, 3);
+    return JSON.parse(J.run(`(() => { __inverno(); Chefe.comecarTemporada(); const sea = C.temporada, ano0 = C.ano;
+      const x = C.patro[0] || (C.patro.push(Object.assign(Chefe.ofertasPatrocinio(1)[0], { ate: C.ano })), C.patro[0]);
+      x.ate = C.ano; x.sat = 75; x.valor = Math.round(x.valor * .25); x.meta = null; const antes = x.valor;
+      while(sea.round < sea.calendar.length) Chefe.correr(); Chefe.fimDeTemporada();
+      return JSON.stringify({ antes, depois: x.valor, renovou: C.patro.includes(x) && x.ate > ano0, mercado: Chefe.valorMercadoPatro(x, C.ano + 1), f20: Chefe.fatorRepPatro(20), f60: Chefe.fatorRepPatro(60), f100: Chefe.fatorRepPatro(100) }); })()`));
+  });
+  const ren = rs.filter(r => r.renovou), r = rs[0];
+  ok(ren.length >= 2 && ren.every(r => r.depois > r.antes * 1.5 && r.depois <= r.antes * 2.5 + 1000), `um contrato defasado é renovado perto do preço de hoje (${ren.map(r => r.antes + ' → ' + r.depois).join(', ')}; renovou em ${ren.length} de ${rs.length})`);
   ok(r.f100 < r.f60 * 1.4 && r.f60 > r.f20, `reputação vale cada vez menos no alto (fator ${r.f20.toFixed(2)} / ${r.f60.toFixed(2)} / ${r.f100.toFixed(2)})`);
 }
 
@@ -252,24 +256,27 @@ function equipe(seed, ano, pos, sk, modo){
 /* 14. automático e manual usam o mesmo motor: quem decide melhor ganha */
 {
   const J = equipe(9, 2019, 4);
-  const r = JSON.parse(J.run(`(() => { __inverno(); Chefe.comecarTemporada(); const sea = C.temporada; const t = { auto:[0, 0, 0], esperto:[0, 0, 0], maximo:[0, 0, 0] };
+  const r = JSON.parse(J.run(`(() => { __inverno(); Chefe.comecarTemporada(); const sea = C.temporada; const t = { auto:[0, 0, 0, 0], esperto:[0, 0, 0, 0], maximo:[0, 0, 0, 0] };
     const correr = (M, pol) => { const R = Gp.criar(Gp.entrada(sea, M, Chefe.sk(), sea.ano, f => f.teamId === 'EU', { gestao: true }));
       if(pol === 'maximo') R.carros.forEach((s, i) => { if(s.c.ctrl) Gp.comandar(R, i, { modo:'maximo' }); });
-      const volta = {}; let g = 0;
+      const volta = {}, ult = {}, des = {}; let g = 0;
       while(!R.fim && g++ < 400000){ if(R.pergunta) Gp.responder(R, R.pergunta.padrao);
-        R.carros.forEach((s, i) => { if(!s.c.ctrl || s.estado !== 0) return; if(s.sugestao && !s.parar) Gp.comandar(R, i, { parar: s.sugestao.c });
+        R.carros.forEach((s, i) => { if(s.c.ctrl){ const gg = s.pneu.gasto, d = gg - (ult[i] == null ? gg : ult[i]); if(d > 0) des[i] = (des[i] || 0) + d; ult[i] = gg; }
+          if(!s.c.ctrl || s.estado !== 0) return; if(s.sugestao && !s.parar) Gp.comandar(R, i, { parar: s.sugestao.c });
           if(pol === 'esperto' && volta[i] !== s.voltas){ volta[i] = s.voltas; const v = Gp.vizinhos(R, s), resta = R.N - s.voltas; let modo = 'normal', trato = 'normal';
             if(v.gf < .9 && s.pneu.gasto < .8) modo = resta <= 8 && v.gf < .5 ? 'maximo' : 'atacar'; else if(v.gt < .6) modo = 'atacar'; else if(v.gf > 4 && v.gt > 4) modo = 'poupar';
             if(s.pneu.gasto > .7 && resta > 6) trato = 'cuidar'; else if(resta <= 4 && v.gf < 1.5) trato = 'forcar'; Gp.comandar(R, i, { modo, trato }); } });
         Gp.passo(R); }
       const res = Gp.resultado(R), ids = new Set(R.carros.filter(s => s.c.ctrl).map(s => s.c.id));
-      res.ordem.forEach((o, i) => { if(!ids.has(o.id)) return; const T = t[pol]; T[0] += o.fora ? 20 : i + 1; T[1]++; T[2] += o.paradas; }); };
+      res.ordem.forEach((o, i) => { if(!ids.has(o.id)) return; const T = t[pol]; T[0] += o.fora ? 20 : i + 1; T[1]++; T[2] += o.paradas; });
+      R.carros.forEach((s, i) => { if(s.c.ctrl) t[pol][3] += des[i] || 0; }); };
     for(let k = 0; k < 6; k++){ Chefe.gridDaEtapa(sea); const M = Chefe.montar(); ['auto', 'esperto', 'maximo'].forEach(p => correr(M, p)); Chefe.correr(); }
-    return JSON.stringify(Object.fromEntries(Object.entries(t).map(([k, v]) => [k, { pos: v[0] / v[1], par: v[2] / v[1] }]))); })()`));
+    return JSON.stringify(Object.fromEntries(Object.entries(t).map(([k, v]) => [k, { pos: v[0] / v[1], par: v[2] / v[1], des: v[3] / v[1] }]))); })()`));
   /* com 6 corridas a diferença entre o automático e um jogador que lê a corrida fica dentro do
      ruído (uma corrida vale várias posições); o que se verifica aqui é que decidir muda o resultado */
   ok(r.esperto.pos !== r.auto.pos || r.esperto.par !== r.auto.par, `mesmo motor, sem bônus: em 6 corridas iguais o jogador que lê a corrida fez P${r.esperto.pos.toFixed(1)} e o automático P${r.auto.pos.toFixed(1)} (decidir muda o resultado)`);
-  ok(r.maximo.par > r.auto.par, `ataque máximo a corrida toda gasta mais pneu: ${r.maximo.par.toFixed(1)} paradas por carro contra ${r.auto.par.toFixed(1)}`);
+  /* o desgaste somado volta a volta (as paradas seguem o plano da corrida e variam com safety car e undercut) */
+  ok(r.maximo.des > r.auto.des * 1.2, `ataque máximo a corrida toda gasta mais pneu: ${r.maximo.des.toFixed(2)} jogos gastos por carro contra ${r.auto.des.toFixed(2)} (${r.maximo.par.toFixed(1)} paradas contra ${r.auto.par.toFixed(1)})`);
 }
 
 console.log(falhas ? `\n${falhas} de ${n} verificações falharam` : `\nmanager 2.1: ${n} verificações, tudo certo`);

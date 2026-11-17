@@ -23,9 +23,11 @@ const html = lf(fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8'));
 const blocos = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 const VERSAO = versaoDosBlocos(blocos);
 
-const DADOS = ['historico.js', 'escalacoes.js', 'vencedores.js', 'tracados.js', 'tracados-aprox.js', 'tracados-svg.js']
+const DADOS = ['historico.js', 'nascimentos.js', 'escalacoes.js', 'vencedores.js', 'tracados.js', 'tracados-aprox.js', 'tracados-svg.js']
   .map(f => path.join(RAIZ, 'dados', f)).filter(f => fs.existsSync(f));
-const codigo = DADOS.map(f => lf(fs.readFileSync(f, 'utf8'))).concat(blocos);
+/* depois do jogo, como na página: a idade real de cada piloto (fora dos blocos, então fora do hash) */
+const DEPOIS = ['assets/idades.js', 'assets/correcoes-chefe.js', 'assets/pistas-correcoes.js'].map(f => path.join(RAIZ, f)).filter(f => fs.existsSync(f));
+const codigo = DADOS.map(f => lf(fs.readFileSync(f, 'utf8'))).concat(blocos, DEPOIS.map(f => lf(fs.readFileSync(f, 'utf8'))));
 
 /* os nomes declarados no topo de cada arquivo (coluna 0), para devolver todos */
 const declarados = new Map();

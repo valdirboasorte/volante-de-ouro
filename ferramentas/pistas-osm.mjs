@@ -347,6 +347,7 @@ const anterior = existsSync(saidaArq) ? (() => { const ctx = {}; try { new Funct
 const qual = process.argv[2] || 'todos';
 const ids = Object.keys(TRACKS).filter(id => !PISTAS_REAIS[id] && (qual === 'todos' || qual.split(',').includes(id)));
 const saida = Object.assign({}, anterior), log = [];
+const SEM_OSM = new Set(['us_det']);
 /* circuitos repetidos com outro id que já tem traçado real: apontam para ele */
 const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const ALIAS = { dt_bra: 'gb_bra', dt_nur: 'de_nur', it_mon: 'it', gb_sil: 'gb', br_int2: 'br_int', jp_fuj: 'jp', fe_mco: 'mc', fe_mex: 'mx', fe_sha: 'cn',
@@ -361,6 +362,10 @@ for(const id of ids){
   if(GENERICAS.has(id)){ log.push([id, t.circ, 'genérica do jogo — esquemática']); continue; }
   if(ALIAS[id]) continue;                                   /* segunda passagem */
   if(saida[id] && !saida[id].alias && qual === 'todos') continue;   /* já feito numa rodada anterior */
+  /* montado à mão de uma relação ou das vias certas e conferido (Le Mans, o oval de Indianápolis): não refaz */
+  if(saida[id] && saida[id].manual) continue;
+  /* o mapa só tem o circuito novo (Detroit 2023); o do jogo, o de 1983 a 1988, vem do mapa da Commons */
+  if(SEM_OSM.has(id)){ delete saida[id]; continue; }
   try {
     const lg = await lugar(id, t);
     if(!lg){ log.push([id, t.circ, 'não achei o lugar']); console.log(id, '— sem lugar'); continue; }

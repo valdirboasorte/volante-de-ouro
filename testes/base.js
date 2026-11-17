@@ -67,6 +67,8 @@ function carregar(opts){
   const ESCARQ = require('path').join(__dirname, '..', 'dados', 'escalacoes.js');
   if(!opts.semHistorico && fs.existsSync(ESCARQ)) vm.runInContext(fs.readFileSync(ESCARQ, 'utf8'), ctx, { filename:'escalacoes.js' });
   if(!opts.semHistorico && fs.existsSync(VENCARQ)) vm.runInContext(fs.readFileSync(VENCARQ, 'utf8'), ctx, { filename:'vencedores.js' });
+  const NASCARQ = require('path').join(__dirname, '..', 'dados', 'nascimentos.js');
+  if(!opts.semHistorico && fs.existsSync(NASCARQ)) vm.runInContext(fs.readFileSync(NASCARQ, 'utf8'), ctx, { filename:'nascimentos.js' });
   const FOTARQ = require('path').join(__dirname, '..', 'dados', 'fotos.js');
   if(!opts.semHistorico && fs.existsSync(FOTARQ)) vm.runInContext(fs.readFileSync(FOTARQ, 'utf8'), ctx, { filename:'fotos.js' });
   const TRACARQ = require('path').join(__dirname, '..', 'dados', 'tracados.js');
@@ -78,11 +80,22 @@ function carregar(opts){
   if(opts.silencioso) ctx.console = { log(){}, warn(){}, error(){}, info(){} };
   /* todos os blocos de script sem atributo, na ordem da página */
   blocos.forEach((b, i) => vm.runInContext(b, ctx, { filename:'bloco' + i + '.js' }));
+  /* a idade real de cada piloto (assets/idades.js), que a página carrega logo depois do jogo */
+  const IDADESARQ = require('path').join(__dirname, '..', 'assets', 'idades.js');
+  if(fs.existsSync(IDADESARQ)) vm.runInContext(fs.readFileSync(IDADESARQ, 'utf8'), ctx, { filename:'idades.js' });
+  const CORRARQ = require('path').join(__dirname, '..', 'assets', 'correcoes-chefe.js');
+  if(fs.existsSync(CORRARQ)) vm.runInContext(fs.readFileSync(CORRARQ, 'utf8'), ctx, { filename:'correcoes-chefe.js' });
+  /* a linha de chegada no lugar real (Le Mans, Indianápolis, Detroit): assets/pistas-correcoes.js */
+  const PISTASARQ = require('path').join(__dirname, '..', 'assets', 'pistas-correcoes.js');
+  if(fs.existsSync(PISTASARQ)) vm.runInContext(fs.readFileSync(PISTASARQ, 'utf8'), ctx, { filename:'pistas-correcoes.js' });
+  /* o passado real do piloto que você assume (assets/passado-piloto.js), carregado depois do jogo como na página */
+  const PASSARQ = require('path').join(__dirname, '..', 'assets', 'passado-piloto.js');
+  if(fs.existsSync(PASSARQ)) vm.runInContext(fs.readFileSync(PASSARQ, 'utf8'), ctx, { filename:'passado-piloto.js' });
   /* os dois caminhos da página de apoio (Pix e Ko-fi): assets/apoio-pagina.js, também carregado depois do jogo */
   const APOIOARQ = require('path').join(__dirname, '..', 'assets', 'apoio-pagina.js');
   if(fs.existsSync(APOIOARQ)) vm.runInContext(fs.readFileSync(APOIOARQ, 'utf8'), ctx, { filename:'apoio-pagina.js' });
   /* Os catálogos e a apresentação usam scripts locais defer, após o jogo. */
-  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'novidades.js', 'presenca.js', 'runtime.js']){
+  for(const arq of ['en.js', 'es.js', 'common.js', 'career.js', 'events.js', 'nationalities.js', 'dialogues.js', 'race.js', 'advanced.js', 'media.js', 'interface.js', 'ja.js', 'ja-ui.js', 'ja-career.js', 'ja-media.js', 'complete-world.js', 'complete-driver.js', 'complete-chief.js', 'complete-common.js', 'novidades.js', 'presenca.js', 'passado.js', 'runtime.js']){
     const p = require('path').join(__dirname, '..', 'assets', 'i18n', arq);
     if(fs.existsSync(p)) vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename:'i18n/' + arq });
   }
