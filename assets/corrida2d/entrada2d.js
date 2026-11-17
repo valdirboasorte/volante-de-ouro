@@ -10,7 +10,7 @@
   const TECLAS = {
     ArrowLeft: 'esq', KeyA: 'esq', ArrowRight: 'dir', KeyD: 'dir',
     ArrowUp: 'acel', KeyW: 'acel', ArrowDown: 'freio', KeyS: 'freio',
-    ShiftLeft: 'boost', ShiftRight: 'boost', KeyE: 'boost',
+    ShiftLeft: 'boost', ShiftRight: 'boost', KeyE: 'boost', KeyQ: 'ers', KeyK: 'ers',
     KeyP: 'pausa', Escape: 'pausa', KeyR: 'reset', KeyC: 'camera', KeyB: 'box',
     Equal: 'zoomMais', NumpadAdd: 'zoomMais', Minus: 'zoomMenos', NumpadSubtract: 'zoomMenos'
   };
@@ -84,7 +84,7 @@
         if(lt > .04){ alvoF = Math.max(alvoF, lt); E.usouPad = true; }
         const bt = i => pad.buttons[i] && pad.buttons[i].pressed;
         const antes = E.pad || {};
-        const agora = { a: bt(0), x: bt(2), y: bt(3), st: bt(9), sel: bt(8) };
+        const agora = { a: bt(0), x: bt(2), y: bt(3), st: bt(9), sel: bt(8), ers: bt(5) || bt(1) };
         if(agora.a && !antes.a){ E.uma.boost = true; if(E.aoUma) E.aoUma('boost'); }
         if(agora.st && !antes.st){ E.uma.pausa = true; if(E.aoUma) E.aoUma('pausa'); }
         if(agora.y && !antes.y){ E.uma.reset = true; if(E.aoUma) E.aoUma('reset'); }
@@ -100,7 +100,9 @@
       E.acel = rampa(E.acel, alvoA, alvoA > E.acel ? 7 : 12, dt);
       E.freio = rampa(E.freio, alvoF, alvoF > E.freio ? 9 : 14, dt);
       const uma = E.uma; E.uma = {};
-      return { steer: E.steer, acel: E.acel, freio: E.freio, boost: !!(t.boost || q.boost), uma };
+      /* boost (Shift, E, botão A): DRS, push-to-pass, duto F, aero ativa; ers (Q, K, botão RB ou B): KERS, ERS, turbo */
+      const p = E.pad || {};
+      return { steer: E.steer, acel: E.acel, freio: E.freio, boost: !!(t.boost || q.boost || (pad && p.a)), ers: !!(t.ers || q.ers || (pad && p.ers)), uma };
     }
   };
 })(typeof window !== 'undefined' ? window : globalThis);

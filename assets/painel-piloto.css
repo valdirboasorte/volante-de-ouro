@@ -401,11 +401,13 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
 @keyframes pp-intro{0%{clip-path:inset(0 0 0 100%)} 28%{clip-path:inset(0 0 0 0)} 72%{clip-path:inset(0 0 0 0); opacity:1} 100%{clip-path:inset(0 100% 0 0); opacity:1}}
 @keyframes pp-intro-tx{0%{opacity:0; transform:translateX(60px)} 30%{opacity:1; transform:none} 75%{opacity:1} 100%{opacity:0; transform:translateX(-40px)}}
 
-/* movimento reduzido (do sistema ou da chave do jogo): sem deslocamento nem laços, só um esmaecer curto */
+/* movimento reduzido: só quando o jogador desliga as "Animações" (sem-mov) ou quando o sistema pede
+   e o jogo ainda não ligou a chave (sem a classe mov). Com a chave ligada, o jogo anima mesmo que o
+   sistema peça movimento reduzido, como no resto do jogo (UI.movimentoLigado) */
 @media (prefers-reduced-motion:reduce){
-  .pp *,.pp *::before,.pp *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important}
-  .pp-anima .pp-entra{animation:pp-fade .2s ease both !important}
-  .pp-intro{display:none}
+  html:not(.mov) .pp *,html:not(.mov) .pp *::before,html:not(.mov) .pp *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important}
+  html:not(.mov) .pp-anima .pp-entra{animation:pp-fade .2s ease both !important}
+  html:not(.mov) .pp-intro{display:none}
 }
 .sem-mov .pp *,.sem-mov .pp *::before,.sem-mov .pp *::after{animation:none !important; transition:none !important}
 .sem-mov .pp-intro{display:none}
@@ -517,7 +519,7 @@ body.pp-modo[data-pp-tema="indy"] .mhd::before{content:''; position:absolute; le
   background:linear-gradient(90deg, #e4002b 0 33.3%, #f2f5fa 33.3% 66.6%, #1f6fe5 66.6% 100%)}
 /* Volante de Ouro: o fio dourado */
 body.pp-modo[data-pp-tema="base"] .mhd::before{content:''; position:absolute; left:24px; right:24px; top:0; height:3px; background:linear-gradient(90deg, #f0c12e, transparent)}
-@media (prefers-reduced-motion:reduce){ body.pp-modo .ov.on .modal{animation:pp-fade .18s ease both} body.pp-modo .mhd::before{animation:none} }
+@media (prefers-reduced-motion:reduce){ html:not(.mov) body.pp-modo .ov.on .modal{animation:pp-fade .18s ease both} html:not(.mov) body.pp-modo .mhd::before{animation:none} }
 .sem-mov body.pp-modo .ov.on .modal,.sem-mov body.pp-modo .mhd::before{animation:none}
 
 /* escolhas marcadas nas janelas (ajustes da garagem, programa do treino, opções de evento):
@@ -694,4 +696,4 @@ button.pp-ret:active{transform:scale(.97)}
   .pp-opcoes{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}
 }
 .sem-mov .pp-pop .pp-reted-prev > *,.sem-mov .pp-tabpainel{animation:none}
-@media (prefers-reduced-motion:reduce){ .pp-pop .pp-reted-prev > *,.pp-tabpainel{animation:none} }
+@media (prefers-reduced-motion:reduce){ html:not(.mov) .pp-pop .pp-reted-prev > *,html:not(.mov) .pp-tabpainel{animation:none} }

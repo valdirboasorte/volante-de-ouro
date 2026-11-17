@@ -32,13 +32,21 @@
       S.tanque = regras.tanque < Infinity ? (p2 > 0 ? stint2d * 1.12 + .6 : S.N + 1.5) : Infinity;
       S.sc = null; S.vsc = null; S.incidentes = [];
       const B = P.box;
+      /* a garagem de cada equipe: a mesma ordem do desenho dos boxes (as equipes na ordem do grid,
+         uma garagem de 10 m a cada 14 m); sem prédio dos boxes, as vagas se espalham pela pit lane */
+      const eqs = [];
+      for(const c of S.carros.slice().sort((a, b) => (a.grid || 0) - (b.grid || 0))){ const k = c.eq || c.cor; if(eqs.indexOf(k) < 0) eqs.push(k); }
+      const gIni = B.ini + 126, gFim = B.ini + B.comp - 130;
+      const nG = !kart && B.comp > 260 ? Math.max(1, Math.floor((gFim - gIni) / 14 - 1e-9) + 1) : 0;
       for(const c of S.carros){
         const ini = c.pneuIni && Gp.COMP[c.pneuIni] ? c.pneuIni : C2D.Boxes.pneuDeLargada(S, c);
         c.pneu = { c: ini, gasto: c.pneu0 || 0, voltas: 0 };
         c.pneus = [ini]; c.paradas = 0; c.comb = 1; c.box = null; c.pedirBox = false; c.boxPneu = null;
         c.aderPneu = 1;
-        /* a vaga de cada equipe na pit lane */
-        c.vagaBox = B.ini + 110 + ((C2D.semente('box:' + (c.eq || c.id)) % 9) / 9) * Math.max(40, B.comp - 240);
+        /* a vaga de cada equipe: diante da garagem dela */
+        const q = Math.max(0, eqs.indexOf(c.eq || c.cor));
+        c.garagem = q;
+        c.vagaBox = nG ? gIni + (q % nG) * 14 + 5 : B.ini + 110 + (q + .5) / Math.max(1, eqs.length) * Math.max(40, B.comp - 240);
         /* as paradas planejadas da IA, espalhadas pela corrida como no motor clássico */
         c.plano = [];
         if((c.ia || c.boxAuto) && S.paradas2d > 0 && S.N >= 4){
@@ -91,8 +99,10 @@
     /* antes da física: a pit lane é dirigida pelo limitador (como nos jogos de corrida) */
     comando(S, c, cmd){
       const P = S.P, B = P.box;
-      /* pedido de box (jogador) ou plano (IA) */
-      if(!c.box && c.estado === 'pista'){
+      /* pedido de box (jogador) ou plano (IA). No kart não há pit lane (a pista nem a
+         desenha, e o regulamento não tem paradas): abrir para o lado dos boxes na reta
+         não pode virar uma entrada no box */
+      if(!c.box && c.estado === 'pista' && !P.kart){
         const auto = c.ia || c.boxAuto;
         /* a parada planejada; sob safety car vale antecipar (parar custa menos com o pelotão devagar) */
         const sobSC = (S.sc || S.vsc) && S.N - c.voltas > 2 && c.plano.length && c.voltas + 1 >= c.plano[0] - Math.max(2, Math.round(S.N * .25));
@@ -101,46 +111,84 @@
         const precisa = auto && ((c.pneu.gasto > 1.08 && resta > 2) || (c.dano > .38 && resta > 2) || (S.tanque < Infinity && c.comb * S.tanque < 1.15) || (C2D.Boxes.trocaPorChuva(S, c) && resta > 1));
         /* box automático do jogador: a equipe chama (o botão Box mostra o pneu; tocar de novo troca ou cancela) */
         if(!c.ia && c.boxAuto && (plano || precisa) && !c.pedirBox && !c.cancelouChamada){ c.pedirBox = true; c.boxPneu = C2D.Boxes.pneuParaBox(S, c); c.chamado = true; S.eventos.push({ t: S.t, tipo: 'chamadoBox', a: c.id }); }
-        const quer = c.pedirBox || (c.ia && ((plano && resta > 1) || precisa));
+        /* drive-through ou stop-and-go pendente (punicoes2d.js): a IA vai cumprir; o jogador entra quando quiser */
+        const cumprir = !!(C2D.Punicoes && C2D.Punicoes.querCumprir(S, c));
+        const quer = c.pedirBox || (c.ia && ((plano && resta > 1) || precisa || cumprir));
         const q = ((c.s - B.ini) % P.L + P.L) % P.L;
         /* jogador no volante: só para se ele mesmo vira o carro para a pit lane na entrada (o chamado é só conselho) */
         const manual = c === S.eu && !c.autopiloto && !c.ia;
         const entra = manual
-          ? q < 100 && Math.sign(c.d) === Math.sign(B.lado) && Math.abs(c.d) > P.meia + .5
+          ? q < 140 && Math.sign(c.d) === Math.sign(B.lado) && Math.abs(c.d) > P.meia + .5
           : quer && q < 40;
         if(entra && c.voltas < S.N){
-          c.box = { fase: 'entrando', ate: 0 };
+          /* com punição pendente, esta passagem é para cumprir: o drive-through atravessa o pit lane
+             sem parar; o stop-and-go para na vaga o tempo da regra, sem ninguém mexer no carro */
+          const servir = c.punPend && c.punPend.length && !S.sc && !S.vsc ? c.punPend[0] : null;
+          c.box = { fase: servir && servir.t === 'dt' ? 'saindo' : 'entrando', ate: 0, servir };
           c.re = false; c.reOk = false;
           c.fantasma = true;     /* na pit lane ninguém encosta em ninguém (simplificação) */
           c.boxPneu = c.boxPneu || C2D.Boxes.pneuParaBox(S, c);
-          if(plano) c.plano.shift();
+          if(plano && !servir) c.plano.shift();
           c.chamado = false; c.cancelouChamada = false;
           S.eventos.push({ t: S.t, tipo: 'entraBox', a: c.id, volta: c.voltas + 1 });
         }
       }
       if(!c.box) return cmd;
-      /* na pit lane: o carro anda sozinho no limitador, para na vaga e sai */
-      const limite = S.regras.limite || 22;
-      const dAlvo = B.dEm(c.s);
-      const ate = ((c.vagaBox - c.s) % P.L + P.L) % P.L;
-      if(!c.boxIA) c.boxIA = C2D.IA.criar({ ritmo: .8 });
-      c.boxIA.alvoD = dAlvo != null ? dAlvo : null;
+      /* na pit lane: o carro anda sozinho no limitador pela faixa rápida, entra na vaga diante da
+         garagem da equipe, para com a equipe em volta e volta para a faixa rápida (se o companheiro
+         está sendo atendido, espera atrás dele) */
+      const limite = S.regras.limite || 22, L = P.L, lado = Math.sign(B.lado) || 1;
+      if(!c.boxIA){ c.boxIA = C2D.IA.criar({ ritmo: .8 }); c.boxIA.livre = true; c.boxIA.Ld0 = 3; c.boxIA.LdK = .22; }
+      const slot = c.vagaBox, ate = ((slot - c.s) % L + L) % L;
+      const ocupado = S.carros.some(o => o !== c && o.box && o.vagaBox === slot && (o.box.fase === 'parado' ||
+        (o.box.fase === 'saindo' && Math.abs(((o.s - slot) % L + L * 1.5) % L - L / 2) < 7) || (o.box.fase === 'entrando' && ((slot - o.s) % L + L) % L < ate)));
+      const parar = c.box.fase === 'fila' || (c.box.fase === 'entrando' && ocupado) ? 8.5 : 0;
+      /* a faixa: rápida (do lado da pista) ou a de trabalho (do lado das garagens), no ponto à frente */
+      const olhar = 3 + .22 * c.v, sAlvo = c.s + olhar, ateA = ((slot - sAlvo) % L + L) % L;
+      const centro = B.dEm(sAlvo);
+      const rapida = centro != null ? centro - lado * B.larg * .22 : null, trabalho = centro != null ? centro + lado * B.larg * .25 : null;
+      let dAlvo = rapida;
+      if(centro != null && c.box.fase !== 'saindo'){
+        const falta = ateA - parar;
+        if(falta < 24 || falta > L - 4) dAlvo = C2D.mix(trabalho, rapida, lim2(falta > L - 4 ? 0 : falta / 24));
+      } else if(centro != null && c.box.fase === 'saindo'){
+        const andou = ((c.s - slot) % L + L) % L;
+        dAlvo = c.box.servir && c.box.servir.t === 'dt' ? rapida : C2D.mix(trabalho, rapida, lim2(andou / 16));
+      }
+      c.boxIA.alvoD = dAlvo;
       const base = C2D.IA.comandar(c.boxIA, c, P, { carros: null, w: S.amb.w });
       let vMax = limite;
       if(c.box.fase === 'entrando'){
-        if(ate < 40) vMax = Math.min(limite, Math.sqrt(2 * 9 * Math.max(0, ate - 1)));
-        if(ate < 1.5 || ate > P.L - 3){ c.box.fase = 'parado'; c.box.ate = S.t + C2D.Boxes.tempoParado(S, c); }
+        const resta = ate - parar;
+        if(resta < 40 && resta > -2) vMax = Math.min(limite, Math.sqrt(2 * 6 * Math.max(0, resta - .4)) + .3);
+        if(resta < 1 || ate > L - 3){
+          if(parar){ c.box.fase = 'fila'; }
+          else { c.box.fase = 'parado'; c.box.desde = S.t; c.box.ate = S.t + (c.box.servir ? (c.box.servir.s || 10) : C2D.Boxes.tempoParado(S, c)); }
+        }
+      }
+      if(c.box.fase === 'fila'){
+        if(!ocupado){ c.box.fase = 'entrando'; }
+        else return { steer: base.steer, acel: 0, freio: 1 };
       }
       if(c.box.fase === 'parado'){
-        if(S.t >= c.box.ate){ C2D.Boxes.trocar(S, c); c.box.fase = 'saindo'; }
-        return { steer: base.steer, acel: 0, freio: 1 };
+        if(S.t >= c.box.ate){ if(!c.box.servir) C2D.Boxes.trocar(S, c); c.box.fase = 'saindo'; }
+        return { steer: 0, acel: 0, freio: 1 };
       }
       if(c.box.fase === 'saindo'){
         const q = ((c.s - B.ini) % P.L + P.L) % P.L;
-        if(q > B.comp - 2 || dAlvo == null){ c.box = null; c.boxIA = null; c.pedirBox = false; c.boxPneu = null; c.fantasma = c.estado !== 'pista'; return cmd; }
+        if(q > B.comp - 2 || centro == null){
+          /* a passagem para cumprir punição não troca pneu: o pedido de box do jogador continua valendo */
+          const sv = c.box.servir;
+          if(sv && C2D.Punicoes) C2D.Punicoes.cumpriu(S, c, sv);
+          c.box = null; c.boxIA = null; c.saiuBox = S.t;
+          if(!sv){ c.pedirBox = false; c.boxPneu = null; }
+          /* volta à pista pela linha de saída: sem encostar em ninguém até pegar velocidade */
+          if(c.estado === 'pista'){ c.fantasma = true; c.retorno = { ate: S.t + 7, lado }; } else c.fantasma = true;
+          return cmd;
+        }
       }
       const v = c.v;
-      return { steer: base.steer, acel: v < vMax - .5 ? .8 : 0, freio: v > vMax + .5 ? lim2((v - vMax) * .3) : 0 };
+      return { steer: base.steer, acel: v < vMax - .5 ? .8 : 0, freio: v > vMax + .3 ? lim2((v - vMax) * .35) : 0 };
     },
     tempoParado(S, c){
       const rnd = C2D.rng(C2D.semente('parada:' + c.id + ':' + c.paradas + ':' + S.semente));
@@ -180,16 +228,25 @@
     },
 
     /* ── o safety car e o safety car virtual ── */
-    incidente(S, c){
+    /* como a direção de prova decide: carro parado na pista chama o safety car; encostado junto da
+       pista, mais o virtual; longe, na brita ou atrás do muro, só bandeira amarela no setor.
+       Destroço na pista: o virtual, quando a categoria tem. Um segundo safety car é mais raro. */
+    incidente(S, c, det){
       if(S.bandeira || !S.regras) return;
-      const P = S.P, naPista = Math.abs(c.d) < P.meia + 3;
+      const P = S.P, ad = Math.abs(c.d), naPista = ad < P.meia + 1.5, perto = ad < P.meia + 6;
       const rnd = C2D.rng(C2D.semente('sc:' + c.id + ':' + Math.floor(S.t) + ':' + S.semente));
       if(S.sc || S.vsc || S.lider && S.lider.voltas >= S.N - 1) return;
+      /* (a corrida 2D encurtada tem os abandonos da prova inteira em poucas voltas: cada incidente pesa
+         menos, para que a corrida curta não tenha safety car toda hora) */
+      const curta = lim(.25 + .75 * Math.min(1, (S.N || 1) / Math.max(1, S.Ncl || S.N || 1)), .25, 1);
+      const reg = S.regras, temVSC = (reg.vscProb || 0) > 0, segundo = (S.houveSC ? .45 : 1) * curta;
+      let pSC = reg.scProb * (det ? .3 : naPista ? 1 : perto ? .22 : .05) * segundo;
+      let pVSC = temVSC ? (det ? .45 : naPista ? Math.max(reg.vscProb, .2) : perto ? .35 : .1) * segundo : 0;
       const r = rnd();
-      if(r < S.regras.scProb * (naPista ? 1 : .55)){
+      if(r < pSC){
         S.sc = { fase: 'ativo', desde: S.t, ateVolta: (S.lider ? S.lider.voltas : 0) + 2 + Math.floor(rnd() * 2) };
         S.houveSC = true; S.eventos.push({ t: S.t, tipo: 'sc', a: c.id });
-      } else if(r < S.regras.scProb + S.regras.vscProb){
+      } else if(r < pSC + pVSC){
         S.vsc = { ate: S.t + 25 + rnd() * 30 };
         S.houveSC = true; S.eventos.push({ t: S.t, tipo: 'vsc', a: c.id });
       }

@@ -10,7 +10,7 @@
   /* preferências do aparelho (fora do save): câmera, assistências, tipo de controle de toque */
   const PREF_K = 'vdo_c2d';
   const PADRAO = { camera: 'perseguir', abs: true, tc: true, estab: true, direcao: true, toque: 'botoes', freioAuto: true, linha: true, danosRed: true, ritmo: 1, boxAuto: true,
-                   pularSC: true, limites: 'tolerante', zoom: 1.6 };
+                   pularSC: true, limites: 'tolerante', punicoes: 'tolerante', zoom: 1.6 };
   /* as distâncias da câmera (1 = a antiga, a mais longe) */
   const ZOOMS = [1, 1.25, 1.6, 2.2, 2.8];
   const pref = () => { try { return Object.assign({}, PADRAO, JSON.parse(localStorage.getItem(PREF_K) || '{}')); } catch(e){ return Object.assign({}, PADRAO); } };
@@ -50,7 +50,8 @@
           <div class="c2d-extra">
             <span class="c2d-pneu" data-c2d="pneu" hidden><i data-i18n-ignore data-c2d="pneuC">M</i><b data-i18n-ignore data-c2d="pneuG">0%</b></span>
             <span class="c2d-comb" data-c2d="comb" hidden><span class="c2d-rot">Comb.</span> <b data-i18n-ignore data-c2d="combV">—</b></span>
-            <span class="c2d-boost" data-c2d="boost" hidden></span>
+            <span class="c2d-boost" data-c2d="boost" role="button" hidden></span>
+            <span class="c2d-boost c2d-ers" data-c2d="ers" role="button" hidden></span>
             <span class="c2d-danos" data-c2d="danos" hidden></span>
           </div>
         </div>
@@ -93,6 +94,8 @@
             <label><input type="checkbox" data-o="boxAuto"> Box automático (a equipe chama)</label>
             <label><input type="checkbox" data-o="pularSC"> Pular o safety car (avança até a relargada)</label>
             <label class="c2d-op-sel">Limites de pista <select data-o="limites"><option value="tolerante">Tolerante</option><option value="rigoroso">Rigoroso</option><option value="desligado">Desligado</option></select></label>
+            <label class="c2d-op-sel">Punições (regras da época) <select data-o="punicoes"><option value="tolerante">Tolerante</option><option value="rigoroso">Rigoroso</option><option value="desligado">Desligado</option></select></label>
+            <small class="c2d-pun-info" style="display:block;opacity:.72;font-size:12px;line-height:1.35;margin:-2px 0 6px"></small>
             <label class="c2d-op-sel">Distância da câmera <select data-o="zoom"><option value="2.8">Colada no carro</option><option value="2.2">Bem perto</option><option value="1.6">Perto</option><option value="1.25">Média</option><option value="1">Longe</option></select></label>
             <label class="c2d-op-sel">Velocidade do jogo <select data-o="ritmo"><option value="1">100%</option><option value="0.85">85%</option><option value="0.7">70%</option></select></label>
             <label><input type="checkbox" data-o="abs"> Freio ABS</label>
@@ -228,8 +231,13 @@
       const assist = { abs: p.abs, tc: p.tc, estab: p.estab, direcao: p.direcao, freioAuto: p.freioAuto };
       const carros = (opc.carros || [{ id: 'ME', me: true, nome: opc.nome || 'Você', cor: opc.cor }]).map(o => o.me ? Object.assign({}, o, { assist, danoMult: p.danosRed ? .3 : 1, boxAuto: !!p.boxAuto }) : o);
       const S = T.S = C2D.Sessao.criar({ trkId: opc.trkId, ano: opc.ano, sk: opc.sk, nivel: opc.nivel, cat: opc.cat, tipo: opc.tipo, semente: opc.semente || 7,
-        voltas: opc.voltas, w: opc.w || 0, carros, boxes: opc.boxes, clima: opc.clima, limites: p.limites });
-      T.abrev = new Map(S.carros.map(c => [c, C2D.Tela.abreviar(c.nome || c.id)]));
+        voltas: opc.voltas, w: opc.w || 0, carros, boxes: opc.boxes, clima: opc.clima, limites: p.limites, punicoes: p.punicoes });
+      C2D.Tela.infoPunicoes(T);
+      /* o grafismo da categoria e da época (hud2d.js): o tema vai no elemento, o CSS faz o resto */
+      const H = T.hud = C2D.Hud.de(opc.sk, opc.ano, opc.nivel, S.P.kart);
+      el.dataset.hud = H.id; el.dataset.hudFam = H.fam; el.dataset.torre = H.torre.modo;
+      C2D.Hud.numeros(S.carros);
+      T.abrev = new Map(S.carros.map(c => [c, H.torre.nome === 'sobrenome' ? C2D.Hud.sobrenome(c.nome || c.id) : C2D.Tela.abreviar(c.nome || c.id)]));
       T.linhasTorre = [];
       T.R = C2D.Render.criar($(el, '.c2d-mundo'), S.P, { camera: p.camera });
       T.R.S = S; T.R.linha = !!p.linha; T.escala = +p.ritmo || 1; T.R.zoom = +p.zoom || 1.6;
@@ -247,6 +255,9 @@
       C2D.Entrada.botao(T.E, $(el, '.c2d-tq-dir'), 'dir');
       C2D.Entrada.botao(T.E, $(el, '.c2d-tq-freio'), 'freio');
       C2D.Entrada.botao(T.E, $(el, '.c2d-tq-acel'), 'acel');
+      /* os indicadores de DRS, KERS, ERS e turbo também são botões (no celular não há teclado) */
+      if(T.h.boost) C2D.Entrada.botao(T.E, T.h.boost, 'boost');
+      if(T.h.ers) C2D.Entrada.botao(T.E, T.h.ers, 'ers');
       C2D.Entrada.faixaVolante(T.E, $(el, '.c2d-faixa'));
       const usarToque = v => { tq.hidden = !v; el.classList.toggle('c2d-com-toque', !!v); };
       usarToque(toqueProvavel());
@@ -258,7 +269,7 @@
       el.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => C2D.Tela.menu(T, b.dataset.m)));
       el.querySelectorAll('[data-o]').forEach(i => {
         const k = i.dataset.o;
-        if(i.tagName === 'SELECT'){ i.value = String(p[k]); i.addEventListener('change', () => C2D.Tela.opcao(T, k, k === 'limites' ? i.value : +i.value)); return; }
+        if(i.tagName === 'SELECT'){ i.value = String(p[k]); i.addEventListener('change', () => C2D.Tela.opcao(T, k, k === 'limites' || k === 'punicoes' ? i.value : +i.value)); return; }
         i.checked = k === 'norte' ? p.camera === 'norte' : k === 'faixa' ? p.toque === 'faixa' : !!p[k];
         i.addEventListener('change', () => C2D.Tela.opcao(T, k, i.checked));
       });
@@ -322,7 +333,7 @@
       if(S.tipo === 'corrida' && S.acabou && !T.fimMostrado) C2D.Tela.mostrarResultado(T);
       if(T.opc.limiteVoltas && S.eu.voltas >= T.opc.limiteVoltas && !T.fimSessao){
         T.fimSessao = true;
-        const h = T.h.aviso; h.hidden = false; h.textContent = isFinite(S.eu.melhor) ? 'Sessão encerrada · melhor volta ' + C2D.fmtVolta(S.eu.melhor) : 'Sessão encerrada · sem volta válida';
+        C2D.Tela.mostrarAviso(T.h.aviso, isFinite(S.eu.melhor) ? 'Sessão encerrada · melhor volta ' + C2D.fmtVolta(S.eu.melhor) : 'Sessão encerrada · sem volta válida', 'info');
         h.__v = h.textContent;
         setTimeout(() => { if(C2D.Tela.aberta === T) C2D.Tela.fechar(); }, 1800);
       }
@@ -393,7 +404,9 @@
         set('pneuG', Math.round(Math.min(1.5, c.pneu.gasto) * 100) + '%');
         if(S.tanque < Infinity){ if(h.comb.hidden) h.comb.hidden = false; set('combV', (c.comb * S.tanque).toFixed(1) + ' v'); }
         const bb = h.boxbtn;
-        if(bb){
+        /* kart: sem pit lane, sem botão de box */
+        if(bb && S.P.kart){ if(!bb.hidden) bb.hidden = true; }
+        else if(bb){
           const txt = c.box ? (c.box.fase === 'parado' ? 'Parado' : 'Pit lane') : c.pedirBox ? 'Box: ' + Gp.nomePneu(c.boxPneu) : 'Box';
           if(bb.__v !== txt){ bb.__v = txt; bb.textContent = txt; bb.classList.toggle('on', !!(c.pedirBox || c.box)); }
         }
@@ -402,10 +415,21 @@
       if(S.boost && h.boost){
         let txt = '', cls = 'c2d-boost';
         if(S.boost.drs){ txt = 'DRS'; cls += c.drsAberto ? ' aberto' : c.drsPode && c.drsZona ? ' pode' : ' off'; }
+        else if(c.fduct){ txt = 'F-DUCT'; cls += c.fductAberto ? ' aberto' : ' pode'; }
+        else if(c.aero26){ txt = 'AERO X'; cls += c.aeroAberto ? ' aberto' : ' pode'; }
         else if(c.p2p){ txt = 'P2P ' + Math.round(c.p2p.resta) + ' s'; cls += c.p2p.ligado ? ' aberto' : c.p2p.resta > 0 ? ' pode' : ' off'; }
         else if(c.attack){ const resta = c.attack.ate - S.t; txt = resta > 0 ? 'ATTACK ' + Math.ceil(resta) + ' s' : 'ATTACK ×' + c.attack.usos; cls += resta > 0 ? ' aberto' : c.attack.usos ? ' pode' : ' off'; }
         if(c.energia != null){ const me = C2D.Boost.metaEnergia(S, c); txt += (txt ? ' · ' : '') + 'Energia ' + Math.round(me.agora * 100) + '%' + (me.agora < me.meta - .02 ? ' (poupe)' : ''); }
+        /* o vácuo não aparece no painel: é mecânica escondida, o piloto percebe pelo carro andando mais na reta */
         if(h.boost.__v !== txt + cls){ h.boost.__v = txt + cls; h.boost.textContent = txt; h.boost.className = cls; h.boost.hidden = !txt; }
+        /* KERS, ERS ou turbo: o que a época dá para gastar na tecla Q */
+        if(h.ers){
+          let t2 = '', c2 = 'c2d-boost c2d-ers';
+          if(c.kers){ t2 = 'KERS ' + c.kers.resta.toFixed(1) + ' s'; c2 += c.kers.ligado ? ' aberto' : c.kers.resta > 0 ? ' pode' : ' off'; }
+          else if(c.ers){ t2 = 'ERS ' + Math.round(c.ers.bat * 100) + '%'; c2 += c.ers.ligado ? ' aberto' : c.ers.bat > .03 && c.ers.resta > 0 ? ' pode' : ' off'; }
+          else if(c.turbo){ t2 = 'TURBO ' + Math.round(c.turbo.calor * 100) + '%'; c2 += c.turbo.quente ? ' quente' : c.turbo.ligado ? ' aberto' : ' pode'; }
+          if(h.ers.__v !== t2 + c2){ h.ers.__v = t2 + c2; h.ers.textContent = t2; h.ers.className = c2; h.ers.hidden = !t2; }
+        }
       }
       /* danos: o carro visto de cima, a frente para cima; cada peça com a cor do estado dela */
       if(h.danos && c.partes){
@@ -422,26 +446,34 @@
           }
         }
       }
-      /* avisos */
-      let aviso = '';
-      if(S.t < (T.dicaAte || 0) && !T.fimSessao) aviso = 'Freio assistido e linha de trajetória ligados · mude na pausa (II ou Esc)';
-      else if(S.estado === 'luzes') aviso = '';
+      /* avisos: o texto e o tipo (a cor da faixa e o rótulo em cima) */
+      let aviso = '', tipoAv = 'info';
+      const avPun = S.tipo === 'corrida' ? C2D.Tela.avisoPunicao(S, c) : '';
+      /* limites de pista: o aviso aparece por alguns segundos depois de contar, não a volta inteira */
+      const evLim = (() => { const ev = S.eventos; for(let k = ev.length - 1; k >= 0 && S.t - ev[k].t < 3.5; k--) if(ev[k].a === c.id && ev[k].tipo === 'limites') return ev[k]; return null; })();
+      /* nas luzes, a ferramenta da época (DRS, KERS, ERS, turbo...) e a tecla; depois, as ajudas */
+      const dicaEra = S.estado === 'luzes' && C2D.Boost && S.boost ? C2D.Boost.dica(S) : '';
+      if(dicaEra) aviso = dicaEra;
+      else if(S.t < (T.dicaAte || 0) && !T.fimSessao) aviso = 'Freio assistido e linha de trajetória ligados · mude na pausa (II ou Esc)';
+      else if(S.estado === 'luzes') aviso = C2D.Boost && S.boost ? C2D.Boost.dica(S) : '';
       else if(S.estado === 'lancada') aviso = 'Largada lançada: siga o pace car';
-      else if(T.fimSessao) aviso = h.aviso.__v;
-      else if(c.box && c.box.fase === 'parado') aviso = 'Parada: ' + Math.max(0, c.box.ate - S.t).toFixed(1) + ' s';
-      else if(c.box) aviso = 'Pit lane: limitador ligado';
+      else if(T.fimSessao) aviso = h.aviso.__tx || '';
+      else if(c.box && c.box.fase === 'parado' && !c.box.servir) aviso = 'Parada: ' + Math.max(0, c.box.ate - S.t).toFixed(1) + ' s';
+      else if(c.box) aviso = c.box.servir ? (c.box.servir.t === 'dt' ? 'Drive-through: limitador ligado' : 'Stop-and-go: ' + (c.box.fase === 'parado' ? Math.max(0, c.box.ate - S.t).toFixed(1) + ' s' : 'limitador ligado')) : 'Pit lane: limitador ligado';
+      /* a direção de prova: punição, investigação, punição a cumprir, safety car segurando */
+      else if(avPun){ aviso = avPun; tipoAv = 'pun'; }
       /* o box é você que entra: a entrada perto, o lado dela e o pneu que a equipe preparou */
       else if((c.pedirBox || c.chamado) && S.regras && C2D.Tela.entradaBox(S, c) != null) aviso = (S.P.box.lado > 0 ? 'Entrada dos boxes à esquerda em ' : 'Entrada dos boxes à direita em ') + C2D.Tela.entradaBox(S, c) + ' m (' + Gp.nomePneu(c.boxPneu) + ')';
       else if(c.chamado && c.pedirBox) aviso = 'A equipe chama: entre nos boxes nesta volta (' + Gp.nomePneu(c.boxPneu) + ')';
-      else if(S.tipo === 'corrida' && c.estado === 'fora') aviso = 'Carro destruído: você está fora da corrida';
-      else if(c.destruido && S.tipo !== 'corrida') aviso = 'Carro destruído: toque em Voltar à pista para recomeçar';
-      else if(S.avisoDano && S.t - S.avisoDano.t < 3.5) aviso = S.avisoDano.txt;
-      else if(S.eventos.length && S.eventos[S.eventos.length - 1].tipo === 'punicao' && S.eventos[S.eventos.length - 1].a === c.id && S.t - S.eventos[S.eventos.length - 1].t < 4) aviso = '+5 s de punição';
-      else if(T.verdeAte && S.t < T.verdeAte) aviso = 'Bandeira verde!';
-      else if(S.tipo === 'corrida' && c.invalida && c.ini != null && S.limitesModo !== 'desligado') aviso = 'Limites de pista: aviso ' + c.avisos + ' de ' + S.limiteAvisos;
-      else if(c.invalida && c.ini != null) aviso = 'Volta inválida: limites da pista';
+      else if(S.tipo === 'corrida' && c.estado === 'fora' && c.foraTipo === 'DSQ'){ aviso = 'Bandeira preta: você foi desclassificado'; tipoAv = 'pun'; }
+      else if(S.tipo === 'corrida' && c.estado === 'fora'){ aviso = 'Carro destruído: você está fora da corrida'; tipoAv = 'alerta'; }
+      else if(c.destruido && S.tipo !== 'corrida'){ aviso = 'Carro destruído: toque em Voltar à pista para recomeçar'; tipoAv = 'alerta'; }
+      else if(S.avisoDano && S.t - S.avisoDano.t < 3.5){ aviso = S.avisoDano.txt; tipoAv = 'alerta'; }
+      else if(T.verdeAte && S.t < T.verdeAte){ aviso = 'Bandeira verde!'; tipoAv = 'verde'; }
+      else if(evLim && S.tipo === 'corrida' && S.limitesModo !== 'desligado'){ aviso = 'Aviso ' + evLim.n + ' de ' + S.limiteAvisos; tipoAv = 'limites'; }
+      else if(evLim){ aviso = 'Volta inválida'; tipoAv = 'limites'; }
       else if(c.piso === C2D.PISO.GRAMA || c.piso === C2D.PISO.BRITA) aviso = 'Fora da pista';
-      if(h.aviso.__v !== aviso){ h.aviso.__v = aviso; h.aviso.textContent = aviso; h.aviso.hidden = !aviso; }
+      C2D.Tela.mostrarAviso(h.aviso, aviso, tipoAv);
       const bv = $(T.el, '.c2d-voltar'), pode = C2D.Sessao.podeVoltar(S, c);
       if(bv.hidden === pode) bv.hidden = !pode;
       /* luzes */
@@ -456,40 +488,151 @@
       const ult = partes[partes.length - 1] || '???';
       return ult.slice(0, 3).toUpperCase();
     },
-    /* a torre: os três primeiros e quem está perto de você */
+    /* onde acaba o velocímetro (com os botões na tela ele fica no alto): dali para baixo ficam a torre, as luzes e os avisos */
+    medirTopo(T){
+      const bx = T.el && T.el.querySelector('.c2d-baixo'); if(!bx) return;
+      const y = Math.round(bx.getBoundingClientRect().bottom) + 8;
+      if(y > 8 && T.torreTopo !== y){ T.torreTopo = y; T.el.style.setProperty('--torre-topo', y + 'px'); }
+      /* deitado, a torre fica à esquerda, logo abaixo da caixa da volta, e acaba antes das setas */
+      const eq = T.el.querySelector('.c2d-esq'), dir = T.el.querySelector('.c2d-tq-dir-grupo, .c2d-faixa');
+      const ye = eq ? Math.round(eq.getBoundingClientRect().bottom) + 6 : 0;
+      if(ye > 6 && T.esqFim !== ye){ T.esqFim = ye; T.el.style.setProperty('--esq-fim', ye + 'px'); }
+      const yd = dir ? Math.round(dir.getBoundingClientRect().top) : 0;
+      T.tqTopo = yd > 0 ? yd : 0;
+    },
+    /* a torre: os primeiros e quem está perto de você, no grafismo da categoria e da época */
     torre(T){
       const S = T.S, el = T.h.torre; if(!el) return;
+      const cfg = T.hud.torre, faixa = cfg.modo === 'faixa';
       const tor = C2D.Corrida.torre(S), eu = tor.findIndex(l => l.c === S.eu);
-      const quer = new Set([0, 1, 2]);
-      for(let k = eu - 2; k <= eu + 2; k++) if(k >= 0 && k < tor.length) quer.add(k);
-      const linhas = [...quer].sort((a, b) => a - b).slice(0, 8).map(k => tor[k]);
+      /* a largada de cada um (para as setas de posições ganhas) */
+      if(!T.pos0) T.pos0 = new Map(tor.map(l => [l.c, l.pos]));
+      /* quantas linhas cabem na tela */
+      const alt = raiz.innerHeight || 800, larg = raiz.innerWidth || 1200;
+      /* no celular (botões na tela) a torre começa logo abaixo do velocímetro, que muda de altura
+         com a época, e fica curta para não tapar a pista: os três primeiros e quem está à sua volta */
+      const toque = T.el.classList.contains('c2d-com-toque'), peq = larg < 560;
+      if(toque){
+        const k = larg + 'x' + alt, agora = Date.now();
+        if(!T.torreMed || T.torreMed.k !== k || agora - T.torreMed.t > 500){ T.torreMed = { k, t: agora }; C2D.Tela.medirTopo(T); }
+        /* o velocímetro cresce quando entram o DRS, a bateria ou os danos: a torre desce junto */
+        if(!T.torreObs && raiz.ResizeObserver){ const bx = T.el.querySelector('.c2d-baixo'); if(bx){ T.torreObs = new raiz.ResizeObserver(() => C2D.Tela.medirTopo(T)); T.torreObs.observe(bx); } }
+      }
+      const curta = toque && !faixa && (peq || alt < 520);
+      const max = faixa ? Math.max(3, Math.min(cfg.n, Math.floor((larg - 24) / (peq ? 92 : 148))))
+                : curta ? Math.max(3, Math.min(cfg.n, peq ? 7 : 5, Math.floor(((T.tqTopo || alt - 130) - (peq ? T.torreTopo || 290 : T.esqFim || 130) - 18 - (cfg.cab ? 28 : 0)) / 24.5)))
+                        : Math.max(5, Math.min(cfg.n, Math.floor((alt - (larg < 560 ? 340 : 270)) / 23)));
+      let idx = tor.map((_, k) => k);
+      if(tor.length > max){
+        const topo = Math.max(1, Math.min(3, max - 3)), resto = max - topo;
+        const a = Math.max(topo, Math.min(tor.length - resto, eu - Math.floor(resto / 2)));
+        idx = []; for(let k = 0; k < topo; k++) idx.push(k); for(let k = a; k < a + resto; k++) idx.push(k);
+      }
+      const linhas = idx.map(k => tor[k]);
       if(el.hidden) el.hidden = false;
-      while(T.linhasTorre.length < linhas.length){ const li = document.createElement('li'); li.innerHTML = '<i></i><b></b><span></span><em></em>'; el.appendChild(li); T.linhasTorre.push(li); }
+      /* o cabeçalho (sessão e volta) e a faixa de estado (safety car, bandeira verde, volta mais rápida) */
+      if(!T.torreCab){
+        const cab = document.createElement('li'); cab.className = 'cab'; cab.innerHTML = '<span></span><span></span>'; cab.hidden = !cfg.cab;
+        const est = document.createElement('li'); est.className = 'est'; est.hidden = true;
+        el.append(cab, est); T.torreCab = cab; T.torreEst = est;
+      }
+      const lid = S.lider || (tor[0] && tor[0].c), voltaTxt = (lid ? Math.min(S.N, Math.max(1, lid.voltas + 1)) : 1) + '/' + S.N;
+      if(cfg.cab){
+        const a = tr(T.opc.rotuloHud || 'Corrida'), b = tr('Volta') + ' ' + voltaTxt;
+        if(T.torreCab.__k !== a + b){ T.torreCab.__k = a + b; T.torreCab.children[0].textContent = a; T.torreCab.children[1].textContent = b; }
+      }
+      if(S.fl.id != null && S.fl.id !== T.flVisto){ T.flVisto = S.fl.id; if(lid && lid.voltas >= 1) T.flAte = S.t + 6; }
+      let estado = '', etx = '';
+      if(S.bandeira === 'quadriculada'){ estado = 'fim'; etx = tr('Bandeirada'); }
+      else if(S.sc){ estado = 'sc'; etx = 'SAFETY CAR'; }
+      else if(S.vsc){ estado = 'vsc'; etx = 'VIRTUAL SAFETY CAR'; }
+      else if(T.verdeAte && S.t < T.verdeAte){ estado = 'verde'; etx = tr('Bandeira verde'); }
+      else if(T.flAte && S.t < T.flAte){
+        const f = S.carros.find(c => c.id === S.fl.id);
+        if(f){ estado = 'fl'; etx = tr('Volta mais rápida') + ' · ' + T.abrev.get(f) + ' ' + C2D.fmtVolta(S.fl.t); }
+      }
+      if(T.torreEst.__k !== estado + etx){ T.torreEst.__k = estado + etx; T.torreEst.textContent = etx; T.torreEst.hidden = !estado; T.torreEst.className = 'est e-' + estado; el.dataset.estado = estado; }
+      while(T.linhasTorre.length < linhas.length){ const li = document.createElement('li'); li.innerHTML = '<b></b><i></i><u></u><span></span><em></em><s></s>'; el.appendChild(li); T.linhasTorre.push(li); }
       T.linhasTorre.forEach((li, k) => {
         const l = linhas[k];
         li.hidden = !l; if(!l) return;
-        const gap = k === 0 ? (l.c.estado === 'chegou' ? '🏁' : '') : tr(l.int || l.dif);
-        const chave = l.pos + '|' + T.abrev.get(l.c) + '|' + gap + '|' + (l.c === S.eu) + '|' + l.c.estado;
+        const c = l.c;
+        const gap = l.pos === 1 ? (c.estado === 'chegou' ? '🏁' : cfg.lider === 'Volta' ? tr('Volta') + ' ' + voltaTxt : cfg.lider ? tr(cfg.lider) : '') : tr(l.int || l.dif);
+        let ex = '', exC = '';
+        if(c.estado === 'fora'){ ex = ''; }
+        else if(cfg.pneu && c.pneu && S.regras){ ex = c.pneu.c; exC = 'p-' + c.pneu.c; }
+        else if(cfg.seta){ const g = (T.pos0.get(c) || l.pos) - l.pos; if(g > 0){ ex = '▲' + g; exC = 'sobe'; } else if(g < 0){ ex = '▼' + (-g); exC = 'desce'; } }
+        const corte = k > 0 && idx[k] !== idx[k - 1] + 1;
+        const chave = [l.pos, T.abrev.get(c), gap, c === S.eu, c.estado, ex, corte, c.box ? 1 : 0].join('|');
         if(li.__k === chave) return; li.__k = chave;
-        li.className = (l.c === S.eu ? 'eu ' : '') + (l.c.estado === 'fora' ? 'fora' : '');
-        li.children[0].style.background = l.c.cor;
-        li.children[1].textContent = l.pos;
-        li.children[2].textContent = T.abrev.get(l.c);
-        li.children[3].textContent = gap;
+        li.className = (c === S.eu ? 'eu ' : '') + (c.estado === 'fora' ? 'fora ' : '') + (corte ? 'corte ' : '') + (c.box ? 'nobox' : '');
+        if(li.__cor !== c.cor){ li.__cor = c.cor; li.style.setProperty('--eq', c.cor); li.style.setProperty('--eqt', C2D.Arte && C2D.Arte.lib.luz(c.cor) > .6 ? '#0b0c0e' : '#fff'); }
+        li.children[0].textContent = l.pos;
+        li.children[2].textContent = cfg.num && c.num != null ? c.num : '';
+        li.children[3].textContent = T.abrev.get(c);
+        li.children[4].textContent = c.estado === 'fora' ? (c.foraTipo === 'DSQ' ? 'DSQ' : tr('ABD')) : c.box ? 'PIT' : gap;
+        li.children[5].textContent = ex; li.children[5].className = exC;
       });
     },
     mostrarResultado(T){
       const S = T.S; T.fimMostrado = true;
       const tor = C2D.Corrida.torre(S), eu = S.eu;
       const fl = S.fl.id ? S.carros.find(c => c.id === S.fl.id) : null;
-      T.h.resTitulo.textContent = eu.estado === 'fora' ? 'Abandono' : eu.pos === 1 ? 'Vitória!' : eu.pos + 'º lugar';
+      T.h.resTitulo.textContent = eu.estado === 'fora' ? (eu.foraTipo === 'DSQ' ? 'Desclassificado' : 'Abandono') : eu.pos === 1 ? 'Vitória!' : eu.pos + 'º lugar';
       const limpo0 = t => String(t == null ? '' : t).replace(/[<>&"]/g, '');
       T.h.resSub.innerHTML = '<span>' + limpo0(T.opc.titulo || 'Corrida') + '</span>' + (T.opc.gp ? ' <span>' + limpo0(T.opc.gp) + '</span>' : '') + ' · <span>' + S.N + ' voltas</span>'
         + (fl ? ' · <span>Volta mais rápida:</span> <b data-i18n-ignore>' + limpo0(fl.nome || fl.id) + ' ' + C2D.fmtVolta(S.fl.t) + '</b>' : '');
       const limpo = t => String(t == null ? '' : t).replace(/[<>&"]/g, '');
       T.h.resTabela.innerHTML = tor.map(l => '<div class="' + (l.c === eu ? 'eu' : '') + '"><b>' + l.pos + '</b><i style="background:' + limpo(l.c.cor) + '"></i><span>' + limpo(l.c.nome || l.c.id)
-        + '</span><em>' + (l.c.estado === 'fora' ? tr('ABD') : l.pos === 1 ? C2D.fmtVolta(l.c.fim + l.c.penal) : limpo(tr(l.dif))) + '</em><small>' + (isFinite(l.c.melhor) ? C2D.fmtVolta(l.c.melhor) : '') + '</small></div>').join('');
+        + (l.c.penal ? ' <u style="text-decoration:none;opacity:.7;font-size:.85em">+' + l.c.penal + ' s</u>' : '') + '</span><em>' + (l.c.estado === 'fora' ? (l.c.foraTipo === 'DSQ' ? 'DSQ' : tr('ABD')) : l.pos === 1 ? C2D.fmtVolta(l.c.fim + l.c.penal) : limpo(tr(l.dif))) + '</em><small>' + (isFinite(l.c.melhor) ? C2D.fmtVolta(l.c.melhor) : '') + '</small></div>').join('');
+      /* as decisões da direção de prova */
+      const pl = S.pun ? S.pun.lista : [];
+      if(pl.length) T.h.resTabela.insertAdjacentHTML('beforeend', '<p class="c2d-res-pun" style="grid-column:1/-1;margin:10px 0 0;font-size:13px;line-height:1.45;opacity:.85">'
+        + '<b>Direção de prova</b><br>' + pl.map(r => '<span data-i18n-ignore>' + limpo(r.nome) + '</span>, volta ' + r.volta + ': ' + limpo(C2D.Punicoes.texto(r))).join('<br>') + '</p>');
       T.el.querySelector('.c2d-resultado').hidden = false;
+    },
+    /* a faixa de aviso: o rótulo pequeno em cima (quem fala) e o texto; a cor vem do tipo.
+       Só mexe no DOM quando o aviso muda (e reanima a entrada) */
+    mostrarAviso(el, txt, tipo){
+      const chave = txt ? tipo + '|' + txt : '';
+      if(el.__v === chave) return;
+      const mudouTipo = !el.__v || el.__v.split('|')[0] !== tipo;
+      el.__v = chave; el.__tx = txt;
+      if(!txt){ el.hidden = true; return; }
+      const ROT = { pun: 'Direção de prova', limites: 'Limites de pista', alerta: 'Atenção' };
+      el.dataset.tipo = tipo;
+      el.textContent = '';
+      if(ROT[tipo]){ const b = document.createElement('b'); b.className = 'c2d-av-rot'; b.textContent = ROT[tipo]; el.appendChild(b); }
+      const sp = document.createElement('span'); sp.className = 'c2d-av-tx'; sp.textContent = txt; el.appendChild(sp);
+      el.hidden = false;
+      if(mudouTipo){ el.classList.remove('entra'); void el.offsetWidth; el.classList.add('entra'); }
+    },
+    /* o aviso da direção de prova para o jogador */
+    avisoPunicao(S, c){
+      if(!S.pun) return '';
+      const ev = S.eventos;
+      for(let k = ev.length - 1; k >= 0 && S.t - ev[k].t < 4; k--){
+        const e = ev[k];
+        if(e.a !== c.id) continue;
+        if((e.tipo === 'punicao' || e.tipo === 'investigacao' || e.tipo === 'cumpriu') && e.txt) return e.txt;
+        /* a punição em tempo por limites de pista (regras2d.js) não traz texto */
+        if(e.tipo === 'punicao' && e.motivo === 'limites') return '+' + (e.seg || 5) + ' s: limites de pista';
+      }
+      if(c.segurandoSC) return (S.vsc && !S.sc ? 'Safety car virtual' : 'Safety car') + ': sem ultrapassagem, o carro segura atrás de ' + (c.segurandoSC.nome || c.segurandoSC.id)
+        + (c.punPend && c.punPend.length ? ' · a punição se cumpre depois da relargada' : '');
+      if(c.punPend && c.punPend.length && c.estado === 'pista' && !c.box && !S.sc && !S.vsc){
+        const p = c.punPend[0], resta = Math.max(0, p.ate - c.voltas);
+        const ent = C2D.Tela.entradaBox ? C2D.Tela.entradaBox(S, c) : null;
+        return (p.t === 'dt' ? 'Drive-through' : 'Stop-and-go') + ' a cumprir: entre nos boxes' + (ent != null ? ' (' + (S.P.box.lado > 0 ? 'à esquerda' : 'à direita') + ' em ' + ent + ' m)' : '') + ' · ' + resta + (resta === 1 ? ' volta' : ' voltas');
+      }
+      return '';
+    },
+    /* a linha embaixo da opção: que regras valem nesta corrida */
+    infoPunicoes(T){
+      const el = T.el && T.el.querySelector('.c2d-pun-info'); if(!el) return;
+      const S = T.S, modo = T.p.punicoes || 'tolerante';
+      el.textContent = modo === 'desligado' ? 'Sem punições por toque. O safety car continua sem ultrapassagem.'
+        : S && S.pun ? S.pun.sis.nome + (modo === 'tolerante' ? ' · toque leve é incidente de corrida' : ' · a terceira punição por toque é bandeira preta') : '';
     },
 
     /* o safety car entrou: o seu carro passa para o piloto automático (sem ultrapassar, no ritmo
@@ -563,7 +706,7 @@
       if(a === 'pausa') return C2D.Tela.pausar(T, !T.pausa);
       if(T.pausa) return;
       if(a === 'reset' && C2D.Sessao.podeVoltar(T.S, T.S.eu)) C2D.Sessao.voltarPista(T.S, T.S.eu);
-      if(a === 'box' && T.S.tipo === 'corrida' && T.S.regras){
+      if(a === 'box' && T.S.tipo === 'corrida' && T.S.regras && !T.S.P.kart){
         const c = T.S.eu;
         if(c.box) return;
         /* primeiro toque pede o box com o pneu sugerido; os seguintes trocam o pneu; o último cancela */
@@ -615,6 +758,7 @@
       else if(k === 'zoom'){ p.zoom = v; T.R.zoom = v; }
       else if(k === 'boxAuto'){ p.boxAuto = !!v; if(T.S && T.S.eu) T.S.eu.boxAuto = !!v; }
       else if(k === 'pularSC'){ p.pularSC = !!v; }
+      else if(k === 'punicoes'){ p.punicoes = v; if(T.S && T.S.pun) T.S.pun.modo = v; C2D.Tela.infoPunicoes(T); }
       else if(k === 'limites'){ p.limites = v; if(T.S){ T.S.limitesModo = v; T.S.limiteAvisos = v === 'rigoroso' ? 3 : 5; T.S.passoPunicao = v === 'rigoroso' ? 1 : 2; } }
       else { p[k] = !!v; if(T.S && T.S.eu) T.S.eu.assist[k] = !!v; }
       salvarPref(p);

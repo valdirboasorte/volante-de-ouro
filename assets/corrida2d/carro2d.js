@@ -22,7 +22,11 @@
      m (kg com piloto), L entre-eixos, fw peso na frente, h centro de gravidade, comp e larg
      (m), d0 esterço máximo (rad), ap deriva do pico do pneu (rad), marchas e giro máximo */
   function modelo(sk, ano, nivel, kart){
-    if(kart) return { tipo: 'kart', m: 165, L: 1.05, fw: .43, h: .25, comp: 1.85, larg: 1.35, d0: .42, ap: .11, marchas: 1, rpm: 15000 };
+    /* o kart: entre-eixos curto e sem suspensão. Com o acerto dos carros ele rodava em quase toda
+       mudança de direção no teclado; aqui a traseira segura mais, a transferência de peso é menor e
+       o volante todo virado passa menos do limite (continua solto, mas não roda à toa) */
+    if(kart) return { tipo: 'kart', m: 165, L: 1.05, fw: .43, h: .15, comp: 1.85, larg: 1.35, d0: .42, ap: .11, marchas: 1, rpm: 15000,
+                      aj: { transf: .2, Br: 1.7, folgaAp: .75, muR: 1.12 } };
     const tin = sk === 'nascar' || sk === 'stock' || sk === 'dtm';
     if(nivel >= 1 && !tin){
       return nivel === 1 ? { tipo: 'formula', m: 790, L: 3.1, fw: .44, h: .3, comp: 5.2, larg: 1.9, d0: .36, ap: .095, marchas: 6, rpm: 9000 }
@@ -73,9 +77,11 @@
         banco: P.oval ? .35 / k2 : 0
       });
       sp.Iz = md.m * sp.a * sp.b;
+      /* o acerto de base, com o que for próprio daquele carro (o kart) */
+      sp.aj = Object.assign({}, AJ, md.aj || {});
       sp.estilo = est;
       /* a deriva do pico do pneu traseiro (mais firme que o dianteiro) */
-      sp.apR = sp.ap / AJ.Br;
+      sp.apR = sp.ap / sp.aj.Br;
       sp.B = Math.tan(Math.PI / (2 * sp.C)) / sp.ap;
       sp.fzr0 = sp.a / md.L;
       /* as relações de marcha (só o mostrador e o som: a potência é constante) */
@@ -100,8 +106,8 @@
     dmax(c, v, chuva){
       const sp = c.sp;
       if(!c.assist.direcao) return sp.d0 / (1 + v / 35);
-      const latMax = G * (sp.mu * (chuva || 1) + sp.banco + sp.aero * v * v) * AJ.folgaLat;
-      return Math.min(sp.d0, Math.atan(sp.L * latMax / Math.max(v * v, 1)) + sp.ap * AJ.folgaAp);
+      const aj = sp.aj || AJ, latMax = G * (sp.mu * (chuva || 1) + sp.banco + sp.aero * v * v) * aj.folgaLat;
+      return Math.min(sp.d0, Math.atan(sp.L * latMax / Math.max(v * v, 1)) + sp.ap * aj.folgaAp);
     },
 
     /* coloca o carro num ponto da pista, parado e alinhado */
@@ -136,9 +142,9 @@
       /* ── cargas: peso, asa e transferência longitudinal ── */
       const D = sp.mu > 0 ? m * G * sp.aero * (c.aeroF || 1) * (1 - .15 * w) * v * v / sp.mu : 0;
       /* a asa da frente quebrada tira a carga da frente (o carro sai de frente); a de trás, a de trás */
-      const pF = sp.fw + AJ.aeroF, DF = D * pF * (dm ? dm.aF : 1), DR = D * (1 - pF) * (dm ? dm.aR : 1);
+      const aj = sp.aj || AJ, pF = sp.fw + aj.aeroF, DF = D * pF * (dm ? dm.aF : 1), DR = D * (1 - pF) * (dm ? dm.aR : 1);
       const Fz = m * G + DF + DR;
-      let Fzf = m * G * sp.b / sp.L + DF - m * c.ax * sp.h * AJ.transf / sp.L;
+      let Fzf = m * G * sp.b / sp.L + DF - m * c.ax * sp.h * aj.transf / sp.L;
       Fzf = lim(Fzf, Fz * .12, Fz * .88);
       const Fzr = Fz - Fzf;
 
@@ -156,8 +162,8 @@
       c.af += (afAlvo - c.af) * rel2; c.ar += (arAlvo - c.ar) * rel2;
       /* o acerto de base sai levemente sub-esterçante (traseira mais firme): estável no
          limite, mas pé demais na saída ainda solta a traseira */
-      const curvaF = a => Math.sin(sp.C * Math.atan(sp.B * a)), curvaR = a => Math.sin(sp.C * Math.atan(sp.B * AJ.Br * a));
-      let Fyf = -muF * AJ.muF * Fzf * curvaF(c.af), Fyr = -muR * AJ.muR * Fzr * curvaR(c.ar);
+      const curvaF = a => Math.sin(sp.C * Math.atan(sp.B * a)), curvaR = a => Math.sin(sp.C * Math.atan(sp.B * aj.Br * a));
+      let Fyf = -muF * aj.muF * Fzf * curvaF(c.af), Fyr = -muR * aj.muR * Fzr * curvaR(c.ar);
 
       /* ── frear e acelerar dentro do que o pneu dá ── */
       const brkCoef = G * (sp.b0 * (1 - .18 * w) + 1.1 * sp.aero * v * v) * m / Fz;
@@ -262,17 +268,24 @@
       const sp = c.sp, cs = Math.cos(c.psi), sn = Math.sin(c.psi), nx = P.nx[c.i], ny = P.ny[c.i];
       const hl = sp.comp / 2, hw = sp.larg / 2;
       c.batida = 0;
+      /* o muro dos boxes (fino, meio metro): quem está na pista bate nele do lado da pista; quem está
+         no pit lane, do lado do pit lane (não volta para a pista por cima dele) */
+      const ladoBox = Math.sign(P.box.lado) || 1, mur = C2D.Pista.mureta ? C2D.Pista.mureta(P, c.i) : null;
+      const noPit = mur != null && Math.sign(c.d) === ladoBox && Math.abs(c.d) > mur;
       for(let q = 0; q < 4; q++){
         const lx = q < 2 ? hl : -hl, ly = q % 2 ? hw : -hw;
         const ox = lx * cs - ly * sn, oy = lx * sn + ly * cs;
         const dc = c.d + ox * nx + oy * ny;
         const lado = dc > 0 ? 1 : -1;
-        const limite = C2D.Pista.muroEm(P, c.i, lado);
-        const pen = Math.abs(dc) - limite;
+        let limite = C2D.Pista.muroEm(P, c.i, lado, c), pen, para = -lado;
+        if(mur != null && lado === ladoBox && !noPit) limite = Math.min(limite, mur - .25);
+        pen = Math.abs(dc) - limite;
+        /* no pit lane: o muro fica do lado de dentro (empurra para fora, para o pit lane) */
+        if(noPit && lado === ladoBox && Math.abs(dc) < mur + .25){ pen = (mur + .25) - Math.abs(dc); para = ladoBox; }
         if(pen <= 0) continue;
         /* empurra de volta para dentro */
-        const ex = -lado * nx, ey = -lado * ny;          /* normal do muro, apontando para a pista */
-        c.x += ex * pen; c.y += ey * pen; c.d -= lado * pen;
+        const ex = para * nx, ey = para * ny;            /* normal do muro, apontando para onde o carro pode estar */
+        c.x += ex * pen; c.y += ey * pen; c.d += para * pen;
         /* impulso no canto: o carro quica pouco e gira */
         const vxw = c.vx * cs - c.vy * sn, vyw = c.vx * sn + c.vy * cs;
         const pvx = vxw - c.r * oy, pvy = vyw + c.r * ox;

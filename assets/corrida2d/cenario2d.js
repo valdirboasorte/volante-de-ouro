@@ -30,7 +30,15 @@
     }
   }
   const TEX = {};
+  /* o tema da pista da vez (temas2d.js) e as texturas dele: as de base, com as do tema por cima */
+  let TEMA = null, TEXT = null;
   function texturas(){
+    base();
+    const chave = TEMA ? TEMA.chave : '';
+    if(!TEXT || TEXT.chave !== chave){ TEXT = Object.assign({}, TEX, { chave }); if(TEMA && C2D.Ambiente) C2D.Ambiente.texturas(TEXT, TEMA); if(TEMA && C2D.Vida) C2D.Vida.texturas(TEXT, TEMA); }
+    return TEXT;
+  }
+  function base(){
     if(TEX.ok) return TEX;
     /* grama (uma tela de 512 px a 25 cm = 128 m): o verde de base, a variação larga, as listras do
        cortador a 45 graus (o período divide a tela, então emenda) e as lâminas. Tudo numa textura
@@ -47,7 +55,7 @@
         g.strokeStyle = v < .45 ? 'rgba(110,172,78,.32)' : v < .9 ? 'rgba(28,78,28,.3)' : 'rgba(170,200,110,.25)';
         emenda(512, 512, x, y, l, (X, Y) => { g.beginPath(); g.moveTo(X, Y); g.lineTo(X + Math.cos(a) * l, Y + Math.sin(a) * l); g.stroke(); });
       } }
-    TEX.grama = c;
+    TEX.grama = c; TEX.gramaCorte = c; TEX.gramaFina = novoCanvas(8, 8);
     /* asfalto (512 px a 6 cm = 32 m): agregado fino, pedrinhas, remendos e o desgaste largos */
     c = novoCanvas(512, 512); g = c.getContext('2d');
     g.fillStyle = '#393c42'; g.fillRect(0, 0, 512, 512);
@@ -101,16 +109,28 @@
     TEX.brita = c;
     /* asfalto do escape e da pit lane (mais claro e liso) */
     c = novoCanvas(256, 256); g = c.getContext('2d');
-    g.fillStyle = '#4f535a'; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = '#62656b'; g.fillRect(0, 0, 256, 256);
     manchas(g, 256, 256, 20, ['rgba(255,255,255,.04)', 'rgba(0,0,0,.06)'], 20, 60, 51);
     { const r = C2D.rng(52); for(let k = 0; k < 7000; k++){ const v = r(); g.fillStyle = v < .5 ? 'rgba(0,0,0,.1)' : 'rgba(255,255,255,.06)'; g.fillRect(Math.floor(r() * 256), Math.floor(r() * 256), 1, 1); } }
     TEX.escape = c;
+    /* a sujeira das beiradas da pista (transparente: pedrinhas, borracha solta e poeira) */
+    c = novoCanvas(128, 128); g = c.getContext('2d');
+    { const r = C2D.rng(77); for(let k = 0; k < 760; k++){ const v = r(); g.fillStyle = v < .55 ? 'rgba(18,16,15,.5)' : v < .85 ? 'rgba(176,156,116,.5)' : 'rgba(232,228,214,.4)'; const s = .7 + r() * 1.3; g.fillRect(r() * 128, r() * 128, s, s); } }
+    TEX.sujeira = c;
+    /* o grão do asfalto de perto: pedrinhas claras e poros escuros (transparente, 256 px a 2 cm = 5,3 m) */
+    c = novoCanvas(256, 256); g = c.getContext('2d');
+    { const r = C2D.rng(78); for(let k = 0; k < 5200; k++){ const v = r(); g.fillStyle = v < .5 ? 'rgba(0,0,0,.2)' : v < .9 ? 'rgba(226,226,232,.14)' : 'rgba(240,238,230,.3)'; const s = v < .9 ? 1 + r() * .8 : 1.6 + r(); g.fillRect(r() * 256, r() * 256, s, s); } }
+    TEX.asfFino = c;
+    /* as sombras das nuvens que passam (256 px a 2 m = 512 m) */
+    c = novoCanvas(256, 256); g = c.getContext('2d');
+    manchas(g, 256, 256, 9, ['rgba(8,14,40,.5)', 'rgba(8,14,40,.36)'], 34, 80, 88);
+    TEX.nuvens = c;
     /* calçada e quarteirão (circuito de rua): placas de concreto de tons diferentes, juntas
        discretas e o grão da pedra */
     c = novoCanvas(256, 256); g = c.getContext('2d');
     g.fillStyle = '#7b7c7a'; g.fillRect(0, 0, 256, 256);
     { const r = C2D.rng(61);
-      for(let a = 0; a < 256; a += 16) for(let b = 0; b < 256; b += 16){ const v = r(); g.fillStyle = v < .35 ? 'rgba(255,250,240,.06)' : v < .7 ? 'rgba(0,0,0,.05)' : 'rgba(120,110,95,.06)'; g.fillRect(a, b, 16, 16); }
+      for(let a = 0; a < 256; a += 16) for(let b = 0; b < 256; b += 16){ const v = r(); g.fillStyle = v < .35 ? 'rgba(255,250,240,.03)' : v < .7 ? 'rgba(0,0,0,.028)' : 'rgba(120,110,95,.035)'; g.fillRect(a, b, 16, 16); }
       g.fillStyle = 'rgba(0,0,0,.1)'; for(let k = 0; k < 256; k += 16){ g.fillRect(k, 0, 1, 256); g.fillRect(0, k, 256, 1); }
       g.fillStyle = 'rgba(255,255,255,.06)'; for(let k = 0; k < 256; k += 16){ g.fillRect(k + 1, 0, 1, 256); g.fillRect(0, k + 1, 256, 1); }
       for(let k = 0; k < 6000; k++){ const v = r(); g.fillStyle = v < .5 ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.06)'; g.fillRect(Math.floor(r() * 256), Math.floor(r() * 256), 1, 1); } }
@@ -152,7 +172,7 @@
         gg.fillStyle = pal[3]; gg.globalAlpha = .55 + r() * .35; gg.beginPath(); gg.arc(x, y, R0 * (.06 + r() * .08), 0, Math.PI * 2); gg.fill();
       }
       gg.globalAlpha = 1;
-      return { cv: cc, sombra: sb, m: cw / E };
+      return { cv: cc, sombra: sb, m: cw / E, tipo: v === 2 ? 'pinheiro' : 'folha' };
     });
     TEX.ok = true;
     return TEX;
@@ -161,18 +181,92 @@
   /* um padrão em metros: px pixels da textura valem um metro na pista */
   function padrao(ctx, nome, metrosPorPixel){
     ctx.__pad = ctx.__pad || {};
-    const k = nome + metrosPorPixel;
+    const T = texturas(), k = nome + metrosPorPixel + T.chave;
     if(ctx.__pad[k]) return ctx.__pad[k];
-    const p = ctx.createPattern(texturas()[nome], 'repeat');
+    const p = ctx.createPattern(T[nome], 'repeat');
     if(p && p.setTransform && typeof DOMMatrix !== 'undefined') p.setTransform(new DOMMatrix([metrosPorPixel, 0, 0, metrosPorPixel, 0, 0]));
     ctx.__pad[k] = p;
     return p;
+  }
+
+  /* ── (só desenho) o que tem altura ── */
+  const tomCor = (hex, f) => 'rgb(' + [1, 3, 5].map(i => { const c = parseInt(hex.slice(i, i + 2), 16); return Math.round(f >= 0 ? c + (255 - c) * f : c * (1 + f)); }).join(',') + ')';
+  const FACHADA = ['#d9cfc0', '#cfc4b0', '#e3d8c6', '#c9b9a3', '#d6c7b2', '#bfc4c9'];
+  /* um prédio da rua: os cantos da base, o andar do telhado (pela altura) e as cores das paredes na luz e na sombra */
+  function predio(pr){
+    const c = Math.cos(pr.hd), sn = Math.sin(pr.hd), a = pr.larg / 2, b = pr.prof / 2;
+    pr.pts = [[-a, -b], [a, -b], [a, b], [-a, b]].map(([u, w]) => [pr.x + u * c - w * sn, pr.y + u * sn + w * c]);
+    pr.raioG = Math.hypot(a, b);
+    pr.andar = pr.alto < .45 ? 2 : pr.alto < .85 ? 3 : 4;
+    const pal = (TEMA && TEMA.lajes) || FACHADA;
+    pr.parede = pal[Math.abs(Math.floor(pr.x * 7 + pr.y * 3)) % pal.length];
+    pr.corL = tomCor(pr.parede, .22); pr.corS = tomCor(pr.parede, -.34); pr.parede = tomCor(pr.parede, -.1);
+    return pr;
+  }
+  /* a altura de uma árvore (para o comprimento da sombra) */
+  function alturaArv(a, s){
+    const t = s.tipo || 'folha';
+    return t === 'arbusto' ? 1.1 : t === 'rocha' ? .7 : t === 'palmeira' ? 10 : t === 'pinheiro' || t === 'cipreste' ? Math.min(15, 4 + a.r * 2.4) : 6.5 + a.r * .7;
+  }
+  /* em que andares cada tipo de árvore aparece: a imagem, o tamanho e o deslocamento para o lado da luz */
+  function andaresDe(s){
+    if(s.andares) return s.andares;
+    const claro = () => {
+      if(s.claro) return s.claro;
+      const c = novoCanvas(s.cv.width, s.cv.height), g = c.getContext('2d');
+      g.drawImage(s.cv, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,255,190,.17)'; g.fillRect(0, 0, c.width, c.height);
+      return s.claro = c;
+    };
+    const t = s.tipo || 'folha';
+    s.tronco = t === 'arbusto' || t === 'rocha' ? 0 : t === 'palmeira' ? 3 : 2;
+    return s.andares = t === 'arbusto' || t === 'rocha' ? {}
+      : t === 'palmeira' ? { 3: { img: s.cv, f: 1 } }
+      : t === 'pinheiro' ? { 2: { img: s.cv, f: 1 }, 3: { img: claro(), f: .66 }, 4: { img: claro(), f: .36 } }
+      : t === 'cipreste' ? { 2: { img: s.cv, f: 1 }, 3: { img: s.cv, f: .85 }, 4: { img: claro(), f: .6 } }
+      : t === 'eucalipto' ? { 2: { img: s.cv, f: .78 }, 3: { img: claro(), f: 1, d: -.04 } }
+      : { 2: { img: s.cv, f: 1 }, 3: { img: claro(), f: .6, d: -.07 } };
+  }
+  const troncoDe = s => { andaresDe(s); return s.tronco; };
+  /* o telhado de um prédio da rua (de telha, de quatro águas; ou a laje com as máquinas) */
+  function telhadoPredio(ctx, C, b){
+    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.hd);
+    const sem = Math.abs(Math.floor(b.x * 13 + b.y * 7)), telha = sem % 10 < (C.tema ? C.tema.telha : 4);
+    const W2 = b.larg / 2, H2 = b.prof / 2;
+    if(telha){
+      /* telhado de quatro águas: a água virada para o noroeste mais clara, as telhas e a cumeeira */
+      const base = ['#b8613f', '#a9533a', '#c4744c', '#9c4b33'][sem % 4];
+      ctx.fillStyle = base; ctx.fillRect(-W2, -H2, b.larg, b.prof);
+      const cx = Math.min(W2, H2) * .9;
+      /* (a água clara é a que olha para o noroeste do mundo) */
+      const nw = -Math.sin(b.hd) - Math.cos(b.hd) > 0, claro = 'rgba(255,230,200,.16)', escuro = 'rgba(40,10,0,.2)';
+      ctx.fillStyle = nw ? claro : escuro; ctx.beginPath(); ctx.moveTo(-W2, -H2); ctx.lineTo(W2, -H2); ctx.lineTo(W2 - cx, 0); ctx.lineTo(-W2 + cx, 0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = nw ? escuro : claro; ctx.beginPath(); ctx.moveTo(-W2, H2); ctx.lineTo(W2, H2); ctx.lineTo(W2 - cx, 0); ctx.lineTo(-W2 + cx, 0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(60,20,8,.25)'; ctx.lineWidth = .12; ctx.beginPath(); for(let yy = -H2 + .6; yy < H2; yy += .6){ ctx.moveTo(-W2, yy); ctx.lineTo(W2, yy); } ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,220,190,.45)'; ctx.lineWidth = .3; ctx.beginPath(); ctx.moveTo(-W2 + cx, 0); ctx.lineTo(W2 - cx, 0); ctx.moveTo(-W2, -H2); ctx.lineTo(-W2 + cx, 0); ctx.lineTo(-W2, H2); ctx.moveTo(W2, -H2); ctx.lineTo(W2 - cx, 0); ctx.lineTo(W2, H2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = .2; ctx.strokeRect(-W2, -H2, b.larg, b.prof);
+      ctx.restore(); return;
+    }
+    const laje = ((C.tema && C.tema.lajes) || ['#d6cfc2', '#c9c3b8', '#e1dccf', '#b9b5ae', '#cfc6b2', '#a9aeb3'])[sem % 6];
+    ctx.fillStyle = laje; ctx.fillRect(-W2, -H2, b.larg, b.prof);
+    /* a mureta do telhado (borda clara) e o telhado um pouco mais escuro por dentro */
+    ctx.fillStyle = 'rgba(0,0,0,.1)'; ctx.fillRect(-W2 + .6, -H2 + .6, b.larg - 1.2, b.prof - 1.2);
+    ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = .4; ctx.strokeRect(-W2 + .25, -H2 + .25, b.larg - .5, b.prof - .5);
+    ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = .2; ctx.strokeRect(-W2, -H2, b.larg, b.prof);
+    /* máquinas no telhado: caixas com sombra (sempre as mesmas para cada prédio) */
+    const nM = 1 + sem % 3;
+    for(let q = 0; q < nM; q++){
+      const mx = ((sem >> (q * 3)) % 7 / 7 - .45) * (b.larg - 4), my = ((sem >> (q * 3 + 2)) % 5 / 5 - .4) * (b.prof - 4), mw = 1.6 + (sem >> q) % 3, mh = 1.2 + (sem >> (q + 1)) % 2;
+      ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(mx + .4, my - .4 - mh / 2, mw, mh);
+      ctx.fillStyle = '#a3a8ae'; ctx.fillRect(mx, my - mh / 2, mw, mh); ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(mx, my - mh / 2, mw, .25);
+    }
+    ctx.restore();
   }
 
   C2D.Cenario = {
     texturas, padrao,
     /* monta o cenário de uma pista (uma vez) */
     montar(P){
+      TEMA = C2D.Temas ? C2D.Temas.de(P) : null;
       const n = P.n, x = P.x, y = P.y, nx = P.nx, ny = P.ny, m = P.meia, rnd = C2D.rng(C2D.semente('cenario:' + P.id));
       const rua = P.tipo === 'street', oval = P.oval, kart = P.kart;
       /* grade de pontos do eixo, para não pôr nada em cima de outro trecho */
@@ -204,10 +298,10 @@
               /* (só desenho) um prédio não cai em cima do outro */
               const raioP = Math.min(larg, prof) * .5, cor = ['#6f655c', '#7a6f63', '#5d6670', '#8a8179', '#6b5f58', '#7d8590'][Math.floor(rnd() * 6)], alto = rnd();
               const junto = predios.some(q => Math.hypot(q.x - cx, q.y - cy) < (q.raio + raioP) * .92);
-              if(!junto && livre(cx, cy, prof / 2 + 2)){ const pr = { x: cx, y: cy, hd: P.hd[i], larg, prof, cor, alto, raio: raioP }; predios.push(pr); porPedaco[pedacoDe(i)].predios.push(pr); }
+              if(!junto && livre(cx, cy, prof / 2 + 2)){ const pr = predio({ x: cx, y: cy, hd: P.hd[i], larg, prof, cor, alto, raio: raioP }); predios.push(pr); porPedaco[pedacoDe(i)].predios.push(pr); }
             }
-          } else if(rnd() < (oval ? .25 : .7)){
-            const qtd = 1 + Math.floor(rnd() * 3);
+          } else if(rnd() < Math.min(.95, (oval ? .25 : .7) * (TEMA ? TEMA.dens : 1))){
+            const qtd = 1 + Math.floor(rnd() * 3 * Math.max(1, TEMA ? TEMA.dens : 1));
             for(let q = 0; q < qtd; q++){
               const d = lado * (m + esc + 6 + rnd() * (oval ? 18 : 34)), [px, py] = ponto(i + Math.floor(rnd() * 3), d);
               const tx = px + (rnd() - .5) * 6, ty = py + (rnd() - .5) * 6;
@@ -219,6 +313,8 @@
       /* barreiras por tipo: pneus (mistos), concreto (rua), SAFER (oval, a partir de 2002; antes, e nas
          milhas de terra, o muro de concreto) */
       const barreira = { tipo: rua ? 'concreto' : oval ? (P.terra || (P.ano || 2024) < 2002 ? 'concreto' : 'safer') : 'pneus' };
+      /* a barreira da época e do lugar (fardos de feno, guard-rail, cerca), quando o tema pede */
+      if(TEMA && TEMA.barreira) barreira.tipo = TEMA.barreira;
       /* borracha na trajetória (o asfalto escurece onde todo mundo passa) */
       const borracha = P.pedacos.map(pd => { const p = new Path2D(); for(let i = pd.i0; i <= pd.i1 + 1; i++){ const j = i % n; i === pd.i0 ? p.moveTo(P.linha.x[j], P.linha.y[j]) : p.lineTo(P.linha.x[j], P.linha.y[j]); } return p; });
       /* arquibancadas: a reta da largada (do lado oposto aos boxes) e as freadas fortes */
@@ -256,7 +352,13 @@
         for(let k = 0; k < dent.length; k += 3){ nervuras.moveTo(meio[k].x, meio[k].y); nervuras.lineTo(fora[k].x, fora[k].y); }
         /* a faixa de patrocínio na frente da arquibancada (virada para a pista) */
         const faixa = new Path2D(); dent.forEach((p, k) => { const q = fora[k], px = p.x + (q.x - p.x) * .03, py = p.y + (q.y - p.y) * .03; k ? faixa.lineTo(px, py) : faixa.moveTo(px, py); });
-        arquib.push({ corpo, degraus, povo, assentos, faixa, x0, y0, x1, y1, cobertura: rnd() < .6, telhado, sombraTelhado, nervuras, cor: ['#2f6fd1', '#c51f24', '#1d8a4b', '#d08a12'][Math.floor(rnd() * 4)] });
+        /* (só desenho) os lances de degraus (um por andar), a parte debaixo da cobertura e o beiral */
+        const faixaDe = (t0, t1) => { const pp = new Path2D(); dent.forEach((a, k) => { const q = fora[k], px = a.x + (q.x - a.x) * t0, py = a.y + (q.y - a.y) * t0; k ? pp.lineTo(px, py) : pp.moveTo(px, py); }); for(let k = dent.length - 1; k >= 0; k--){ const a = dent[k], q = fora[k]; pp.lineTo(a.x + (q.x - a.x) * t1, a.y + (q.y - a.y) * t1); } pp.closePath(); return pp; };
+        const linhaDe = t => { const pp = new Path2D(); dent.forEach((a, k) => { const q = fora[k], px = a.x + (q.x - a.x) * t, py = a.y + (q.y - a.y) * t; k ? pp.lineTo(px, py) : pp.moveTo(px, py); }); return pp; };
+        const cortes = prof >= 15 ? [0, .3, .62, 1] : [0, .5, 1];
+        const terracos = cortes.slice(0, -1).map((t0, q) => ({ k: q + 1, corpo: faixaDe(t0, cortes[q + 1]), frente: linhaDe(t0 + .012), fundo: linhaDe(cortes[q + 1] - .012) }));
+        const pts = dent.map(q => [q.x, q.y]).concat(fora.slice().reverse().map(q => [q.x, q.y]));
+        arquib.push({ pts, terracos, kTeto: cortes.length, sobTeto: faixaDe(mt - .1, 1), beiral: linhaDe(mt + .012), prof, corpo, degraus, povo, assentos, faixa, x0, y0, x1, y1, cobertura: rnd() < .6, telhado, sombraTelhado, nervuras, cor: ['#2f6fd1', '#c51f24', '#1d8a4b', '#d08a12'][Math.floor(rnd() * 4)] });
       };
       if(!kart){
         fazArquib(-220, 120, -Math.sign(B.lado) || -1, oval ? 26 : 16);
@@ -292,12 +394,24 @@
         for(let s = ini + 10; s < fim - 10; s += 22){ const c0 = C2D.Pista.ponto(P, s, lado * (d0 + 9)), c1 = C2D.Pista.ponto(P, s + 3, lado * (d0 + 9)), c2 = C2D.Pista.ponto(P, s + 3, lado * (d0 + 11)), c3 = C2D.Pista.ponto(P, s, lado * (d0 + 11)); maquinas.moveTo(c0.x, c0.y); maquinas.lineTo(c1.x, c1.y); maquinas.lineTo(c2.x, c2.y); maquinas.lineTo(c3.x, c3.y); maquinas.closePath(); }
         const claras = new Path2D();
         for(let s = ini + 4; s < fim - 6; s += 9){ const c0 = C2D.Pista.ponto(P, s, lado * (d0 + 4.5)), c1 = C2D.Pista.ponto(P, s + 4, lado * (d0 + 4.5)), c2 = C2D.Pista.ponto(P, s + 4, lado * (d0 + 6.2)), c3 = C2D.Pista.ponto(P, s, lado * (d0 + 6.2)); claras.moveTo(c0.x, c0.y); claras.lineTo(c1.x, c1.y); claras.lineTo(c2.x, c2.y); claras.lineTo(c3.x, c3.y); claras.closePath(); }
-        boxes = { corpo, portas, telhado, faixas, vagas, maquinas, claras };
+        /* (só desenho) o contorno, a caixa e a frente de cada garagem (a porta aparece na parede) */
+        const ptsB = pts0.map(q => [q.x, q.y]).concat(pts1.slice().reverse().map(q => [q.x, q.y]));
+        let bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9; for(const q of ptsB){ bx0 = Math.min(bx0, q[0]); by0 = Math.min(by0, q[1]); bx1 = Math.max(bx1, q[0]); by1 = Math.max(by1, q[1]); }
+        const garagens = [];
+        for(let s = ini + 6; s < fim - 10; s += 14){ const a = C2D.Pista.ponto(P, s, lado * d0), b = C2D.Pista.ponto(P, s + 10, lado * d0); garagens.push({ a: [a.x, a.y], b: [b.x, b.y], nx: Math.sin(a.hd) * lado, ny: -Math.cos(a.hd) * lado }); }
+        boxes = { corpo, portas, telhado, faixas, vagas, maquinas, claras, pts: ptsB, garagens, x0: bx0, y0: by0, x1: bx1, y1: by1, ini, fim, lado, d0, d1 };
       }
       /* o pórtico da largada: uma viga sobre a pista com as luzes */
       const g0 = C2D.Pista.ponto(P, 0, -m - 2.5), g1 = C2D.Pista.ponto(P, 0, m + 2.5);
       const portico = { x0: g0.x, y0: g0.y, x1: g1.x, y1: g1.y, luzes: [-.3, -.15, 0, .15, .3].map(f => C2D.Pista.ponto(P, -.6, f * P.w)) };
-      return { porPedaco, barreira, borracha, arquib, boxes, portico };
+      const cen = { porPedaco, barreira, borracha, arquib, boxes, portico, tema: TEMA };
+      /* o ambiente do lugar (água, noite, marcos, estacionamento, placas): ambiente2d.js */
+      if(TEMA && C2D.Ambiente) C2D.Ambiente.montar(P, cen, { livre, naBox, fazArquib });
+      /* a vida em volta (gente, barracas, carros de apoio): vida2d.js; e o índice dos andares */
+      if(C2D.Asfalto) C2D.Asfalto.montar(P, cen);
+      if(C2D.Vida) C2D.Vida.montar(P, cen, { livre, naBox });
+      C2D.Cenario.indexar(P, cen);
+      return cen;
     },
 
     /* o chão debaixo da pista (o fundo da tela inteira) */
@@ -306,152 +420,317 @@
       return padrao(ctx, nome, nome === 'grama' ? .25 : .2);
     },
 
-    /* o que fica por cima do chão e por baixo dos carros */
+    /* as cores das equipes do grid, na ordem da largada (para as garagens e as vagas dos boxes) */
+    equipes(R){
+      const C = R.cen; if(C.coresEq) return C.coresEq;
+      const padrao2 = ['#e2231a', '#00a19c', '#ff8000', '#1e41ff', '#006f62', '#2b4562', '#900000', '#b6babd', '#64c4ff', '#52e252'];
+      if(!R.S || !R.S.carros || !R.S.carros.length) return padrao2;
+      const vistos = new Set(), l = [];
+      for(const c of R.S.carros.slice().sort((a, b) => (a.grid || 0) - (b.grid || 0))){ const k = c.eq || c.cor; if(vistos.has(k)) continue; vistos.add(k); l.push(c.cor || '#888'); }
+      return C.coresEq = l.length ? l : padrao2;
+    },
+
+    /* ── o chão em volta da pista, debaixo das zebras e das linhas (pintado uma vez, nos blocos) ── */
     chao(ctx, R, vis){
-      const C = R.cen, P = R.P;
-      /* borracha na trajetória (na terra, o sulco mais escuro e úmido por onde todo mundo passa) */
-      ctx.strokeStyle = P.terra ? 'rgba(40,22,12,.22)' : 'rgba(12,12,14,.16)'; ctx.lineWidth = P.terra ? 4 : 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      for(const p of vis) ctx.stroke(C.borracha[p.idx]);
-      ctx.strokeStyle = P.terra ? 'rgba(40,22,12,.14)' : 'rgba(12,12,14,.1)'; ctx.lineWidth = 1.2;
-      for(const p of vis) ctx.stroke(C.borracha[p.idx]);
-      /* arquibancadas e prédio dos boxes (baixos: por baixo das copas) */
-      const sombra = (path, d, a) => { ctx.save(); ctx.translate(d, -d); ctx.fillStyle = 'rgba(10,16,12,' + a + ')'; ctx.fill(path); ctx.restore(); };
+      const C = R.cen, P = R.P, largo = R.visLargo || vis;
+      if(C2D.Ambiente) C2D.Ambiente.chao(ctx, R, vis);
+      /* a borracha na trajetória e as marcas do asfalto (asfalto2d.js); sem ele, só a borracha */
+      if(C2D.Asfalto) C2D.Asfalto.pintar(ctx, R, vis);
+      else {
+        ctx.strokeStyle = P.terra ? 'rgba(40,22,12,.22)' : 'rgba(12,12,14,.16)'; ctx.lineWidth = P.terra ? 4 : 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        for(const p of vis) ctx.stroke(C.borracha[p.idx]);
+        ctx.strokeStyle = P.terra ? 'rgba(40,22,12,.14)' : 'rgba(12,12,14,.1)'; ctx.lineWidth = 1.2;
+        for(const p of vis) ctx.stroke(C.borracha[p.idx]);
+      }
+      ctx.lineCap = 'butt'; ctx.lineJoin = 'round';
+      /* o piso debaixo do que é alto: aparece quando a altura afasta o que está em cima */
       for(const a of C.arquib){
-        if(!R.visivel(a.x0, a.y0, a.x1, a.y1)) continue;
-        /* a sombra da arquibancada no chão, a estrutura, os degraus com o público e a cobertura */
-        sombra(a.corpo, a.cobertura ? 3.2 : 1.6, .3);
-        ctx.fillStyle = '#7d838b'; ctx.fill(a.corpo);
-        ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = .5; ctx.stroke(a.degraus);
-        ctx.strokeStyle = 'rgba(0,0,0,.32)'; ctx.lineWidth = .16; ctx.stroke(a.degraus);
-        ctx.fillStyle = padrao(ctx, 'publico', .04); ctx.fill(a.corpo);
-        ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .16; ctx.stroke(a.degraus);
-        ctx.strokeStyle = '#1b1d21'; ctx.lineWidth = .7; ctx.stroke(a.faixa);
-        ctx.strokeStyle = a.cor; ctx.lineWidth = .5; ctx.setLineDash([5, 2.5]); ctx.stroke(a.faixa); ctx.setLineDash([]);
-        ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = .12; ctx.setLineDash([2.2, 5.3]); ctx.lineDashOffset = -1.2; ctx.stroke(a.faixa); ctx.setLineDash([]); ctx.lineDashOffset = 0;
-        if(a.cobertura && a.telhado){
-          ctx.fillStyle = 'rgba(0,0,0,.38)'; ctx.fill(a.sombraTelhado);
-          ctx.fillStyle = '#e1e4e8'; ctx.fill(a.telhado);
-          ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = .3; ctx.stroke(a.nervuras);
-          ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = .12; ctx.stroke(a.nervuras);
-          ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = .22; ctx.stroke(a.telhado);
-        }
-        ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = .25; ctx.stroke(a.corpo);
+        if(!R.visivel(a.x0 - 1, a.y0 - 1, a.x1 + 1, a.y1 + 1)) continue;
+        ctx.fillStyle = '#4b4f56'; ctx.fill(a.corpo);
+        ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .7; ctx.setLineDash([.35, 3.65]); ctx.stroke(a.degraus); ctx.setLineDash([]);
+        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = .3; ctx.stroke(a.corpo);
       }
-      if(C.boxes){
-        /* o prédio dos boxes: sombra longa, o telhado com as nervuras e as máquinas, as garagens */
-        sombra(C.boxes.corpo, 4, .32);
-        ctx.fillStyle = '#cfd3d9'; ctx.fill(C.boxes.corpo);
-        ctx.strokeStyle = 'rgba(0,0,0,.08)'; ctx.lineWidth = 1.6; ctx.stroke(C.boxes.telhado);
-        ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = .25; ctx.stroke(C.boxes.telhado);
-        if(C.boxes.claras){ ctx.fillStyle = '#8fb3cf'; ctx.fill(C.boxes.claras); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.save(); ctx.translate(-.15, .15); ctx.fill(C.boxes.claras); ctx.restore(); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .12; ctx.stroke(C.boxes.claras); }
-        ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = .5; ctx.stroke(C.boxes.corpo);
-        if(C.boxes.maquinas){ ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.save(); ctx.translate(.35, -.35); ctx.fill(C.boxes.maquinas); ctx.restore(); ctx.fillStyle = '#9ba1a9'; ctx.fill(C.boxes.maquinas); }
-        ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = .3; ctx.stroke(C.boxes.corpo);
-        for(const g of C.boxes.portas){
-          ctx.fillStyle = '#1a1c20'; ctx.fill(g.p);
-          ctx.strokeStyle = g.cor; ctx.lineWidth = .55; ctx.stroke(g.p);
-          ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = .1; ctx.stroke(g.p);
-        }
-        for(const v of C.boxes.vagas){ ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fill(v.p); ctx.strokeStyle = v.cor; ctx.lineWidth = .22; ctx.stroke(v.p); }
-        ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = .15; ctx.stroke(C.boxes.faixas);
+      const B = C.boxes;
+      if(B && R.visivel(B.x0 - 12, B.y0 - 12, B.x1 + 12, B.y1 + 12)){
+        /* o chão das garagens (escuro lá dentro, mais claro na porta) e a pit lane pintada */
+        const cores = C2D.Cenario.equipes(R);
+        ctx.fillStyle = '#2b2d32'; ctx.fill(B.corpo);
+        B.portas.forEach((g, k) => { ctx.fillStyle = '#50545b'; ctx.fill(g.p); ctx.strokeStyle = cores[k % cores.length]; ctx.lineWidth = .18; ctx.stroke(g.p); });
+        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = .3; ctx.stroke(B.corpo);
+        B.vagas.forEach((v, k) => { ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fill(v.p); ctx.strokeStyle = cores[k % cores.length]; ctx.lineWidth = .22; ctx.stroke(v.p); });
+        ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = .15; ctx.stroke(B.faixas);
       }
-      /* prédios da rua */
-      for(const p of vis){
-        for(const b of C.porPedaco[p.idx].predios){
-          /* a sombra cai para o sudeste do mundo, mais longe quanto mais alto o prédio */
-          const hS = 2 + b.alto * 6;
-          ctx.save(); ctx.translate(b.x + hS * .7, b.y - hS * .7); ctx.rotate(b.hd); ctx.fillStyle = 'rgba(8,12,16,.38)'; ctx.fillRect(-b.larg / 2, -b.prof / 2, b.larg, b.prof); ctx.restore();
-          ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.hd);
-          const sem = Math.abs(Math.floor(b.x * 13 + b.y * 7)), telha = sem % 5 < 2;
-          const W2 = b.larg / 2, H2 = b.prof / 2;
-          if(telha){
-            /* telhado de quatro águas: a água virada para o noroeste mais clara, as telhas e a cumeeira */
-            const base = ['#b8613f', '#a9533a', '#c4744c', '#9c4b33'][sem % 4];
-            ctx.fillStyle = base; ctx.fillRect(-W2, -H2, b.larg, b.prof);
-            const cx = Math.min(W2, H2) * .9;
-            /* (a água clara é a que olha para o noroeste do mundo) */
-            const nw = -Math.sin(b.hd) - Math.cos(b.hd) > 0, claro = 'rgba(255,230,200,.16)', escuro = 'rgba(40,10,0,.2)';
-            ctx.fillStyle = nw ? claro : escuro; ctx.beginPath(); ctx.moveTo(-W2, -H2); ctx.lineTo(W2, -H2); ctx.lineTo(W2 - cx, 0); ctx.lineTo(-W2 + cx, 0); ctx.closePath(); ctx.fill();
-            ctx.fillStyle = nw ? escuro : claro; ctx.beginPath(); ctx.moveTo(-W2, H2); ctx.lineTo(W2, H2); ctx.lineTo(W2 - cx, 0); ctx.lineTo(-W2 + cx, 0); ctx.closePath(); ctx.fill();
-            ctx.strokeStyle = 'rgba(60,20,8,.25)'; ctx.lineWidth = .12; ctx.beginPath(); for(let yy = -H2 + .6; yy < H2; yy += .6){ ctx.moveTo(-W2, yy); ctx.lineTo(W2, yy); } ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,220,190,.45)'; ctx.lineWidth = .3; ctx.beginPath(); ctx.moveTo(-W2 + cx, 0); ctx.lineTo(W2 - cx, 0); ctx.moveTo(-W2, -H2); ctx.lineTo(-W2 + cx, 0); ctx.lineTo(-W2, H2); ctx.moveTo(W2, -H2); ctx.lineTo(W2 - cx, 0); ctx.lineTo(W2, H2); ctx.stroke();
-            ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = .2; ctx.strokeRect(-W2, -H2, b.larg, b.prof);
-            ctx.restore(); continue;
-          }
-          const laje = ['#d6cfc2', '#c9c3b8', '#e1dccf', '#b9b5ae', '#cfc6b2', '#a9aeb3'][sem % 6];
-          ctx.fillStyle = laje; ctx.fillRect(-W2, -H2, b.larg, b.prof);
-          /* a mureta do telhado (borda clara) e o telhado um pouco mais escuro por dentro */
-          ctx.fillStyle = 'rgba(0,0,0,.1)'; ctx.fillRect(-W2 + .6, -H2 + .6, b.larg - 1.2, b.prof - 1.2);
-          ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = .4; ctx.strokeRect(-W2 + .25, -H2 + .25, b.larg - .5, b.prof - .5);
-          ctx.strokeStyle = 'rgba(0,0,0,.42)'; ctx.lineWidth = .2; ctx.strokeRect(-W2, -H2, b.larg, b.prof);
-          /* máquinas no telhado: caixas com sombra (sempre as mesmas para cada prédio) */
-          const nM = 1 + sem % 3;
-          for(let q = 0; q < nM; q++){
-            const mx = ((sem >> (q * 3)) % 7 / 7 - .45) * (b.larg - 4), my = ((sem >> (q * 3 + 2)) % 5 / 5 - .4) * (b.prof - 4), mw = 1.6 + (sem >> q) % 3, mh = 1.2 + (sem >> (q + 1)) % 2;
-            ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(mx + .4, my - .4 - mh / 2, mw, mh);
-            ctx.fillStyle = '#a3a8ae'; ctx.fillRect(mx, my - mh / 2, mw, mh); ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fillRect(mx, my - mh / 2, mw, .25);
-          }
-          ctx.restore();
-        }
+      for(const p of largo) for(const b of C.porPedaco[p.idx].predios){
+        if(!R.visivel(b.x - b.raioG, b.y - b.raioG, b.x + b.raioG, b.y + b.raioG)) continue;
+        ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.hd);
+        ctx.fillStyle = '#383b41'; ctx.fillRect(-b.larg / 2, -b.prof / 2, b.larg, b.prof);
+        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = .3; ctx.strokeRect(-b.larg / 2, -b.prof / 2, b.larg, b.prof);
+        ctx.restore();
       }
     },
 
-    /* as barreiras com o desenho de cada tipo */
+    /* ── as barreiras com o desenho de cada tipo e o que fica rente ao chão (pintados nos blocos) ── */
     barreiras(ctx, R, vis){
-      const tipo = R.cen.barreira.tipo;
+      const C = R.cen, tipo = C.barreira.tipo;
       /* toda barreira projeta sombra para o sudeste (a luz vem do noroeste) */
-      const sombra = (fn, d) => { ctx.save(); ctx.translate(d, -d); fn(); ctx.restore(); };
+      const sombra = (fn, d) => { ctx.save(); ctx.translate(d, -d * .78); fn(); ctx.restore(); };
       const todos = (path, cor, lw, dash, off) => { ctx.strokeStyle = cor; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.lineDashOffset = off || 0; for(const p of vis) ctx.stroke(p[path]); };
       ctx.lineJoin = 'round';
       if(tipo === 'pneus'){
         /* duas fileiras de pneus (a de trás desencontrada), com aro, furo e brilho; a cinta
-           vermelha e branca na frente; o guard-rail de aço com postes atrás */
+           colorida na frente; o guard-rail de aço com postes atrás */
         ctx.lineCap = 'butt';
         sombra(() => { todos('muros', 'rgba(10,18,10,.35)', 1.6); todos('guard', 'rgba(10,18,10,.25)', .35); }, .45);
-        todos('guard', '#9aa1a9', .22); todos('guard', '#d9dde2', .07); todos('guard', '#5d636b', .14, [.14, 2.8]);
+        todos('guard', (C.tema && C.tema.guard) || '#9aa1a9', .22); todos('guard', '#d9dde2', .07); todos('guard', '#5d636b', .14, [.14, 2.8]);
         ctx.lineCap = 'butt';
         const pn = padrao(ctx, 'pneus', 1.32 / 64);
         todos('murosFora', pn, .68); todos('muros', pn, .68);
-        todos('cinta', '#e7e4dc', .2); todos('cinta', '#c51f24', .2, [1.4, 1.4], 0); todos('cinta', 'rgba(255,255,255,.35)', .05);
+        const cin = (C.tema && C.tema.cinta) || ['#e7e4dc', '#c51f24'];
+        todos('cinta', cin[0], .2); todos('cinta', cin[1], .2, [1.4, 1.4], 0); todos('cinta', 'rgba(255,255,255,.35)', .05);
       } else if(tipo === 'concreto'){
-        /* muro de concreto: sombra, a face, o topo claro e as juntas; o alambrado com postes atrás */
+        /* muro de concreto: sombra, a face, o topo claro e as juntas; o pé do alambrado atrás (a tela sobe no andar 1) */
         ctx.lineCap = 'butt';
         sombra(() => todos('muros', 'rgba(10,14,18,.4)', 1.1), .55);
         todos('muros', '#9aa0a8', .85); todos('muros', '#cfd3d8', .55); ctx.save(); ctx.translate(-.08, .08); todos('muros', '#eceef0', .18); ctx.restore();
         todos('muros', 'rgba(0,0,0,.28)', .85, [.05, 3.95]);
-        sombra(() => todos('murosFora', 'rgba(0,0,0,.18)', .08), .6);
-        todos('murosFora', 'rgba(205,210,216,.55)', .06); todos('murosFora', '#4a4f56', .22, [.12, 2.9]);
+        todos('murosFora', 'rgba(60,66,74,.5)', .1); todos('murosFora', '#3f444b', .26, [.14, 2.88]);
+      } else if(tipo !== 'safer' && C2D.Ambiente){
+        C2D.Ambiente.barreira(ctx, R, vis, tipo, sombra, todos);
       } else {
         /* muro SAFER: sombra, a espuma branca, a faixa azul e as juntas dos módulos */
         ctx.lineCap = 'butt';
         sombra(() => todos('muros', 'rgba(10,14,18,.4)', 1.2), .6);
         todos('muros', '#c9ccd1', .95); todos('muros', '#f2f3f5', .7); todos('muros', '#2f6fd1', .2); ctx.save(); ctx.translate(-.08, .08); todos('muros', 'rgba(255,255,255,.7)', .1); ctx.restore();
         todos('muros', 'rgba(0,0,0,.25)', .95, [.05, 5.95]);
-        todos('murosFora', 'rgba(205,210,216,.5)', .06); todos('murosFora', '#4a4f56', .22, [.12, 2.9]);
+        todos('murosFora', 'rgba(60,66,74,.5)', .1); todos('murosFora', '#3f444b', .26, [.14, 2.88]);
       }
       ctx.setLineDash([]); ctx.lineDashOffset = 0; ctx.lineCap = 'butt';
-    },
-
-    /* o que fica por cima dos carros: copas das árvores e o pórtico */
-    alto(ctx, R, vis){
-      const C = R.cen, T = texturas();
-      for(const p of vis){
-        for(const a of C.porPedaco[p.idx].arvores){
-          const v = a.v2 != null ? a.v2 : a.v, s = T.arvores[v], k = a.r / 4.2;
-          /* a sombra no chão, longe pela altura da árvore; a copa não gira (a luz é do mundo) */
-          ctx.save(); ctx.translate(a.x + 2.2 * k, a.y - 2.2 * k); ctx.scale(k * 1.02, k * .96); ctx.globalAlpha = .34;
-          ctx.drawImage(s.sombra, -s.m / 2, -s.m / 2, s.m, s.m); ctx.restore();
-          ctx.save(); ctx.translate(a.x, a.y); ctx.scale(k, -k);
-          ctx.drawImage(s.cv, -s.m / 2, -s.m / 2, s.m, s.m); ctx.restore();
+      /* o pé das árvores (o tronco com a terra em volta); os arbustos e as pedras ficam no chão mesmo */
+      const T = texturas();
+      for(const p of (R.visLargo || vis)) for(const a of C.porPedaco[p.idx].arvores){
+        if(!R.visivel(a.x - a.r, a.y - a.r, a.x + a.r, a.y + a.r)) continue;
+        const s = T.arvores[(a.v2 != null ? a.v2 : a.v) % T.arvores.length], k = a.r / 4.2;
+        if(s.tipo === 'arbusto' || s.tipo === 'rocha'){
+          ctx.save(); ctx.translate(a.x, a.y); ctx.scale(k * .8, -k * .8); ctx.drawImage(s.cv, -s.m / 2, -s.m / 2, s.m, s.m); ctx.restore();
+        } else {
+          ctx.fillStyle = 'rgba(58,42,24,.3)'; ctx.beginPath(); ctx.arc(a.x, a.y, .95 * k + .3, 0, 6.3); ctx.fill();
+          ctx.fillStyle = '#3f3122'; ctx.beginPath(); ctx.arc(a.x, a.y, .4 * k + .1, 0, 6.3); ctx.fill();
         }
       }
-      const g = C.portico;
-      if(R.visivel(Math.min(g.x0, g.x1) - 5, Math.min(g.y0, g.y1) - 5, Math.max(g.x0, g.x1) + 5, Math.max(g.y0, g.y1) + 5)){
-        ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(g.x0 + 1, g.y0 - 1); ctx.lineTo(g.x1 + 1, g.y1 - 1); ctx.stroke();
-        ctx.strokeStyle = '#2a2d33'; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(g.x0, g.y0); ctx.lineTo(g.x1, g.y1); ctx.stroke();
-        ctx.strokeStyle = '#4a4e55'; ctx.lineWidth = .25; ctx.beginPath(); ctx.moveTo(g.x0, g.y0); ctx.lineTo(g.x1, g.y1); ctx.stroke();
-        for(const l of g.luzes){ ctx.fillStyle = R.luzes > 0 ? '#ff2a2a' : '#111'; ctx.beginPath(); ctx.arc(l.x, l.y, .32, 0, Math.PI * 2); ctx.fill(); }
+      if(C2D.Ambiente) C2D.Ambiente.barreiras(ctx, R, vis);
+      if(C2D.Vida) C2D.Vida.pintar(ctx, R, vis);
+    },
+
+    /* ── as sombras de tudo o que tem altura, como formas cheias: quem chama junta todas,
+       desfoca e escurece o chão de uma vez (duas sombras por cima não escurecem em dobro) ── */
+    sombras(g, R, vis){
+      const C = R.cen, T = texturas(), Rel = C2D.Relevo, sol = Rel.sol(R), ALT = Rel.ALT, largo = R.visLargo || vis;
+      const ang = Math.atan2(sol.y, sol.x), cs = Math.hypot(sol.x, sol.y);
+      g.fillStyle = '#000'; g.strokeStyle = '#000'; g.lineCap = 'round'; g.lineJoin = 'round'; g.setLineDash([]);
+      for(const p of largo){
+        for(const a of C.porPedaco[p.idx].arvores){
+          const s = T.arvores[(a.v2 != null ? a.v2 : a.v) % T.arvores.length], k = a.r / 4.2, h = alturaArv(a, s), ox = sol.x * h, oy = sol.y * h, al = a.r * 1.8 + 1;
+          if(!R.visivel(Math.min(a.x, a.x + ox) - al, Math.min(a.y, a.y + oy) - al, Math.max(a.x, a.x + ox) + al, Math.max(a.y, a.y + oy) + al)) continue;
+          const baixo = s.tipo === 'arbusto' || s.tipo === 'rocha', kk = k * (baixo ? .8 : s.tipo === 'palmeira' ? .85 : 1.05);
+          if(!baixo){ g.lineWidth = .5 * k + .12; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(a.x + ox * .85, a.y + oy * .85); g.stroke(); }
+          /* a copa: a silhueta desfocada, esticada na direção em que a sombra cai */
+          g.save(); g.translate(a.x + ox, a.y + oy); g.rotate(ang); g.scale(1 + .22 * cs, 1); g.rotate(-ang); g.scale(kk, -kk);
+          g.drawImage(s.sombra, -s.m / 2, -s.m / 2, s.m, s.m); g.restore();
+        }
+        for(const b of C.porPedaco[p.idx].predios){
+          const h = ALT[b.andar], ox = sol.x * h, oy = sol.y * h, rg = b.raioG + Math.hypot(ox, oy);
+          if(!R.visivel(b.x - rg, b.y - rg, b.x + rg, b.y + rg)) continue;
+          Rel.varrido(g, b.pts, ox, oy);
+        }
       }
+      for(const a of C.arquib){
+        const h = ALT[a.kTeto], ox = sol.x * h, oy = sol.y * h;
+        if(!R.visivel(a.x0 + Math.min(0, ox) - 1, a.y0 + Math.min(0, oy) - 1, a.x1 + Math.max(0, ox) + 1, a.y1 + Math.max(0, oy) + 1)) continue;
+        const hf = ALT[a.kTeto - 1] * .9;
+        Rel.varrido(g, a.pts, sol.x * hf, sol.y * hf);
+        if(a.cobertura){ g.save(); g.translate(ox, oy); g.fill(a.telhado); g.restore(); }
+      }
+      const B = C.boxes;
+      if(B){ const h = ALT[2], ox = sol.x * h, oy = sol.y * h; if(R.visivel(B.x0 + Math.min(0, ox) - 1, B.y0 + Math.min(0, oy) - 1, B.x1 + Math.max(0, ox) + 1, B.y1 + Math.max(0, oy) + 1)) Rel.varrido(g, B.pts, ox, oy); }
+      /* o pórtico da largada: a viga lá em cima e os dois pilares */
+      const pg = C.portico, hp = ALT[2];
+      if(pg && R.visivel(Math.min(pg.x0, pg.x1) - 2, Math.min(pg.y0, pg.y1) - 12, Math.max(pg.x0, pg.x1) + 12, Math.max(pg.y0, pg.y1) + 2)){
+        const ox = sol.x * hp, oy = sol.y * hp;
+        g.lineCap = 'butt'; g.lineWidth = pg.larg || 1.2; g.beginPath(); g.moveTo(pg.x0 + ox, pg.y0 + oy); g.lineTo(pg.x1 + ox, pg.y1 + oy); g.stroke();
+        g.lineCap = 'round'; g.lineWidth = .5; g.beginPath(); g.moveTo(pg.x0, pg.y0); g.lineTo(pg.x0 + ox, pg.y0 + oy); g.moveTo(pg.x1, pg.y1); g.lineTo(pg.x1 + ox, pg.y1 + oy); g.stroke();
+      }
+      if(C2D.Ambiente && C2D.Ambiente.sombras) C2D.Ambiente.sombras(g, R, vis, sol);
+      if(C2D.Vida && C2D.Vida.sombras) C2D.Vida.sombras(g, R, vis, sol);
+    },
+
+    /* ── os andares: o que tem altura é pintado plano, no andar dele, e copiado com a escala da altura ── */
+    /* depois de montar tudo: em que quadrados do mundo cada andar tem alguma coisa (só esses viram bloco) */
+    indexar(P, cen){
+      const CEL2 = 32, grade = cen.grade = [null, new Set(), new Set(), new Set(), new Set()];
+      const marca = (k, x0, y0, x1, y1) => { const g = grade[k]; if(!g) return; for(let a = Math.floor(x0 / CEL2); a <= Math.floor(x1 / CEL2); a++) for(let b = Math.floor(y0 / CEL2); b <= Math.floor(y1 / CEL2); b++) g.add(a * 100003 + b); };
+      const T = texturas();
+      for(const pp of cen.porPedaco){
+        for(const a of pp.arvores){ const s = T.arvores[(a.v2 != null ? a.v2 : a.v) % T.arvores.length], an = andaresDe(s), m = a.r * 1.5; for(const k in an) marca(+k, a.x - m, a.y - m, a.x + m, a.y + m); }
+        for(const b of pp.predios) marca(b.andar, b.x - b.raioG, b.y - b.raioG, b.x + b.raioG, b.y + b.raioG);
+      }
+      for(const a of cen.arquib){ for(const t of a.terracos) marca(t.k, a.x0, a.y0, a.x1, a.y1); if(a.cobertura) marca(a.kTeto, a.x0, a.y0, a.x1, a.y1); }
+      if(cen.boxes) marca(2, cen.boxes.x0, cen.boxes.y0, cen.boxes.x1, cen.boxes.y1);
+      const pg = cen.portico; if(pg) marca(2, Math.min(pg.x0, pg.x1) - 3, Math.min(pg.y0, pg.y1) - 3, Math.max(pg.x0, pg.x1) + 3, Math.max(pg.y0, pg.y1) + 3);
+      /* (o alambrado dos muros sobe ao andar 1 ao longo da pista inteira) */
+      if(cen.barreira.tipo === 'concreto' || cen.barreira.tipo === 'safer') for(const pd of P.pedacos) marca(1, pd.x0, pd.y0, pd.x1, pd.y1);
+      if(C2D.Ambiente && C2D.Ambiente.indexar) C2D.Ambiente.indexar(P, cen, marca);
+      if(C2D.Vida && C2D.Vida.indexar) C2D.Vida.indexar(P, cen, marca);
+    },
+    temAndar(R, k, x0, y0, x1, y1){
+      const g = R.cen && R.cen.grade && R.cen.grade[k]; if(!g) return false;
+      for(let a = Math.floor(x0 / 32); a <= Math.floor(x1 / 32); a++) for(let b = Math.floor(y0 / 32); b <= Math.floor(y1 / 32); b++) if(g.has(a * 100003 + b)) return true;
+      return false;
+    },
+    /* pinta o andar k (com o ctx no mundo, plano: a escala da altura é de quem chama) */
+    andar(ctx, R, vis, k){
+      const C = R.cen, T = texturas(), largo = R.visLargo || vis;
+      ctx.lineJoin = 'round'; ctx.lineCap = 'butt'; ctx.setLineDash([]);
+      /* o alambrado atrás do muro: a tela e os postes, vistos de cima no topo (andar 1) */
+      if(k === 1 && (C.barreira.tipo === 'concreto' || C.barreira.tipo === 'safer')){
+        ctx.strokeStyle = 'rgba(214,220,228,.5)'; ctx.lineWidth = .09; for(const p of vis) ctx.stroke(p.murosFora);
+        ctx.strokeStyle = '#59606a'; ctx.lineWidth = .24; ctx.setLineDash([.14, 2.88]); for(const p of vis) ctx.stroke(p.murosFora); ctx.setLineDash([]);
+      }
+      /* as árvores: a copa no andar 2 e o topo, mais claro, no 3 (pinheiros e ciprestes sobem ao 4) */
+      for(const p of largo) for(const a of C.porPedaco[p.idx].arvores){
+        const s = T.arvores[(a.v2 != null ? a.v2 : a.v) % T.arvores.length], cam = andaresDe(s)[k]; if(!cam) continue;
+        const kk = a.r / 4.2 * cam.f, m = s.m * kk / 2;
+        if(!R.visivel(a.x - m, a.y - m, a.x + m, a.y + m)) continue;
+        ctx.save(); ctx.translate(a.x + (cam.d || 0) * a.r, a.y - (cam.d || 0) * a.r); ctx.scale(kk, -kk);
+        ctx.drawImage(cam.img, -s.m / 2, -s.m / 2, s.m, s.m); ctx.restore();
+      }
+      /* os prédios da rua: o telhado, no andar da altura do prédio */
+      for(const p of largo) for(const b of C.porPedaco[p.idx].predios){
+        if(b.andar !== k || !R.visivel(b.x - b.raioG, b.y - b.raioG, b.x + b.raioG, b.y + b.raioG)) continue;
+        telhadoPredio(ctx, C, b);
+      }
+      /* as arquibancadas: um lance de degraus por andar, e a cobertura por cima de tudo */
+      for(const a of C.arquib){
+        if(!R.visivel(a.x0 - 1, a.y0 - 1, a.x1 + 1, a.y1 + 1)) continue;
+        for(const t of a.terracos) if(t.k === k){
+          ctx.fillStyle = '#7d838b'; ctx.fill(t.corpo);
+          ctx.save(); ctx.clip(t.corpo);
+          ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = .5; ctx.stroke(a.degraus);
+          ctx.fillStyle = padrao(ctx, 'publico', .04); ctx.fill(t.corpo);
+          ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .16; ctx.stroke(a.degraus);
+          /* debaixo da cobertura fica na sombra */
+          if(a.cobertura){ ctx.fillStyle = 'rgba(6,10,26,.34)'; ctx.fill(a.sobTeto); }
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = .5; ctx.stroke(t.fundo);
+          ctx.strokeStyle = '#dfe2e6'; ctx.lineWidth = .3; ctx.stroke(t.frente);
+          ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = .2; ctx.stroke(t.corpo);
+          if(t.k === 1){
+            /* a faixa de patrocínio na frente da arquibancada (virada para a pista) */
+            ctx.strokeStyle = '#1b1d21'; ctx.lineWidth = .7; ctx.stroke(a.faixa);
+            ctx.strokeStyle = a.cor; ctx.lineWidth = .5; ctx.setLineDash([5, 2.5]); ctx.stroke(a.faixa); ctx.setLineDash([]);
+            ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = .12; ctx.setLineDash([2.2, 5.3]); ctx.lineDashOffset = -1.2; ctx.stroke(a.faixa); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+          }
+        }
+        if(a.cobertura && a.kTeto === k){
+          ctx.fillStyle = '#e1e4e8'; ctx.fill(a.telhado);
+          ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = .3; ctx.stroke(a.nervuras);
+          ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = .12; ctx.stroke(a.nervuras);
+          ctx.strokeStyle = a.cor; ctx.lineWidth = .55; ctx.stroke(a.beiral);
+          ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = .22; ctx.stroke(a.telhado);
+        }
+      }
+      const B = C.boxes;
+      if(k === 2 && B && R.visivel(B.x0 - 1, B.y0 - 1, B.x1 + 1, B.y1 + 1)){
+        /* o telhado do prédio dos boxes: as nervuras, as claraboias e as máquinas */
+        ctx.fillStyle = '#cfd3d9'; ctx.fill(B.corpo);
+        ctx.strokeStyle = 'rgba(0,0,0,.08)'; ctx.lineWidth = 1.6; ctx.stroke(B.telhado);
+        ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = .25; ctx.stroke(B.telhado);
+        if(B.claras){ ctx.fillStyle = '#8fb3cf'; ctx.fill(B.claras); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.save(); ctx.translate(-.15, .15); ctx.fill(B.claras); ctx.restore(); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .12; ctx.stroke(B.claras); }
+        ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = .5; ctx.stroke(B.corpo);
+        if(B.maquinas){ ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.save(); ctx.translate(.35, -.3); ctx.fill(B.maquinas); ctx.restore(); ctx.fillStyle = '#9ba1a9'; ctx.fill(B.maquinas); }
+        ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = .3; ctx.stroke(B.corpo);
+      }
+      /* o pórtico da largada: a viga com a caixa das luzes (com o nome do circuito, quem pinta é o ambiente) */
+      const pg = C.portico;
+      if(k === 2 && pg && !(C.amb && C.amb.nomeP) && R.visivel(Math.min(pg.x0, pg.x1) - 3, Math.min(pg.y0, pg.y1) - 3, Math.max(pg.x0, pg.x1) + 3, Math.max(pg.y0, pg.y1) + 3)){
+        ctx.strokeStyle = '#2a2d33'; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(pg.x0, pg.y0); ctx.lineTo(pg.x1, pg.y1); ctx.stroke();
+        ctx.strokeStyle = '#4a4e55'; ctx.lineWidth = .25; ctx.beginPath(); ctx.moveTo(pg.x0, pg.y0); ctx.lineTo(pg.x1, pg.y1); ctx.stroke();
+        for(const l of pg.luzes){ ctx.fillStyle = '#101113'; ctx.beginPath(); ctx.arc(l.x, l.y, .34, 0, Math.PI * 2); ctx.fill(); }
+      }
+      if(C2D.Ambiente && C2D.Ambiente.andar) C2D.Ambiente.andar(ctx, R, vis, k);
+      if(C2D.Vida && C2D.Vida.andar) C2D.Vida.andar(ctx, R, vis, k);
+    },
+
+    /* ── a cada quadro, por cima dos carros: as paredes e os troncos (que mudam com a câmera) e os andares ── */
+    alto(ctx, R, vis){
+      const C = R.cen, Rel = C2D.Relevo, rv = R.rv, ALT = Rel.ALT, T = texturas(), v = R.vista, cam = R.cam;
+      const naTela = (x, y, m) => { const dx = x - cam.x, dy = y - cam.y, sx = v.ox + v.z * (dx * v.cs + dy * v.sn), sy = v.oy + v.z * (dx * v.sn - dy * v.cs); return sx > -m && sx < v.W + m && sy > -m && sy < v.H + m; };
+      const quad = (a, b, b2, a2) => { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(b2[0], b2[1]); ctx.lineTo(a2[0], a2[1]); ctx.closePath(); ctx.fill(); };
+      ctx.lineJoin = 'round'; ctx.lineCap = 'butt'; ctx.setLineDash([]);
+      /* as paredes dos prédios da rua: cada parede é um quadrilátero só (convexo, rápido de desenhar);
+         as janelas de todas saem num traço */
+      const jan = new Path2D(); let temJan = false;
+      for(const p of vis) for(const b of C.porPedaco[p.idx].predios){
+        if(!naTela(b.x, b.y, (b.raioG + ALT[b.andar]) * v.z)) continue;
+        const pisos = b.andar === 2 ? 2 : b.andar === 3 ? 3 : 5;
+        Rel.paredes(R, b.pts, rv.s[b.andar], (a, bb, a2, b2, luz) => {
+          ctx.fillStyle = luz > .2 ? b.corL : luz < -.2 ? b.corS : b.parede; quad(a, bb, b2, a2);
+          for(let q = 1; q <= pisos; q++){ const t = (q - .42) / pisos; jan.moveTo(a[0] + (a2[0] - a[0]) * t, a[1] + (a2[1] - a[1]) * t); jan.lineTo(bb[0] + (b2[0] - bb[0]) * t, bb[1] + (b2[1] - bb[1]) * t); }
+          temJan = true;
+        });
+      }
+      if(temJan){ ctx.strokeStyle = 'rgba(22,28,40,.6)'; ctx.lineWidth = .22; ctx.setLineDash([1.3, .9]); ctx.stroke(jan); ctx.setLineDash([]); }
+      /* o prédio dos boxes: as paredes, e na frente as portas das garagens com a cor de cada equipe */
+      const B = C.boxes;
+      if(B && R.visivel(B.x0 - 10, B.y0 - 10, B.x1 + 10, B.y1 + 10)){
+        const s = rv.s[2], cores = C2D.Cenario.equipes(R), sobe = (p, t) => { const f = 1 + (s - 1) * t; return [rv.x + (p[0] - rv.x) * f, rv.y + (p[1] - rv.y) * f]; };
+        Rel.paredes(R, B.pts, s, (a, bb, a2, b2, luz) => {
+          if(!naTela((a[0] + bb[0]) / 2, (a[1] + bb[1]) / 2, 12 * v.z)) return;
+          ctx.fillStyle = luz > .2 ? '#c9cdd4' : luz < -.2 ? '#868b93' : '#a9aeb6'; quad(a, bb, b2, a2);
+        });
+        /* (a frente só aparece do lado da pista: o ponto de fuga do lado de fora da parede) */
+        B.garagens.forEach((g, q) => {
+          if(!naTela((g.a[0] + g.b[0]) / 2, (g.a[1] + g.b[1]) / 2, 8 * v.z)) return;
+          if((rv.x - g.a[0]) * g.nx + (rv.y - g.a[1]) * g.ny <= 0) return;
+          ctx.fillStyle = '#17191d'; quad(g.a, g.b, sobe(g.b, .62), sobe(g.a, .62));
+          ctx.fillStyle = cores[q % cores.length]; quad(sobe(g.a, .66), sobe(g.b, .66), sobe(g.b, .93), sobe(g.a, .93));
+        });
+      }
+      /* os troncos: do pé de cada árvore até a copa */
+      const tr = new Path2D(); let temTr = false;
+      for(const p of vis) for(const a of C.porPedaco[p.idx].arvores){
+        const s = T.arvores[(a.v2 != null ? a.v2 : a.v) % T.arvores.length], kb = troncoDe(s); if(!kb) continue;
+        if(!naTela(a.x, a.y, (a.r + 3) * v.z)) continue;
+        const f = rv.s[kb]; tr.moveTo(a.x, a.y); tr.lineTo(rv.x + (a.x - rv.x) * f, rv.y + (a.y - rv.y) * f); temTr = true;
+      }
+      if(temTr){ ctx.lineCap = 'round'; ctx.strokeStyle = '#3f3122'; ctx.lineWidth = .5; ctx.stroke(tr); ctx.strokeStyle = 'rgba(160,130,90,.35)'; ctx.lineWidth = .14; ctx.stroke(tr); ctx.lineCap = 'butt'; }
+      /* os pilares do pórtico */
+      const pg = C.portico;
+      if(pg && naTela((pg.x0 + pg.x1) / 2, (pg.y0 + pg.y1) / 2, 30 * v.z)){
+        const f = rv.s[2];
+        ctx.strokeStyle = '#33373d'; ctx.lineWidth = .55; ctx.beginPath();
+        for(const [x, y] of [[pg.x0, pg.y0], [pg.x1, pg.y1]]){ ctx.moveTo(x, y); ctx.lineTo(rv.x + (x - rv.x) * f, rv.y + (y - rv.y) * f); }
+        ctx.stroke();
+      }
+      if(C2D.Ambiente && C2D.Ambiente.paredes) C2D.Ambiente.paredes(ctx, R, vis, naTela, quad);
+      if(C2D.Vida && C2D.Vida.paredes) C2D.Vida.paredes(ctx, R, vis, naTela);
+      /* os andares, de baixo para cima: dos blocos pintados; sem eles, pintados agora */
+      for(let k = 1; k < ALT.length; k++){
+        const s = rv.s[k];
+        if(R.cam2 && !R.semBlocos && C2D.Camadas.andar(R, ctx, k, s)) continue;
+        ctx.save(); ctx.translate(rv.x, rv.y); ctx.scale(s, s); ctx.translate(-rv.x, -rv.y);
+        C2D.Cenario.andar(ctx, R, vis, k);
+        ctx.restore();
+      }
+      /* as luzes da largada acesas, lá em cima no pórtico */
+      if(pg && R.luzes > 0 && naTela((pg.x0 + pg.x1) / 2, (pg.y0 + pg.y1) / 2, 30 * v.z)){
+        const f = rv.s[2];
+        for(const l of pg.luzes){
+          const x = rv.x + (l.x - rv.x) * f, y = rv.y + (l.y - rv.y) * f;
+          ctx.fillStyle = 'rgba(255,60,50,.28)'; ctx.beginPath(); ctx.arc(x, y, .8, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ff2a2a'; ctx.beginPath(); ctx.arc(x, y, .34, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      if(C2D.Ambiente) C2D.Ambiente.alto(ctx, R, vis, naTela);
     }
   };
 })(typeof window !== 'undefined' ? window : globalThis);

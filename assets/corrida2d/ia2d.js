@@ -36,15 +36,33 @@
         const dd = o.d - c.d, folgaLat = (o.sp.larg + wc) / 2;
         const meioComp = (o.sp.comp + c.sp.comp) / 2;
         /* ao lado: não fecha a porta, deixa um carro de espaço */
-        if(Math.abs(dsp) < meioComp + 1.2 && Math.abs(dd) < folgaLat + 1.6){
-          if(dd > 0) out.max = Math.min(out.max == null ? Infinity : out.max, o.d - folgaLat - .45);
-          else out.min = Math.max(out.min == null ? -Infinity : out.min, o.d + folgaLat + .45);
+        if(Math.abs(dsp) < meioComp + 2.5 && Math.abs(dd) < folgaLat + 2){
+          if(dd > 0) out.max = Math.min(out.max == null ? Infinity : out.max, o.d - folgaLat - .8);
+          else out.min = Math.max(out.min == null ? -Infinity : out.min, o.d + folgaLat + .8);
         }
         /* à frente, no caminho (no corredor entre onde está e para onde vai) */
-        const noCaminho = o.d + folgaLat + .4 > cLo && o.d - folgaLat - .4 < cHi;
-        if(dsp > 0 && dsp < 70 && noCaminho){
+        /* (quem está bem mais lento conta com mais margem; e a vista alcança mais longe quanto mais rápido) */
+        const mg = o.v < v * .6 ? 1.1 : .4;
+        const noCaminho = o.d + folgaLat + mg > cLo && o.d - folgaLat - mg < cHi;
+        if(dsp > 0 && dsp < Math.max(70, v * 2.4) && noCaminho){
           const g = dsp - meioComp;
           if(g < gF){ gF = g; frente = { o, g, voltas }; }
+        }
+        /* atrás e mais rápido: o retrovisor. Não muda de faixa na frente de quem vem embalado
+           (só segura onde está; quem vem atrás é que escolhe o lado) */
+        if(dsp < -meioComp * .6 && dsp > -50){
+          const fecha = o.v - v, tem = (-dsp - meioComp) / Math.max(.5, fecha);
+          if(fecha > .8 && tem < 1.7 && Math.abs(dd) > .5 && Math.abs(dd) < folgaLat + 3.4){
+            if(dd > 0) out.max = Math.min(out.max == null ? Infinity : out.max, Math.max(c.d, o.d - folgaLat - .5));
+            else out.min = Math.max(out.min == null ? -Infinity : out.min, Math.min(c.d, o.d + folgaLat + .5));
+          }
+        }
+        /* lento na pista (voltando de uma escapada, avariado) com gente embalada atrás: segura a linha */
+        if(dsp < 0 && dsp > -110 && o.v > v + 8 && v < P.seco.v[c.i] * .62) out.segura = true;
+        /* bandeira amarela: carro rodado ou quase parado na pista lá na frente; alivia antes de chegar */
+        if(dsp > 0 && dsp < 180 && !(c.voltas === 0 && c.sTot < 600) && Math.abs(o.d) < meia + 1.2){
+          const relP = Math.abs(C2D.ang(o.psi - P.hd[o.i]));
+          if(relP > .6 || (o.v < P.seco.v[o.i] * .45 && o.v < v * .7)) out.perigo = Math.min(out.perigo == null ? Infinity : out.perigo, dsp);
         }
         /* atrás, uma volta na frente: bandeira azul, sai da linha */
         if(dsp < 0 && dsp > -40 && voltas >= 1 && o.v > v - 2) out.azul = o;
@@ -55,39 +73,57 @@
         out.vMax = v * .985;
       }
       ia.t += C2D.DT;
+      /* quem está lento não muda de faixa: fica previsível, e quem vem rápido escolhe o lado */
+      if(out.segura && out.perigo == null){ out.lado = c.d; out.vMax = Math.min(out.vMax, Infinity); }
+      if(out.perigo != null){
+        const ref = P.seco.v[c.i] * ia.ritmo;
+        out.vMax = Math.min(out.vMax, ref * (.7 + .3 * lim((out.perigo - 45) / 135, 0, 1)));
+      }
       if(frente){
         const o = frente.o, g = frente.g;
         const lapeado = frente.voltas <= -1;
         /* carro rodado ou muito lento à frente: desvia já para o lado com mais espaço e freia */
         const relO = Math.abs(C2D.ang(o.psi - P.hd[o.i]));
         if(g < Math.max(30, v * 1.8) && (relO > .6 || o.v < v * .55) && v > 12){
-          const espE = meia - (o.d + o.sp.larg / 2 + .3), espD = (o.d - o.sp.larg / 2 - .3) + meia;
+          /* (onde ele vai estar quando chegarmos: quem está voltando para a linha continua indo para lá) */
+          const tCheg = lim(g / Math.max(3, v - o.v), 0, 2.5), vLat = o.v * Math.sin(C2D.ang(o.psi - P.hd[o.i]));
+          const dO = lim(o.d + (relO < 1.2 ? vLat * tCheg : 0), -meia, meia);
+          const espE = meia - (dO + o.sp.larg / 2 + .3), espD = (dO - o.sp.larg / 2 - .3) + meia;
           const lado = espE > espD ? 1 : -1;
-          out.lado = o.d + lado * (o.sp.larg / 2 + wc / 2 + .9 + Math.min(2.5, relO * 1.2));
+          out.lado = dO + lado * (o.sp.larg / 2 + wc / 2 + .9 + Math.min(2.5, relO * 1.2));
           ia.lado = lado; ia.ladoAte = ia.t + 1.5;
           out.segue = { g: g - 4, v: Math.max(0, o.v) };
           return out;
         }
         const quero = (P.seco.v[c.i] * ia.ritmo / (c.k || 1));
         const maisRapido = quero > o.v + .6 || v > o.v + 1.5 || lapeado;
-        /* escolhe o lado: por dentro da próxima curva, se couber; senão onde há mais espaço */
-        if(maisRapido && !amb.semPassar && g < 28 && (ia.lado === 0 || ia.t > ia.ladoAte)){
+        /* começar a ultrapassagem: com vantagem clara (embalado no vácuo, o outro bem mais lento ou uma volta
+           atrás), na reta ou chegando na freada; no meio da curva ninguém se atira por dentro */
+        const reta = Math.abs(P.k[c.i]) < 1 / 260, vantagem = lapeado || v > o.v + 2.2 || o.v < quero * .86;
+        if(maisRapido && vantagem && reta && !amb.semPassar && g < 28 && (ia.lado === 0 || ia.t > ia.ladoAte)){
           let curva = 0; for(let q = 0; q < 30; q++) curva += P.linha.k[(c.i + q * 2) % P.n];
-          const espE = meia - (o.d + o.sp.larg / 2), espD = (o.d - o.sp.larg / 2) + meia, preciso = wc + .45;
+          const espE = meia - (o.d + o.sp.larg / 2), espD = (o.d - o.sp.larg / 2) + meia, preciso = wc + 1.1;
           const dentro = curva > 0 ? 1 : -1;
           let lado = 0;
           if((dentro > 0 ? espE : espD) >= preciso) lado = dentro;
           else if(Math.max(espE, espD) >= preciso) lado = espE > espD ? 1 : -1;
           if(lado){ ia.lado = lado; ia.ladoAte = ia.t + 2.5 + ia.rnd() * 1.5; }
         }
-        if(ia.lado && ia.t <= ia.ladoAte && (maisRapido || g < 4)) out.lado = o.d + ia.lado * (o.sp.larg / 2 + wc / 2 + .55);
+        if(ia.lado && ia.t <= ia.ladoAte && (maisRapido || g < 4)) out.lado = o.d + ia.lado * (o.sp.larg / 2 + wc / 2 + .9);
         else ia.lado = 0;
         /* enquanto a traseira dele estiver no caminho, não encosta: freia para ele */
         /* no vácuo quem vem atrás chega mais depressa: a distância de seguir cresce com a aproximação */
         const fecha = Math.max(0, v - o.v);
-        const gapMin = 2.5 + v * (.1 + .08 * ia.cuidado) * (ia.lado ? .6 : 1) + fecha * .35;
-        out.segue = { g: g - gapMin, v: o.v };
-        if(g < gapMin) out.vMax = Math.min(out.vMax, Math.max(0, o.v - (gapMin - g) * .6));
+        /* atrás do safety car a fila anda mais espaçada (ninguém quer bater na relargada) */
+        const sc = c.teto != null && c.teto < 1e6;
+        /* na primeira volta o pelotão anda junto e todo mundo deixa mais espaço */
+        const largada = c.voltas === 0 ? 1.35 : 1;
+        const gapMin = (2.5 + v * (.11 + .09 * ia.cuidado) * (ia.lado ? .6 : 1)) * largada + fecha * .42 + (sc ? 7 + v * .2 : 0);
+        /* a velocidade dele daqui a pouco: se ele está freando, a conta já leva a freada */
+        /* (pouco: exagerar aqui vira sanfona no pelotão, e o último da fila acaba parando na pista) */
+        const vO = Math.max(o.v * .7, o.v + Math.min(0, o.ax || 0) * .2);
+        out.segue = { g: g - gapMin, v: vO };
+        if(g < gapMin) out.vMax = Math.min(out.vMax, Math.max(0, vO - (gapMin - g) * .6));
       } else if(ia.t > ia.ladoAte) ia.lado = 0;
       return out;
     },
@@ -105,7 +141,8 @@
         const ate = ((ia.errarEm - c.s) % P.L + P.L) % P.L;
         if(ate < 140 && ate > 60){ ia.errandoAte = ia.t + 3.5; ia.errarEm = null; ia.errou = (ia.errou || 0) + 1; }
       }
-      ia.erroFreio = ia.t < ia.errandoAte ? ia.erroBase + .32 : ia.erroBase;
+      /* o erro passa do ponto (alarga a curva, às vezes escapa), mas raramente acaba no muro */
+      ia.erroFreio = ia.t < ia.errandoAte ? ia.erroBase + .2 : ia.erroBase;
     },
 
     /* devolve o comando deste passo para o carro c */
@@ -132,11 +169,19 @@
       if(ia.alvoD != null) alvoLado = ia.alvoD;
       const tr = C2D.IA.trafego(ia, c, P, amb, alvoLado);
       if(tr.lado != null) alvoLado = tr.lado;
+      /* muda de faixa como gente: no máximo uns 4,5 m/s de lado (um desvio brusco a 250 km/h é batida certa) */
+      if(!ia.livre){
+        const off = alvoLado - L.e[j], passo = 4.5 * C2D.DT;
+        if(ia.off == null || c.voltas === 0 && c.sTot < 380) ia.off = off;
+        ia.off += lim(off - ia.off, -passo, passo);
+        alvoLado = L.e[j] + ia.off;
+      }
       if(tr.max != null) alvoLado = Math.min(alvoLado, tr.max);
       if(tr.min != null) alvoLado = Math.max(alvoLado, tr.min);
       /* fora da trajetória ideal a curva dá menos: um pouco mais de calma */
       const foraLinha = Math.abs(alvoLado - L.e[j]);
-      alvoLado = lim(alvoLado, -(P.meia - sp.larg / 2 - .25), P.meia - sp.larg / 2 - .25);
+      /* (na pit lane o carro vai aonde o box manda, fora da largura da pista) */
+      if(!ia.livre) alvoLado = lim(alvoLado, -(P.meia - sp.larg / 2 - .25), P.meia - sp.larg / 2 - .25);
       const tx = P.x[j] + P.nx[j] * alvoLado, ty = P.y[j] + P.ny[j] * alvoLado;
       const dx = tx - c.x, dy = ty - c.y;
       const cs = Math.cos(c.psi), sn = Math.sin(c.psi);
@@ -159,10 +204,12 @@
          para chegar à velocidade possível mais adiante encosta na que o carro tem.
          O erro no ponto de freada (dificuldade) é um engano nessa conta. */
       const prof = w > .3 ? P.molhado.v : P.seco.v;
-      const kk = ia.ritmo / (c.k || 1) * (1 - Math.min(.06, foraLinha * .012)) * (c.potencia != null && c.potencia < 1 ? .5 : 1);
+      /* carro avariado (asa quebrada, suspensão torta, freio ruim): o piloto alivia e leva o carro até o box */
+      const dm = c.dm, avaria = dm ? Math.min(dm.aF, dm.aR, dm.muF, dm.muR, dm.freioF, dm.freioR) : 1;
+      const kk = ia.ritmo / (c.k || 1) * (1 - Math.min(.06, foraLinha * .012)) * (c.potencia != null && c.potencia < 1 ? .5 : 1) * (avaria < .98 ? .5 + .45 * avaria : 1);
       const lead = Math.max(1, Math.round(v * .05 / P.ds));
       const vAqui = Math.min(prof[(ia0 + lead) % n] * kk * Math.sqrt(c.aderPneu || 1), tr.vMax, c.teto || Infinity);
-      const capFreio = C2D.G * (sp.b0 * (1 - .18 * w) + 1.1 * sp.aero * v * v) * .9 * (1 + (ia.erroFreio || 0));
+      const capFreio = C2D.G * (sp.b0 * (1 - .18 * w) + 1.1 * sp.aero * v * v) * .9 * (1 + (ia.erroFreio || 0)) * (avaria < .98 ? .6 + .4 * avaria : 1);
       let pede = 0;
       const alcance = Math.min(n - 1, Math.ceil((v * v / (2 * Math.max(5, capFreio * .6)) + 10) / P.ds));
       for(let q = 1; q <= alcance; q++){

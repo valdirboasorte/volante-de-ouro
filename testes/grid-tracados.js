@@ -53,19 +53,22 @@ ok(g && JSON.stringify(g).indexOf('Chase Elliott') >= 0, 'o grid montado pelo ch
 /* 3. traçados */
 const t = js(J, `(() => { const ids = Object.keys(TRACKS), c = { real:0, osm:0, mapa:0, aprox:0, modelo:0, esq:0 }, esq = [];
   ids.forEach(id => { const g = Pista.de(id, 2000); const k = g.modelo ? 'modelo' : g.arquivo === 'svg' ? 'mapa' : g.arquivo === 'aprox' ? 'aprox' : g.arquivo === 'osm' ? 'osm' : g.real ? 'real' : 'esq'; c[k]++; if(k === 'esq') esq.push(id); });
-  const lv = Pista.de('us_lv', 1982), tor = Pista.de('ca_tor', 1995);
+  const lv = Pista.de('us_lv', 1982), tor = Pista.de('ca_tor', 1995), mod = Pista.de('it_mod', 1955);
   const L = id => Math.round(Pista.de(id, 1960).L);
   const k1 = Pista.de('kr_loc', 2000), k2 = Pista.de('kr_loc', 2001);
   return { c, esq, total: ids.length, reims: L('fr_rei'), pesc: L('it_pes'), spr: L('us_spr'), avus: L('dt_ave'), bug: L('fr_bug'), atl: L('us_atl'),
     kart: { real: k1.real, mod: k1.modelo, igual: k1.modelo === k2.modelo, L: Math.round(k1.L) }, fonteReims: Pista.de('fr_rei', 1960).fonte,
-    lv: { fonte: lv.fonte, L: Math.round(lv.L), real: lv.real }, tor: { real: tor.real } }; })()`);
+    lv: { fonte: lv.fonte, L: Math.round(lv.L), real: lv.real }, tor: { real: tor.real, fonte: tor.fonte, L: Math.round(tor.L) }, mod: { real: mod.real } }; })()`);
 ok(t.reims === 8302 && t.pesc === 25579 && t.spr === 1609 && t.avus === 8300, `estradas, ovais e aeródromos no comprimento oficial (Reims ${t.reims} m, Pescara ${t.pesc} m, Springfield ${t.spr} m, AVUS do DTM ${t.avus} m)`);
 ok(t.bug === 4185 && t.atl === 4088, `Bugatti e Road Atlanta com o traçado real do OpenStreetMap (${t.bug} m, ${t.atl} m)`);
 ok(t.kart.real && t.kart.mod && t.kart.igual && t.kart.L > 400 && t.kart.L < 1900, `kartódromo genérico com o traçado de um kartódromo real de modelo (${t.kart.mod}, sempre o mesmo)`);
 ok(/aproximado/.test(t.fonteReims), 'o traçado aproximado aparece como aproximado, não como exato');
 ok(/Wikimedia Commons/.test(t.lv.fonte) && /CC|Public|domínio/i.test(t.lv.fonte) && t.lv.L === 3650 && t.lv.real,
   `circuito de rua copiado do mapa da Commons, com autor e licença na tela (Caesars Palace: ${t.lv.L} m; ${t.lv.fonte})`);
-ok(!t.tor.real, 'mapa recusado na conferência (Toronto) continua esquemático, em vez de um traçado errado');
+/* Toronto: o mapa do artigo foi recusado (misturava as ruas); o de 2023 da Commons foi lido e conferido */
+ok(t.tor.real && /Commons/.test(t.tor.fonte) && t.tor.L === 2815, 'Toronto usa o mapa conferido da Commons, no comprimento oficial');
+/* Modena: o mapa da Commons não se lê sozinho (a pista sobe e desce a de pouso por dentro do anel): a volta foi marcada à mão */
+ok(t.mod.real, 'Modena tem o traçado real, marcado à mão sobre o mapa da Commons');
 ok(t.esq.length <= 30, `traçados: ${t.c.real} da base da F1, ${t.c.osm} do OpenStreetMap, ${t.c.mapa} dos mapas da Commons, ${t.c.aprox} aproximados, ${t.c.modelo} kartódromos com modelo, ${t.c.esq} esquemáticos de ${t.total}`);
 
 console.log(falhas ? `\n${falhas} de ${n} verificações falharam` : `\ngrid e traçados: ${n} verificações, tudo certo`);

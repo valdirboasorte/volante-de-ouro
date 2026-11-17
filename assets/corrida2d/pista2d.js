@@ -111,7 +111,10 @@
       /* dois trechos da pista que passam perto: o muro fica no meio deles */
       const CEL = 25, grade = new Map(), cel = (a, b) => (Math.floor(a / CEL) * 73856093) ^ (Math.floor(b / CEL) * 19349663);
       for(let i = 0; i < n; i++){ const c = cel(x[i], y[i]); let l = grade.get(c); if(!l) grade.set(c, l = []); l.push(i); }
-      const vizinhanca = Math.ceil(80 / ds), alcance = meia * 2 + base * 2 + 6;
+      const vizinhanca = Math.ceil(80 / ds), alcance = meia * 2 + Math.max(base, 16) * 2 + 6;
+      /* (só a colisão) até onde vai o espaço livre de cada lado antes do trecho vizinho: o pit lane passa
+         além do escape, e o muro dele também não pode avançar sobre outro trecho da pista */
+      const livreE = new Float32Array(n).fill(Infinity), livreD = new Float32Array(n).fill(Infinity);
       for(let i = 0; i < n; i++){
         const gx = Math.floor(x[i] / CEL), gy = Math.floor(y[i] / CEL), R = Math.ceil(alcance / CEL);
         for(let a = -R; a <= R; a++) for(let b = -R; b <= R; b++){
@@ -123,7 +126,8 @@
             const lat = vx * nx[i] + vy * ny[i], ao = Math.abs(vx * -ny[i] + vy * nx[i]);
             if(ao > Math.abs(lat) * .8 + 4) continue;
             const folga = Math.max(.8, Math.abs(lat) / 2 - meia);
-            if(lat > 0) escE[i] = Math.min(escE[i], folga); else escD[i] = Math.min(escD[i], folga);
+            if(lat > 0){ escE[i] = Math.min(escE[i], folga); livreE[i] = Math.min(livreE[i], folga); }
+            else { escD[i] = Math.min(escD[i], folga); livreD[i] = Math.min(livreD[i], folga); }
           }
         }
       }
@@ -134,7 +138,7 @@
         for(let i = 0; i < n; i++){ let v = 0; for(let q = -3; q <= 3; q++) v += m[(i + q + n) % n]; s[i] = Math.min(a[i], v / 7); }
         return s;
       };
-      Object.assign(P, { escE: suave(escE), escD: suave(escD), pisoE, pisoD });
+      Object.assign(P, { escE: suave(escE), escD: suave(escD), pisoE, pisoD, livreE, livreD });
 
       /* ── zebras: onde a curva aperta ── */
       const zeb = new Uint8Array(n);
@@ -244,6 +248,13 @@
         else if(dt < best){ i = t; best = dt; }
         else break;
       }
+      /* longe da pista (no gramado do miolo de um oval, numa área de escape larga) a busca local pode parar
+         num ponto que não é o mais perto: confere na pista inteira e desce de novo a partir de lá */
+      if(best > 256){
+        let g = i, gb = best;
+        for(let k = 0; k < n; k += 2){ const v = d2(k); if(v < gb){ gb = v; g = k; } }
+        if(g !== i){ i = g; best = gb; for(let passo = 0; passo < 6; passo++){ const f = (i + 1) % n, t = (i - 1 + n) % n, df = d2(f), dt = d2(t); if(df < best && df <= dt){ i = f; best = df; } else if(dt < best){ i = t; best = dt; } else break; } }
+      }
       /* refina no segmento até o vizinho mais perto */
       const j = (i + 1) % n, h = (i - 1 + n) % n;
       let a = i, b = j;
@@ -261,7 +272,7 @@
     piso(P, i, s, d){
       const m = P.meia;
       const bd = P.box.dEm(s);
-      if(bd != null && Math.sign(d) === Math.sign(P.box.lado) && Math.abs(d) > m && Math.abs(d - bd) < P.box.larg / 2 + .5) return PISO.PIT;
+      if(bd != null && !P.kart && Math.sign(d) === Math.sign(P.box.lado) && Math.abs(d) > m && Math.abs(d - bd) < P.box.larg / 2 + .5) return PISO.PIT;
       const ad = Math.abs(d);
       if(ad <= m) return PISO.ASF;
       if(ad <= m + 1.2 && P.zebra[i]) return PISO.ZEB;
@@ -269,11 +280,23 @@
       if(ad <= m + esc) return d > 0 ? P.pisoE[i] : P.pisoD[i];
       return PISO.MURO;
     },
+    /* o muro dos boxes, entre a pista e o pit lane: a distância dele ao eixo naquele ponto, ou null
+       (só no trecho em que ele existe; nas pontas, na entrada e na saída, o pit lane é aberto) */
+    mureta(P, i){
+      const B = P.box; if(P.kart || !(B.comp > 280)) return null;
+      const q = (((i * P.ds) - B.ini) % P.L + P.L) % P.L;
+      return q > 140 && q < B.comp - 140 ? P.meia + 1.4 : null;
+    },
     /* até onde vai o lado (o muro), a partir do eixo */
-    muroEm(P, i, lado){
+    muroEm(P, i, lado, c){
       const m = P.meia + (lado > 0 ? P.escE[i] : P.escD[i]);
-      /* do lado dos boxes, ao longo da pit lane, o muro fica por fora dela */
-      if(lado === Math.sign(P.box.lado) && P.box.dEm(i * P.ds) != null) return Math.max(m, P.box.d + P.box.larg / 2 + .8);
+      /* do lado dos boxes, ao longo da pit lane, o muro fica por fora dela; mas não passa do meio do
+         caminho até outro trecho da pista que corra ali perto (quem está no pit segue o pit lane) */
+      /* (no kart não há pit lane desenhado: a barreira de pneus segue inteira; só quem vai ao box passa) */
+      if(lado === Math.sign(P.box.lado) && P.box.dEm(i * P.ds) != null && (c && c.box || !P.kart && P.box.comp > 260)){
+        const fora = Math.max(m, P.box.d + P.box.larg / 2 + .8), livre = P.livreE ? (lado > 0 ? P.livreE[i] : P.livreD[i]) : Infinity;
+        return c && c.box || !isFinite(livre) ? fora : Math.min(fora, Math.max(m, P.meia + livre));
+      }
       return m;
     },
 

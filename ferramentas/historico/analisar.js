@@ -65,6 +65,15 @@ function analisar(html){
     return c.textContent.split('\n').map(s => s.replace(/\[[^\]]*\]/g, '').replace(/[ \s]+/g, ' ').replace(/[†‡*#~^]+/g, '').trim()).filter(Boolean);
   };
   const juntas = cell => linhasDe(cell).join(' / ');
+  /* vários pilotos sem link na mesma célula, um por linha (as duplas de GT):
+     só vale se toda linha tiver cara de nome; senão a célula é lida inteira */
+  const nomesSoltos = cell => {
+    const ls = linhasDe(cell);
+    return ls.length > 1 && ls.every(s => /^["“”'A-Za-zÀ-ÿ]/.test(s) && !/\d|[()]/.test(s) && s.length <= 60) ? ls : null;
+  };
+  /* a célula que ocupa a coluna do piloto e mais outra (equipe ou número) é uma
+     nota da tabela: o rodapé "Sources:", a legenda, o título de um bloco */
+  const ocupaOutra = (row, cPil, outras) => outras.some(c => c >= 0 && c !== cPil && row[c] && row[c].cell === row[cPil].cell);
   /* cada piloto citado numa célula, com a bandeira que vem logo antes dele */
   const pilotosDaCelula = cell => {
     const out = []; let flag = null;
@@ -124,6 +133,7 @@ function analisar(html){
     for(let r = cab.n; r < g.length; r++){
       const row = g[r]; if(!row || !row[cPil]) continue;
       if(row.filter(Boolean).every(x => x.th)) continue;
+      if(ocupaOutra(row, cPil, [cEq, cNum])) continue;
       const pc = row[cPil].cell;
       const eq = cEq >= 0 && row[cEq] ? juntas(row[cEq].cell) : '';
       const cha = cCha >= 0 && row[cCha] ? juntas(row[cCha].cell) : (cCar >= 0 && row[cCar] ? juntas(row[cCar].cell) : '');
@@ -145,6 +155,19 @@ function analisar(html){
         continue;
       }
       const links = [...pc.querySelectorAll('a[href^="/wiki/"]')].filter(ehNome);
+      const soltos = links.length ? null : nomesSoltos(pc);
+      if(soltos){
+        /* um nome por linha, sem link: uma inscrição para cada (a bandeira só vale para o primeiro) */
+        const nums = cNum >= 0 && row[cNum] ? linhasDe(row[cNum].cell) : [];
+        const rods = cRod >= 0 && row[cRod] ? linhasDe(row[cRod].cell) : [];
+        soltos.forEach((nm, k) => {
+          inscritos.push({ nome: nm, pagina: null, cc: k === 0 ? bandeira(pc) || ccNat : ccNat, eq, con,
+            num: nums.length === soltos.length ? nums[k] : nums.join(' / '),
+            rod: rods.length === soltos.length ? rods[k] : rods.join(' / '), cha, mot, teste: teste || undefined });
+          usou = true;
+        });
+        continue;
+      }
       let nome = links.length ? txt(links[0]) : txt(pc);
       nome = nome.replace(/\((?:R|res|rookie|guest)\)$/i, '').trim();
       if(!nome || /^tba$|^tbc$|^none$|^—$|^-$/i.test(nome) || nome.length > 60) continue;
@@ -200,12 +223,16 @@ function analisar(html){
       const row = g[r]; if(!row || !row[cPil] || !row[cPos]) continue;
       const pos = txt(row[cPos].cell);
       const pc = row[cPil].cell;
+      if(ocupaOutra(row, cPil, [cPos, cEq])) continue;
       const l = [...pc.querySelectorAll('a[href^="/wiki/"]')].find(ehNome);
-      const nome = l ? txt(l) : txt(pc);
-      if(!nome || /^pos/i.test(pos) || vistos.has(nome) || nome.length > 60) continue;
-      vistos.add(nome);
-      classificacao.push({ pos, nome, pagina: l ? decodeURIComponent(l.getAttribute('href').replace('/wiki/', '')) : null, cc: bandeira(pc),
-        eq: cEq >= 0 && row[cEq] ? juntas(row[cEq].cell) : '', cha: cCha >= 0 && row[cCha] ? juntas(row[cCha].cell) : '', mot: cMot >= 0 && row[cMot] ? juntas(row[cMot].cell) : '' });
+      /* a dupla sem link numa célula só: uma linha da classificação para cada um */
+      const nomes = l ? [txt(l)] : (nomesSoltos(pc) || [txt(pc)]);
+      nomes.forEach((nome, k) => {
+        if(!nome || /^pos/i.test(pos) || vistos.has(nome) || nome.length > 60) return;
+        vistos.add(nome);
+        classificacao.push({ pos, nome, pagina: l ? decodeURIComponent(l.getAttribute('href').replace('/wiki/', '')) : null, cc: k === 0 ? bandeira(pc) : null,
+          eq: cEq >= 0 && row[cEq] ? juntas(row[cEq].cell) : '', cha: cCha >= 0 && row[cCha] ? juntas(row[cCha].cell) : '', mot: cMot >= 0 && row[cMot] ? juntas(row[cMot].cell) : '' });
+      });
     }
   });
 

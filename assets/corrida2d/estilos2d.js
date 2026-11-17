@@ -12,255 +12,363 @@
 
   /* ─────────── desenhos que faltavam ─────────── */
 
+  /* farol com lente: o aro, a lente clara e o brilho */
+  function farol(g, x, y, rx, ry, rot){
+    g.beginPath(); g.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2); g.fillStyle = '#8f959d'; g.fill();
+    g.beginPath(); g.ellipse(x, y, rx * .8, ry * .8, rot || 0, 0, Math.PI * 2);
+    const gr = g.createRadialGradient(x + rx * .2, y - ry * .3, 0, x, y, Math.max(rx, ry)); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.6, '#e8eef5'); gr.addColorStop(1, '#aab6c4');
+    g.fillStyle = gr; g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .014; g.beginPath(); g.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2); g.stroke();
+  }
+  /* peça cromada (para-choque, grade): o metal com o filete de luz */
+  function cromo(g, x0, x1, y0, y1, r){
+    const { ret } = A();
+    ret(g, x0, x1, y0, y1, r);
+    const gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, '#7d848d'); gr.addColorStop(.45, '#f1f3f6'); gr.addColorStop(1, '#8a9099'); g.fillStyle = gr; g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = .014; g.stroke();
+  }
+  /* cano de escape cromado ao longo de pontos */
+  function cano(g, x0, y0, cx, cy, x1, y1, lw){
+    g.lineCap = 'round';
+    g.strokeStyle = '#80868e'; g.lineWidth = lw; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(cx, cy, x1, y1); g.stroke();
+    g.strokeStyle = '#e6e9ed'; g.lineWidth = lw * .3; g.beginPath(); g.moveTo(x0, y0 - lw * .22); g.quadraticCurveTo(cx, cy - lw * .22, x1, y1 - lw * .22); g.stroke();
+    g.lineCap = 'butt';
+  }
+
   /* fórmula de motor dianteiro (F1 dos anos 50, roadster da Indy, Fórmula Júnior de motor na frente) */
   function frente(g, p, o){
-    const { caminhoSim, ret, corpo, pneu, capacete, numero, tom, CARBONO } = A();
-    const L = p.L0, hW = p.W0 / 2, off = p.offset || 0, gc = corpo(g, o.cor, hW);
+    const { caminhoSim, ret, volume, vinco, pneu, piloto, numero, tom } = A();
+    const L = p.L0, off = p.offset || 0;
     const rF = p.rF, rT = p.rT;
+    /* os eixos e as molas, de metal */
+    g.strokeStyle = '#8f959d'; g.lineWidth = .05; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(rF[0], -rF[1] + .08); g.lineTo(rF[0], rF[1] - .08); g.moveTo(rT[0], -rT[1] + .08); g.lineTo(rT[0], rT[1] - .08); g.stroke();
+    g.strokeStyle = '#b9bec6'; g.lineWidth = .03;
+    for(const s of [1, -1]){ g.beginPath(); g.moveTo(rF[0] + .02, s * rF[1] * .8); g.lineTo(rF[0] - .45, s * .2 + off); g.moveTo(rT[0], s * rT[1] * .8); g.lineTo(rT[0] + .5, s * .22 + off); g.stroke(); }
+    g.lineCap = 'butt';
     for(const s of [1, -1]){ pneu(g, rF[0], s * rF[1], rF[2], rF[3], { arame: true }); pneu(g, rT[0], s * rT[1] + (p.stagger && s < 0 ? -.03 : 0), rT[2], rT[3] * (p.stagger && s > 0 ? 1.12 : 1), { arame: true }); }
-    g.strokeStyle = '#3a3d42'; g.lineWidth = .045;
-    for(const s of [1, -1]){ g.beginPath(); g.moveTo(rF[0], s * rF[1] * .8); g.lineTo(rF[0] - .1, s * .18); g.moveTo(rT[0], s * rT[1] * .8); g.lineTo(rT[0] + .1, s * .2); g.stroke(); }
-    const pts = [[L / 2, .16], [L / 2 - .15, .24], [L * .2, p.capo || .3], [-L * .05, p.corpoW || .36], [-L * .3, .3], [-L / 2 + .2, .15], [-L / 2, .05]];
-    g.save(); g.translate(0, off); caminhoSim(g, pts); g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .02; g.stroke();
-    /* grade do radiador, persianas do capô, faixa */
-    g.fillStyle = '#16181b'; g.beginPath(); g.ellipse(L / 2 - .05, 0, .06, .15, 0, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .02; for(let q = 0; q < 5; q++){ const x = L * .3 - q * .12; g.beginPath(); g.moveTo(x, -.18); g.lineTo(x - .05, -.08); g.moveTo(x, .18); g.lineTo(x - .05, .08); g.stroke(); }
-    g.fillStyle = o.cor2; ret(g, -L / 2 + .2, L / 2 - .1, -.03, .03); g.fill();
-    /* cockpit lá atrás, para-brisa pequeno, encosto */
+    const cw = p.corpoW || .36, pts = [[L / 2, .14], [L / 2 - .12, .23], [L * .2, p.capo || .3], [-L * .05, cw], [-L * .3, cw * .84], [-L / 2 + .2, .16], [-L / 2, .05]];
+    g.save(); g.translate(0, off);
+    const cam = () => caminhoSim(g, pts);
+    volume(g, cam, o.cor, cw + .02);
+    g.save(); cam(); g.clip(); g.fillStyle = o.cor2; ret(g, -L / 2 + .2, L / 2 - .1, -.03, .03); g.fill(); g.restore();
+    /* a grade do radiador, com a tela */
+    g.beginPath(); g.ellipse(L / 2 - .07, 0, .08, .17, 0, 0, Math.PI * 2); g.fillStyle = '#0c0d0f'; g.fill(); g.strokeStyle = '#c9ced5'; g.lineWidth = .022; g.stroke();
+    g.strokeStyle = 'rgba(200,205,212,.45)'; g.lineWidth = .01; for(let q = -2; q <= 2; q++){ g.beginPath(); g.moveTo(L / 2 - .13, q * .055); g.lineTo(L / 2 - .01, q * .055); g.stroke(); }
+    /* as persianas do capô e a cinta de couro */
+    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .02; g.lineCap = 'round';
+    for(let q = 0; q < 7; q++){ const x = L * .34 - q * .1; g.beginPath(); g.moveTo(x, -.2); g.lineTo(x - .04, -.09); g.moveTo(x, .2); g.lineTo(x - .04, .09); g.stroke(); }
+    g.lineCap = 'butt';
+    vinco(g, [[L * .1, -(p.capo || .3) * .96], [L * .1, (p.capo || .3) * .96]], { a: .35 });
+    /* o cockpit lá atrás: o piloto com os braços no volante de aro, o para-brisa pequeno */
     const cx = p.cockX != null ? p.cockX : -L * .12;
-    ret(g, cx - .3, cx + .25, -.22, .22, .18); g.fillStyle = '#0b0c0e'; g.fill();
-    g.strokeStyle = 'rgba(200,220,235,.8)'; g.lineWidth = .035; g.beginPath(); g.ellipse(cx + .28, 0, .05, .22, 0, -Math.PI / 2, Math.PI / 2); g.stroke();
-    capacete(g, cx - .05, 0, .13, o.capCor);
-    if(p.encosto){ ret(g, cx - .65, cx - .3, -.1, .1, .08); g.fillStyle = gc; g.fill(); }
+    ret(g, cx - .32, cx + .27, -.23, .23, .18); g.fillStyle = '#08090a'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .025; g.stroke();
+    if(p.encosto){ volume(g, () => caminhoSim(g, [[cx - .26, .13], [cx - .45, .12], [cx - .72, .03]]), o.cor, .14); }
+    piloto(g, cx - .06, 0, .13, o.capCor, { aro: '#6e4420', dist: 2.2, macacao: '#d9d4c4' });
+    g.strokeStyle = 'rgba(200,222,238,.85)'; g.lineWidth = .035; g.beginPath(); g.ellipse(cx + .3, 0, .05, .22, 0, -Math.PI / 2, Math.PI / 2); g.stroke();
+    if(p.santantonio){ g.strokeStyle = '#c3c8cf'; g.lineWidth = .05; g.beginPath(); g.moveTo(cx - .34, -.2); g.quadraticCurveTo(cx - .42, 0, cx - .34, .2); g.stroke(); }
+    /* o número num círculo no capô */
+    g.beginPath(); g.arc(L * .22, 0, .17, 0, Math.PI * 2); g.fillStyle = '#f4f4f2'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .014; g.stroke();
+    if(o.num != null) numero(g, o.num, L * .22, 0, .2, Math.PI / 2, '#111', 'rgba(255,255,255,0)');
     g.restore();
-    /* escapamento por fora */
-    g.strokeStyle = '#b7bcc4'; g.lineWidth = .05; g.beginPath(); g.moveTo(L * .2, .3 + off); g.quadraticCurveTo(-L * .1, .4 + off, -L * .35, .34 + off); g.stroke();
-    /* o número num círculo do lado e no bico */
-    g.beginPath(); g.arc(L * .08, -.0 + off, .17, 0, Math.PI * 2); g.fillStyle = '#f4f4f2'; g.fill();
-    if(o.num != null) numero(g, o.num, L * .08, off, .2, Math.PI / 2, '#111', 'rgba(255,255,255,0)');
-    if(p.santantonio){ g.strokeStyle = CARBONO; g.lineWidth = .06; g.beginPath(); g.moveTo(cx - .32, -.2 + off); g.lineTo(cx - .32, .2 + off); g.stroke(); }
+    /* o escapamento por fora, cromado */
+    cano(g, L * .2, cw * .75 + off, -L * .1, cw + .1 + off, -L * .38, cw * .9 + off, .06);
   }
 
   /* midget e sprint car: motor na frente, gaiola em cima do piloto, nerf bars, pneu traseiro
      direito bem maior (as curvas são todas para a esquerda); o sprint pode ter a asa enorme */
   function sprint(g, p, o){
-    const { ret, corpo, pneu, capacete, numero, tom, CARBONO } = A();
-    const L = p.L0, gc = corpo(g, o.cor, .5);
+    const { ret, volume, pneu, piloto, numero, tom, luz, caminhoSim } = A();
+    const L = p.L0;
     const xf = L * .34, xt = -L * .3, yf = p.yF || .62, yt = p.yT || .66;
-    pneu(g, xf, yf, .5, .26); pneu(g, xf, -yf, .5, .26);
-    pneu(g, xt, yt, .62, .34); pneu(g, xt, -yt - .02, .72, .46);
-    /* nerf bars e eixos */
-    g.strokeStyle = '#9aa0a8'; g.lineWidth = .045;
-    for(const s of [1, -1]){ g.beginPath(); g.moveTo(xf - .28, s * yf); g.lineTo(xt + .34, s * yt); g.stroke(); }
+    /* eixos e nerf bars */
+    g.strokeStyle = '#9aa0a8'; g.lineWidth = .045; g.lineCap = 'round';
     g.beginPath(); g.moveTo(xf, -yf + .1); g.lineTo(xf, yf - .1); g.moveTo(xt, -yt + .1); g.lineTo(xt, yt - .1); g.stroke();
-    /* capô, cockpit e tanque traseiro */
-    ret(g, xf - .25, L / 2, -.22, .22, .12); g.fillStyle = gc; g.fill();
-    g.fillStyle = '#1a1c20'; ret(g, L / 2 - .06, L / 2 + .02, -.14, .14, .03); g.fill();
-    ret(g, xt + .15, xf - .2, -.32, .32, .1); g.fillStyle = gc; g.fill();
-    ret(g, -L / 2, xt + .15, -.3, .3, .14); g.fillStyle = tom(o.cor, -.15); g.fill();
-    capacete(g, -.02, 0, .14, o.capCor);
-    /* a gaiola (o arco de proteção) */
-    g.strokeStyle = '#2a2d31'; g.lineWidth = .06; ret(g, -.35, .3, -.3, .3, .06); g.stroke();
-    g.beginPath(); g.moveTo(-.35, 0); g.lineTo(.3, 0); g.stroke();
+    for(const s of [1, -1]){ g.beginPath(); g.moveTo(xf - .3, s * (yf - .12)); g.lineTo(xt + .36, s * (yt - .14)); g.stroke(); }
+    g.lineCap = 'butt';
+    pneu(g, xf, yf, .5, .26, { riscado: true }); pneu(g, xf, -yf, .5, .26, { riscado: true });
+    pneu(g, xt, yt, .62, .34, { riscado: true }); pneu(g, xt, -yt - .02, .72, .46, { riscado: true });
+    /* o capô estreito, o corpo e o tanque de trás */
+    volume(g, () => caminhoSim(g, [[L / 2, .12], [L / 2 - .1, .2], [xf - .25, .24], [xt + .2, .33], [xt + .1, .3]]), o.cor, .34);
+    g.fillStyle = '#0c0d0f'; ret(g, L / 2 - .07, L / 2 + .02, -.13, .13, .03); g.fill();
+    volume(g, () => caminhoSim(g, [[xt + .2, .3], [xt, .32], [-L / 2 + .1, .26], [-L / 2, .12]]), tom(o.cor, -.12), .32);
+    g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = .02; for(let q = 0; q < 5; q++){ const x = xf + .1 - q * .1; g.beginPath(); g.moveTo(x, -.15); g.lineTo(x - .04, -.06); g.moveTo(x, .15); g.lineTo(x - .04, .06); g.stroke(); }
+    cano(g, xf - .1, .26, 0, .44, xt + .3, .42, .05);
+    /* o piloto e a gaiola */
+    ret(g, -.36, .3, -.27, .27, .1); g.fillStyle = '#08090a'; g.fill();
+    piloto(g, -.06, 0, .13, o.capCor, { dist: 2.1 });
+    g.strokeStyle = '#1d1f23'; g.lineWidth = .06; g.lineJoin = 'round'; ret(g, -.38, .32, -.31, .31, .07); g.stroke();
+    g.beginPath(); g.moveTo(-.38, 0); g.lineTo(.32, 0); g.moveTo(-.03, -.31); g.lineTo(-.03, .31); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = .014; ret(g, -.38, .32, -.33, .29, .07); g.stroke();
     if(p.asa){
       /* a asa de cima (do tamanho do carro) e a do bico, com as placas laterais */
       const aw = p.asa;
-      g.fillStyle = 'rgba(0,0,0,.25)'; ret(g, -.55 + .06, .55 + .06, -aw / 2 + .06, aw / 2 + .06, .05); g.fill();
-      ret(g, -.55, .55, -aw / 2, aw / 2, .05); g.fillStyle = o.cor2; g.fill();
-      g.fillStyle = gc; ret(g, -.55, .55, -aw / 2 + .08, aw / 2 - .08, .03); g.fill();
-      g.fillStyle = o.cor2; ret(g, -.6, .6, -aw / 2 - .02, -aw / 2 + .06, .02); g.fill(); ret(g, -.6, .6, aw / 2 - .06, aw / 2 + .02, .02); g.fill();
-      if(o.num != null) numero(g, o.num, 0, 0, .7, Math.PI / 2, '#fff');
-      ret(g, L / 2 - .05, L / 2 + .35, -.42, .42, .04); g.fillStyle = o.cor2; g.fill();
-    } else if(o.num != null) numero(g, o.num, xt + .4, 0, .28, Math.PI / 2, '#fff');
+      g.fillStyle = 'rgba(0,0,0,.28)'; ret(g, -.55 + .07, .55 + .07, -aw / 2 + .07, aw / 2 + .07, .05); g.fill();
+      volume(g, () => ret(g, -.55, .55, -aw / 2, aw / 2, .05), o.cor, aw / 2, { brilho: .22 });
+      const ge = g.createLinearGradient(.55, 0, -.55, 0); ge.addColorStop(0, 'rgba(255,255,255,.2)'); ge.addColorStop(.5, 'rgba(255,255,255,0)'); ge.addColorStop(1, 'rgba(0,0,0,.3)'); g.fillStyle = ge; ret(g, -.55, .55, -aw / 2, aw / 2, .05); g.fill();
+      for(const s of [1, -1]){ g.fillStyle = o.cor2; ret(g, -.62, .62, s * aw / 2 - .045, s * aw / 2 + .045, .02); g.fill(); g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = .014; g.stroke(); }
+      if(o.num != null) numero(g, o.num, 0, 0, .7, Math.PI / 2, luz(o.cor) > .6 ? '#111' : '#fff');
+      volume(g, () => ret(g, L / 2 - .05, L / 2 + .35, -.42, .42, .04), o.cor, .42, { brilho: .2 });
+      for(const s of [1, -1]){ g.fillStyle = o.cor2; ret(g, L / 2 - .08, L / 2 + .38, s * .42 - .035, s * .42 + .035, .02); g.fill(); }
+    } else if(o.num != null) numero(g, o.num, xt + .1, 0, .28, Math.PI / 2, '#fff');
   }
 
   /* modificado da NASCAR: carroceria de carro de corrida, rodas da frente para fora */
   function modificado(g, p, o){
-    const { caminhoSim, ret, corpo, pneu, capacete, numero, tom, CARBONO } = A();
-    const L = p.L0, gc = corpo(g, o.cor, .9);
+    const { caminhoSim, ret, volume, vidro, pneu, numero, tom, luz, CARBONO } = A();
+    const L = p.L0;
+    g.strokeStyle = '#8f959d'; g.lineWidth = .05; g.beginPath(); g.moveTo(L * .32, -.68); g.lineTo(L * .32, .68); g.stroke();
     pneu(g, L * .32, .82, .66, .3); pneu(g, L * .32, -.82, .66, .3);
     pneu(g, -L * .3, .8, .72, .34); pneu(g, -L * .3, -.8, .72, .34);
-    g.strokeStyle = '#3a3d42'; g.lineWidth = .05; g.beginPath(); g.moveTo(L * .32, -.68); g.lineTo(L * .32, .68); g.stroke();
-    caminhoSim(g, [[L / 2, .3], [L * .3, .42], [L * .05, .55], [-L * .2, .72], [-L / 2 + .1, .72], [-L / 2, .65]]); g.fillStyle = gc; g.fill();
-    ret(g, -L * .18, L * .05, -.5, .5, .1); g.fillStyle = tom(o.cor2, 0); g.fill();
-    g.fillStyle = '#1a2330'; ret(g, L * .05, L * .12, -.44, .44, .04); g.fill();
-    if(o.num != null) numero(g, o.num, -L * .07, 0, .55, Math.PI / 2, o.cor, 'rgba(0,0,0,.5)');
+    volume(g, () => caminhoSim(g, [[L / 2, .3], [L * .3, .42], [L * .05, .55], [-L * .2, .72], [-L / 2 + .1, .72], [-L / 2, .65]]), o.cor, .72, { brilho: .22 });
+    vidro(g, () => { g.beginPath(); g.moveTo(L * .14, -.42); g.lineTo(L * .05, -.5); g.lineTo(L * .05, .5); g.lineTo(L * .14, .42); g.closePath(); }, L * .05, L * .14);
+    volume(g, () => ret(g, -L * .18, L * .05, -.5, .5, .1), o.cor2, .5, { brilho: .18 });
+    if(o.num != null) numero(g, o.num, -L * .07, 0, .55, Math.PI / 2, luz(o.cor2) > .55 ? '#111' : '#fff', 'rgba(0,0,0,.5)');
     g.fillStyle = CARBONO; ret(g, -L / 2 + .02, -L / 2 + .18, -.7, .7, .03); g.fill();
+    g.fillStyle = '#c0121a'; for(const s of [1, -1]){ ret(g, -L / 2 + .2, -L / 2 + .28, s * .55 - .08, s * .55 + .08, .02); g.fill(); }
   }
 
   /* carro de turismo, de estoque, GT, sedã ou SUV (carroceria fechada genérica, com parâmetros) */
   function carroceria(g, p, o){
-    const { caminhoSim, ret, corpo, pneu, numero, asa, tom, luz, CARBONO } = A();
-    const L = o.L, W = o.W, h = W / 2, gc = corpo(g, o.cor, h);
+    const { caminhoSim, ret, volume, vinco, vidro, pneu, numero, asa, tom, luz, CARBONO } = A();
+    const L = o.L, W = o.W, h = W / 2;
     const xF = L * (p.rodas ? p.rodas[0] : .32), xT = -L * (p.rodas ? p.rodas[1] : .3);
-    const pb = p.paralamas || 0;
-    for(const s of [1, -1]) for(const x of [xF, xT]) pneu(g, x, s * (h - .2 + (p.rodasFora || 0)), p.pneuL || .68, p.pneuW || .32, { comp: p.gt ? o.compCor : null });
+    const pb = p.paralamas || 0, pl = p.pneuL || .68, pw = p.pneuW || .32, estoque = p.farois === 'adesivo';
+    for(const s of [1, -1]) for(const x of [xF, xT]) pneu(g, x, s * (h - .2 + (p.rodasFora || 0)), pl, pw, { comp: p.gt ? o.compCor : null });
     const nR = p.nariz != null ? p.nariz : .6, tR = p.traseira != null ? p.traseira : .9;
-    const pts = [[L / 2, h * nR], [L / 2 - .15, h * (nR + (1 - nR) * .7)]];
+    const pts = [[L / 2, h * nR * .72], [L / 2 - .05, h * nR], [L / 2 - .2, h * (nR + (1 - nR) * .75)]];
     if(pb){ pts.push([xF + .45, h * (1 - pb * .4)], [xF, h * (1 + pb)], [xF - .55, h * (1 - pb)], [xT + .55, h * (1 - pb)], [xT, h * (1 + pb)], [xT - .45, h * (1 - pb * .4)]); }
-    else pts.push([L * .25, h], [-L * .3, h]);
-    pts.push([-L / 2 + .15, h * (tR + (1 - tR) * .5)], [-L / 2, h * tR]);
-    caminhoSim(g, pts); g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .025; g.stroke();
-    /* pintura */
-    g.save(); caminhoSim(g, pts); g.clip(); g.fillStyle = o.cor2;
+    else pts.push([xF + .5, h * .975], [xF, h], [xF - .6, h * .96], [xT + .6, h * .96], [xT, h], [xT - .45, h * .975]);
+    pts.push([-L / 2 + .2, h * (tR + (1 - tR) * .55)], [-L / 2 + .04, h * tR], [-L / 2, h * tR * .82]);
+    const camB = () => caminhoSim(g, pts);
+    volume(g, camB, o.cor, h, { brilho: .2 });
+    /* o desenho antigo da pintura (só quando a equipe não tem pintura na tabela) */
+    g.save(); camB(); g.clip(); g.fillStyle = o.cor2;
     const pd = o.padrao;
     if(pd === 0){ ret(g, -L / 2, L / 2, -.14, -.06); g.fill(); ret(g, -L / 2, L / 2, .06, .14); g.fill(); }
     else if(pd === 1){ g.beginPath(); g.moveTo(L / 2, -h); g.lineTo(L / 2 - 1.2, -h); g.lineTo(-L / 2 + .6, h); g.lineTo(-L / 2 + 1.6, h); g.closePath(); g.fill(); }
     else if(pd === 2){ ret(g, -L / 2, -L * .1, -h, h); g.fill(); }
-    else { ret(g, L / 2 - .7, L / 2, -h, h); g.fill(); }
-    const br = g.createLinearGradient(0, -h, 0, h * .3); br.addColorStop(0, 'rgba(255,255,255,.25)'); br.addColorStop(.55, 'rgba(255,255,255,0)'); g.fillStyle = br; g.fillRect(-L, -h, 2 * L, h * 1.3);
+    else if(pd === 3){ ret(g, L / 2 - .7, L / 2, -h, h); g.fill(); }
+    /* os ombros da carroceria: o filete de luz em cima de cada para-lama, e a sombra junto das rodas */
+    g.lineCap = 'round';
+    g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = .035; g.beginPath(); g.moveTo(L / 2 - .5, -h * .84); g.lineTo(-L / 2 + .45, -h * .84); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.07)'; g.beginPath(); g.moveTo(L / 2 - .5, h * .84); g.lineTo(-L / 2 + .45, h * .84); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .03;
+    for(const s of [1, -1]) for(const x of [xF, xT]){ g.beginPath(); g.ellipse(x, s * h * (1 + pb), pl * .62, .2 + pb, 0, s > 0 ? Math.PI : 0, s > 0 ? Math.PI * 2 : Math.PI); g.stroke(); }
+    g.lineCap = 'butt';
     g.restore();
-    /* cabine: para-brisa, teto, vidro traseiro (o SUV e a van têm o teto comprido) */
+    /* a cabine: o teto é mais estreito que a cintura; entre os dois ficam os vidros de lado */
     const [c0, c1, cw] = p.cab || [L * .12, -L * .2, .76];
-    const vF = p.vidroF || .5, vT = p.vidroT || .38;
-    g.beginPath(); g.moveTo(c0 + vF, -h * cw * .92); g.lineTo(c0, -h * cw); g.lineTo(c0, h * cw); g.lineTo(c0 + vF, h * cw * .92); g.closePath();
-    const gv = g.createLinearGradient(c0, 0, c0 + vF, 0); gv.addColorStop(0, '#1a2330'); gv.addColorStop(1, '#5b7086'); g.fillStyle = gv; g.fill();
-    ret(g, c1, c0, -h * cw, h * cw, .1); g.fillStyle = p.tetoCor === 'cor' ? tom(o.cor, .08) : tom(o.cor2, -.05); g.fill();
-    if(vT > 0){ g.beginPath(); g.moveTo(c1, -h * cw * .97); g.lineTo(c1 - vT, -h * cw * .86); g.lineTo(c1 - vT, h * cw * .86); g.lineTo(c1, h * cw * .97); g.closePath(); g.fillStyle = '#1a2330'; g.fill(); }
-    if(p.tomadaTeto){ ret(g, c0 - .45, c0 - .1, -.12, .12, .05); g.fillStyle = '#0d0e10'; g.fill(); }
-    if(p.tetoNum !== false && o.num != null) numero(g, o.num, (c0 + c1) / 2, 0, Math.min(.85, (c0 - c1) * .75, h * cw * 1.6), Math.PI / 2, tom(o.cor, luz(o.cor2) > .5 ? -.2 : .9), 'rgba(0,0,0,.55)');
-    if(p.capoNum){
-      /* o adesivo do patrocinador principal no capô (forma clara, sem marca) */
-      const x0 = (p.cab ? p.cab[0] : L * .12) + (p.vidroF || .5) + .15, x1 = L / 2 - .35;
-      if(x1 - x0 > .4){ ret(g, x0, x1, -h * .62, h * .62, .12); g.fillStyle = o.cor2; g.fill();
-        g.fillStyle = luz(o.cor2) > .6 ? 'rgba(20,22,26,.8)' : 'rgba(255,255,255,.9)'; ret(g, x0 + (x1 - x0) * .2, x1 - (x1 - x0) * .2, -h * .36, h * .36, .06); g.fill(); }
-      /* o número nas portas aparece de lado: um pedaço dele na borda */
-      if(o.num != null){ g.fillStyle = 'rgba(255,255,255,.9)'; for(const s of [1, -1]){ ret(g, (p.cab ? p.cab[1] : -L * .2) + .1, (p.cab ? p.cab[0] : L * .12) - .1, s * h * .9 - .05, s * h * .9 + .05, .03); g.fill(); } }
+    const vF = p.vidroF || .5, vT = p.vidroT || .38, wb = h * cw, wr = wb * .84;
+    const xc = c0 + vF + .1, xn = L / 2 - .3, hwC = h * .76;
+    /* o capô: a emenda, os vincos e (nos de estoque) os pinos */
+    if(xn - xc > .35){
+      vinco(g, [[xc, -hwC], [xn, -hwC * (.55 + nR * .45)], [xn + .04, 0], [xn, hwC * (.55 + nR * .45)], [xc, hwC]], { a: .3, luz: .12 });
+      if(p.capoNum) volume(g, () => ret(g, xc + .08, xn - .08, -h * .56, h * .56, .12), o.cor2, h * .76, { brilho: .16, traco: 'rgba(0,0,0,.25)', lw: .014 });
+      else { g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = .02; g.lineCap = 'round'; for(const s of [1, -1]){ g.beginPath(); g.moveTo(xc + .05, s * .24 - .01); g.lineTo(xn - .08, s * .18 - .01); g.stroke(); } g.lineCap = 'butt'; }
+      if(estoque){ g.fillStyle = '#c9ced5'; for(const s of [1, -1]) for(const x of [xc + .1, xn - .1]){ g.beginPath(); g.arc(x, s * hwC * .7, .022, 0, Math.PI * 2); g.fill(); } }
     }
-    /* adesivos, respiros, faróis, lanternas, retrovisores */
-    g.fillStyle = luz(o.cor) > .7 ? 'rgba(20,22,26,.7)' : 'rgba(255,255,255,.85)';
-    ret(g, L * .2, L * .27, -h * .55, -h * .15, .04); g.fill(); ret(g, -L * .42, -L * .32, h * .15, h * .55, .04); g.fill();
-    if(p.respiros){ g.fillStyle = 'rgba(0,0,0,.55)'; for(const s of [1, -1]){ ret(g, L * .3, L * .38, s * .3 - .12, s * .3 + .12, .04); g.fill(); } }
-    if(p.capoCentral){ ret(g, L * .22, L * .4, -.16, .16, .05); g.fillStyle = 'rgba(0,0,0,.45)'; g.fill(); }
+    if(p.respiros) for(const s of [1, -1]){ ret(g, L * .28, L * .38, s * .3 - .13, s * .3 + .13, .04); g.fillStyle = '#0c0d0f'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = .012; for(let q = 1; q < 4; q++){ g.beginPath(); g.moveTo(L * .28 + q * .025 * L / 4.6, s * .3 - .1); g.lineTo(L * .28 + q * .025 * L / 4.6, s * .3 + .1); g.stroke(); } }
+    if(p.capoCentral){ ret(g, L * .22, L * .4, -.17, .17, .05); g.fillStyle = '#0c0d0f'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = .012; for(let q = 1; q < 5; q++){ const x = L * .22 + q * L * .036; g.beginPath(); g.moveTo(x, -.13); g.lineTo(x, .13); g.stroke(); } }
+    /* a tampa de trás e as portas */
+    const xd = c1 - vT - .1;
+    if(!p.cacamba && xd - (-L / 2 + .28) > .2) vinco(g, [[xd, -hwC], [-L / 2 + .28, -hwC * (.5 + tR * .45)], [-L / 2 + .28, hwC * (.5 + tR * .45)], [xd, hwC]], { a: .3, luz: .12 });
+    if(!estoque) for(const s of [1, -1]){ vinco(g, [[c0 + .05, s * wb], [c0 + .1, s * h * .98]], { a: .3, luz: .1 }); vinco(g, [[(c0 + c1) / 2 - .05, s * wb], [(c0 + c1) / 2 - .05, s * h * .98]], { a: .3, luz: .1 }); }
+    else { g.beginPath(); g.arc(-L * .37, -h * .82, .05, 0, Math.PI * 2); g.fillStyle = '#17191c'; g.fill(); g.strokeStyle = '#c9ced5'; g.lineWidth = .014; g.stroke();
+      cromo(g, -L * .08, -L * .08 + .2, h - .03, h + .035, .02); }
+    if(p.cacamba){ ret(g, -L / 2 + .2, c1 - .1, -h * .82, h * .82, .05); g.fillStyle = tom(o.cor, -.35); g.fill(); g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = .03; g.stroke();
+      g.strokeStyle = 'rgba(255,255,255,.1)'; g.lineWidth = .014; for(let x = -L / 2 + .32; x < c1 - .15; x += .13){ g.beginPath(); g.moveTo(x, -h * .76); g.lineTo(x, h * .76); g.stroke(); } }
+    /* os vidros: para-brisa, laterais e vidro de trás, um só espelho escuro por baixo do teto */
+    const estufa = () => { g.beginPath(); g.moveTo(c0 + vF, -wb * .93); g.quadraticCurveTo(c0 + vF + .07, 0, c0 + vF, wb * .93); g.lineTo(c0, wb); g.lineTo(c1, wb);
+      if(vT > 0){ g.lineTo(c1 - vT, wb * .88); g.quadraticCurveTo(c1 - vT - .05, 0, c1 - vT, -wb * .88); } else g.lineTo(c1, -wb);
+      g.lineTo(c1, -wb); g.lineTo(c0, -wb); g.closePath(); };
+    vidro(g, estufa, c1 - vT, c0 + vF);
+    /* a faixa no alto do para-brisa (os de estoque) */
+    if(estoque){ g.save(); estufa(); g.clip(); g.fillStyle = tom(o.cor2, -.1); g.globalAlpha = .92; g.fillRect(c0, -wb, .12, 2 * wb); g.globalAlpha = 1; g.restore(); }
+    /* o teto */
+    const corTeto = p.tetoCor === 'cor' ? o.cor : o.cor2;
+    volume(g, () => ret(g, c1, c0, -wr, wr, .13), corTeto, wr, { brilho: .24 });
+    /* as colunas por cima do vidro */
+    g.strokeStyle = '#14161a'; g.lineWidth = .04; g.lineCap = 'round';
+    for(const s of [1, -1]){ g.beginPath(); g.moveTo(c0 - .02, s * wr); g.lineTo(c0 + vF - .02, s * wb * .93); g.moveTo((c0 + c1) / 2 - .05, s * wr); g.lineTo((c0 + c1) / 2 - .05, s * wb); if(vT > 0){ g.moveTo(c1 + .02, s * wr); g.lineTo(c1 - vT + .02, s * wb * .88); } g.stroke(); }
+    g.lineCap = 'butt';
+    if(estoque && vT > .2){ g.strokeStyle = 'rgba(200,205,212,.55)'; g.lineWidth = .02; for(const s of [1, -1]){ g.beginPath(); g.moveTo(c1 - .03, s * wr * .35); g.lineTo(c1 - vT + .03, s * wr * .33); g.stroke(); }
+      for(const s of [1, -1]) vinco(g, [[c1 + .06, s * wr * .12], [c1 + .32, s * wr * .12], [c1 + .32, s * wr * .78], [c1 + .06, s * wr * .78], [c1 + .06, s * wr * .12]], { a: .28, luz: .08 }); }
+    if(p.tomadaTeto){ ret(g, c0 - .46, c0 - .1, -.13, .13, .05); g.fillStyle = tom(corTeto, -.3); g.fill(); ret(g, c0 - .2, c0 - .11, -.1, .1, .03); g.fillStyle = '#050607'; g.fill(); }
+    if(p.tetoNum !== false && o.num != null) numero(g, o.num, (c0 + c1) / 2, 0, Math.min(.85, (c0 - c1) * .75, wr * 1.75), Math.PI / 2, p.tetoCor === 'cor' ? '#fff' : luz(corTeto) > .55 ? '#15171a' : '#fff', p.tetoCor === 'cor' ? 'rgba(0,0,0,.8)' : luz(corTeto) > .55 ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.6)');
+    /* a grade, os faróis e as lanternas */
     const fr = p.farois || 'retos';
-    if(fr === 'redondos'){ g.fillStyle = '#f3f6fa'; for(const s of [1, -1]){ g.beginPath(); g.arc(L / 2 - .2, s * h * .68, .13, 0, Math.PI * 2); g.fill(); if(p.farois4){ g.beginPath(); g.arc(L / 2 - .2, s * h * .38, .1, 0, Math.PI * 2); g.fill(); } } }
-    else if(fr === 'finos'){ g.fillStyle = '#f3f6fa'; for(const s of [1, -1]){ ret(g, L / 2 - .28, L / 2 - .1, s * h * .6 - .2, s * h * .6 + .2, .04); g.fill(); } }
-    else if(fr === 'adesivo'){ g.fillStyle = 'rgba(255,240,180,.75)'; for(const s of [1, -1]){ ret(g, L / 2 - .2, L / 2 - .04, s * h * .7 - .14, s * h * .7 + .14, .05); g.fill(); } }
-    else { g.fillStyle = '#f3f6fa'; for(const s of [1, -1]){ ret(g, L / 2 - .2, L / 2 - .04, s * h * .7 - .16, s * h * .7 + .16, .05); g.fill(); } }
-    g.fillStyle = '#d0151a'; if(p.lanterna === 'barra'){ ret(g, -L / 2 + .02, -L / 2 + .1, -h * .8, h * .8, .03); g.fill(); } else for(const s of [1, -1]){ ret(g, -L / 2 + .02, -L / 2 + .14, s * h * .72 - .16, s * h * .72 + .16, .04); g.fill(); }
-    if(p.retro !== false){ g.fillStyle = tom(o.cor, -.2); for(const s of [1, -1]){ ret(g, c0 - .05, c0 + .12, s * (h + .04) - .06, s * (h + .04) + .06, .03); g.fill(); } }
-    if(p.splitter){ g.fillStyle = CARBONO; ret(g, L / 2 - .02, L / 2 + .1, -h * .88, h * .88, .03); g.fill(); }
-    if(p.cacamba){ ret(g, -L / 2 + .2, c1 - .1, -h * .82, h * .82, .05); g.fillStyle = tom(o.cor, -.2); g.fill(); g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = .03; g.stroke(); }
+    if(fr === 'redondos'){ for(const s of [1, -1]){ farol(g, L / 2 - .2, s * h * .68, .13, .13); if(p.farois4) farol(g, L / 2 - .2, s * h * .38, .1, .1); }
+      if(!p.farois4){ ret(g, L / 2 - .14, L / 2 - .03, -h * .42, h * .42, .03); g.fillStyle = '#0c0d0f'; g.fill(); } }
+    else if(fr === 'finos'){ for(const s of [1, -1]){ g.beginPath(); g.moveTo(L / 2 - .1, s * h * .42); g.lineTo(L / 2 - .16, s * h * .82); g.lineTo(L / 2 - .34, s * h * .86); g.lineTo(L / 2 - .24, s * h * .5); g.closePath();
+        const gl = g.createLinearGradient(L / 2 - .34, 0, L / 2 - .1, 0); gl.addColorStop(0, '#9fb0c2'); gl.addColorStop(1, '#f6f9fc'); g.fillStyle = gl; g.fill(); g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = .014; g.stroke(); }
+      ret(g, L / 2 - .12, L / 2 - .02, -h * .34, h * .34, .03); g.fillStyle = '#0c0d0f'; g.fill(); }
+    else if(fr === 'adesivo'){ ret(g, L / 2 - .15, L / 2 - .03, -h * .46, h * .46, .04); g.fillStyle = '#101214'; g.fill();
+      for(const s of [1, -1]){ ret(g, L / 2 - .22, L / 2 - .05, s * h * .7 - .15, s * h * .7 + .15, .06); g.fillStyle = '#d9dee4'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = .018; g.stroke();
+        ret(g, L / 2 - .19, L / 2 - .08, s * h * .7 - .1, s * h * .7 + .02, .03); g.fillStyle = 'rgba(255,244,190,.9)'; g.fill(); } }
+    else { cromo(g, L / 2 - .13, L / 2 - .03, -h * .5, h * .5, .03); g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = .012; for(let q = -3; q <= 3; q++){ g.beginPath(); g.moveTo(L / 2 - .12, q * h * .13); g.lineTo(L / 2 - .04, q * h * .13); g.stroke(); }
+      for(const s of [1, -1]){ ret(g, L / 2 - .2, L / 2 - .04, s * h * .7 - .16, s * h * .7 + .16, .05); g.fillStyle = '#eef2f6'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .016; g.stroke(); } }
+    if(p.lanterna === 'barra'){ ret(g, -L / 2 + .02, -L / 2 + .1, -h * .8, h * .8, .03); g.fillStyle = '#d0151a'; g.fill(); g.fillStyle = 'rgba(255,120,120,.6)'; g.fillRect(-L / 2 + .06, -h * .76, .02, h * 1.52); }
+    else for(const s of [1, -1]){ ret(g, -L / 2 + .02, -L / 2 + .15, s * h * .72 - .17, s * h * .72 + .17, .04); g.fillStyle = '#c4121a'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .014; g.stroke();
+      g.fillStyle = 'rgba(255,130,130,.7)'; ret(g, -L / 2 + .07, -L / 2 + .12, s * h * .72 - .12, s * h * .72 + .12, .02); g.fill(); }
+    /* os retrovisores */
+    if(p.retro !== false) for(const s of [1, -1]){ const xr = c0 + vF * .45;
+      g.beginPath(); g.moveTo(xr - .07, s * (h - .03)); g.lineTo(xr + .05, s * (h - .03)); g.lineTo(xr + .02, s * (h + .09)); g.lineTo(xr - .09, s * (h + .09)); g.closePath();
+      g.fillStyle = '#17191c'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = .012; g.stroke();
+      g.fillStyle = 'rgba(170,200,225,.75)'; g.fillRect(xr - .085, s * (h + .09) - (s > 0 ? .035 : 0), .1, .035); }
+    if(p.splitter){ ret(g, L / 2 - .04, L / 2 + .11, -h * .9, h * .9, .04); g.fillStyle = CARBONO; g.fill(); g.strokeStyle = 'rgba(255,255,255,.15)'; g.lineWidth = .014; g.beginPath(); g.moveTo(L / 2 + .08, -h * .84); g.lineTo(L / 2 + .08, h * .84); g.stroke(); }
     /* o que vai atrás: spoiler, asa (em pilares), asa alta */
     const as = p.asa || 'spoiler';
-    if(as === 'spoiler'){ g.fillStyle = CARBONO; ret(g, -L / 2 + .02, -L / 2 + .16, -h * .92, h * .92, .03); g.fill(); }
+    if(as === 'spoiler'){ ret(g, -L / 2 + .01, -L / 2 + .17, -h * .92, h * .92, .03); const gs = g.createLinearGradient(-L / 2 + .17, 0, -L / 2 + .01, 0); gs.addColorStop(0, '#34383e'); gs.addColorStop(1, '#0b0c0e'); g.fillStyle = gs; g.fill(); g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = .014; g.stroke(); }
     else if(as === 'asa' || as === 'alta' || as === 'gt500'){
-      g.fillStyle = CARBONO; for(const s of [1, -1]){ ret(g, -L / 2 + .25, -L / 2 + .55, s * .45 - .03, s * .45 + .03); g.fill(); }
+      g.fillStyle = '#131517'; for(const s of [1, -1]){ ret(g, -L / 2 + .25, -L / 2 + .6, s * .45 - .03, s * .45 + .03, .01); g.fill(); }
       const ap = as === 'gt500' ? .42 : .34, ax = as === 'alta' ? -L / 2 + .05 : -L / 2 + .12;
-      asa(g, ax, ap, W * (as === 'gt500' ? .98 : .9), as === 'gt500' ? 3 : 2, o.cor, tom(o.cor, .2), { placas: .4, corPlaca: o.cor2 });
-    } else if(as === 'pato'){ g.fillStyle = tom(o.cor, -.25); ret(g, -L / 2, -L / 2 + .35, -h * .7, h * .7, .12); g.fill(); }
+      asa(g, ax, ap, W * (as === 'gt500' ? .98 : .9), as === 'gt500' ? 3 : 2, o.cor, tom(o.cor, .2), { placas: .42, corPlaca: o.cor2 });
+    } else if(as === 'pato'){ volume(g, () => ret(g, -L / 2, -L / 2 + .35, -h * .7, h * .7, .12), tom(o.cor, -.2), h * .7, { brilho: .15 }); }
     else if(as === 'bico'){ /* os aero warriors: bico em cunha e a asa altíssima */
-      g.fillStyle = tom(o.cor, -.2); ret(g, -L / 2 - .1, -L / 2 + .2, -h * .9, h * .9, .04); g.fill();
-      g.fillStyle = CARBONO; for(const s of [1, -1]){ ret(g, -L / 2 + .05, -L / 2 + .35, s * h * .85 - .04, s * h * .85 + .04); g.fill(); } }
-    if(p.difusor){ g.fillStyle = CARBONO; ret(g, -L / 2 - .06, -L / 2 + .02, -h * .7, h * .7, .02); g.fill(); }
+      volume(g, () => ret(g, -L / 2 - .1, -L / 2 + .2, -h * .9, h * .9, .04), tom(o.cor, -.1), h * .9, { brilho: .2 });
+      for(const s of [1, -1]){ ret(g, -L / 2 + .05, -L / 2 + .38, s * h * .85 - .04, s * h * .85 + .04, .02); g.fillStyle = tom(o.cor, -.3); g.fill(); } }
+    if(p.difusor){ ret(g, -L / 2 - .07, -L / 2 + .02, -h * .7, h * .7, .02); g.fillStyle = CARBONO; g.fill(); g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = .012; for(let q = -3; q <= 3; q++){ g.beginPath(); g.moveTo(-L / 2 - .06, q * h * .18); g.lineTo(-L / 2 + .01, q * h * .18); g.stroke(); } }
   }
 
   /* carro antigo: para-lamas separados, capô comprido, cabine redonda (jalopy, carretera,
      sportsman, a NASCAR dos anos 50, os sedãs do turismo dos anos 60) */
   function antigo(g, p, o){
-    const { caminhoSim, ret, corpo, pneu, numero, tom, luz } = A();
-    const L = o.L, W = o.W, h = W / 2, gc = corpo(g, o.cor, h);
+    const { caminhoSim, ret, volume, vinco, vidro, pneu, numero, tom, luz } = A();
+    const L = o.L, W = o.W, h = W / 2;
     const xF = L * .32, xT = -L * .3;
-    for(const s of [1, -1]) for(const x of [xF, xT]) pneu(g, x, s * (h - .16), .62, .26);
+    for(const s of [1, -1]) for(const x of [xF, xT]) pneu(g, x, s * (h - .16), .62, .26, { riscado: true });
     if(p.paralamasSoltos){
-      for(const s of [1, -1]) for(const x of [xF, xT]){ g.beginPath(); g.ellipse(x, s * (h - .2), .5, .3, 0, 0, Math.PI * 2); g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = .02; g.stroke(); }
-      caminhoSim(g, [[L / 2 - .05, h * .45], [L / 2 - .3, h * .62], [-L / 2 + .3, h * .7], [-L / 2, h * .55]]); g.fillStyle = gc; g.fill();
-    } else { caminhoSim(g, [[L / 2, h * .62], [L / 2 - .25, h * .95], [-L / 2 + .3, h], [-L / 2, h * .8]]); g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = .025; g.stroke(); }
-    /* grade cromada, capô com friso, para-brisa curvo, teto arredondado */
-    g.fillStyle = '#c9ccd1'; ret(g, L / 2 - .08, L / 2 + .02, -h * .5, h * .5, .04); g.fill();
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = .03; g.beginPath(); g.moveTo(L / 2 - .1, 0); g.lineTo(L * .08, 0); g.stroke();
+      for(const s of [1, -1]) for(const x of [xF, xT]) volume(g, () => { g.beginPath(); g.ellipse(x, s * (h - .2), .52, .3, 0, 0, Math.PI * 2); }, o.cor, .3, { yc: s * (h - .2), brilho: .28 });
+      /* os estribos e o corpo estreito */
+      for(const s of [1, -1]){ ret(g, xT + .4, xF - .4, s * (h - .2) - .09, s * (h - .2) + .09, .03); g.fillStyle = '#1b1d21'; g.fill(); }
+      volume(g, () => caminhoSim(g, [[L / 2 - .05, h * .4], [L / 2 - .25, h * .58], [0, h * .7], [-L / 2 + .3, h * .7], [-L / 2, h * .55]]), o.cor, h * .72, { brilho: .26 });
+    } else volume(g, () => caminhoSim(g, [[L / 2, h * .55], [L / 2 - .1, h * .8], [L / 2 - .3, h * .96], [0, h], [-L / 2 + .3, h], [-L / 2 + .05, h * .86], [-L / 2, h * .7]]), o.cor, h, { brilho: .24 });
+    /* a grade cromada, o capô com a dobradiça no meio e as persianas */
+    cromo(g, L / 2 - .1, L / 2 + .01, -h * .46, h * .46, .04);
+    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .012; for(let q = -4; q <= 4; q++){ g.beginPath(); g.moveTo(L / 2 - .09, q * h * .1); g.lineTo(L / 2, q * h * .1); g.stroke(); }
     const c0 = p.cab ? p.cab[0] : L * .05, c1 = p.cab ? p.cab[1] : -L * .22, cw = h * .74;
-    /* para-brisa e vidro de trás curvos, o teto arredondado */
-    ret(g, c1 - .34, c0 + .42, -cw, cw, .3); g.fillStyle = '#1a2330'; g.fill();
-    g.strokeStyle = 'rgba(140,170,195,.45)'; g.lineWidth = .04; g.beginPath(); g.ellipse(c0 + .18, 0, .14, cw * .9, 0, -Math.PI / 2, Math.PI / 2); g.stroke();
-    ret(g, c1, c0, -cw * .92, cw * .92, .22); g.fillStyle = p.tetoCor2 ? tom(o.cor2, -.05) : tom(o.cor, .06); g.fill();
-    g.strokeStyle = 'rgba(0,0,0,.22)'; g.lineWidth = .02; g.stroke();
-    /* para-choques cromados na frente e atrás, faróis redondos e lanternas */
-    g.fillStyle = '#d5d8dd'; ret(g, L / 2 - .04, L / 2 + .05, -h * .82, h * .82, .04); g.fill(); ret(g, -L / 2 - .05, -L / 2 + .04, -h * .82, h * .82, .04); g.fill();
-    g.fillStyle = '#f3f6fa'; for(const s of [1, -1]){ g.beginPath(); g.arc(L / 2 - .15, s * h * .62, .11, 0, Math.PI * 2); g.fill(); }
-    g.fillStyle = '#c0121a'; for(const s of [1, -1]){ ret(g, -L / 2 + .04, -L / 2 + .14, s * h * .68 - .09, s * h * .68 + .09, .03); g.fill(); }
-    if(o.num != null){ const rr = Math.min(.3, (c0 - c1) * .3, cw * .62), xm = (c0 + c1) / 2; g.beginPath(); g.arc(xm, 0, rr, 0, Math.PI * 2); g.fillStyle = '#f4f4f2'; g.fill(); numero(g, o.num, xm, 0, rr * 1.15, Math.PI / 2, '#111', 'rgba(255,255,255,0)'); }
-    if(p.gaiola){ g.strokeStyle = '#2a2d31'; g.lineWidth = .05; g.beginPath(); g.moveTo(c0, -h * .6); g.lineTo(c1, h * .6); g.stroke(); }
+    vinco(g, [[L / 2 - .12, 0], [c0 + .5, 0]], { a: .4, luz: .22 });
+    g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .02; g.lineCap = 'round';
+    for(const s of [1, -1]) for(let q = 0; q < 5; q++){ const x = L * .34 - q * .11; g.beginPath(); g.moveTo(x, s * h * .32); g.lineTo(x - .04, s * h * .5); g.stroke(); }
+    g.lineCap = 'butt';
+    /* os vidros em volta e o teto arredondado */
+    vidro(g, () => ret(g, c1 - .34, c0 + .42, -cw, cw, .3), c1 - .34, c0 + .42);
+    g.strokeStyle = tom(o.cor, -.25); g.lineWidth = .04; g.beginPath(); g.moveTo(c0 + .42, 0); g.lineTo(c0, 0); g.stroke();
+    volume(g, () => ret(g, c1, c0, -cw * .9, cw * .9, .24), p.tetoCor2 ? o.cor2 : o.cor, cw * .9, { brilho: .3 });
+    /* os para-choques cromados, os faróis e as lanternas */
+    cromo(g, L / 2 + .0, L / 2 + .08, -h * .84, h * .84, .04); cromo(g, -L / 2 - .08, -L / 2, -h * .84, h * .84, .04);
+    for(const s of [1, -1]) farol(g, L / 2 - .17, s * h * .64, .12, .12);
+    for(const s of [1, -1]){ ret(g, -L / 2 + .03, -L / 2 + .14, s * h * .68 - .09, s * h * .68 + .09, .03); g.fillStyle = '#c0121a'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .012; g.stroke(); }
+    if(o.num != null){ const rr = Math.min(.3, (c0 - c1) * .3, cw * .62), xm = (c0 + c1) / 2; g.beginPath(); g.arc(xm, 0, rr, 0, Math.PI * 2); g.fillStyle = '#f4f4f2'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .016; g.stroke(); numero(g, o.num, xm, 0, rr * 1.15, Math.PI / 2, '#111', 'rgba(255,255,255,0)'); }
+    if(p.gaiola){ g.strokeStyle = '#2a2d31'; g.lineWidth = .05; g.beginPath(); g.moveTo(c0, -h * .6); g.lineTo(c1, h * .6); g.moveTo(c0, h * .6); g.lineTo(c1, -h * .6); g.stroke(); }
   }
 
   /* Porsche 911 (Carrera Cup, Supercup): frente redonda com os dois faróis, motor atrás e a asa */
   function p911(g, p, o){
-    const { caminhoSim, ret, corpo, pneu, numero, asa, tom } = A();
-    const L = o.L, W = o.W, h = W / 2, gc = corpo(g, o.cor, h);
+    const { caminhoSim, ret, volume, vinco, vidro, pneu, numero, asa, tom, luz, CARBONO } = A();
+    const L = o.L, W = o.W, h = W / 2;
     for(const s of [1, -1]){ pneu(g, L * .3, s * (h - .2), .62, .3, { comp: o.compCor }); pneu(g, -L * .28, s * (h - .18), .66, .34, { comp: o.compCor }); }
-    caminhoSim(g, [[L / 2, h * .5], [L / 2 - .25, h * .92], [L * .3, h * 1.02], [L * .05, h * .82], [-L * .15, h * .9], [-L * .3, h * 1.04], [-L / 2 + .2, h * .9], [-L / 2, h * .7]]);
-    g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .025; g.stroke();
-    g.fillStyle = '#f3f6fa'; for(const s of [1, -1]){ g.beginPath(); g.ellipse(L / 2 - .3, s * h * .66, .16, .13, 0, 0, Math.PI * 2); g.fill(); }
-    g.beginPath(); g.moveTo(L * .12 + .5, -h * .58); g.lineTo(L * .12, -h * .66); g.lineTo(L * .12, h * .66); g.lineTo(L * .12 + .5, h * .58); g.closePath(); g.fillStyle = '#2a3646'; g.fill();
-    g.beginPath(); g.ellipse(-L * .08, 0, L * .2, h * .64, 0, 0, Math.PI * 2); g.fillStyle = tom(o.cor2, -.05); g.fill();
-    g.fillStyle = '#1a2330'; ret(g, -L * .3, -L * .24, -h * .5, h * .5, .1); g.fill();
-    if(o.num != null) numero(g, o.num, -L * .08, 0, .55, Math.PI / 2, o.cor, 'rgba(0,0,0,.5)');
-    g.fillStyle = 'rgba(0,0,0,.5)'; for(let q = 0; q < 4; q++){ ret(g, -L * .42 + q * .1, -L * .42 + q * .1 + .05, -h * .3, h * .3); g.fill(); }
+    const camB = () => caminhoSim(g, [[L / 2, h * .42], [L / 2 - .1, h * .7], [L / 2 - .3, h * .93], [L * .3, h * 1.02], [L * .05, h * .82], [-L * .15, h * .9], [-L * .3, h * 1.05], [-L / 2 + .2, h * .92], [-L / 2 + .03, h * .72], [-L / 2, h * .55]]);
+    volume(g, camB, o.cor, h, { brilho: .22 });
+    /* os para-lamas da frente (os faróis vão em cima deles) e os quadris de trás */
+    g.save(); camB(); g.clip(); g.lineCap = 'round';
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = .05; g.beginPath(); g.moveTo(L / 2 - .35, -h * .7); g.lineTo(L * .12, -h * .78); g.moveTo(-L * .12, -h * .84); g.lineTo(-L / 2 + .3, -h * .8); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.08)'; g.beginPath(); g.moveTo(L / 2 - .35, h * .7); g.lineTo(L * .12, h * .78); g.moveTo(-L * .12, h * .84); g.lineTo(-L / 2 + .3, h * .8); g.stroke();
+    g.lineCap = 'butt'; g.restore();
+    for(const s of [1, -1]) farol(g, L / 2 - .32, s * h * .66, .17, .13);
+    vinco(g, [[L * .12 + .58, -h * .5], [L / 2 - .2, -h * .34], [L / 2 - .2, h * .34], [L * .12 + .58, h * .5]], { a: .3, luz: .12 });
+    /* para-brisa, o teto em gota e o vidro de trás */
+    const x0 = L * .12, wb = h * .68;
+    vidro(g, () => { g.beginPath(); g.moveTo(x0 + .52, -wb * .88); g.quadraticCurveTo(x0 + .6, 0, x0 + .52, wb * .88); g.lineTo(x0, wb); g.lineTo(-L * .22, wb * .92); g.quadraticCurveTo(-L * .34, 0, -L * .22, -wb * .92); g.lineTo(x0, -wb); g.closePath(); }, -L * .3, x0 + .52);
+    volume(g, () => { g.beginPath(); g.ellipse(-L * .04, 0, L * .15, wb * .82, 0, 0, Math.PI * 2); }, o.cor2, wb * .82, { brilho: .26 });
+    if(o.num != null) numero(g, o.num, -L * .04, 0, .5, Math.PI / 2, luz(o.cor2) > .55 ? '#15171a' : '#fff', luz(o.cor2) > .55 ? 'rgba(255,255,255,.5)' : 'rgba(0,0,0,.55)');
+    /* a grade do motor */
+    ret(g, -L * .44, -L * .31, -h * .34, h * .34, .05); g.fillStyle = '#0c0d0f'; g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.2)'; g.lineWidth = .012; for(let q = 1; q < 6; q++){ const x = -L * .44 + q * L * .022; g.beginPath(); g.moveTo(x, -h * .3); g.lineTo(x, h * .3); g.stroke(); }
+    for(const s of [1, -1]){ ret(g, x0 + .3, x0 + .46, s * (h * .9) - .06, s * (h * .9) + .06, .03); g.fillStyle = tom(o.cor, -.15); g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .012; g.stroke(); }
     if(p.asaGrande && !o.semAsa){
-      g.fillStyle = A().CARBONO; for(const s of [1, -1]){ ret(g, -L / 2 + .3, -L / 2 + .6, s * .4 - .03, s * .4 + .03); g.fill(); }
+      g.fillStyle = '#131517'; for(const s of [1, -1]){ ret(g, -L / 2 + .3, -L / 2 + .62, s * .4 - .03, s * .4 + .03); g.fill(); }
       asa(g, -L / 2 - .02, .42, W * .96, 2, o.cor, tom(o.cor, .2), { placas: .45, corPlaca: o.cor2 });
-      g.fillStyle = A().CARBONO; ret(g, L / 2 - .02, L / 2 + .1, -h * .85, h * .85, .03); g.fill();
-    } else if(!o.semAsa) asa(g, -L / 2 + .08, .3, W * .82, 1, o.cor, tom(o.cor, .2), { placas: .32, corPlaca: o.cor2 });
-    g.fillStyle = '#d0151a'; ret(g, -L / 2 + .02, -L / 2 + .08, -h * .78, h * .78, .03); g.fill();
+      ret(g, L / 2 - .03, L / 2 + .1, -h * .85, h * .85, .03); g.fillStyle = CARBONO; g.fill();
+    } else if(!o.semAsa) asa(g, -L / 2 + .08, .3, W * .82, 1, o.cor, tom(o.cor, .2), { placas: .32, corPlaca: o.cor2, pintada: true });
+    ret(g, -L / 2 + .02, -L / 2 + .09, -h * .78, h * .78, .03); g.fillStyle = '#d0151a'; g.fill(); g.fillStyle = 'rgba(255,130,130,.6)'; g.fillRect(-L / 2 + .05, -h * .74, .02, h * 1.48);
   }
 
   /* protótipo de endurance de cada época: Grupo C, 917, P4, Can-Am, LMP1, LMP2, DP, DPi, hipercarro */
   function prototipo(g, p, o){
-    const { caminhoSim, ret, corpo, pneu, capacete, numero, asa, tom, CARBONO } = A();
-    const L = o.L, W = o.W, h = W / 2, gc = corpo(g, o.cor, h);
+    const { caminhoSim, ret, volume, vinco, vidro, pneu, piloto, numero, asa, tom, luz, CARBONO } = A();
+    const L = o.L, W = o.W, h = W / 2;
     const xF = L * (p.rF || .32), xT = -L * (p.rT || .3);
     for(const s of [1, -1]){ pneu(g, xF, s * (h - .2), .66, .3, { comp: o.compCor }); pneu(g, xT, s * (h - .2), .72, .36, { comp: o.compCor }); }
     const fx = p.paralama || .95, meio = p.meio || .6, caud = p.cauda || .8;
-    const pts = [[L / 2, h * (p.bico || .32)], [L / 2 - .25, h * .6], [xF + .3, h * fx], [xF - .4, h * fx * .98], [L * .02, h * meio], [xT + .5, h * fx * .95], [xT, h * fx], [-L / 2 + .2, h * caud], [-L / 2, h * caud * .9]];
-    caminhoSim(g, pts); g.fillStyle = gc; g.fill(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .025; g.stroke();
-    g.save(); caminhoSim(g, pts); g.clip(); g.fillStyle = o.cor2;
+    const pts = [[L / 2, h * (p.bico || .32) * .7], [L / 2 - .06, h * (p.bico || .32)], [L / 2 - .28, h * .62], [xF + .3, h * fx], [xF - .4, h * fx * .98], [L * .02, h * meio], [xT + .5, h * fx * .95], [xT, h * fx], [-L / 2 + .2, h * caud], [-L / 2, h * caud * .9]];
+    const camB = () => caminhoSim(g, pts);
+    volume(g, camB, o.cor, h, { brilho: .16 });
+    g.save(); camB(); g.clip(); g.fillStyle = o.cor2;
     if(o.padrao === 0){ ret(g, -L / 2, L / 2, -.1, .1); g.fill(); }
     else if(o.padrao === 1){ g.beginPath(); g.moveTo(L / 2, -h); g.lineTo(L / 2 - 1, -h); g.lineTo(-L / 2 + .6, h); g.lineTo(-L / 2 + 1.6, h); g.closePath(); g.fill(); }
     else if(o.padrao === 2){ ret(g, -L / 2, -L * .15, -h, h); g.fill(); }
-    else { ret(g, L * .25, L / 2, -h, h); g.fill(); }
-    const br = g.createLinearGradient(0, -h, 0, h * .3); br.addColorStop(0, 'rgba(255,255,255,.22)'); br.addColorStop(.55, 'rgba(255,255,255,0)'); g.fillStyle = br; g.fillRect(-L, -h, 2 * L, h * 1.3);
-    g.restore();
-    const cx = L * (p.cabX != null ? p.cabX : .08);
-    if(p.aberto){
-      /* barchetta e protótipo aberto: o cockpit com o piloto e o santantônio */
-      ret(g, cx - .45, cx + .3, -.32, .32, .14); g.fillStyle = '#0b0c0e'; g.fill();
-      capacete(g, cx - .1, p.ladoPiloto || 0, .14, o.capCor);
-      g.strokeStyle = 'rgba(200,220,235,.7)'; g.lineWidth = .035; g.beginPath(); g.ellipse(cx + .32, 0, .06, .34, 0, -Math.PI / 2, Math.PI / 2); g.stroke();
-      if(p.santantonio !== false){ g.strokeStyle = CARBONO; g.lineWidth = .07; g.beginPath(); g.moveTo(cx - .5, -.3); g.lineTo(cx - .5, .3); g.stroke(); }
-    } else {
-      g.beginPath(); g.ellipse(cx, 0, p.cabC || .78, p.cabW || .42, 0, 0, Math.PI * 2);
-      const gv = g.createRadialGradient(cx + .2, -.15, .05, cx, 0, .8); gv.addColorStop(0, '#6f87a0'); gv.addColorStop(1, '#141b24'); g.fillStyle = gv; g.fill();
-      g.strokeStyle = tom(o.cor, -.3); g.lineWidth = .04; g.stroke();
+    else if(o.padrao === 3){ ret(g, L * .25, L / 2, -h, h); g.fill(); }
+    /* os para-lamas: cada um é um volume por cima da roda */
+    const yp = h * fx - .27;
+    for(const s of [1, -1]){
+      volume(g, () => ret(g, xF - .62, Math.min(L / 2 - .22, xF + .72), s * yp - .25, s * yp + .25, .25), o.cor, .25, { yc: s * yp, brilho: .3, traco: 'rgba(0,0,0,.2)', lw: .02 });
+      volume(g, () => ret(g, -L / 2 + .12, xT + .7, s * yp - .25, s * yp + .25, .25), o.cor, .25, { yc: s * yp, brilho: .3, traco: 'rgba(0,0,0,.2)', lw: .02 });
+      /* as persianas em cima das rodas da frente (os fechados modernos) */
+      if(!p.aberto && p.barbatana){ g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = .028; g.lineCap = 'round'; for(let q = 0; q < 4; q++){ const x = xF + .2 - q * .12; g.beginPath(); g.moveTo(x, s * (yp - .12)); g.lineTo(x - .05, s * (yp + .1)); g.stroke(); } g.lineCap = 'butt'; }
     }
-    if(p.barbatana){ g.strokeStyle = tom(o.cor, -.35); g.lineWidth = .045; g.beginPath(); g.moveTo(cx - .75, 0); g.lineTo(-L / 2 + .35, 0); g.stroke(); }
-    if(p.tomadas !== false){ g.fillStyle = 'rgba(0,0,0,.6)'; for(const s of [1, -1]){ ret(g, -.2, .35, s * h * .62 - .07, s * h * .62 + .07, .03); g.fill(); } }
+    g.restore();
+    const cx = L * (p.cabX != null ? p.cabX : .08), cabC = p.cabC || .78, cabW = p.cabW || .42;
+    /* a tampa do motor: do cockpit até a cauda */
+    volume(g, () => caminhoSim(g, [[cx - .1, cabW * .9], [cx - cabC * .9, cabW * .82], [xT + .2, .3], [-L / 2 + .35, .18]]), o.cor, cabW, { brilho: .24, traco: 'rgba(0,0,0,.3)' });
+    if(p.tomadas !== false) for(const s of [1, -1]){ ret(g, -.25, .38, s * h * .62 - .08, s * h * .62 + .08, .04); const gi = g.createLinearGradient(-.25, 0, .38, 0); gi.addColorStop(0, '#000'); gi.addColorStop(1, '#2c3036'); g.fillStyle = gi; g.fill(); }
+    if(p.aberto){
+      /* barchetta e protótipo aberto: o cockpit com o piloto, o para-brisa baixo e o santantônio */
+      ret(g, cx - .48, cx + .32, -.34, .34, .15); g.fillStyle = '#08090a'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .025; g.stroke();
+      piloto(g, cx - .12, p.ladoPiloto || 0, .14, o.capCor, { dist: 2.3 });
+      g.strokeStyle = 'rgba(200,222,238,.8)'; g.lineWidth = .04; g.beginPath(); g.ellipse(cx + .34, 0, .07, .36, 0, -Math.PI / 2, Math.PI / 2); g.stroke();
+      if(p.santantonio !== false){ g.strokeStyle = '#c3c8cf'; g.lineWidth = .05; g.beginPath(); g.moveTo(cx - .5, -.28); g.quadraticCurveTo(cx - .6, 0, cx - .5, .28); g.stroke();
+        g.beginPath(); g.ellipse(cx - .62, 0, .12, .1, 0, 0, Math.PI * 2); g.fillStyle = '#060708'; g.fill(); }
+    } else {
+      /* a cabine em gota: o para-brisa que dá a volta, os vidros de lado, o teto pintado e a tomada de ar em cima */
+      vidro(g, () => caminhoSim(g, [[cx + cabC, cabW * .3], [cx + cabC * .8, cabW * .8], [cx + cabC * .25, cabW * 1.1], [cx - cabC * .45, cabW * 1.02], [cx - cabC * .9, cabW * .8]]), cx - cabC * .9, cx + cabC);
+      volume(g, () => caminhoSim(g, [[cx + cabC * .3, cabW * .42], [cx + cabC * .12, cabW * .76], [cx - cabC * .45, cabW * .74], [cx - cabC * .98, cabW * .6]]), o.cor, cabW * .78, { brilho: .28 });
+      g.strokeStyle = '#14161a'; g.lineWidth = .035; g.lineCap = 'round';
+      for(const s of [1, -1]){ g.beginPath(); g.moveTo(cx + cabC * .26, s * cabW * .5); g.lineTo(cx + cabC * .82, s * cabW * .72); g.moveTo(cx - cabC * .2, s * cabW * .76); g.lineTo(cx - cabC * .2, s * cabW * 1.06); g.stroke(); }
+      g.lineCap = 'butt';
+      ret(g, cx - cabC * .66, cx - cabC * .38, -.1, .1, .05); g.fillStyle = '#060708'; g.fill();
+    }
+    if(p.barbatana){ g.strokeStyle = tom(o.cor, -.45); g.lineWidth = .05; g.lineCap = 'round'; g.beginPath(); g.moveTo(cx - cabC * .8, 0); g.lineTo(-L / 2 + .32, 0); g.stroke();
+      g.strokeStyle = tom(o.cor, .35); g.lineWidth = .014; g.beginPath(); g.moveTo(cx - cabC * .8, -.016); g.lineTo(-L / 2 + .32, -.016); g.stroke(); g.lineCap = 'butt'; }
     const fr = p.farois || 'pares';
-    g.fillStyle = '#f3f6fa';
-    if(fr === 'pares'){ for(const s of [1, -1]){ g.beginPath(); g.ellipse(L / 2 - .38, s * h * .78, .22, .07, s * .3, 0, Math.PI * 2); g.fill(); } }
-    else if(fr === 'redondos'){ for(const s of [1, -1]){ g.beginPath(); g.arc(L / 2 - .3, s * h * .6, .12, 0, Math.PI * 2); g.fill(); } }
-    else if(fr === 'barra'){ ret(g, L / 2 - .2, L / 2 - .12, -h * .7, h * .7, .03); g.fill(); }
+    if(fr === 'pares'){ for(const s of [1, -1]){ g.beginPath(); g.moveTo(L / 2 - .16, s * h * .6); g.lineTo(L / 2 - .3, s * h * .9); g.lineTo(L / 2 - .62, s * h * .92); g.lineTo(L / 2 - .48, s * h * .66); g.closePath(); g.fillStyle = '#12161c'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = .014; g.stroke();
+        for(const [fxx, fyy] of [[.27, .7], [.4, .8], [.52, .84]]){ g.beginPath(); g.arc(L / 2 - fxx, s * h * fyy, .045, 0, Math.PI * 2); g.fillStyle = '#f6f9fc'; g.fill(); } } }
+    else if(fr === 'redondos'){ for(const s of [1, -1]){ farol(g, L / 2 - .32, s * h * .62, .12, .12); farol(g, L / 2 - .5, s * h * .78, .09, .09); } }
+    else if(fr === 'barra'){ ret(g, L / 2 - .2, L / 2 - .12, -h * .7, h * .7, .03); g.fillStyle = '#f3f6fa'; g.fill(); }
     const as = p.asa;
-    if(as === 'alta'){ g.fillStyle = CARBONO; for(const s of [1, -1]){ ret(g, -L / 2 + .3, -L / 2 + .7, s * .35 - .04, s * .35 + .04); g.fill(); } asa(g, -L / 2 + .25, .4, W * .7, 1, o.cor, tom(o.cor, .2), { placas: .45, corPlaca: o.cor2 }); }
-    else if(as === 'cauda'){ g.fillStyle = tom(o.cor, -.2); ret(g, -L / 2, -L / 2 + .3, -h * .78, h * .78, .06); g.fill(); }
-    else if(as !== 'nenhuma') asa(g, -L / 2 + .1, .32, W * (p.asaLarg || .96), p.elementos || 1, o.cor, tom(o.cor, .2), { placas: .5, corPlaca: o.cor2 });
-    g.fillStyle = '#ff2a2a'; ret(g, -L / 2 - .02, -L / 2 + .04, -h * .8, h * .8, .02); g.fill();
-    if(o.num != null){ const nx = p.numX != null ? L * p.numX : L * .26; g.fillStyle = '#f4f4f2'; ret(g, nx, nx + .5, -.32, .32, .08); g.fill(); numero(g, o.num, nx + .25, 0, .42, Math.PI / 2, '#111', 'rgba(255,255,255,0)'); }
+    if(as === 'alta'){ g.fillStyle = '#131517'; for(const s of [1, -1]){ ret(g, -L / 2 + .3, -L / 2 + .72, s * .35 - .035, s * .35 + .035, .01); g.fill(); } asa(g, -L / 2 + .25, .4, W * .7, 1, o.cor, tom(o.cor, .2), { placas: .46, corPlaca: o.cor2, pintada: true }); }
+    else if(as === 'cauda'){ volume(g, () => ret(g, -L / 2, -L / 2 + .3, -h * .78, h * .78, .06), tom(o.cor, -.15), h * .78, { brilho: .16 }); }
+    else if(as !== 'nenhuma'){ const n = p.elementos || 1; asa(g, -L / 2 + .1, .32, W * (p.asaLarg || .96), n, o.cor, tom(o.cor, .2), { placas: .5, corPlaca: o.cor2, pintada: n === 1 }); }
+    for(const s of [1, -1]){ ret(g, -L / 2 - .02, -L / 2 + .05, s * h * .62 - .16, s * h * .62 + .16, .02); g.fillStyle = '#ff2a2a'; g.fill(); }
+    if(o.num != null){ const nx = p.numX != null ? L * p.numX : L * .26; ret(g, nx, nx + .46, -.3, .3, .07); g.fillStyle = '#f4f4f2'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = .014; g.stroke(); numero(g, o.num, nx + .23, 0, .4, Math.PI / 2, '#111', 'rgba(255,255,255,0)'); }
   }
 
   /* kart de cada época: o tubular sem carenagem (anos 60), o de laterais redondas (anos 90) e o atual */
   function kartE(g, p, o){
-    const { ret, corpo, pneu, capacete, numero, tom, caminhoSim, CARBONO } = A();
+    const { ret, volume, pneu, piloto, numero, tom, luz, caminhoSim } = A();
     if(p.moderno) return A().kart(g, o.cor, o.cor2, o.num, o.capCor);
-    const gc = corpo(g, o.cor, .7);
+    ret(g, -.46, .56, -.26, .26, .05); g.fillStyle = '#1a1c20'; g.fill();
+    g.strokeStyle = '#b4bac2'; g.lineWidth = .045; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(.55, -.38); g.lineTo(.55, .38); g.moveTo(-.58, -.45); g.lineTo(-.58, .45); g.moveTo(.6, -.22); g.lineTo(-.62, -.3); g.moveTo(.6, .22); g.lineTo(-.62, .3); g.moveTo(.75, -.2); g.lineTo(.75, .2); g.stroke();
+    g.lineCap = 'butt';
     pneu(g, .5, .5, .28, .16); pneu(g, .5, -.5, .28, .16); pneu(g, -.58, .55, .3, .22); pneu(g, -.58, -.55, .3, .22);
-    g.strokeStyle = '#a7acb3'; g.lineWidth = .05; g.beginPath(); g.moveTo(.55, -.38); g.lineTo(.55, .38); g.moveTo(-.58, -.45); g.lineTo(-.58, .45); g.moveTo(.6, -.22); g.lineTo(-.62, -.3); g.moveTo(.6, .22); g.lineTo(-.62, .3); g.moveTo(.75, -.2); g.lineTo(.75, .2); g.stroke();
-    if(p.laterais){ for(const s of [1, -1]){ g.beginPath(); g.ellipse(-.05, s * .52, .35, .1, 0, 0, Math.PI * 2); g.fillStyle = gc; g.fill(); }
-      caminhoSim(g, [[.88, .12], [.8, .3], [.62, .32], [.6, .22]]); g.fillStyle = gc; g.fill(); }
-    ret(g, -.4, .0, -.18, .18, .1); g.fillStyle = '#16181b'; g.fill();
-    g.beginPath(); g.ellipse(-.15, 0, .16, .25, 0, 0, Math.PI * 2); g.fillStyle = p.laterais ? tom(o.cor2, -.15) : o.cor; g.fill();
-    capacete(g, -.1, 0, .13, o.capCor);
-    g.strokeStyle = '#111'; g.lineWidth = .04; g.beginPath(); g.arc(.18, 0, .1, -Math.PI / 2, Math.PI / 2); g.stroke();
-    if(o.num != null){ g.fillStyle = '#f4f4f2'; ret(g, .66, .86, -.13, .13, .04); g.fill(); numero(g, o.num, .76, 0, .17, Math.PI / 2, '#111', 'rgba(255,255,255,0)'); }
+    ret(g, -.48, -.22, .18, .4, .04); g.fillStyle = '#5d626a'; g.fill(); g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = .012; g.stroke();
+    if(p.laterais){ for(const s of [1, -1]) volume(g, () => { g.beginPath(); g.ellipse(-.05, s * .52, .35, .1, 0, 0, Math.PI * 2); }, o.cor, .1, { yc: s * .52 });
+      volume(g, () => caminhoSim(g, [[.88, .12], [.8, .3], [.62, .32], [.6, .22]]), o.cor, .32); }
+    ret(g, -.42, .0, -.19, .19, .1); g.fillStyle = '#0d0e10'; g.fill();
+    piloto(g, -.12, 0, .13, o.capCor, { macacao: p.laterais ? tom(o.cor2, luz(o.cor2) > .6 ? -.45 : -.1) : '#d9d4c4', aro: p.laterais ? null : '#15171a', dist: 2.4 });
+    if(o.num != null){ ret(g, .66, .86, -.13, .13, .04); g.fillStyle = '#f4f4f2'; g.fill(); numero(g, o.num, .76, 0, .17, Math.PI / 2, '#111', 'rgba(255,255,255,0)'); }
   }
 
   /* ─────────── o catálogo ─────────── */

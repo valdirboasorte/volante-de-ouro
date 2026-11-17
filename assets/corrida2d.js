@@ -3,8 +3,8 @@
    em 2D. Fica fora dos <script> embutidos: a versão do jogo (o hash do multiplayer) não
    muda. Para testar o protótipo: abra o jogo com ?pista2d=1 (opcional: &trk=br_int&ano=2024&sk=f1). */
 (function(){
-  const V = '20261106-c9a1';
-  const MODULOS = ['nucleo', 'pista2d', 'carro2d', 'dano2d', 'ia2d', 'regras2d', 'entrada2d', 'arte2d', 'estilos2d', 'cenario2d', 'render2d', 'sessao2d', 'boxes2d', 'boost2d', 'assist2d', 'tela2d', 'carreira2d'];
+  const V = '20261117-aviso';
+  const MODULOS = ['nucleo', 'pista2d', 'carro2d', 'dano2d', 'ia2d', 'regras2d', 'entrada2d', 'arte2d', 'estilos2d', 'pinturas2d', 'temas2d', 'relevo2d', 'asfalto2d', 'ambiente2d', 'vida2d', 'cenario2d', 'camadas2d', 'render2d', 'sessao2d', 'boxes2d', 'punicoes2d', 'boost2d', 'assist2d', 'hud2d', 'tela2d', 'carreira2d'];
   let carregando = null;
 
   function script(src){
@@ -127,6 +127,13 @@
   function instalar(){
     if(typeof AoVivo === 'undefined' || typeof Game === 'undefined' || typeof Engine === 'undefined' || AoVivo.__c2d) return;
     AoVivo.__c2d = true;
+    /* a bandeira preta da corrida 2D (punicoes2d.js) chega ao campeonato como dnf 'DSQ':
+       no histórico da carreira ela aparece como desclassificação, não como abandono */
+    if(Engine.estadoProva && !Engine.estadoProva.__dsq){
+      const estOrig = Engine.estadoProva;
+      Engine.estadoProva = function(r){ return r && r.dnf === 'DSQ' ? { k: 'dsq', curto: 'DSQ', rot: 'Desclassificado', largou: true, abandono: true } : estOrig.apply(this, arguments); };
+      Engine.estadoProva.__dsq = true;
+    }
     const montOrig = Engine.montarCorrida;
     Engine.montarCorrida = function(){ const M = montOrig.apply(this, arguments); montagens.push(M); if(montagens.length > 4) montagens.shift(); return M; };
     const abrirOrig = AoVivo.abrir;

@@ -11,10 +11,11 @@
 
   /* os níveis dos rivais: competência (ritmo no limite, erros, desvio da linha), nunca o carro do jogador */
   C2D.NIVEIS = {
-    facil:   { n: 'Fácil',   ritmo: .952, faixa: .022, erros: .09, ruido: .65, erroFreio: -.06 },
-    medio:   { n: 'Médio',   ritmo: .97,  faixa: .018, erros: .055, ruido: .45, erroFreio: -.03 },
-    dificil: { n: 'Difícil', ritmo: .984, faixa: .014, erros: .03, ruido: .3, erroFreio: 0 },
-    lenda:   { n: 'Lenda',   ritmo: .995, faixa: .009, erros: .015, ruido: .18, erroFreio: 0 }
+    /* (erros: a chance por volta de passar do ponto numa freada; um piloto de corrida erra pouco) */
+    facil:   { n: 'Fácil',   ritmo: .952, faixa: .022, erros: .04, ruido: .65, erroFreio: -.06 },
+    medio:   { n: 'Médio',   ritmo: .97,  faixa: .018, erros: .025, ruido: .45, erroFreio: -.03 },
+    dificil: { n: 'Difícil', ritmo: .984, faixa: .014, erros: .015, ruido: .3, erroFreio: 0 },
+    lenda:   { n: 'Lenda',   ritmo: .995, faixa: .009, erros: .008, ruido: .18, erroFreio: 0 }
   };
   /* da dificuldade da carreira para o nível padrão dos rivais na pista */
   C2D.nivelPadrao = () => {
@@ -65,6 +66,12 @@
     /* antes da física de cada carro: segura quem ainda não reagiu, conduz o destino */
     comando(S, c, cmd){
       if(S.verdeEm != null && c.ia && S.t - S.verdeEm < c.atraso) return { steer: 0, acel: 0, freio: 1 };
+      /* bandeira preta: o desclassificado encosta do lado de fora e para (não fica no meio da pista) */
+      if(c.estado === 'fora' && c.foraTipo === 'DSQ' && c.v > 2 && c.ia){
+        c.ia.alvoD = (c.d >= 0 ? 1 : -1) * (S.P.meia + 2.5);
+        const base = C2D.IA.comandar(c.ia, c, S.P, S.amb);
+        return { steer: base.steer, acel: 0, freio: .35 };
+      }
       if(c.estado === 'fora') return { steer: 0, acel: 0, freio: 1 };
       if(c.estado === 'chegou'){ if(c.ia) c.ia.ritmo = Math.min(c.ia.ritmo, .55); }
       /* o azar marcado: quebra (perde potência e encosta) ou batida (erro grande numa freada) */
@@ -115,6 +122,8 @@
             S.eventos.push({ t: S.t, tipo: 'chegada', a: c.id, pos: null });
             /* depois da bandeirada o jogador vai devagar até os boxes, no piloto automático */
             if(c.me){ c.ia = c.ia || C2D.IA.criar({ ritmo: .5 }); c.ia.ritmo = .5; c.autopiloto = true; }
+            /* drive-through ou stop-and-go que não deu tempo de cumprir vira tempo somado */
+            if(C2D.Punicoes && S.pun) C2D.Punicoes.converter(S, c);
           }
         }
         c.voltaFeita = c.voltas;
@@ -140,8 +149,11 @@
       S.ordem = C2D.Corrida.ordem(S);
       S.ordem.forEach((c, k) => c.pos = k + 1);
       S.lider = S.ordem[0];
-      /* ultrapassagem do jogador sob safety car: 5 segundos */
-      if((S.sc || S.vsc) && S.eu && S.eu.estado === 'pista' && !S.eu.box){
+      /* a direção de prova: toques investigados, ultrapassagem sob safety car e por fora da pista
+         (dá para devolver a posição), punições a cumprir (punicoes2d.js) */
+      if(C2D.Punicoes && S.pun) C2D.Punicoes.depois(S, antes);
+      /* (sem o comissariado: a regra antiga, 5 segundos para quem passa sob safety car) */
+      else if((S.sc || S.vsc) && S.eu && S.eu.estado === 'pista' && !S.eu.box){
         const eu = S.eu, a = antes.get(eu);
         if(a && eu.pos < a){
           const passados = S.ordem.filter(o => o !== eu && o.pos > eu.pos && antes.get(o) < a && o.estado === 'pista' && !o.box);
@@ -153,7 +165,8 @@
     /* a ordem: quem chegou (mais voltas, menos tempo com punição), quem roda (pela distância),
        quem abandonou (quem foi mais longe na frente) — a mesma de Gp.ordem */
     ordem(S){
-      const peso = c => c.estado === 'chegou' ? 0 : c.estado === 'pista' ? 1 : 2;
+      /* (o desclassificado fica depois de todos, como na classificação oficial) */
+      const peso = c => c.estado === 'chegou' ? 0 : c.estado === 'pista' ? 1 : c.foraTipo === 'DSQ' ? 3 : 2;
       return S.carros.slice().sort((a, b) => peso(a) - peso(b)
         || (a.estado === 'chegou' && b.estado === 'chegou' ? (b.voltas - a.voltas) || ((a.fim + a.penal) - (b.fim + b.penal)) : b.sTot - a.sTot));
     },
@@ -167,6 +180,8 @@
        termina com menos voltas, na primeira linha depois do vencedor, como na corrida real. */
     projetar(S){
       const P = S.P, L = P.L, N = S.N, rnd = C2D.rng(C2D.semente('proj:' + S.semente));
+      /* os casos em análise se decidem já; o drive-through pendente vira o tempo da regra */
+      if(C2D.Punicoes && S.pun) C2D.Punicoes.fechar(S);
       const med = v => { const a = v.slice().sort((x, y) => x - y), n = a.length; return n ? (n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2) : null; };
       const validas = c => (c.historico || []).filter(h => h.valida && h.t > 20).map(h => h.t);
       const todas = []; for(const c of S.carros) todas.push(...validas(c));
@@ -267,7 +282,7 @@
       const ord = S.ordem, L = S.P.L, lider = ord[0];
       return ord.map((c, k) => {
         const l = { c, pos: k + 1, dif: '', int: '' };
-        if(c.estado === 'fora'){ l.dif = 'ABD'; return l; }
+        if(c.estado === 'fora'){ l.dif = c.foraTipo === 'DSQ' ? 'DSQ' : 'ABD'; return l; }
         if(k === 0){ l.dif = c.estado === 'chegou' ? 'Venceu' : 'Líder'; return l; }
         const atras = Math.floor((lider.sTot - c.sTot) / L);
         if(c.estado === 'chegou' && lider.estado === 'chegou'){
@@ -294,7 +309,8 @@
           pneus: c.pneus || ['M'], fracFora: c.estado === 'fora' ? Math.min(.99, (c.foraVolta || 1) / S.N) : null })),
         flId: fl ? fl.id : null, fl: fl ? { nome: fl.nome, t: S.fl.t, volta: S.fl.volta } : null,
         sc: !!S.houveSC, N: S.N, condensada: !!S.condensada, tv: lider && lider.fim != null ? lider.fim + lider.penal : S.t,
-        eventos: S.eventos.slice(), choveu: !!S.choveu, ordemEquipe: null, modo: '2d'
+        eventos: S.eventos.slice(), choveu: !!S.choveu, ordemEquipe: null, modo: '2d',
+        punicoes: S.pun ? S.pun.lista.slice() : []
       };
     },
     /* o que a corrida do seu carro teve, nas palavras do resumo (como Gp.notasDe) */

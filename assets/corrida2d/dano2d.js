@@ -275,7 +275,7 @@
       if(p.grande && p.naPista && !p.chamou && S.regras && C2D.Boxes && S.tipo === 'corrida'){
         p.chamou = true;
         const fake = { id: p.dono + ':det' + Math.round(p.sem * 1e4), d: p.d };
-        C2D.Boxes.incidente(S, fake);
+        C2D.Boxes.incidente(S, fake, true);
       }
     },
 

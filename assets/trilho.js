@@ -112,7 +112,8 @@
       body.com-trilho #conteudo{margin-left:auto; margin-right:auto; max-width:1240px; padding-left:var(--m); padding-right:var(--m)}
       body.com-trilho[data-tela="chefe"] #conteudo,body.com-trilho[data-tela="career"]:not(.pp-antigo) #conteudo,body.com-trilho[data-tela="multiplayer"] #conteudo,body.com-trilho[data-tela="intro"] #conteudo{max-width:none; padding-left:0; padding-right:0}
     }
-    @media (prefers-reduced-motion:reduce){ .trilho-i{transition:none} .trilho-i:hover{transform:none} }
+    @media (prefers-reduced-motion:reduce){ html:not(.mov) .trilho-i{transition:none} html:not(.mov) .trilho-i:hover{transform:none} }
+    .sem-mov .trilho-i{transition:none} .sem-mov .trilho-i:hover{transform:none}
   `;
   document.head.appendChild(st);
 

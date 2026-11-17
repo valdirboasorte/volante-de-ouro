@@ -17,13 +17,20 @@
   /* ── a pista em pedaços ── */
   function montarPista(P){
     const n = P.n, x = P.x, y = P.y, nx = P.nx, ny = P.ny, m = P.meia;
+    /* (só desenho) quantas cores a zebra desta pista tem: duas, ou três nas de bandeira (temas2d.js) */
+    const nz = C2D.Temas ? C2D.Temas.de(P).zebra.length : 2;
     const pt = (i, d) => { i = (i % n + n) % n; return [x[i] + nx[i] * d, y[i] + ny[i] * d]; };
     const pedacos = P.pedacos.map(pd => {
-      const asf = new Path2D(), linhas = new Path2D(), zebV = new Path2D(), zebB = new Path2D();
+      const asf = new Path2D(), linhas = new Path2D(), zebV = new Path2D(), zebB = new Path2D(), zebC = new Path2D();
       /* (só desenho) as bordas do asfalto, as bordas da zebra e as nervuras dela */
       const bordas = new Path2D(), zebFora = new Path2D(), zebDentro = new Path2D(), zebNerv = new Path2D();
       const escapes = { 2: new Path2D(), 3: new Path2D(), 4: new Path2D() }, muros = new Path2D(), murosFora = new Path2D();
       const cinta = new Path2D(), guard = new Path2D();
+      /* (só desenho) o corredor de grama cortada: a pista com as áreas de escape e uns metros além do muro */
+      const corr = new Path2D(), mc = P.kart ? 5 : 9;
+      for(let i = pd.i0; i <= pd.i1 + 1; i++){ const p = pt(i, m + P.escE[(i % n + n) % n] + mc); i === pd.i0 ? corr.moveTo(p[0], p[1]) : corr.lineTo(p[0], p[1]); }
+      for(let i = pd.i1 + 1; i >= pd.i0; i--){ const p = pt(i, -(m + P.escD[(i % n + n) % n] + mc)); corr.lineTo(p[0], p[1]); }
+      corr.closePath();
       /* asfalto: borda esquerda para a frente, borda direita para trás */
       for(let i = pd.i0; i <= pd.i1 + 1; i++){ const p = pt(i, m); i === pd.i0 ? asf.moveTo(p[0], p[1]) : asf.lineTo(p[0], p[1]); }
       for(let i = pd.i1 + 1; i >= pd.i0; i--){ const p = pt(i, -m); asf.lineTo(p[0], p[1]); }
@@ -72,7 +79,7 @@
       for(let i = pd.i0; i <= pd.i1; i++){
         if(!P.zebra[i % n]) continue;
         for(let t = 0; t < 3; t++){
-          const f0 = t / 3, f1 = (t + 1) / 3, cor = ((i * 3 + t) % 2) ? zebV : zebB;
+          const f0 = t / 3, f1 = (t + 1) / 3, cor = [zebB, zebV, zebC][(i * 3 + t) % nz];
           for(const lado of [1, -1]){
             const a0 = pt(i, lado * m), b0 = pt(i + 1, lado * m), a1 = pt(i, lado * (m + 1.2)), b1 = pt(i + 1, lado * (m + 1.2));
             const L0 = [a0[0] + (b0[0] - a0[0]) * f0, a0[1] + (b0[1] - a0[1]) * f0], L1 = [a0[0] + (b0[0] - a0[0]) * f1, a0[1] + (b0[1] - a0[1]) * f1];
@@ -84,7 +91,7 @@
           }
         }
       }
-      return Object.assign({}, pd, { asf, linhas, zebV, zebB, escapes, muros, murosFora, bordas, zebFora, zebDentro, zebNerv, cinta, guard });
+      return Object.assign({}, pd, { asf, linhas, zebV, zebB, escapes, muros, murosFora, bordas, zebFora, zebDentro, zebNerv, cinta, guard, zebC, corr });
     });
     pedacos.forEach((p, k) => p.idx = k);
     /* pit lane, a faixa de largada e o grid */
@@ -205,6 +212,7 @@
                   cam: { x: 0, y: 0, ang: 0, z: 6, ok: false }, modo: opc.camera || 'perseguir', dpr: 1, dprMax: opc.dprMax || 1.5,
                   marcas: new Float32Array(6 * 1600), nMarcas: 0, iMarca: 0, rodasAnt: new Map(), particulas: [], tempos: [], escala: 1,
                   cen: C2D.Cenario ? C2D.Cenario.montar(P) : null, chuva: null };
+      R.cam2 = C2D.Camadas ? C2D.Camadas.criar(R) : null;
       R.visivel = (x0, y0, x1, y1) => x1 > R.cam.x - R.raio && x0 < R.cam.x + R.raio && y1 > R.cam.y - R.raio && y0 < R.cam.y + R.raio;
       C2D.Render.redimensionar(R);
       return R;
@@ -258,6 +266,9 @@
         if((c.dano > .55 || motor < .4) && c.v > 1 && Math.random() < .5)
           R.particulas.push({ x: c.x - cs * sp.b * 1.1, y: c.y - sn * sp.b * 1.1, vx: -c.vx * .15 * cs + (Math.random() - .5) * 1.5, vy: -c.vx * .15 * sn + (Math.random() - .5) * 1.5, t: 0, d: 1.6, r: .6, cor: motor < .2 ? '70,72,76' : '150,152,156', cresce: 3 });
       }
+      /* em velocidade máxima o assoalho dos fórmulas raspa no asfalto e solta faísca */
+      if(c.fam === 'aberto' && c.v > 77 && c.piso === PISO.ASF && R.particulas.length < 230 && Math.random() < .06)
+        for(let k = 0; k < 3; k++) R.particulas.push({ x: c.x - cs * sp.b * .6, y: c.y - sn * sp.b * .6, vx: -cs * c.v * .22 + (Math.random() - .5) * 7, vy: -sn * c.v * .22 + (Math.random() - .5) * 7, t: 0, d: .2 + Math.random() * .22, r: .09, cor: Math.random() < .5 ? '255,220,130' : '255,170,70' });
       /* poeira na grama e na brita, faísca no muro */
       if((c.piso === PISO.GRAMA || c.piso === PISO.BRITA) && c.v > 6 && R.particulas.length < 220 && Math.random() < .5)
         R.particulas.push({ x: c.x - cs * sp.b, y: c.y - sn * sp.b, vx: -c.vx * .1 * cs, vy: -c.vx * .1 * sn, t: 0, d: .9, r: 1.2, cor: c.piso === PISO.BRITA ? '200,180,140' : '120,100,70' });
@@ -268,6 +279,63 @@
         R.particulas.push({ x: c.x - cs * (sp.b + .8), y: c.y - sn * (sp.b + .8), vx: -cs * c.v * .25 + (Math.random() - .5) * 3, vy: -sn * c.v * .25 + (Math.random() - .5) * 3, t: 0, d: .7, r: 1.1, cor: '225,232,240', cresce: 2.8 });
       if(c.batida > 3 && R.particulas.length < 260) for(let k = 0; k < 6; k++)
         R.particulas.push({ x: c.x, y: c.y, vx: (Math.random() - .5) * 14, vy: (Math.random() - .5) * 14, t: 0, d: .35, r: .25, cor: '255,200,90' });
+    },
+
+    /* o que não muda de um quadro para outro: o chão, a pista pintada e as barreiras.
+       O ctx já está no mundo (metros, y para cima); R.cam e R.raio dizem o que aparece */
+    estatico(ctx, R, vis){
+      const P = R.P, cam = R.cam, raio = R.raio;
+      const CEN = C2D.Cenario, pad = (nome, mpp) => CEN ? CEN.padrao(ctx, nome, mpp) : null;
+      /* o chão (grama cortada, ou a calçada da cidade) */
+      ctx.fillStyle = (CEN && CEN.fundo(ctx, P)) || (P.tipo === 'street' ? COR.rua : P.oval ? COR.fundoOval : COR.grama);
+      ctx.fillRect(cam.x - raio, cam.y - raio, raio * 2, raio * 2);
+      /* de perto (nos blocos mais finos) o chão ganha o capim miúdo e o asfalto o grão */
+      const tmc = R.cen && R.cen.tema, verde = !!tmc && P.tipo !== 'street' && (tmc.solo === 'grama' || tmc.solo === 'seco'), fino = !R.bloco || R.bloco.res >= 20;
+      if(verde && fino){ ctx.fillStyle = pad('gramaFina', 1 / 32); ctx.fillRect(cam.x - raio, cam.y - raio, raio * 2, raio * 2); }
+      /* a água do lugar (costa, ilha), debaixo de tudo */
+      if(R.cen && C2D.Ambiente) C2D.Ambiente.fundo(ctx, R, vis);
+      /* em volta da pista a grama é cortada (as listras do cortador); longe dela, não */
+      if(verde){
+        ctx.fillStyle = pad('gramaCorte', .25); for(const p of vis) ctx.fill(p.corr);
+        if(fino){ ctx.fillStyle = pad('gramaFina', 1 / 32); for(const p of vis) ctx.fill(p.corr); }
+      }
+      if(R.cen && C2D.Asfalto) C2D.Asfalto.antes(ctx, R, vis);
+      const rua = P.tipo === 'street';
+      for(const p of vis){ if(rua){ ctx.fillStyle = pad('grama', .25) || COR.grama2; ctx.fill(p.escapes[2]); } ctx.fillStyle = pad('brita', .05) || COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = pad('escape', 1 / 14) || COR.escape; ctx.fill(p.escapes[4]); }
+      ctx.lineJoin = 'round';
+      /* a sombra de contato do asfalto na grama e na brita (a pista fica um pouco acima) */
+      ctx.lineCap = 'butt';
+      ctx.strokeStyle = 'rgba(8,16,8,.2)'; ctx.lineWidth = 1.6; for(const p of vis) ctx.stroke(p.bordas);
+      ctx.fillStyle = pad(R.cen && R.cen.tema && C2D.Ambiente ? 'pit' : 'escape', 1 / 14) || COR.asfaltoPit; ctx.fill(R.pista.pit);
+      for(const p of vis){ ctx.fillStyle = P.terra ? pad('terra', 1 / 14) || '#7a5136' : pad('asfalto', 1 / 16) || COR.asfalto; ctx.fill(p.asf); }
+      if(!P.terra && fino && R.cen){ ctx.fillStyle = pad('asfFino', 1 / 48); for(const p of vis) ctx.fill(p.asf); }
+      /* a variação larga do asfalto (remendos e o desgaste) e o escurecido nas bordas */
+      ctx.strokeStyle = 'rgba(0,0,0,.16)'; ctx.lineWidth = 1.1; for(const p of vis) ctx.stroke(p.bordas);
+      if(R.cen) CEN.chao(ctx, R, vis);
+      /* a zebra: sombra para fora, as listras, as nervuras, o brilho na borda de dentro e o contorno */
+      ctx.strokeStyle = 'rgba(10,18,10,.32)'; ctx.lineWidth = .5; for(const p of vis) ctx.stroke(p.zebFora);
+      const tz = (R.cen && R.cen.tema && R.cen.tema.zebra) || [COR.zebraB, COR.zebraV];
+      for(const p of vis){ ctx.fillStyle = tz[1]; ctx.fill(p.zebV); ctx.fillStyle = tz[0]; ctx.fill(p.zebB); if(tz[2]){ ctx.fillStyle = tz[2]; ctx.fill(p.zebC); } }
+      ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = .09; for(const p of vis) ctx.stroke(p.zebNerv);
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = .07; for(const p of vis) ctx.stroke(p.zebDentro);
+      ctx.strokeStyle = 'rgba(40,10,8,.45)'; ctx.lineWidth = .07; for(const p of vis) ctx.stroke(p.zebFora);
+      /* a terra não tem linha pintada */
+      if(!P.terra){ ctx.strokeStyle = COR.linha; ctx.lineWidth = .22; for(const p of vis) ctx.stroke(p.linhas); }
+      if(R.cen) CEN.barreiras(ctx, R, vis);
+      else { ctx.strokeStyle = P.tipo === 'street' || P.oval ? COR.muro : COR.pneus; ctx.lineWidth = .7; for(const p of vis) ctx.stroke(p.muros); }
+      ctx.strokeStyle = COR.muro; ctx.lineWidth = .5; ctx.stroke(R.pista.muretaPit);
+      for(const q of R.pista.largada){ ctx.fillStyle = q.branco ? '#f4f4f4' : '#151515'; ctx.fill(q.path); }
+      ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = .18; ctx.stroke(R.pista.grid);
+      if(R.cen && C2D.Asfalto) C2D.Asfalto.marcas(ctx, R, vis);
+      ctx.fillStyle = '#f2f2f2'; ctx.fill(R.pista.placas); ctx.fillStyle = '#1b1c1f'; ctx.fill(R.pista.faixas);
+      /* as sombras de tudo o que tem altura, juntas e macias, por cima do chão pronto */
+      if(R.cen && CEN.sombras && C2D.Relevo){
+        const forca = C2D.Relevo.sol(R).forca;
+        if(forca > 0 && !(R.bloco && C2D.Camadas && C2D.Camadas.sombra(ctx, R, forca, g => CEN.sombras(g, R, vis)))){
+          /* sem os blocos: direto no chão (onde duas sombras se cruzam fica um pouco mais escuro) */
+          ctx.save(); ctx.globalAlpha = forca * .8; CEN.sombras(ctx, R, vis); ctx.restore();
+        }
+      }
     },
 
     /* um quadro. carros: lista; foco: o carro da câmera; alfa: fração do passo (interpolação) */
@@ -304,35 +372,14 @@
       const raio = Math.hypot(W, H) / z * .62 + 10;
       R.raio = raio;
       const vis = R.pista.pedacos.filter(p => p.x1 > cam.x - raio && p.x0 < cam.x + raio && p.y1 > cam.y - raio && p.y0 < cam.y + raio);
-      const CEN = C2D.Cenario, pad = (nome, mpp) => CEN ? CEN.padrao(ctx, nome, mpp) : null;
-      /* o chão (grama cortada, ou a calçada da cidade) */
-      ctx.fillStyle = (CEN && CEN.fundo(ctx, P)) || (P.tipo === 'street' ? COR.rua : P.oval ? COR.fundoOval : COR.grama);
-      ctx.fillRect(cam.x - raio, cam.y - raio, raio * 2, raio * 2);
-      const rua = P.tipo === 'street';
-      for(const p of vis){ if(rua){ ctx.fillStyle = pad('grama', .25) || COR.grama2; ctx.fill(p.escapes[2]); } ctx.fillStyle = pad('brita', .05) || COR.brita; ctx.fill(p.escapes[3]); ctx.fillStyle = pad('escape', 1 / 14) || COR.escape; ctx.fill(p.escapes[4]); }
-      ctx.lineJoin = 'round';
-      /* a sombra de contato do asfalto na grama e na brita (a pista fica um pouco acima) */
-      ctx.lineCap = 'butt';
-      ctx.strokeStyle = 'rgba(8,16,8,.2)'; ctx.lineWidth = 1.6; for(const p of vis) ctx.stroke(p.bordas);
-      ctx.fillStyle = pad('escape', 1 / 14) || COR.asfaltoPit; ctx.fill(R.pista.pit);
-      for(const p of vis){ ctx.fillStyle = P.terra ? pad('terra', 1 / 14) || '#7a5136' : pad('asfalto', 1 / 16) || COR.asfalto; ctx.fill(p.asf); }
-      /* a variação larga do asfalto (remendos e o desgaste) e o escurecido nas bordas */
-      ctx.strokeStyle = 'rgba(0,0,0,.16)'; ctx.lineWidth = 1.1; for(const p of vis) ctx.stroke(p.bordas);
-      if(R.cen) CEN.chao(ctx, R, vis);
-      /* a zebra: sombra para fora, as listras, as nervuras, o brilho na borda de dentro e o contorno */
-      ctx.strokeStyle = 'rgba(10,18,10,.32)'; ctx.lineWidth = .5; for(const p of vis) ctx.stroke(p.zebFora);
-      for(const p of vis){ ctx.fillStyle = COR.zebraV; ctx.fill(p.zebV); ctx.fillStyle = COR.zebraB; ctx.fill(p.zebB); }
-      ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = .09; for(const p of vis) ctx.stroke(p.zebNerv);
-      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = .07; for(const p of vis) ctx.stroke(p.zebDentro);
-      ctx.strokeStyle = 'rgba(40,10,8,.45)'; ctx.lineWidth = .07; for(const p of vis) ctx.stroke(p.zebFora);
-      /* a terra não tem linha pintada */
-      if(!P.terra){ ctx.strokeStyle = COR.linha; ctx.lineWidth = .22; for(const p of vis) ctx.stroke(p.linhas); }
-      if(R.cen) CEN.barreiras(ctx, R, vis);
-      else { ctx.strokeStyle = P.tipo === 'street' || P.oval ? COR.muro : COR.pneus; ctx.lineWidth = .7; for(const p of vis) ctx.stroke(p.muros); }
-      ctx.strokeStyle = COR.muro; ctx.lineWidth = .5; ctx.stroke(R.pista.muretaPit);
-      for(const q of R.pista.largada){ ctx.fillStyle = q.branco ? '#f4f4f4' : '#151515'; ctx.fill(q.path); }
-      ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = .18; ctx.stroke(R.pista.grid);
-      ctx.fillStyle = '#f2f2f2'; ctx.fill(R.pista.placas); ctx.fillStyle = '#1b1c1f'; ctx.fill(R.pista.faixas);
+      /* (só desenho) a vista deste quadro: quem pinta os blocos do chão e o relevo usa para saber o que aparece */
+      { const cs = Math.cos(rot), sn = Math.sin(rot); R.vista = { W, H, z, ox, oy, cs, sn }; }
+      if(C2D.Relevo) C2D.Relevo.preparar(R);
+      /* o chão, a pista pintada e as barreiras: copiados dos blocos já pintados (camadas2d.js);
+         sem eles, pintados de novo a cada quadro */
+      let pronto = false;
+      if(R.cam2 && !R.semBlocos){ C2D.Camadas.comecar(R); pronto = C2D.Camadas.andar(R, ctx, 0, 1); }
+      if(!pronto) C2D.Render.estatico(ctx, R, vis);
       /* a linha de trajetória à frente: verde acelera, amarela alivia, vermelha freia */
       if(R.linha && R.S && C2D.Assist && foco.estado !== 'fora' && !foco.box){
         const pontos = Math.min(P.n - 1, Math.round(Math.max(120, (foco.v || 0) * 4.5) / P.ds));
@@ -363,17 +410,29 @@
       /* o safety car (e o pace car da largada lançada): na frente do líder, com o giroflex */
       C2D.Render.safetyCar(R, ctx, dt);
       /* carros (sombra, depois o desenho) */
+      const sol = C2D.Relevo ? C2D.Relevo.sol(R) : { x: .6, y: -.6, forca: .34 }, aSombra = Math.min(.8, .36 + sol.forca * 1.4);
+      const tS = R.S ? R.S.t : 0;
       for(const c of carros){
+        /* carro que abandonou: inteiro enquanto escorrega e para; parado, some (os fiscais o tiram) */
+        if(c.recolhido) continue;
+        const aFora = c.estado !== 'fora' ? 1 : c.parouEm != null && !(R.S && c === R.S.eu) ? Math.max(0, 1 - (tS - c.parouEm) / 1.5) : 1;
+        if(aFora <= 0) continue;
         const cx = c.px + (c.x - c.px) * alfa, cy = c.py + (c.y - c.py) * alfa;
         if(Math.abs(cx - cam.x) > raio || Math.abs(cy - cam.y) > raio) continue;
         const cp = c.ppsi + C2D.ang(c.psi - c.ppsi) * alfa;
         const s = C2D.Render.sprite(R, c);
         /* a sombra cai sempre para o mesmo lado do mundo (o sol não gira com a câmera) */
-        if(C2D.Arte){ const sb = C2D.Arte.sombra(c); ctx.save(); ctx.translate(cx + .45, cy - .45); ctx.rotate(cp); ctx.globalAlpha = c.estado === 'fora' ? .3 : .8; ctx.drawImage(sb.cv, -sb.w / 2, -sb.h / 2, sb.w, sb.h); ctx.restore(); }
+        if(C2D.Arte){ const sb = C2D.Arte.sombra(c); ctx.save(); ctx.translate(cx + sol.x * .7, cy + sol.y * .7); ctx.rotate(cp); ctx.globalAlpha = aSombra * aFora; ctx.drawImage(sb.cv, -sb.w / 2, -sb.h / 2, sb.w, sb.h); ctx.restore(); }
         ctx.save(); ctx.translate(cx, cy); ctx.rotate(cp);
-        if(c.estado === 'fora') ctx.globalAlpha = .45;
+        if(aFora < 1) ctx.globalAlpha = aFora;
         const marcasDano = c.marcasDano && c.marcasDano.length ? c.marcasDano : null;
         if(!C2D.Arte){ ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-c.sp.comp / 2 + .25, -c.sp.larg / 2 - .25, c.sp.comp, c.sp.larg); }
+        /* em alta velocidade, o ar enrola nas pontas da asa traseira e deixa dois riscos brancos atrás do carro */
+        if(c.fam === 'aberto' && c.v > 58 && c.estado !== 'fora'){
+          const f = Math.min(1, (c.v - 58) / 30), xl = -c.sp.comp / 2 + .1, yw = c.sp.larg * .38, comp = 1.2 + f * 4.2;
+          ctx.strokeStyle = 'rgba(255,255,255,' + (.07 + f * .16).toFixed(3) + ')'; ctx.lineWidth = .07; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(xl, yw); ctx.lineTo(xl - comp, yw * 1.25); ctx.moveTo(xl, -yw); ctx.lineTo(xl - comp, -yw * 1.25); ctx.stroke();
+        }
         /* o mundo tem y para cima: desvira o desenho para o número não sair espelhado */
         ctx.scale(1, -1);
         ctx.drawImage(s.cv, -s.w / 2, -s.h / 2, s.w, s.h);
@@ -391,6 +450,12 @@
           ctx.restore();
         }
       }
+      /* a equipe em volta do carro parado no box. O vácuo não se desenha: é mecânica escondida,
+         o piloto sente na reta (C2D.Render.esteira fica para quem quiser ligar de novo) */
+      for(const c of carros){
+        if(Math.abs(c.x - cam.x) > raio || Math.abs(c.y - cam.y) > raio) continue;
+        if(c.box && c.box.fase === 'parado') C2D.Render.equipe(R, ctx, c);
+      }
       if(det && det.length) for(const p of det){ if(p.z < .35 || Math.abs(p.x - cam.x) > raio || Math.abs(p.y - cam.y) > raio) continue; C2D.Render.peca(ctx, p, 2); }
       /* poeira e faíscas */
       const dd = dt || .016;
@@ -398,10 +463,29 @@
         const p = R.particulas[q]; p.t += dd; if(p.t > p.d){ R.particulas.splice(q, 1); continue; }
         p.x += p.vx * dd; p.y += p.vy * dd;
         const a = 1 - p.t / p.d;
-        ctx.fillStyle = 'rgba(' + p.cor + ',' + (a * .5).toFixed(3) + ')';
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1.5 - a * .5) * (p.cresce ? 1 + (1 - a) * p.cresce : 1), 0, Math.PI * 2); ctx.fill();
+        const rp = p.r * (1.5 - a * .5) * (p.cresce ? 1 + (1 - a) * p.cresce : 1);
+        if(p.r >= .5 && R.cen){
+          /* fumaça e poeira: uma nuvem macia, que some pela borda (as faíscas continuam pontos vivos) */
+          ctx.globalAlpha = Math.min(1, a * .9);
+          ctx.drawImage(C2D.Render.nuvem(R, p.cor), p.x - rp * 1.4, p.y - rp * 1.4, rp * 2.8, rp * 2.8);
+          ctx.globalAlpha = 1;
+        } else {
+          ctx.fillStyle = 'rgba(' + p.cor + ',' + (a * .5).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(p.x, p.y, rp, 0, Math.PI * 2); ctx.fill();
+        }
       }
       if(R.cen){ R.luzes = R.S ? R.S.luzes : 0; C2D.Cenario.alto(ctx, R, vis); }
+      /* as sombras das nuvens passando devagar (de dia, onde o céu costuma ter nuvem) */
+      const nuv = R.cen && R.cen.tema ? R.cen.tema.nuvens || 0 : 0;
+      if(nuv > 0 && typeof DOMMatrix !== 'undefined'){
+        if(R.__nuv === undefined){ const tn = C2D.Cenario.texturas().nuvens; R.__nuv = tn ? ctx.createPattern(tn, 'repeat') : null; }
+        if(R.__nuv && R.__nuv.setTransform){
+          const tt = (typeof performance !== 'undefined' ? performance.now() : 0) / 1000;
+          /* (nuvens largas e macias: 256 px da textura cobrem um quilômetro) */
+          R.__nuv.setTransform(new DOMMatrix([4, 0, 0, 4, (tt * 2.6) % 1024, (tt * 1.1) % 1024]));
+          ctx.save(); ctx.globalAlpha = nuv * .75; ctx.fillStyle = R.__nuv; ctx.fillRect(cam.x - raio, cam.y - raio, raio * 2, raio * 2); ctx.restore();
+        }
+      }
       /* chuva: céu escuro, gotas caindo e a vinheta */
       const wet = R.S && R.S.amb && R.S.amb.w || 0;
       ctx.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
@@ -417,12 +501,68 @@
       if(!R.vinheta || R.vinheta.W !== W || R.vinheta.H !== H){
         const cv = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(Math.max(1, Math.round(W / 2)), Math.max(1, Math.round(H / 2))) : Object.assign(document.createElement('canvas'), { width: Math.max(1, Math.round(W / 2)), height: Math.max(1, Math.round(H / 2)) });
         const g = cv.getContext('2d'), gr = g.createRadialGradient(cv.width / 2, cv.height * .55, Math.min(cv.width, cv.height) * .35, cv.width / 2, cv.height / 2, Math.hypot(cv.width, cv.height) * .62);
-        gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.38)'); g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+        /* (de dia, o lado do sol um pouco mais quente e o outro mais frio) */
+        if(!(R.cen && R.cen.tema && R.cen.tema.noite)){ const gl = g.createLinearGradient(0, 0, cv.width, cv.height); gl.addColorStop(0, 'rgba(255,222,168,.075)'); gl.addColorStop(.5, 'rgba(255,222,168,0)'); gl.addColorStop(1, 'rgba(22,40,92,.075)'); g.fillStyle = gl; g.fillRect(0, 0, cv.width, cv.height); }
+        gr.addColorStop(0, 'rgba(6,10,26,0)'); gr.addColorStop(1, 'rgba(6,10,26,.36)'); g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
         R.vinheta = { cv, W, H };
       }
       ctx.drawImage(R.vinheta.cv, 0, 0, W, H);
+      if(R.cam2 && C2D.Camadas) C2D.Camadas.depois(R);
       /* tempo de desenho, para baixar a resolução em aparelho fraco */
       if(t0){ R.tempos.push(performance.now() - t0); if(R.tempos.length > 90) R.tempos.shift(); }
+    },
+
+    /* a equipe no box: um mecânico em cada roda (com a pistola), o macaco na frente e atrás, o do
+       pirulito; na primeira metade da parada os pneus velhos saem, na segunda os novos entram */
+    equipe(R, ctx, c){
+      const sp = c.sp, cor = c.cor || '#888', T = C2D.Cenario ? C2D.Cenario.texturas() : null, pes = T && T.pessoa ? T.pessoa(cor) : null;
+      const b = c.box, dur = Math.max(.5, (b.ate || 0) - (b.desde || 0)), f = R.S ? lim((R.S.t - (b.desde || 0)) / dur, 0, 1) : .5;
+      const hw = sp.larg / 2, a = sp.a || sp.comp * .3, bb = sp.b || sp.comp * .3, kart = c.fam === 'kart';
+      const gente = kart ? [[0, hw + .6], [-sp.comp / 2 - .6, 0]]
+        : [[a, hw + .55], [a, -hw - .55], [-bb, hw + .55], [-bb, -hw - .55], [sp.comp / 2 + .7, 0], [-sp.comp / 2 - .7, 0], [sp.comp / 2 + 2, hw + .9]];
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.psi);
+      /* os pneus: os velhos saindo, os novos chegando (encostados ao lado de cada roda) */
+      if(!kart && f > .08 && f < .92){
+        const novo = f > .5, d = hw + (novo ? 1.25 : 1.05);
+        for(const [x, y] of [[a, d], [a, -d], [-bb, d], [-bb, -d]]){
+          ctx.fillStyle = '#121315'; ctx.beginPath(); ctx.arc(x, y, .34, 0, 6.3); ctx.fill();
+          ctx.fillStyle = novo ? '#d9dde2' : '#4a4e55'; ctx.beginPath(); ctx.arc(x, y, .17, 0, 6.3); ctx.fill();
+        }
+      }
+      for(const [x, y] of gente){
+        if(pes){ ctx.save(); ctx.translate(x, y); ctx.scale(1, -1); ctx.drawImage(pes, -.5, -.5, 1, 1); ctx.restore(); }
+        else { ctx.fillStyle = cor; ctx.beginPath(); ctx.arc(x, y, .32, 0, 6.3); ctx.fill(); }
+      }
+      /* o pirulito: vermelho enquanto trabalham, verde quando pode sair */
+      if(!kart){ ctx.fillStyle = f > .96 ? '#2fbf5a' : '#d6311f'; ctx.beginPath(); ctx.arc(sp.comp / 2 + 1.3, hw * .45, .28, 0, 6.3); ctx.fill(); }
+      ctx.restore();
+    },
+    /* a esteira de ar: riscos claros saindo da traseira de quem vai à frente até o bico de quem está no vácuo */
+    esteira(R, ctx, c, o, alfa){
+      const cx = c.px + (c.x - c.px) * alfa, cy = c.py + (c.y - c.py) * alfa, ox = o.px + (o.x - o.px) * alfa, oy = o.py + (o.y - o.py) * alfa;
+      const hx = Math.cos(o.psi), hy = Math.sin(o.psi), rx = ox - hx * o.sp.comp * .5, ry = oy - hy * o.sp.comp * .5;
+      const fx = cx + Math.cos(c.psi) * c.sp.comp * .5, fy = cy + Math.sin(c.psi) * c.sp.comp * .5;
+      const dx = fx - rx, dy = fy - ry, L = Math.hypot(dx, dy); if(L < 1) return;
+      const nx = -dy / L, ny = dx / L, a = Math.min(.32, (c.vacuo - .2) * .9 + .06), t = (typeof performance !== 'undefined' ? performance.now() : 0) / 1000;
+      ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = .09; ctx.strokeStyle = 'rgba(235,242,255,' + a.toFixed(3) + ')';
+      ctx.setLineDash([2.2, 3.4]); ctx.lineDashOffset = -(t * c.v * .6) % 5.6;
+      ctx.beginPath();
+      for(const k of [-.55, 0, .55]){ const w0 = k * o.sp.larg * .45, w1 = k * c.sp.larg * .5; ctx.moveTo(rx + nx * w0, ry + ny * w0); ctx.lineTo(fx + nx * w1, fy + ny * w1); }
+      ctx.stroke(); ctx.restore();
+    },
+
+    /* a nuvem de fumaça ou de poeira de uma cor (um desenho por cor, guardado) */
+    nuvem(R, cor){
+      const m = R.__nuvens || (R.__nuvens = new Map());
+      let c = m.get(cor);
+      if(!c){
+        c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(48, 48) : Object.assign(document.createElement('canvas'), { width: 48, height: 48 });
+        const g = c.getContext('2d'), gr = g.createRadialGradient(24, 24, 1, 24, 24, 24);
+        gr.addColorStop(0, 'rgba(' + cor + ',.62)'); gr.addColorStop(.5, 'rgba(' + cor + ',.36)'); gr.addColorStop(1, 'rgba(' + cor + ',0)');
+        g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
+        m.set(cor, c);
+      }
+      return c;
     },
 
     safetyCar(R, ctx, dt){
@@ -541,7 +681,7 @@
       g.setTransform(M.dpr, 0, 0, M.dpr, 0, 0);
       const px = x => M.W / 2 + (x - M.cx) * M.esc, py = y => M.H / 2 - (y - M.cy) * M.esc;
       for(const c of carros){
-        if(c === foco) continue;
+        if(c === foco || c.recolhido) continue;
         g.fillStyle = c.cor; g.beginPath(); g.arc(px(c.x), py(c.y), 3, 0, Math.PI * 2); g.fill();
       }
       if(foco){ g.fillStyle = '#f0c12e'; g.strokeStyle = '#0b0c0e'; g.lineWidth = 1.5; g.beginPath(); g.arc(px(foco.x), py(foco.y), 4.5, 0, Math.PI * 2); g.fill(); g.stroke(); }

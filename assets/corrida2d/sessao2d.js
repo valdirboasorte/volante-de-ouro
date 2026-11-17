@@ -27,6 +27,8 @@
         c.eq = o.eq || ''; c.cc = o.cc || '';
         c.num = o.num != null ? o.num : (C2D.semente('num:' + (o.id || k)) % 98) + 2;
         if(o.cor2) c.cor2 = o.cor2;
+        /* a pintura real da equipe naquele ano (pinturas2d.js) e o capacete do piloto */
+        if(C2D.Pinturas){ c.pintura = C2D.Pinturas.de(c.eq, opc.ano, opc.sk, c.cor, o.id || k); if(!o.me) c.capCor = C2D.Pinturas.capacete(o.id || k); }
         if(o.me) S.eu = c;
         S.carros.push(c);
       });
@@ -37,6 +39,8 @@
       S.limitesModo = opc.limites || 'tolerante';
       if(S.tipo === 'corrida') C2D.Corrida.preparar(S, { voltas: opc.voltas, limiteAvisos: S.limitesModo === 'rigoroso' ? 3 : 5, passoPunicao: S.limitesModo === 'rigoroso' ? 1 : 2 });
       if(S.tipo === 'corrida' && C2D.Boxes) C2D.Boxes.preparar(S, Object.assign({ sk: opc.sk, ano: opc.ano, nivel: opc.nivel || 0, fracao: 1, wet: (opc.w || 0) > .3 }, opc.boxes || {}));
+      /* a direção de prova: as punições da categoria e da época (punicoes2d.js) */
+      if(S.tipo === 'corrida' && C2D.Punicoes) C2D.Punicoes.preparar(S, { modo: opc.punicoes, sk: opc.sk, ano: opc.ano, nivel: opc.nivel || 0 });
       if(opc.clima) S.clima = opc.clima;
       if(S.tipo === 'corrida' && C2D.Boost){
         C2D.Boost.preparar(S, { sk: opc.sk, ano: opc.ano, nivel: opc.nivel || 0 });
@@ -76,7 +80,16 @@
       if(S.regras) for(const c of S.carros) c.teto = S.estado === 'lancada' ? C2D.Boost.vPace(S, c) : (S.sc || S.vsc) && c.estado === 'pista' ? C2D.Boxes.tetoSC(S, c) : Infinity;
       for(const c of S.carros){
         /* quem abandonou e já parou sai da conta */
-        if(c.estado === 'fora' && c.v < .3){ c.px = c.x; c.py = c.y; c.ppsi = c.psi; continue; }
+        /* (e os fiscais tiram o carro da pista: parado, ele some depois de um instante, em vez de
+           ficar como fantasma no meio do caminho; o seu carro continua lá, a câmera está nele) */
+        if(c.estado === 'fora' && c.v < .3){
+          c.px = c.x; c.py = c.y; c.ppsi = c.psi;
+          if(c.parouEm == null) c.parouEm = S.t;
+          if(!c.recolhido && c !== S.eu && S.t - c.parouEm > 1.5) c.recolhido = true;
+          continue;
+        }
+        if(c.estado === 'fora' && !c.recolhido && c !== S.eu && c.foraT != null && S.t - c.foraT > 8){ c.recolhido = true; c.v = c.vx = c.vy = c.r = 0; c.parouEm = c.parouEm != null ? c.parouEm : S.t; continue; }
+        if(c.recolhido) continue;
         const s0 = c.sTot;
         let cmd;
         if(c === S.eu && !c.autopiloto){
@@ -85,7 +98,13 @@
           c.reOk = largou && !c.box && !c.destruido && c.estado !== 'fora' && c.estado !== 'chegou';
           if(c.assist.freioAuto && largou && !c.box && !c.re && C2D.Assist) cmd = C2D.Assist.freio(S, c, cmd);
         }
-        else { c.reOk = false; cmd = c.ia ? C2D.IA.comandar(c.ia, c, P, S.amb) : { steer: 0, acel: 0, freio: 1 }; }
+        else {
+          c.reOk = false;
+          /* voltando à pista (saída dos boxes, ou depois de uma escapada): pela beirada, até pegar velocidade */
+          if(c.retorno && c.retorno.lado && c.ia && !c.box) c.ia.alvoD = c.retorno.lado * (P.meia - c.sp.larg / 2 - .45);
+          cmd = c.ia ? C2D.IA.comandar(c.ia, c, P, S.amb) : { steer: 0, acel: 0, freio: 1 };
+        }
+        if(c.retorno) C2D.Sessao.retorno(S, c);
         /* antes da luz verde o carro fica no freio (o acelerador só faz barulho) */
         if(!largou) cmd = { steer: cmd.steer, acel: 0, freio: 1, giro: cmd.acel };
         else if(corrida){
@@ -95,6 +114,8 @@
           if(S.boost) cmd = C2D.Boost.antes(S, c, cmd, dt);
           /* atrás do pace car: limitador de velocidade para todos, sem ultrapassar */
           if(lancada){ const vp = C2D.Boost.vPace(S, c); if(c.v > vp) cmd = Object.assign({}, cmd, { acel: 0, freio: Math.min(1, (c.v - vp) * .2) }); }
+          /* sob safety car o seu carro não passa o da frente: ele segura a distância sozinho */
+          if(c === S.eu && C2D.Punicoes) cmd = C2D.Punicoes.segurarSC(S, c, cmd);
         }
         /* carro destruído (roda arrancada): o piloto só segura o carro até parar */
         if(c.destruido) cmd = { steer: (cmd.steer || 0) * .3, acel: 0, freio: .45 };
@@ -103,12 +124,16 @@
         C2D.Sessao.cronometrar(S, c, s0, dt);
         C2D.Sessao.limites(S, c, cmd, dt);
       }
-      /* os toques entre carros */
+      /* os toques entre carros (a direção de prova olha como cada um vinha antes do toque) */
+      if(corrida && S.pun) C2D.Punicoes.antesDosToques(S);
       const toques = C2D.Carro.colisoes(S.carros);
       for(const t of toques){
         const k = t.a < t.b ? t.a + '|' + t.b : t.b + '|' + t.a;
         S.ultToque = S.ultToque || {};
-        if(t.v > 3.5 && !(S.ultToque[k] > S.t - 1.5)){ S.ultToque[k] = S.t; S.eventos.push({ t: S.t, tipo: 'toque', a: t.a, b: t.b, v: +t.v.toFixed(1) }); }
+        if(t.v > 3.5 && !(S.ultToque[k] > S.t - 1.5)){
+          S.ultToque[k] = S.t; S.eventos.push({ t: S.t, tipo: 'toque', a: t.a, b: t.b, v: +t.v.toFixed(1) });
+          if(corrida && S.pun) C2D.Punicoes.toque(S, t);
+        }
       }
       /* o dano de cada batida nas peças, e os destroços */
       if(C2D.Dano) C2D.Dano.processar(S, dt);
@@ -178,16 +203,28 @@
       c.parado = preso ? c.parado + dt : 0;
       if((c.ia && c.parado > 2.5) || (c === S.eu && c.assist.freioAuto && c.parado > 3)) C2D.Sessao.voltarPista(S, c);
     },
-    /* o carro volta ao eixo da pista, parado e apontado para a frente; a volta não vale */
+    /* acabou a volta à pista? Quando pegou velocidade (ou o tempo passou) e ninguém está encostado */
+    retorno(S, c){
+      const P = S.P, r = c.retorno;
+      if(c.estado !== 'pista' || c.box){ if(c.ia && !c.box && r.lado) c.ia.alvoD = null; c.retorno = null; return; }
+      const pronto = S.t > r.ate || c.v > P.seco.v[c.i] * .82;
+      if(!pronto) return;
+      if(S.carros.some(o => o !== c && !o.fantasma && Math.abs(o.x - c.x) < 7 && Math.abs(o.y - c.y) < 7)){ r.ate = Math.max(r.ate, S.t); return; }
+      c.retorno = null; c.fantasma = false;
+      if(c.ia && r.lado) c.ia.alvoD = null;
+    },
+    /* o carro volta à pista pela beirada do lado em que estava, apontado para a frente; até pegar
+       velocidade ninguém encosta nele (os fiscais seguram quem vem). A volta não vale */
     voltarPista(S, c){
       const P = S.P;
       /* na corrida, carro destruído não volta; no treino e na classificação a equipe entrega o carro consertado */
       if(c.destruido && S.tipo === 'corrida') return;
       if(c.destruido && C2D.Dano) C2D.Dano.reparar(c, true);
-      const lado = lim(c.d, -P.meia * .5, P.meia * .5);
+      const ld = c.d >= 0 ? 1 : -1, lado = ld * (P.meia - c.sp.larg / 2 - .45);
       const sTot = c.sTot;
       C2D.Carro.posicionar(c, P, c.s, lado);
       c.sTot = sTot; c.parado = 0;
+      if(S.tipo === 'corrida' && c.estado === 'pista'){ c.fantasma = true; c.retorno = { ate: S.t + 7, lado: 0 }; }
       if(c.ini != null) c.invalida = true;
       S.eventos.push({ t: S.t, tipo: 'voltouPista', a: c.id });
     },

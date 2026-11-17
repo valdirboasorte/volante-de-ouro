@@ -184,8 +184,8 @@
   "n": 49
  },
  "ca_tor": {
-  "ok": false,
-  "resultado": "recusado na conferência: o caminho mistura as ruas da cidade com a pista",
+  "ok": true,
+  "resultado": "ok: 60 pontos, 2 candidato(s) fechado(s) de 46 caminhos, proporção 2.9:1, compacidade 0.05, sem comprimento oficial (3300 m), imagem fora do infobox, arquivo escolhido",
   "arquivo": "File:Toronto, Ontario street circuit track map 2023.svg",
   "licenca": "CC BY-SA 3.0",
   "imagem": "https://upload.wikimedia.org/wikipedia/commons/7/79/Toronto%2C_Ontario_street_circuit_track_map_2023.svg",
@@ -200,11 +200,11 @@
   "imagem": ""
  },
  "au_sur": {
-  "ok": false,
-  "resultado": "recusado na conferência: o caminho mistura as ruas da cidade com a pista",
-  "arquivo": "File:Surfers Paradise Street Circuit.svg",
+  "ok": true,
+  "resultado": "ok: 75 pontos, 9 candidato(s) fechado(s) de 126 caminhos, proporção 1.9:1, compacidade 0.06, 2º caminho tem 100% do perímetro, sem comprimento oficial (3300 m), imagem fora do infobox, arquivo escolhido",
+  "arquivo": "File:Surfers Paradise Street Circuit 2010.svg",
   "licenca": "CC BY-SA 3.0",
-  "imagem": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Surfers_Paradise_Street_Circuit.svg",
+  "imagem": "https://upload.wikimedia.org/wikipedia/commons/2/26/Surfers_Paradise_Street_Circuit_2010.svg",
   "candidatos": 9,
   "n": 75
  },
@@ -216,12 +216,12 @@
   "imagem": ""
  },
  "us_bel": {
-  "ok": false,
-  "resultado": "recusado na conferência: o caminho mistura as ruas da ilha com a pista",
-  "arquivo": "File:Detroit Grand Prix on Belle Isle 1998-2001.svg",
+  "ok": true,
+  "resultado": "ok: 59 pontos, 6 candidato(s) fechado(s) de 191 caminhos, proporção 1.5:1, compacidade 0.17, 2º caminho tem 100% do perímetro, sem comprimento oficial (3300 m), imagem fora do infobox, arquivo escolhido",
+  "arquivo": "File:Detroit Grand Prix on Belle Isle 2015.svg",
   "licenca": "CC BY-SA 3.0",
-  "imagem": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Detroit_Grand_Prix_on_Belle_Isle_1998-2001.svg",
-  "candidatos": 3,
+  "imagem": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Detroit_Grand_Prix_on_Belle_Isle_2015.svg",
+  "candidatos": 6,
   "n": 59
  },
  "se_kri": {
@@ -369,5 +369,23 @@
   "imagem": "https://upload.wikimedia.org/wikipedia/commons/1/14/%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0_%D1%83%D0%BB%D0%B8%D1%87%D0%BD%D0%B0%D1%8F_%D1%82%D1%80%D0%B0%D1%81%D1%81%D0%B0.svg",
   "candidatos": 3,
   "n": 37
+ },
+ "us_det": {
+  "ok": true,
+  "resultado": "ok: 40 pontos, 4 candidato(s) fechado(s) de 212 caminhos, proporção 1.6:1, compacidade 0.29, 2º caminho tem 87% do perímetro, comprimento oficial 4168 m, imagem fora do infobox, arquivo escolhido",
+  "arquivo": "File:Downtown Detroit Street Circuit.svg",
+  "licenca": "CC BY-SA 3.0",
+  "imagem": "https://upload.wikimedia.org/wikipedia/commons/3/38/Downtown_Detroit_Street_Circuit.svg",
+  "candidatos": 4,
+  "n": 40
+ },
+ "fr_lem": {
+  "ok": true,
+  "resultado": "ok: 42 pontos, 1 candidato(s) fechado(s) de 64 caminhos, proporção 1.4:1, compacidade 0.60, comprimento oficial 13626 m, imagem fora do infobox",
+  "arquivo": "File:Circuit de la Sarthe track map.svg",
+  "licenca": "CC BY-SA 3.0",
+  "imagem": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Circuit_de_la_Sarthe_track_map.svg",
+  "candidatos": 1,
+  "n": 42
  }
 }

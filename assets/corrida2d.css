@@ -29,7 +29,22 @@ html.c2d-aberto body > :not(.c2d), html.c2d-aberto body > :not(.c2d) *{ animatio
 .c2d-pares{ display:grid; grid-template-columns:auto auto; gap:1px 10px; justify-content:center; font-size:13px }
 .c2d-pares b{ font-variant-numeric:tabular-nums; text-align:right }
 .c2d-mapa{ width:132px; height:132px; background:rgba(11,12,14,.6); border:1px solid #25282e; border-radius:10px }
-.c2d-aviso{ position:absolute; left:50%; top:30%; transform:translateX(-50%); background:rgba(226,35,26,.92); color:#fff; font-weight:800; padding:7px 14px; border-radius:8px; font-size:14px; letter-spacing:.02em; white-space:nowrap }
+/* o aviso: uma faixa escura e discreta, com a cor de quem fala numa barra em cima (direção de prova
+   em vermelho, limites de pista com a bandeira preta e branca, dano em laranja) e o rótulo pequeno */
+.c2d-aviso{ position:absolute; left:50%; top:30%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:2px;
+  --av:#f0c12e; --av-bar:var(--av); background:rgba(11,12,14,.8); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  color:#eef0f2; font-weight:700; padding:8px 14px 7px; border-radius:6px; font-size:13.5px; letter-spacing:.01em; white-space:nowrap;
+  box-shadow:0 6px 18px rgba(0,0,0,.32); overflow:hidden; pointer-events:none }
+.c2d-aviso[hidden]{ display:none }
+.c2d-aviso::before{ content:''; position:absolute; left:0; right:0; top:0; height:3px; background:var(--av-bar) }
+.c2d-av-rot{ font-size:10px; line-height:1.2; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--av) }
+.c2d-aviso[data-tipo="pun"]{ --av:#ff5a4e }
+.c2d-aviso[data-tipo="limites"]{ --av:#f2f3f5; --av-bar:repeating-linear-gradient(135deg, #f2f3f5 0 7px, #111 7px 14px) }
+.c2d-aviso[data-tipo="alerta"]{ --av:#ff9f1a }
+.c2d-aviso[data-tipo="verde"]{ --av:#22c46e }
+.c2d-aviso.entra{ animation:c2d-av-entra .22s cubic-bezier(.2,.8,.2,1) both }
+@keyframes c2d-av-entra{ from{ opacity:0; translate:0 -6px } to{ opacity:1; translate:0 0 } }
+@media (prefers-reduced-motion: reduce){ .c2d-aviso.entra{ animation:none } }
 .c2d-baixo{ position:absolute; left:50%; bottom:max(12px, env(safe-area-inset-bottom)); transform:translateX(-50%); display:grid; grid-template-columns:auto auto; grid-template-rows:auto auto; align-items:end; gap:2px 10px;
   background:rgba(11,12,14,.78); border:1px solid #25282e; border-radius:12px; padding:8px 14px 10px }
 .c2d-rpm{ grid-column:1 / 3; display:flex; gap:3px; justify-content:center }
@@ -67,6 +82,17 @@ html.c2d-aberto body > :not(.c2d), html.c2d-aberto body > :not(.c2d) *{ animatio
 .c2d-menu-caixa h2{ margin:0 0 4px; font-size:22px; font-weight:800; font-variation-settings:'wdth' 72; text-transform:uppercase; letter-spacing:.02em }
 .c2d-btn{ min-height:46px; border-radius:10px; background:#212429; border:1px solid #353941; color:#eef0f2; font-weight:700; font-size:15px }
 .c2d-btn:hover{ background:#2b2f35 }
+/* o celular deitado com os botões na tela: o velocímetro vai para baixo, entre as setas e os pedais
+   (no meio da tela ele tapava o carro da frente), e a torre fica curta à esquerda */
+@media (max-height: 520px) and (min-width: 561px){
+  .c2d-com-toque .c2d-tq{ width:clamp(64px, 12vw, 100px); height:clamp(64px, 12vw, 100px) }
+  .c2d-com-toque .c2d-tq-freio, .c2d-com-toque .c2d-tq-acel{ height:clamp(96px, 38vh, 150px) }
+  .c2d-com-toque .c2d-baixo{ top:auto; bottom:max(8px, env(safe-area-inset-bottom)); max-width:calc(100vw - 2 * (2 * clamp(64px, 12vw, 100px) + 40px)); padding:6px 12px 8px }
+  .c2d-com-toque .c2d-extra{ flex-wrap:wrap; gap:4px 8px }
+  .c2d-com-toque .c2d-torre{ position:absolute; left:calc(max(12px, env(safe-area-inset-left)) + 46px); top:var(--esq-fim, 130px); margin:0 }
+  .c2d-com-toque .c2d-luzes{ top:56% }
+  .c2d-com-toque .c2d-aviso{ top:132px; max-width:calc(100vw - 500px); font-size:12px; padding:6px 10px }
+}
 .c2d-btn-ouro{ background:#f0c12e; color:#15110a; border-color:#f0c12e } .c2d-btn-ouro:hover{ background:#ffd34d }
 .c2d-btn-sair{ background:transparent; color:#ff5244; border-color:#4a2522 }
 .c2d-opcoes{ display:grid; gap:6px; padding:8px 2px; border-top:1px solid #25282e; border-bottom:1px solid #25282e }
@@ -191,3 +217,197 @@ html.c2d-aberto body > :not(.c2d), html.c2d-aberto body > :not(.c2d) *{ animatio
 .c2d-gar-card b{ padding:9px 12px 4px; font-size:14px; line-height:1.3; letter-spacing:.01em }
 .c2d-gar-usos{ display:flex; flex-wrap:wrap; gap:4px 6px; padding:2px 12px 11px; font-size:12px; color:#9aa1ab; font-variant-numeric:tabular-nums }
 .c2d-gar-usos > span{ background:#1d2025; border-radius:6px; padding:2px 7px }
+
+/* DRS, KERS, ERS e turbo: indicadores que também são botões (no celular não há teclado) */
+.c2d-boost{ cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; display:inline-block; min-height:28px; line-height:28px; padding:0 8px; border-radius:6px; border:1px solid rgba(255,255,255,.18) }
+.c2d-boost.quente{ color:#0b0c0e; background:#ff453a; padding:0 8px; border-radius:6px }
+.c2d-boost.on{ outline:2px solid #f5c518 }
+/* o aviso longo (a regra da época na largada) quebra a linha em vez de sair da tela */
+.c2d-aviso{ white-space:normal; max-width:min(92vw, 640px); width:max-content; text-align:center; line-height:1.3 }
+
+/* ═══ o grafismo por categoria e época (hud2d.js escolhe o tema; aqui ficam as cores e as formas) ═══
+   Desenhos próprios, no espírito da transmissão de cada época: nenhuma marca ou logotipo copiado. */
+.c2d{ --hf:var(--f, 'Archivo', system-ui, sans-serif); --h-cx:rgba(11,12,14,.86); --h-bd:#25282e; --h-r:10px; --h-tx:#eef0f2; --h-rot:#8a919b; --h-ac:#f0c12e; --h-sh:none;
+  --h-wdth:80; --h-style:normal; --h-caps:none;
+  --t-bg:rgba(11,12,14,.78); --t-bd:#25282e; --t-r:10px; --t-w:168px; --t-fs:13px; --t-fw:700; --t-ls:.03em; --t-wdth:100; --t-style:normal; --t-pad:4px; --t-vao:0px;
+  --t-li:transparent; --t-li-r:6px; --t-tx:#eef0f2; --t-pos-bg:transparent; --t-pos-tx:inherit; --t-nm-bg:transparent; --t-nm:inherit; --t-gap-bg:transparent; --t-gap:#a8aeb7;
+  --t-eu-bg:rgba(240,193,46,.18); --t-eu-tx:#f0c12e; --t-bar:4px; --t-cab-bg:transparent; --t-cab-tx:#eef0f2; --t-sh:none }
+.c2d-hud{ font-family:var(--hf); color:var(--h-tx) }
+.c2d-caixa, .c2d-baixo{ background:var(--h-cx); border-color:var(--h-bd); border-radius:var(--h-r); text-shadow:var(--h-sh) }
+.c2d-rot{ color:var(--h-rot) } .c2d-sessao, .c2d-marcha{ color:var(--h-ac) }
+.c2d-num, .c2d-tempo{ font-variation-settings:'wdth' var(--h-wdth); font-style:var(--h-style) }
+.c2d-esq, .c2d-cron{ text-transform:var(--h-caps) }
+/* a torre: posição, barra da equipe, número, nome, intervalo, extra (pneu ou seta) */
+.c2d-torre{ width:var(--t-w); padding:var(--t-pad); background:var(--t-bg); border:1px solid var(--t-bd); border-radius:var(--t-r); font-size:var(--t-fs); color:var(--t-tx); text-shadow:var(--t-sh);
+  display:flex; flex-direction:column; gap:var(--t-vao); font-family:var(--hf); font-style:var(--t-style); transition:border-color .25s, box-shadow .25s }
+.c2d-torre li{ display:flex; grid-template-columns:none; align-items:center; gap:5px; padding:2px 5px; min-height:19px; border-radius:var(--t-li-r); background:var(--t-li); order:2 }
+.c2d-torre li b{ flex:0 0 19px; text-align:center; font-weight:800; background:var(--t-pos-bg); color:var(--t-pos-tx); border-radius:3px; line-height:17px }
+.c2d-torre li i{ flex:0 0 var(--t-bar); width:var(--t-bar); height:14px; border-radius:2px; background:var(--eq, #777) }
+.c2d-torre li u{ flex:0 0 auto; min-width:21px; padding:0 3px; text-align:center; text-decoration:none; font-weight:800; font-size:.86em; line-height:16px; border-radius:3px; background:var(--t-num-bg, var(--eq, #555)); color:var(--t-num-tx, var(--eqt, #fff)) }
+.c2d-torre li u:empty, .c2d-torre li s:empty{ display:none }
+.c2d-torre li span{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:var(--t-fw); letter-spacing:var(--t-ls); font-variation-settings:'wdth' var(--t-wdth);
+  background:var(--t-nm-bg); color:var(--t-nm) }
+.c2d-torre li em{ flex:0 0 auto; font-style:normal; font-size:.9em; color:var(--t-gap); background:var(--t-gap-bg); white-space:nowrap }
+.c2d-torre li s{ flex:0 0 auto; text-decoration:none; font-size:.78em; font-weight:800; min-width:14px; text-align:center }
+.c2d-torre li s.sobe{ color:#34d058 } .c2d-torre li s.desce{ color:#f5c400 }
+.c2d-torre li s[class^="p-"]{ width:15px; height:15px; line-height:13px; border-radius:50%; border:1.5px solid currentColor; font-size:.68em }
+.c2d-torre li s.p-S{ color:#ff3b30 } .c2d-torre li s.p-M{ color:#ffd60a } .c2d-torre li s.p-H{ color:#f2f2f2 } .c2d-torre li s.p-I{ color:#34c759 } .c2d-torre li s.p-W{ color:#3b9bff }
+.c2d-torre li.eu{ background:var(--t-eu-bg); color:var(--t-eu-tx) } .c2d-torre li.eu span{ color:var(--t-eu-tx) }
+.c2d-torre li.fora{ opacity:.45 } .c2d-torre li.corte{ margin-top:5px }
+.c2d-torre li.nobox em{ color:#3b9bff; font-weight:800 }
+.c2d-torre li.cab{ order:0; justify-content:space-between; gap:8px; padding:4px 6px; background:var(--t-cab-bg); color:var(--t-cab-tx); font-weight:800; font-size:.86em; letter-spacing:.06em; text-transform:uppercase; border-radius:calc(var(--t-r) - 3px) calc(var(--t-r) - 3px) 3px 3px }
+.c2d-torre li.cab span{ flex:0 1 auto; background:none; color:inherit; font-weight:800 }
+.c2d-torre li.est{ order:1; justify-content:center; text-align:center; padding:4px 6px; font-weight:900; font-size:.84em; letter-spacing:.05em; text-transform:uppercase; border-radius:3px; white-space:normal; line-height:1.15 }
+.c2d-torre li.e-sc, .c2d-torre li.e-vsc{ background:#f5d000; color:#111 }
+.c2d-torre li.e-verde{ background:#12b24a; color:#fff }
+.c2d-torre li.e-fl{ background:#a02bd6; color:#fff }
+.c2d-torre li.e-fim{ color:#111; background:repeating-conic-gradient(#f4f4f4 0 25%, #bdbdbd 0 50%) 0 0 / 10px 10px }
+.c2d-torre[data-estado="sc"], .c2d-torre[data-estado="vsc"]{ border-color:#f5d000; box-shadow:0 0 0 2px #f5d000 }
+.c2d-torre[data-estado="verde"]{ border-color:#12b24a; box-shadow:0 0 0 2px #12b24a }
+.c2d-torre[data-estado="fl"]{ border-color:#a02bd6; box-shadow:0 0 0 2px #a02bd6 }
+
+/* ── a faixa corrida no alto (NASCAR de 2001, Indy dos anos 2000) ── */
+.c2d[data-torre="faixa"] .c2d-torre{ position:absolute; left:0; right:0; top:0; width:auto; margin:0; flex-direction:row; align-items:stretch; gap:0; padding:0 0 0 52px; border-radius:0; border-width:0 0 2px 0; min-height:28px; overflow:hidden }
+.c2d[data-torre="faixa"] .c2d-torre li{ flex:1 1 0; min-width:0; padding:3px 8px; border-radius:0; border-right:1px solid rgba(255,255,255,.14); gap:6px }
+.c2d[data-torre="faixa"] .c2d-torre li.corte{ margin:0 0 0 8px; border-left:1px solid rgba(255,255,255,.14) }
+.c2d[data-torre="faixa"] .c2d-torre li.cab{ display:none }
+.c2d[data-torre="faixa"] .c2d-torre li.est{ flex:0 0 auto; padding:3px 12px; border-radius:0 }
+.c2d[data-torre="faixa"] .c2d-hud{ padding-top:calc(max(10px, env(safe-area-inset-top)) + 32px) }
+.c2d[data-torre="faixa"] .c2d-pausar{ top:calc(max(12px, env(safe-area-inset-top)) + 32px) }
+.c2d[data-torre="faixa"] .c2d-boxbtn{ top:calc(max(10px, env(safe-area-inset-top)) + 174px) }
+
+/* ── famílias ── */
+/* legenda: sem fundo, só a letra com contorno (até os anos 80) */
+.c2d[data-hud-fam="legenda"]{ --h-cx:transparent; --h-bd:transparent; --t-bg:transparent; --t-bd:transparent; --t-bar:0px; --t-eu-bg:transparent; --t-w:176px; --t-fs:14px;
+  --h-sh:0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 3px rgba(0,0,0,.8); --t-sh:var(--h-sh) }
+.c2d[data-hud-fam="legenda"] .c2d-torre li i{ display:none }
+.c2d[data-hud-fam="legenda"] .c2d-torre li.eu span::after{ content:' ◂' }
+.c2d[data-hud-fam="legenda"] .c2d-setores i, .c2d[data-hud-fam="legenda"] .c2d-rpm i{ box-shadow:0 0 0 1px rgba(0,0,0,.7) }
+.c2d[data-hud-fam="legenda"] .c2d-mapa{ background:rgba(11,12,14,.35) }
+/* ficha: cada célula é uma caixinha (nome numa cor, intervalo em outra) */
+.c2d[data-hud-fam="ficha"]{ --t-bg:transparent; --t-bd:transparent; --t-pad:0px; --t-vao:2px; --t-li-r:0px; --t-bar:0px }
+.c2d[data-hud-fam="ficha"] .c2d-torre li{ padding:0; gap:1px; align-items:stretch }
+.c2d[data-hud-fam="ficha"] .c2d-torre li i{ display:none }
+.c2d[data-hud-fam="ficha"] .c2d-torre li b, .c2d[data-hud-fam="ficha"] .c2d-torre li u{ border-radius:0; line-height:19px }
+.c2d[data-hud-fam="ficha"] .c2d-torre li span{ padding:0 6px; line-height:19px }
+.c2d[data-hud-fam="ficha"] .c2d-torre li em{ padding:0 6px; line-height:19px; min-width:44px; text-align:right }
+.c2d[data-hud-fam="ficha"] .c2d-torre li.eu{ background:transparent; outline:2px solid var(--h-ac); outline-offset:0 }
+.c2d[data-hud-fam="ficha"] .c2d-torre li.est, .c2d[data-hud-fam="ficha"] .c2d-torre li.cab{ padding:3px 6px }
+
+/* ── temas ── */
+.c2d[data-hud="classico"]{ --hf:Georgia, 'Times New Roman', serif; --h-tx:#fbf6e4; --h-rot:#efe6c4; --h-ac:#fbf6e4; --h-style:italic; --h-wdth:100; --t-tx:#fbf6e4; --t-gap:#fbf6e4; --t-eu-tx:#ffe9a0; --t-fw:700; --t-style:italic; --t-ls:.01em }
+.c2d[data-hud="tv-80"]{ --hf:'Arial Black', 'Archivo', Impact, sans-serif; --h-tx:#ffe100; --h-rot:#fff; --h-ac:#ffe100; --h-caps:uppercase; --t-tx:#ffe100; --t-gap:#fff; --t-eu-tx:#fff; --t-fw:900; --t-ls:.04em; --t-pos-tx:#fff }
+.c2d[data-hud="cart-80"]{ --hf:'Arial Black', 'Archivo', Impact, sans-serif; --h-tx:#fff; --h-rot:#ffe100; --h-ac:#ffe100; --h-style:italic; --h-caps:uppercase; --t-tx:#fff; --t-gap:#ffe100; --t-eu-tx:#ffe100; --t-fw:900; --t-style:italic;
+  --t-num-bg:#fff; --t-num-tx:#10182e; --t-pos-tx:#ffe100 }
+.c2d[data-hud="cart-80"] .c2d-torre li, .c2d[data-hud="cart-80"] .c2d-caixa{ box-shadow:inset 0 -3px 0 #1b3fb5; border-radius:0 }
+.c2d[data-hud="nascar-80"]{ --hf:'Arial Black', 'Archivo', Impact, sans-serif; --h-tx:#ffd400; --h-rot:#fff; --h-ac:#fff; --h-style:italic; --h-caps:uppercase; --t-tx:#ffd400; --t-gap:#fff; --t-eu-tx:#fff; --t-fw:900; --t-style:italic;
+  --h-sh:2px 2px 0 #b3141b, 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000; --t-num-bg:#ffd400; --t-num-tx:#111 }
+.c2d[data-hud="nascar-80"] .c2d-torre li u{ text-shadow:none; font-style:normal }
+
+.c2d[data-hud="f1-90"]{ --h-cx:linear-gradient(rgba(126,131,137,.8), rgba(84,88,94,.8)); --h-r:2px; --h-tx:#ffd21f; --h-rot:#e9edf0; --h-ac:#7fe3ff; --h-caps:uppercase; --h-sh:1px 1px 0 rgba(0,0,0,.7);
+  --t-bg:transparent; --t-bd:transparent; --t-pad:0px; --t-vao:3px; --t-w:178px; --t-li:linear-gradient(rgba(126,131,137,.8), rgba(84,88,94,.8)); --t-li-r:2px; --t-tx:#ffd21f; --t-gap:#7fe3ff; --t-fw:800; --t-ls:.05em; --t-wdth:85;
+  --t-bar:0px; --t-sh:1px 1px 0 rgba(0,0,0,.7); --t-eu-bg:linear-gradient(rgba(150,150,110,.9), rgba(110,104,60,.9)); --t-eu-tx:#fff; --t-num-bg:transparent; --t-num-tx:#ffd21f }
+.c2d[data-hud="f1-90"] .c2d-caixa, .c2d[data-hud="f1-90"] .c2d-baixo, .c2d[data-hud="f1-90"] .c2d-torre li:not(.est){ border:2px solid; border-color:#e3e7ea #50545a #50545a #e3e7ea }
+.c2d[data-hud="f1-90"] .c2d-torre li i{ display:none }
+
+.c2d[data-hud="f1-94"]{ --h-cx:rgba(8,8,12,.72); --h-bd:transparent; --h-r:0px; --h-tx:#fff; --h-rot:#44d6e6; --h-ac:#f7d417; --h-caps:uppercase; --h-wdth:110;
+  --t-bg:transparent; --t-bd:transparent; --t-pad:0px; --t-vao:2px; --t-w:182px; --t-li:rgba(8,8,12,.72); --t-li-r:0px; --t-tx:#fff; --t-gap:#f7d417; --t-fw:700; --t-ls:.12em; --t-wdth:108; --t-bar:0px;
+  --t-pos-bg:#f7d417; --t-pos-tx:#111; --t-eu-bg:rgba(8,8,12,.9); --t-eu-tx:#44d6e6 }
+.c2d[data-hud="f1-94"] .c2d-torre li i{ display:none } .c2d[data-hud="f1-94"] .c2d-torre li b{ border-radius:0 }
+.c2d[data-hud="f1-01"]{ --h-cx:rgba(0,0,0,.5); --h-bd:transparent; --h-r:0px; --h-tx:#f3ecb0; --h-rot:#cfd39a; --h-ac:#c8d033; --h-caps:uppercase;
+  --t-bg:rgba(0,0,0,.45); --t-bd:transparent; --t-r:0px; --t-w:176px; --t-tx:#f3ecb0; --t-gap:#f3ecb0; --t-fw:700; --t-ls:.06em; --t-bar:0px; --t-pos-bg:#98a31f; --t-pos-tx:#fff; --t-eu-bg:rgba(152,163,31,.4); --t-eu-tx:#fff }
+.c2d[data-hud="f1-01"] .c2d-torre li i{ display:none } .c2d[data-hud="f1-01"] .c2d-torre li b{ border-radius:0 }
+.c2d[data-hud="f1-04"]{ --h-cx:rgba(255,255,255,.93); --h-bd:#111; --h-r:0px; --h-tx:#111; --h-rot:#444; --h-ac:#c00; --t-w:168px; --t-fs:12px; --t-fw:600; --t-ls:0em;
+  --t-pos-bg:#2b2b2b; --t-pos-tx:#fff; --t-nm-bg:rgba(255,255,255,.95); --t-nm:#111; --t-gap-bg:rgba(8,8,8,.92); --t-gap:#fff; --t-eu-tx:#111; --h-ac:#e10600 }
+.c2d[data-hud="f1-04"] .c2d-setores i, .c2d[data-hud="f1-04"] .c2d-rpm i{ background:#c9c9c9 } .c2d[data-hud="f1-04"] .c2d-marcha{ color:#c00 }
+.c2d[data-hud="f1-09"]{ --h-cx:rgba(255,255,255,.94); --h-bd:#d0d0d0; --h-r:2px; --h-tx:#1a1a1a; --h-rot:#555; --h-ac:#e10600; --t-w:176px; --t-fs:12.5px; --t-fw:700; --t-ls:0em;
+  --t-pos-bg:#e10600; --t-pos-tx:#fff; --t-nm-bg:rgba(255,255,255,.95); --t-nm:#1a1a1a; --t-gap-bg:rgba(214,214,214,.95); --t-gap:#1a1a1a; --t-eu-tx:#1a1a1a }
+.c2d[data-hud="f1-09"] .c2d-setores i, .c2d[data-hud="f1-09"] .c2d-rpm i{ background:#c9c9c9 }
+.c2d[data-hud="f1-10"]{ --h-cx:linear-gradient(#3b3f45, #16181b 55%, #0c0d0f); --h-bd:#55595f; --h-r:4px; --h-ac:#f5d000; --h-style:italic;
+  --t-bg:transparent; --t-bd:transparent; --t-pad:0px; --t-vao:2px; --t-w:164px; --t-li:linear-gradient(#3b3f45, #16181b 55%, #0c0d0f); --t-li-r:3px; --t-fw:700; --t-bar:0px; --t-pos-tx:#f5d000; --t-gap:#d5d8dc; --t-eu-bg:linear-gradient(#6a5a12, #2c2607); --t-eu-tx:#fff }
+.c2d[data-hud="f1-10"] .c2d-torre li i{ display:none }
+.c2d[data-hud="f1-10"] .c2d-torre li b{ font-style:italic; border-right:2px solid #f5d000; border-radius:0; transform:skewX(-12deg); margin-right:2px }
+.c2d[data-hud="f1-15"]{ --h-cx:rgba(22,24,28,.62); --h-bd:rgba(255,255,255,.12); --h-r:3px; --h-ac:#fff; --t-bg:rgba(22,24,28,.6); --t-bd:rgba(255,255,255,.1); --t-r:3px; --t-w:150px; --t-fs:12.5px; --t-fw:500; --t-ls:.06em; --t-wdth:92;
+  --t-bar:0px; --t-gap:#cfd3d8; --t-cab-tx:#fff; --t-eu-bg:rgba(255,255,255,.16); --t-eu-tx:#fff }
+.c2d[data-hud="f1-15"] .c2d-torre li i{ display:none } .c2d[data-hud="f1-15"] .c2d-torre li b{ font-weight:600; color:#cfd3d8 }
+.c2d[data-hud="f1-15"] .c2d-torre li.cab{ border-bottom:1px solid rgba(255,255,255,.2); border-radius:0; justify-content:center } .c2d[data-hud="f1-15"] .c2d-torre li.cab span:first-child{ display:none }
+
+/* a torre preta de hoje: F1, F2, F3 e as que seguem a mesma família */
+.c2d[data-hud-fam="torre"]{ --h-cx:rgba(16,16,22,.92); --h-bd:#2a2a36; --h-r:8px; --h-wdth:100; --t-bg:#101016; --t-bd:#2a2a36; --t-r:10px; --t-w:176px; --t-fw:800; --t-ls:.04em; --t-wdth:112; --t-li-r:3px; --t-pad:5px;
+  --t-gap:#b9bcc6; --t-eu-bg:rgba(255,255,255,.14); --t-eu-tx:#fff; --t-cab-bg:#1d1d27; --t-cab-tx:#fff }
+.c2d[data-hud-fam="torre"] .c2d-torre li:not(.cab):not(.est){ border-bottom:1px solid rgba(255,255,255,.06) }
+.c2d[data-hud-fam="torre"] .c2d-torre li b{ color:#fff; font-weight:700 }
+.c2d[data-hud="f1-18"]{ --h-ac:#ff1e00 } .c2d[data-hud="f1-18"] .c2d-torre li.cab{ border-top:3px solid #ff1e00 }
+.c2d[data-hud="f2-18"]{ --h-ac:#2f9bff; --t-cab-bg:#0b3d7a } .c2d[data-hud="f3-18"]{ --h-ac:#e9e9ee; --t-cab-bg:#5d5d68 }
+.c2d[data-hud="indy-18"]{ --h-cx:rgba(9,18,40,.92); --h-bd:#1d3160; --h-ac:#ff2a3c; --t-bg:#091228; --t-bd:#1d3160; --t-cab-bg:#c8102e; --t-wdth:96; --t-w:186px; --t-bar:0px; --t-style:italic }
+.c2d[data-hud="indy-18"] .c2d-torre li i, .c2d[data-hud="wec-12"] .c2d-torre li i, .c2d[data-hud="dtm-21"] .c2d-torre li i, .c2d[data-hud="stock-15"] .c2d-torre li i{ display:none }
+.c2d[data-hud="wec-12"]{ --h-cx:rgba(8,16,40,.92); --h-bd:#1b2c5c; --h-ac:#ffb81c; --t-bg:#081028; --t-bd:#1b2c5c; --t-cab-bg:#0d47a1; --t-bar:0px; --t-w:172px }
+.c2d[data-hud="fe-18"]{ --h-cx:rgba(5,5,18,.92); --h-bd:#2a2a66; --h-ac:#19b5ff; --t-bg:#050512; --t-bd:#2a2a66; --t-cab-bg:linear-gradient(90deg, #1746ff, #e6007e); --t-wdth:118 }
+.c2d[data-hud="dtm-21"]{ --h-ac:#e2001a; --t-cab-bg:#e2001a; --t-bg:#0b0b0b; --t-bar:0px; --t-w:172px }
+.c2d[data-hud="stock-15"]{ --h-cx:rgba(10,18,14,.92); --h-bd:#1f3a2a; --h-ac:#ffd400; --t-bg:#0a120e; --t-bd:#1f3a2a; --t-cab-bg:linear-gradient(90deg, #0b8a3c, #c9a800); --t-bar:0px; --t-w:172px }
+
+/* vidro: translúcido com brilho (Fórmula E do começo, Stock Car dos anos 2000) */
+.c2d[data-hud="fe-14"]{ --h-cx:rgba(8,26,54,.78); --h-bd:#00b4ff; --h-r:0px; --h-ac:#00b4ff; --h-wdth:112; --t-bg:rgba(8,26,54,.76); --t-bd:#00b4ff; --t-r:0px; --t-wdth:112; --t-fw:700; --t-cab-bg:#00b4ff; --t-cab-tx:#04142c; --t-eu-bg:rgba(0,180,255,.28); --t-eu-tx:#fff; --t-w:160px }
+.c2d[data-hud="fe-14"] .c2d-torre, .c2d[data-hud="fe-14"] .c2d-caixa{ clip-path:polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%) }
+.c2d[data-hud="stock-00"]{ --h-cx:linear-gradient(rgba(14,84,44,.82), rgba(6,40,20,.82)); --h-bd:#ffd400; --h-r:4px; --h-ac:#ffd400; --t-bg:linear-gradient(rgba(14,84,44,.8), rgba(6,40,20,.8)); --t-bd:#ffd400; --t-r:4px; --t-bar:0px; --t-cab-bg:#ffd400; --t-cab-tx:#0a2a14;
+  --t-num-bg:#ffd400; --t-num-tx:#0a2a14; --t-eu-bg:rgba(255,212,0,.25); --t-eu-tx:#fff; --t-w:184px }
+.c2d[data-hud="stock-00"] .c2d-torre li i{ display:none }
+
+/* pilone: a torre de números (Indy de 2008, NASCAR de 2015) */
+.c2d[data-hud-fam="pilone"]{ --t-bg:rgba(6,8,12,.9); --t-bd:#000; --t-r:2px; --t-pad:3px; --t-vao:1px; --t-li-r:0px; --t-bar:0px; --t-w:178px; --t-fw:800; --t-wdth:88; --t-ls:.02em; --h-r:3px }
+.c2d[data-hud-fam="pilone"] .c2d-torre li i{ display:none }
+.c2d[data-hud-fam="pilone"] .c2d-torre li u{ min-width:26px; line-height:18px; font-size:.95em }
+.c2d[data-hud="indy-08"]{ --h-ac:#e4002b; --t-cab-bg:#e4002b; --t-pos-tx:#ffd400; --t-eu-bg:rgba(228,0,43,.35); --t-eu-tx:#fff; --t-style:italic }
+.c2d[data-hud="nascar-15"]{ --h-ac:#ffd200; --t-cab-bg:#ffd200; --t-cab-tx:#111; --t-pos-tx:#ffd200; --t-gap:#fff; --t-eu-bg:rgba(255,210,0,.25); --t-eu-tx:#fff }
+.c2d[data-hud="nascar-15"] .c2d-torre li u{ transform:skewX(-10deg) }
+
+/* as faixas no alto */
+.c2d[data-hud="nascar-01"]{ --h-cx:linear-gradient(rgba(38,58,98,.9), rgba(14,24,46,.9)); --h-bd:#7f93b8; --h-r:4px; --h-ac:#ffd200; --h-style:italic; --t-bg:linear-gradient(#2c426e, #0f1a30); --t-bd:#ffd200; --t-fw:800; --t-style:italic; --t-wdth:88; --t-bar:0px;
+  --t-pos-tx:#ffd200; --t-gap:#ffd200; --t-eu-bg:rgba(255,210,0,.22); --t-eu-tx:#fff }
+.c2d[data-hud="nascar-01"] .c2d-torre li i, .c2d[data-hud="indy-96"] .c2d-torre li i{ display:none }
+.c2d[data-hud="nascar-01"] .c2d-torre li u{ transform:skewX(-12deg); font-style:normal }
+.c2d[data-hud="indy-96"]{ --h-cx:linear-gradient(rgba(27,47,107,.9), rgba(12,22,56,.9)); --h-bd:#8fa3d8; --h-r:2px; --h-ac:#ff3344; --h-style:italic; --t-bg:linear-gradient(#22398a, #0c1638); --t-bd:#d81e2c; --t-fw:800; --t-style:italic; --t-wdth:90; --t-bar:0px;
+  --t-num-bg:#fff; --t-num-tx:#0c1638; --t-gap:#cfe0ff; --t-eu-bg:rgba(216,30,44,.4); --t-eu-tx:#fff }
+
+/* barra e ficha dos carros de turismo e da resistência */
+.c2d[data-hud="dtm-90"]{ --h-cx:rgba(18,44,120,.8); --h-bd:#fff; --h-r:0px; --h-ac:#ffd400; --h-caps:uppercase; --t-bg:transparent; --t-bd:transparent; --t-pad:0px; --t-vao:2px; --t-li:rgba(18,44,120,.8); --t-li-r:0px; --t-bar:0px; --t-w:186px;
+  --t-pos-bg:#fff; --t-pos-tx:#122c78; --t-num-bg:transparent; --t-num-tx:#ffd400; --t-gap:#ffd400; --t-eu-bg:rgba(10,24,70,.95); --t-eu-tx:#ffd400 }
+.c2d[data-hud="dtm-90"] .c2d-torre li i{ display:none } .c2d[data-hud="dtm-90"] .c2d-torre li b{ border-radius:0 }
+.c2d[data-hud="dtm-00"]{ --h-cx:linear-gradient(rgba(236,238,240,.95), rgba(196,200,206,.95)); --h-bd:#0a2a66; --h-r:2px; --h-tx:#0a1a3a; --h-rot:#3a4660; --h-ac:#0a2a66; --t-w:190px; --t-fs:12.5px;
+  --t-pos-bg:#ffd400; --t-pos-tx:#0a2a66; --t-nm-bg:linear-gradient(#eceef0, #c4c8ce); --t-nm:#0a1a3a; --t-gap-bg:#0a2a66; --t-gap:#fff; --t-eu-tx:#0a1a3a }
+.c2d[data-hud="dtm-00"] .c2d-setores i, .c2d[data-hud="dtm-00"] .c2d-rpm i{ background:#aeb4bd }
+.c2d[data-hud="lemans-99"]{ --h-cx:rgba(0,52,130,.88); --h-bd:#fff; --h-r:0px; --h-ac:#ffd400; --t-w:190px; --t-fs:12.5px; --t-pos-bg:#fff; --t-pos-tx:#003482; --t-num-bg:#ffd400; --t-num-tx:#111; --t-nm-bg:rgba(0,52,130,.9); --t-nm:#fff;
+  --t-gap-bg:rgba(255,255,255,.94); --t-gap:#003482; --t-eu-tx:#fff }
+
+/* kart: o monitor de cronometragem */
+.c2d[data-hud="kart"]{ --hf:'Consolas', 'Lucida Console', 'Courier New', monospace; --h-cx:rgba(2,6,2,.88); --h-bd:#1f5a1f; --h-r:2px; --h-tx:#7dff7d; --h-rot:#3fae3f; --h-ac:#ffe14a; --h-wdth:100;
+  --t-bg:rgba(2,6,2,.86); --t-bd:#1f5a1f; --t-r:2px; --t-tx:#7dff7d; --t-gap:#c8ffc8; --t-pos-tx:#ffe14a; --t-fw:700; --t-ls:0em; --t-bar:0px; --t-li-r:0px; --t-num-bg:transparent; --t-num-tx:#ffe14a;
+  --t-cab-bg:#1f5a1f; --t-cab-tx:#eaffea; --t-eu-bg:#7dff7d; --t-eu-tx:#021002; --t-w:190px; --t-fs:12.5px }
+.c2d[data-hud="kart"] .c2d-torre li i{ display:none } .c2d[data-hud="kart"] .c2d-torre li.eu em, .c2d[data-hud="kart"] .c2d-torre li.eu b, .c2d[data-hud="kart"] .c2d-torre li.eu u{ color:#021002 }
+
+/* o aviso e a faixa de bandeira seguem o tema nas famílias sem fundo */
+.c2d[data-hud-fam="legenda"] .c2d-aviso{ background:transparent; color:#fff; text-shadow:var(--h-sh); font-family:var(--hf); font-size:16px }
+.c2d[data-hud-fam="legenda"] .c2d-aviso{ box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none }
+.c2d[data-hud-fam="legenda"] .c2d-aviso::before{ display:none }
+.c2d[data-hud-fam="legenda"] .c2d-pneu i{ text-shadow:none }
+@media (max-width: 560px){
+  .c2d-torre{ --t-w:132px; --t-fs:11.5px }
+  /* o alto da tela no celular em pé: volta e posição inteiras, cronômetro e mapa um pouco menores */
+  .c2d-topo{ gap:6px }
+  .c2d-esq{ flex:0 0 auto; max-width:112px; margin-left:42px; padding:6px 7px }
+  .c2d-esq .c2d-rot{ font-size:8.5px; letter-spacing:.02em } .c2d-num{ font-size:15px } .c2d-linha{ gap:4px }
+  .c2d-cron{ min-width:104px; padding:6px 7px } .c2d-tempo{ font-size:20px }
+  .c2d-mapa{ width:82px; height:82px }
+  /* com os botões na tela: a torre, as luzes e os avisos ficam abaixo do velocímetro, sem se cobrir */
+  .c2d-com-toque .c2d-torre{ top:var(--torre-topo, calc(max(10px, env(safe-area-inset-top)) + 196px)) }
+  .c2d-com-toque .c2d-baixo{ left:max(12px, env(safe-area-inset-left)); transform:none; max-width:calc(100vw - 106px) }
+  .c2d-com-toque .c2d-extra{ flex-wrap:wrap; gap:4px 8px; justify-content:flex-start }
+  .c2d[data-torre="faixa"].c2d-com-toque .c2d-baixo{ top:calc(max(10px, env(safe-area-inset-top)) + 158px) }
+  /* na torre estreita o cabeçalho mostra só a volta */
+  .c2d-torre li.cab span:first-child{ display:none } .c2d-torre li.cab{ justify-content:center }
+  .c2d-com-toque .c2d-luzes{ left:max(12px, env(safe-area-inset-left)); top:var(--torre-topo, 36%); transform:none; gap:7px; padding:8px 10px }
+  .c2d-com-toque .c2d-luzes i{ width:24px; height:24px }
+  .c2d-com-toque .c2d-aviso{ left:max(12px, env(safe-area-inset-left)); top:calc(var(--torre-topo, 36%) + 56px); transform:none; width:auto; align-items:flex-start; max-width:calc(100vw - var(--t-w) - 40px); font-size:12px; padding:6px 9px; text-align:left }
+  .c2d[data-torre="faixa"] .c2d-torre li em{ display:none }
+  .c2d[data-torre="faixa"].c2d-com-toque .c2d-torre{ position:absolute; right:0; top:0 }
+}

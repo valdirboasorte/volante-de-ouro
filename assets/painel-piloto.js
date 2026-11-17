@@ -304,8 +304,13 @@
 
   /* no Início: temporada e carreira lado a lado, uma linha por número */
   const conta = v => typeof v === 'number' ? `<span data-conta="${v}" data-i18n-ignore>${v}</span>` : v;
+  /* o passado real do piloto que você assumiu (assets/passado-piloto.js) entra somado na carreira;
+     numa carreira criada do zero, car() é o próprio S.career */
+  const passado = () => tenta(() => typeof Passado !== 'undefined' ? Passado.atual() : null, null);
+  const car = () => tenta(() => typeof Passado !== 'undefined' ? Passado.carreira(S.career) : S.career, S.career) || S.career;
+  const notaPassado = () => { const pa = passado(); return pa ? `<p class="pp-sub">${Passado.nota(pa)}</p>` : ''; };
   function blocoEstatisticas(){
-    const s = Engine.summary(S.season), c = S.career;
+    const s = Engine.summary(S.season), c = car();
     const L = [['Vitórias', s.wins, c.wins, 'ouro'], ['Pódios', s.podiums, c.podiums], ['Poles', s.poles, c.poles],
       ['Voltas mais rápidas', s.fls, c.fls], ['Abandonos', s.dnfs, n(c.dnfs), 'neg'],
       [S.season && !S.season.isTop ? 'Provas · topo' : 'Provas', `${conta(s.races)}<small>/${s.total}</small>`, c.gps]];
@@ -313,6 +318,7 @@
       ${cab('Estatísticas', 'estatisticas')}
       <table class="pp-tab pp-stats"><thead><tr><th></th><th class="n">${S.season.year}</th><th class="n">Carreira</th></tr></thead>
         <tbody>${L.map(([r, a, b, cl]) => `<tr><td>${r}</td><td class="n${cl && n(a) ? ' ' + cl : ''}">${conta(a)}</td><td class="n${cl && n(b) ? ' ' + cl : ''}">${conta(b)}</td></tr>`).join('')}</tbody></table>
+      ${notaPassado()}
     </section>`;
   }
 
@@ -321,7 +327,7 @@
     return nums([[s.wins, 'Vitórias', s.wins ? 'ouro' : ''], [s.podiums, 'Pódios'], [s.poles, 'Poles'], [s.fls, 'Voltas mais rápidas'], [s.dnfs, 'Abandonos', s.dnfs ? 'neg' : ''], [`${s.races}<small style="font-size:15px;color:var(--pp-fraca)">/${s.total}</small>`, 'Etapas']]);
   }
   function numerosCarreira(){
-    const c = S.career;
+    const c = car();
     return nums([[c.wins, 'Vitórias', c.wins ? 'ouro' : ''], [c.podiums, 'Pódios'], [c.poles, 'Poles'], [c.fls, 'Voltas mais rápidas'], [n(c.dnfs), 'Abandonos', c.dnfs ? 'neg' : ''], [c.gps, S.season && !S.season.isTop ? 'Provas · topo' : 'Provas']]);
   }
 
@@ -339,27 +345,38 @@
   }
 
   function tabelaHistorico(max){
-    const h = S.history || [];
-    if(!h.length) return '<p class="pp-vazio">Sua primeira temporada ainda está em disputa.</p>';
-    const lista = h.map((s, i) => [s, i]).slice(-max).reverse();
-    return `<table class="pp-tab"><thead><tr><th>Ano</th><th class="col-cat">Categoria</th><th>Equipe</th><th class="n">Pos.</th><th class="n">V</th><th class="n">Pts</th></tr></thead>
-      <tbody>${lista.map(([s, i]) => `<tr class="${s.champion ? 'campeao' : ''}" onclick="UI.archiveSeason(${i})">
+    const h = S.history || [], pa = passado();
+    if(!h.length && !pa) return '<p class="pp-vazio">Sua primeira temporada ainda está em disputa.</p>';
+    const linhas = h.map((s, i) => `<tr class="${s.champion ? 'campeao' : ''}" onclick="UI.archiveSeason(${i})">
         <td class="ano">${s.year}</td><td class="col-cat">${esc(s.cat)}</td>
         <td class="eq"><span class="stripe" style="background:${esc(s.teamColor || 'var(--s4)')}"></span><span data-i18n-ignore>${esc(s.team)}</span></td>
-        <td class="n cl">${ord(s.pos)}</td><td class="n">${s.wins}</td><td class="n">${s.pts}</td></tr>`).join('')}</tbody></table>`;
+        <td class="n cl">${ord(s.pos)}</td><td class="n">${s.wins}</td><td class="n">${s.pts}</td></tr>`).reverse();
+    /* as temporadas reais de antes de você: posição final e vitórias onde o banco tem; pontos não */
+    if(pa) pa.linhas.slice().reverse().forEach(l => linhas.push(`<tr class="${l.titulo ? 'campeao' : ''}" style="cursor:default">
+        <td class="ano">${l.ano}</td><td class="col-cat">${esc(Passado.nomeCamp(l.cid))}</td>
+        <td class="eq"><span class="stripe" style="background:var(--s4)"></span><span data-i18n-ignore>${esc(l.equipe || '—')}</span></td>
+        <td class="n cl">${l.pos ? ord(l.pos) : '—'}</td><td class="n">${l.wins != null ? l.wins : '—'}</td><td class="n">—</td></tr>`));
+    return `<table class="pp-tab"><thead><tr><th>Ano</th><th class="col-cat">Categoria</th><th>Equipe</th><th class="n">Pos.</th><th class="n">V</th><th class="n">Pts</th></tr></thead>
+      <tbody>${linhas.slice(0, max).join('')}</tbody></table>`;
   }
   function blocoHistorico(){
-    const h = S.history || [];
-    return `<section class="chx-p" aria-label="Histórico da carreira">${cab('Histórico da carreira', 'perfil', h.length ? `<span>${h.length}</span> <span>${h.length > 1 ? 'temporadas' : 'temporada'}</span>` : '')}${tabelaHistorico(6)}</section>`;
+    const k = n(car().seasons);
+    return `<section class="chx-p" aria-label="Histórico da carreira">${cab('Histórico da carreira', 'perfil', k ? `<span>${k}</span> <span>${k > 1 ? 'temporadas' : 'temporada'}</span>` : '')}${tabelaHistorico(6)}</section>`;
   }
 
   /* conquistas reais: as temporadas no pódio do campeonato e os números da vitrine */
   function conquistas(max){
-    const h = S.history || [], c = S.career, out = [];
+    const h = S.history || [], c = car(), pa = passado(), out = [];
     h.slice().reverse().forEach(s => {
       if(!posOk(s.pos) || s.pos > 3 || !s.races) return;
       const k = s.pos === 1 ? ['ouro', 'trofeu', 'Campeão'] : s.pos === 2 ? ['prata', 'medalha', 'Vice-campeão'] : ['bronze', 'medalha', '3º lugar'];
       out.push(`<li class="${k[0]}">${ico(k[1])}<div><b><span>${k[2]}</span> · <span>${esc(s.cat)}</span></b><small>${s.year} · <span data-i18n-ignore>${esc(s.team)}</span></small></div></li>`);
+    });
+    /* as temporadas reais de antes de você, no pódio do campeonato */
+    if(pa) pa.linhas.slice().reverse().forEach(l => {
+      if(!posOk(l.pos) || l.pos > 3) return;
+      const k = l.pos === 1 ? ['ouro', 'trofeu', 'Campeão'] : l.pos === 2 ? ['prata', 'medalha', 'Vice-campeão'] : ['bronze', 'medalha', '3º lugar'];
+      out.push(`<li class="${k[0]}">${ico(k[1])}<div><b><span>${k[2]}</span> · <span>${esc(Passado.nomeCamp(l.cid))}</span></b><small>${l.ano}${l.equipe ? ` · <span data-i18n-ignore>${esc(l.equipe)}</span>` : ''}</small></div></li>`);
     });
     if(c.wins) out.push(`<li>${ico('bandeira')}<div><b>${c.wins} ${c.wins > 1 ? 'vitórias' : 'vitória'}</b><small>${c.podiums} pódios · ${c.poles} poles</small></div></li>`);
     if(c.fls) out.push(`<li>${ico('raio')}<div><b>${c.fls} ${c.fls > 1 ? 'voltas mais rápidas' : 'volta mais rápida'}</b><small>Na carreira</small></div></li>`);
@@ -369,7 +386,7 @@
     return `<ul class="pp-conq">${out.slice(0, max).join('')}</ul>`;
   }
   function blocoConquistas(max){
-    const c = S.career, tit = n(c.titles) + n(c.jrTitles);
+    const c = car(), tit = n(c.titles) + n(c.jrTitles);
     return `<section class="chx-p" aria-label="Conquistas">${cab('Conquistas', null, tit ? `<b style="color:var(--gold)">${tit}</b> <span>${tit > 1 ? 'títulos' : 'título'}</span>` : '')}${conquistas(max)}</section>`;
   }
 
@@ -486,7 +503,7 @@
         </div>`;
     },
     estatisticas(){
-      const c = S.career, s = Engine.summary(S.season), ps = c.porSerie || {};
+      const c = car(), s = Engine.summary(S.season), ps = c.porSerie || {};
       const linhas = Object.keys(ps).filter(k => typeof SERIES !== 'undefined' && SERIES[k]).map(k => {
         const x = ps[k];
         return `<tr><td class="ano">${esc(SERIES[k].short)}</td><td class="n">${n(x.seasons)}</td><td class="n">${n(x.titles)}</td><td class="n">${n(x.gps)}</td><td class="n">${n(x.wins)}</td><td class="n">${n(x.podiums)}</td><td class="n">${n(x.poles)}</td></tr>`;
@@ -494,7 +511,7 @@
       return `<div class="chx-g chx-2">
           <section class="chx-p" aria-label="Na carreira">${cab('Na carreira')}
             ${nums([[n(c.titles), 'Títulos', c.titles ? 'ouro' : ''], [n(c.jrTitles), 'Títulos de base'], [n(c.seasons), 'Temporadas'], [c.best ? ord(c.best) : '–', 'Melhor chegada']], 'pp-nums-4')}
-            ${numerosCarreira()}</section>
+            ${numerosCarreira()}${notaPassado()}</section>
           <section class="chx-p" aria-label="Nesta temporada">${cab('Nesta temporada', null, `<span>${S.season.year}</span>`)}
             ${nums([[s.races ? ord(s.pos) : '–', 'No campeonato'], [s.pts, 'Pontos'], [s.best ? ord(s.best) : '–', 'Melhor'], s.tmRaces ? [`${s.tmWins}/${s.tmRaces}`, 'Duelo com o companheiro'] : null], 'pp-nums-4')}
             ${numerosTemporada()}</section>
@@ -560,7 +577,9 @@
      (kart, fórmulas de acesso, divisões de baixo) e as séries sem ambiente usam o do Volante de Ouro.
      Uma série nova ganha ambiente com uma entrada em TEMAS, outra em FOTO_TEMA e o bloco dela no CSS. */
   function temaDe(){ const sea = S.season; return sea && sea.isTop && TEMAS[S.series] ? S.series : 'base'; }
-  const semMov = () => document.documentElement.classList.contains('sem-mov') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* a chave "Animações" do jogo manda; o pedido do sistema só vale enquanto o jogo não a ligou */
+  const semMov = () => { const c = document.documentElement.classList;
+    return c.contains('sem-mov') || (!c.contains('mov') && !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)); };
   function fonteTema(tema){
     if(tema !== 'fe' || document.getElementById('ppFonteFE')) return;
     const l = document.createElement('link');
@@ -716,8 +735,9 @@
   /* sem retrato escolhido, um rosto desenhado e estável para o piloto (sai do nome, não da nacionalidade) */
   function avatarPadrao(d){
     const h = tenta(() => seedOf(String(d.name) + ':' + d.num), 7) >>> 0;
-    return Object.assign({}, PADRAO, { pele: h % PELES.length, cor: (h >> 3) % 6, olhos: (h >> 5) % OLHOS.length,
-      estilo: ESTILOS[(h >> 7) % 5][0], barba: BARBAS[(h >> 10) % BARBAS.length][0] });
+    /* deslocamento sem sinal: com ">>" metade dos nomes dava índice negativo e a folha caía para a tela antiga */
+    return Object.assign({}, PADRAO, { pele: h % PELES.length, cor: (h >>> 3) % 6, olhos: (h >>> 5) % OLHOS.length,
+      estilo: ESTILOS[(h >>> 7) % 5][0], barba: BARBAS[(h >>> 10) % BARBAS.length][0] });
   }
   /* o boneco: um retrato de piloto em traço chapado, as cores da paleta e a cor da equipe */
   function avatarSvg(a, cor, vb){

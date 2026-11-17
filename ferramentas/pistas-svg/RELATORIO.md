@@ -1,6 +1,6 @@
 # Traçados dos mapas SVG da Commons
 
-23 traçados, 22 que falharam, 0 ainda não tentados.
+27 traçados, 19 que falharam, 0 ainda não tentados.
 
 | id | circuito | resultado | arquivo | licença |
 |---|---|---|---|---|
@@ -26,11 +26,11 @@
 | kr | Korea International Circuit | ok: 35 pontos, 1 candidato(s) fechado(s) de 25 caminhos, proporção 1.1:1, compacidade 0.26, comprimento oficial 5615 m | File:Korea international circuit v3.svg | CC BY-SA 3.0 |
 | au_ade | Adelaide Street Circuit | ok: 30 pontos, 5 candidato(s) fechado(s) de 46 caminhos, proporção 1.5:1, compacidade 0.45, 2º caminho tem 76% do perímetro, comprimento oficial 3219 m | File:Adelaide (short route).svg | CC BY-SA 3.0 |
 | us_mea | Meadowlands Grand Prix | ok: 49 pontos, 2 candidato(s) fechado(s) de 41 caminhos, proporção 1.0:1, compacidade 0.29, 2º caminho tem 77% do perímetro, comprimento oficial 2707 m, imagem fora do infobox | File:Meadowlands 1988 modified oval.svg | CC BY-SA 4.0 |
-| ca_tor | Exhibition Place street circuit Toronto | recusado na conferência: o caminho mistura as ruas da cidade com a pista | File:Toronto, Ontario street circuit track map 2023.svg | CC BY-SA 3.0 |
+| ca_tor | Exhibition Place street circuit Toronto | ok: 60 pontos, 2 candidato(s) fechado(s) de 46 caminhos, proporção 2.9:1, compacidade 0.05, sem comprimento oficial (3300 m), imagem fora do infobox, arquivo escolhido | File:Toronto, Ontario street circuit track map 2023.svg | CC BY-SA 3.0 |
 | ca_van | Molson Indy Vancouver circuit | falhou: artigo en:Molson Indy Vancouver sem imagem SVG; artigo en:2003 Molson Indy Vancouver sem imagem SVG; artigo en:2001 Molson Indy Vancouver sem imagem SVG; artigo en:2002 Molson Indy Vancouver sem imagem SVG (só raster: Grand Prix of Vancouver 1999-2004.png); a Commons não tem SVG com o nome do circuito |  |  |
-| au_sur | Surfers Paradise Street Circuit | recusado na conferência: o caminho mistura as ruas da cidade com a pista | File:Surfers Paradise Street Circuit.svg | CC BY-SA 3.0 |
+| au_sur | Surfers Paradise Street Circuit | ok: 75 pontos, 9 candidato(s) fechado(s) de 126 caminhos, proporção 1.9:1, compacidade 0.06, 2º caminho tem 100% do perímetro, sem comprimento oficial (3300 m), imagem fora do infobox, arquivo escolhido | File:Surfers Paradise Street Circuit 2010.svg | CC BY-SA 3.0 |
 | us_nsh | Nashville Street Circuit | falhou: artigo en:Jefferson Street (Nashville) sem imagem SVG; a Commons não tem SVG com o nome do circuito |  |  |
-| us_bel | Raceway on Belle Isle | recusado na conferência: o caminho mistura as ruas da ilha com a pista | File:Detroit Grand Prix on Belle Isle 1998-2001.svg | CC BY-SA 3.0 |
+| us_bel | Raceway on Belle Isle | ok: 59 pontos, 6 candidato(s) fechado(s) de 191 caminhos, proporção 1.5:1, compacidade 0.17, 2º caminho tem 100% do perímetro, sem comprimento oficial (3300 m), imagem fora do infobox, arquivo escolhido | File:Detroit Grand Prix on Belle Isle 2015.svg | CC BY-SA 3.0 |
 | se_kri | Råbelövsbanan | falhou: artigo en:Råbelövsbanan sem imagem SVG (só raster: Kristianstad.png); a Commons não tem SVG com o nome do circuito |  |  |
 | br_sal | Circuito de rua de Salvador Stock Car | falhou: artigo pt:Etapa de Salvador da Stock Car Brasil sem imagem SVG; a busca (en) não achou artigo parecido com "Circuito de rua de Salvador Stock Car"; a Commons não tem SVG com o nome do circuito |  |  |
 | br_bh | Circuito da Pampulha Stock Car | falhou: a busca (pt) não achou artigo parecido com "Circuito da Pampulha Stock Car"; a busca (en) não achou artigo parecido com "Circuito da Pampulha Stock Car"; a Commons não tem SVG com o nome do circuito |  |  |
@@ -49,3 +49,4 @@
 | fe_sao | São Paulo Street Circuit Anhembi | ok: 31 pontos, 3 candidato(s) fechado(s) de 60 caminhos, proporção 7.3:1, compacidade 0.07, 2º caminho tem 87% do perímetro, comprimento oficial 2933 m, tolerância reduzida | File:Anhembi.svg | CC BY-SA 3.0 |
 | fe_mia | Biscayne Bay Street Circuit | falhou: a busca (en) não achou artigo parecido com "Biscayne Bay Street Circuit"; a Commons não tem SVG com o nome do circuito |  |  |
 | fe_mos | Moscow Street Circuit | ok: 37 pontos, 3 candidato(s) fechado(s) de 84 caminhos, proporção 1.1:1, compacidade 0.39, 2º caminho tem 52% do perímetro, comprimento oficial 2390 m | File:Москва уличная трасса.svg | CC BY-SA 4.0 |
+| us_det | Detroit street circuit | ok: 40 pontos, 4 candidato(s) fechado(s) de 212 caminhos, proporção 1.6:1, compacidade 0.29, 2º caminho tem 87% do perímetro, comprimento oficial 4168 m, imagem fora do infobox, arquivo escolhido | File:Downtown Detroit Street Circuit.svg | CC BY-SA 3.0 |
