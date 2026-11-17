@@ -333,104 +333,70 @@ body[data-tela="intro"] .wrap{max-width:none; padding:0}
 .topnav button.topnav-apoio:focus-visible{outline:2px solid #f5c518; outline-offset:3px}
 @media(max-width:999px){ .topnav button.topnav-apoio{margin:6px 0 0; color:#f5c518} }
 /* ── Apoie o projeto ──
-   A gramática da abertura: uma frase em escala de cartaz com uma foto no lugar
-   de uma palavra, e cada seção como afirmação + prova. Carbono, o dourado como
-   campo (não como brilho), o vermelho só na ação. Sem degradê, sem sombra, sem
-   cartões com ícone. Cinco tamanhos de letra: display, título, destaque, texto, nota. */
-#scr-apoio{--ap-d:clamp(24px,5.15vw,80px); --ap-h:clamp(28px,3.4vw,48px); --ap-l:clamp(19px,1.5vw,22px); --ap-t:17px; --ap-n:14px}
-.ap{max-width:1240px; margin:0 auto; padding:clamp(12px,2.4vw,28px) 0 0}
+   Só o que importa: a descrição do jogo ao lado do volante de verdade, e os dois
+   caminhos de doação em dois campos de tom (sem linha, sem sombra, sem degradê).
+   O dourado fica na ação; o QR num quadro branco chapado. */
+#scr-apoio{--ap-d:clamp(34px,4.4vw,68px); --ap-h:clamp(28px,2.8vw,40px); --ap-l:clamp(18px,1.45vw,21px); --ap-t:17px; --ap-n:14px}
+.ap{max-width:1240px; margin:0 auto; padding:clamp(12px,2.4vw,28px) 0 clamp(40px,6vw,80px)}
 .ap-voltar{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 4px; font-size:var(--ap-t); color:var(--soft); background:none}
 .ap-voltar:hover{color:var(--ink)}
-.ap-hero{padding:clamp(28px,6vw,96px) 0 clamp(28px,4vw,56px)}
-@media(max-width:600px){
-  /* no celular, a frase em caixa baixa cabe maior nas duas linhas */
-  #scr-apoio{--ap-d:clamp(26px,7.4vw,34px)}
-  .ap-hero h1{text-transform:none; letter-spacing:-.03em}
-  .ap-hero-pe p{font-size:var(--ap-t)}
-}
-.ap-hero h1{margin:0; max-width:none; font-size:var(--ap-d); line-height:.98; font-weight:800; font-stretch:85%; letter-spacing:-.035em}
-.ap-hero-pe{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:20px 40px; margin-top:clamp(24px,3vw,40px)}
-.ap-hero-pe p{max-width:46ch; margin:0; font-size:var(--ap-l); line-height:1.45; color:var(--ink)}
-.ap-faixa{margin:0 calc(var(--m) * -1); height:clamp(240px,46vw,620px); overflow:hidden; background:var(--s2)}
-.ap-faixa img{width:100%; height:100%; object-fit:cover; object-position:50% 100%; display:block}
-.ap-porque{padding:clamp(72px,10vw,160px) 0 0}
-.ap-porque > h2,.ap-gratis h2,.ap-fim h2,.ap-pix h2{margin:0 0 28px; font-size:var(--ap-h); line-height:1; font-weight:800; font-stretch:85%; letter-spacing:-.02em}
-.ap-motivos{list-style:none; margin:0; padding:0; display:grid; gap:clamp(36px,5vw,72px)}
-.ap-motivo{display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(20px,3.4vw,56px); align-items:center}
-.ap-motivo:nth-child(even){grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
-.ap-motivo:nth-child(even) figure{order:2}
-.ap-motivo figure{margin:0; aspect-ratio:16/9; overflow:hidden; background:var(--s2)}
-.ap-motivo figure img,.ap-motivo figure video{width:100%; height:100%; object-fit:cover; display:block}
-.ap-motivo h3{margin:0 0 10px; font-size:clamp(24px,2.4vw,34px); line-height:1.05; font-weight:800; font-stretch:85%; letter-spacing:-.02em}
-.ap-motivo p{margin:0; max-width:40ch; font-size:var(--ap-t); line-height:1.55; color:var(--ink)}
-.ap-motivo p.ap-ideia{margin-top:12px; font-size:var(--ap-n); color:var(--accent-txt)}
-.ap-motivo figure img.ap-scan{transform:scale(1.08)}
-.ap-motivo:hover figure img.ap-scan{transform:scale(1.12)}
-.ap-tira{display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; background:none !important}
-.ap-tira video,.ap-tira img{height:100% !important; min-height:0}
-@media(max-width:760px){
-  .ap-motivo,.ap-motivo:nth-child(even){grid-template-columns:minmax(0,1fr)}
-  .ap-motivo:nth-child(even) figure{order:0}
-}
-.ap-pixsec{margin:clamp(72px,10vw,160px) calc(var(--m) * -1) 0; padding:clamp(40px,6vw,96px) var(--m); background:var(--s1)}
-.ap-pix{max-width:1240px; margin:0 auto; display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(28px,5vw,80px); align-items:center}
-@media(max-width:860px){ .ap-pix{grid-template-columns:minmax(0,1fr)} }
-.ap-pix .ap-pix-intro{margin:0 0 24px; max-width:46ch; font-size:var(--ap-l); line-height:1.45}
 .ap a.btn{text-decoration:none}
-.ap-pix .lbl{display:block; margin:0 0 8px; font-size:var(--ap-n)}
-.apoio-chave{display:block; margin:0 0 14px; padding:14px 16px; background:var(--s3); font-size:var(--ap-t);
+.ap-hero{display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:clamp(28px,5vw,80px); align-items:center; padding:clamp(16px,2.6vw,40px) 0 clamp(32px,4vw,56px)}
+.ap-hero h1{margin:0 0 clamp(24px,2.6vw,36px); max-width:none; font-size:var(--ap-d); line-height:.95; font-weight:800; font-stretch:85%; letter-spacing:-.035em}
+.ap-desc{margin:0 0 18px; max-width:40ch; font-size:var(--ap-l); line-height:1.45; color:var(--ink)}
+.ap-uso{margin:0; max-width:48ch; font-size:var(--ap-t); line-height:1.55; color:var(--soft)}
+.ap-volante{margin:0; aspect-ratio:4/3; overflow:hidden; background:var(--s2)}
+.ap-volante img{width:100%; height:100%; object-fit:cover; object-position:52% 18%; transform:scale(1.5); transform-origin:52% 22%; display:block}
+@media(max-width:860px){
+  .ap-hero{grid-template-columns:minmax(0,1fr)}
+  .ap-volante{aspect-ratio:16/10; order:-1; margin:0 calc(var(--m) * -1)}
+  .ap-volante img{transform:scale(1.25)}
+}
+/* os dois caminhos: Pix (mais largo, tem o QR) e Ko-fi; fora do português, o Ko-fi vem primeiro */
+.ap-meios{display:grid; gap:clamp(12px,1.6vw,20px)}
+.ap-meios-2{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+html:not([lang|="pt"]) .ap-meios-2{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+html:not([lang|="pt"]) .ap-meio-link{order:-1}
+@media(max-width:1180px){ .ap-meios-2,html:not([lang|="pt"]) .ap-meios-2{grid-template-columns:minmax(0,1fr)} }
+.ap-meio{padding:clamp(24px,3.4vw,48px); background:var(--s1)}
+.ap-meio h2{margin:0 0 24px; font-size:var(--ap-h); line-height:1; font-weight:800; font-stretch:85%; letter-spacing:-.02em}
+.ap-meio-pix{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,260px); gap:clamp(24px,3vw,40px); align-items:start}
+@media(max-width:600px){ .ap-meio-pix{grid-template-columns:minmax(0,1fr)} }
+.ap-meio-pix .lbl{display:block; margin:0 0 8px; font-size:var(--ap-n)}
+.ap-meio-link{display:flex; flex-direction:column; align-items:flex-start; background:var(--s2)}
+.ap-meio-link p{margin:0 0 28px; max-width:34ch; font-size:var(--ap-l); line-height:1.45}
+.ap-meio-link p.ap-meio-nota{margin:16px 0 0; font-size:var(--ap-n); color:var(--soft)}
+.ap-meio-nota span{color:var(--ink); white-space:nowrap}
+.apoio-chave{display:block; margin:0 0 14px; padding:14px 16px; background:var(--s3); font-family:inherit; font-size:var(--ap-t);
   font-weight:700; word-break:break-all; user-select:all; -webkit-user-select:all}
 .apoio-acoes{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
 .apoio-acoes .btn{min-height:50px}
 .apoio-acoes .btn.copiado{background:var(--green); color:#04140b}
 .apoio-aviso{flex-basis:100%; min-height:20px; font-size:var(--ap-n); color:var(--green)}
 .apoio-aviso.erro{color:var(--orange)}
-.apoio-benef{margin:18px 0 0; font-size:var(--ap-t); color:var(--soft)}
-.apoio-benef b{color:var(--ink); font-weight:700}
-.apoio-passos{margin:24px 0 0; padding-left:1.4em; display:grid; gap:8px; font-size:var(--ap-t); line-height:1.45}
+.apoio-passos{margin:20px 0 0; padding-left:1.3em; display:grid; gap:6px; font-size:var(--ap-t); line-height:1.45}
 .apoio-passos li::marker{color:var(--accent-txt); font-weight:800}
-.apoio-seg{margin:18px 0 0; font-size:var(--ap-n); color:var(--soft)}
-/* o QR num campo dourado chapado: a prova da afirmação, sem moldura nem brilho */
-.apoio-qrbox{margin:0; padding:clamp(18px,3vw,36px); background:var(--accent); text-align:center}
-.apoio-qr{display:block; width:100%; max-width:380px; aspect-ratio:1; height:auto; margin:0 auto; padding:16px; background:#fff; image-rendering:pixelated}
-.apoio-qrbox figcaption{margin-top:14px; font-size:var(--ap-t); font-weight:700; color:var(--accent-ink)}
+.apoio-qrbox{margin:0; text-align:center}
+.apoio-qr{display:block; width:100%; max-width:260px; aspect-ratio:1; height:auto; margin:0 auto; padding:12px; background:#fff; image-rendering:pixelated}
+.apoio-qrbox figcaption{margin-top:12px; font-size:var(--ap-n); color:var(--soft)}
+@media(max-width:600px){ .apoio-qr{max-width:220px} }
 .apoio-indisp{padding:28px; background:var(--s2)}
 .apoio-indisp b{display:block; margin:4px 0 10px; font-size:var(--ap-l)}
 .apoio-indisp p{margin:0 0 10px; font-size:var(--ap-t); line-height:1.5}
-.apoio-bloco{padding:18px 20px; background:var(--s2); margin-top:16px}
-.apoio-bloco .lbl{display:block; margin-bottom:6px}
-/* "continuará gratuito": um campo inteiro de dourado */
-.ap-gratis{margin:0 calc(var(--m) * -1); padding:clamp(48px,7vw,112px) var(--m); background:var(--accent); color:var(--accent-ink);
-  display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(24px,4vw,64px); align-items:center}
-@media(max-width:860px){ .ap-gratis{grid-template-columns:minmax(0,1fr)} }
-.ap-volante{margin:0; aspect-ratio:4/3; overflow:hidden; background:var(--accent-ink)}
-.ap-volante img{width:100%; height:100%; object-fit:cover; object-position:52% 18%; transform:scale(1.6); transform-origin:52% 18%; display:block}
-.ap-gratis h2{max-width:16em; color:var(--accent-ink)}
-.ap-gratis p{max-width:52ch; margin:0; font-size:var(--ap-l); line-height:1.45; color:var(--accent-ink)}
-.ap-fim{display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(24px,4vw,64px); align-items:center; padding:clamp(72px,10vw,160px) 0 clamp(40px,6vw,80px)}
-@media(max-width:860px){ .ap-fim{grid-template-columns:minmax(0,1fr)} }
-.ap-fim-foto{margin:0; aspect-ratio:3/2; overflow:hidden; background:var(--s2)}
-.ap-fim-foto img{width:100%; height:100%; object-fit:cover; object-position:55% 50%; display:block}
-.ap-fim-tx p{max-width:40ch; margin:0 0 24px; font-size:var(--ap-l); line-height:1.45}
-.ap-fim-tx p.ap-credito{margin:28px 0 0; font-size:var(--ap-n); line-height:1.5; color:var(--soft)}
+.ap-fim{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px 32px; padding:clamp(40px,5vw,72px) 0 0}
+.ap-credito{margin:0; max-width:60ch; font-size:var(--ap-n); line-height:1.5; color:var(--soft)}
 .ap-credito a{color:var(--ink); text-decoration:underline; text-underline-offset:.2em}
-/* movimento: cada parte sobe uma vez ao entrar na tela; a faixa respira devagar */
+/* movimento: cada parte sobe uma vez ao entrar na tela; o volante aproxima devagar */
 .ap-js [data-ap]{opacity:0; transform:translateY(24px); transition:opacity .7s var(--ease-out), transform .7s var(--ease-out)}
 .ap-js [data-ap].ap-visto{opacity:1; transform:none}
-.ap-js .ap-motivo.ap-visto figure{animation:apQuadro .9s var(--ease-out) both}
-@keyframes apQuadro{from{clip-path:inset(0 0 100% 0)} to{clip-path:inset(0)}}
-.mov .ap-faixa img{animation:apRespira 18s ease-in-out infinite alternate}
-@keyframes apRespira{from{transform:scale(1)} to{transform:scale(1.07) translateX(-1.5%)}}
-.ap-motivo figure img,.ap-fim-foto img{transition:transform .6s var(--ease-out)}
-.ap-motivo:hover figure img,.ap-fim-foto:hover img{transform:scale(1.04)}
-.apoio-acoes .btn,.ap .btn{transition:transform .15s, background .2s}
-.apoio-acoes .btn:active,.ap .btn:active{transform:scale(.97)}
+.mov .ap-volante img{animation:apRespira 18s ease-in-out infinite alternate}
+@keyframes apRespira{from{transform:scale(1.5)} to{transform:scale(1.58) translateX(-1%)}}
+@media(max-width:860px){ @keyframes apRespira{from{transform:scale(1.25)} to{transform:scale(1.32) translateX(-1%)}} }
+.ap .btn{transition:transform .15s, background .2s}
+.ap .btn:active{transform:scale(.97)}
 /* sem movimento: o mesmo interruptor "Animações" que vale para o jogo inteiro (a abertura também) */
 .sem-mov .ap-js [data-ap],.sem-mov [data-ap]{opacity:1 !important; transform:none !important; transition:none !important}
-.sem-mov .ap-faixa img,.sem-mov .ap-motivo figure{animation:none !important}
-.sem-mov .ap-motivo figure img,.sem-mov .ap-fim-foto img{transition:none}
-.apoio-bloco .lbl{display:block; margin-bottom:4px}
-.apoio-acoes{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.sem-mov .ap-volante img{animation:none !important}
 
 /* o controle deslizante: trilho redondo, polegar redondo */
 input[type=range]{appearance:none; -webkit-appearance:none; height:24px; background:transparent; cursor:pointer; width:100%; margin:0}
@@ -2380,73 +2346,30 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 
 
 <!-- ═════════ APOIE O PROJETO ═════════
-     A frase é a composição (a mesma gramática da abertura): o volante de um
-     cockpit de verdade entra no meio do título, no lugar do nome. Depois, cada
-     seção é uma afirmação à esquerda com a prova à direita — fotos reais, o
-     QR Code, o campo de cor. Fotos: as mesmas da abertura, com crédito. -->
+     Só o que importa: o que é o jogo e os dois caminhos para doar. O volante de
+     verdade (o nome do jogo) é a única foto. Os meios vêm de assets/doacao.js,
+     montados por assets/apoio-pagina.js: Pix para o Brasil, Ko-fi para fora;
+     fora do português, o Ko-fi aparece primeiro. -->
 <section class="screen" id="scr-apoio" aria-labelledby="apoioT">
   <div class="ap">
     <button class="ap-voltar" onclick="Doacao.voltar()"><span aria-hidden="true">←</span> <span id="apoioVoltarTx">Voltar</span></button>
 
     <header class="ap-hero">
-      <h1 id="apoioT" data-ap>Ajude a construir o futuro do Volante de Ouro.</h1>
-      <div class="ap-hero-pe" data-ap>
-        <p>O Volante de Ouro é um projeto gratuito, desenvolvido com dedicação para quem ama automobilismo. Seu apoio ajuda a manter o jogo no ar e torna possíveis novas melhorias.</p>
-        <a class="btn btn-primary btn-lg" href="#apoioPix" onclick="event.preventDefault(); el('apoioPix').scrollIntoView({ behavior: UI.movimentoLigado() ? 'smooth' : 'auto' })">Apoiar com Pix</a>
+      <div class="ap-hero-tx">
+        <h1 id="apoioT" data-ap>Apoie o Volante de Ouro.</h1>
+        <p class="ap-desc" data-ap>Um simulador gratuito de carreira no automobilismo, feito para o navegador. Você é piloto ou chefe de equipe em sete categorias, com grids reais de 1950 a 2026.</p>
+        <p class="ap-uso" data-ap>Jogar continua de graça. As doações ajudam a pagar o domínio e a hospedagem e a manter o jogo crescendo. Doar é opcional e não dá vantagem no jogo.</p>
       </div>
+      <figure class="ap-volante" data-ap><img src="assets/apoio/mclaren-mp4-23-steering-wheel-at-formula.jpg" alt="O volante da McLaren MP4-23, de 2008, numa exposição em Londres" width="1920" height="1280" decoding="async"></figure>
     </header>
-    <figure class="ap-faixa" data-ap>
-      <img src="assets/apoio/spa-2008-before-start.jpg" alt="O grid de Spa-Francorchamps antes da largada, 2008" width="1920" height="1280" loading="lazy" decoding="async">
-    </figure>
 
-    <section class="ap-porque" aria-labelledby="apoioPorqueT">
-      <h2 id="apoioPorqueT" data-ap>Por que apoiar?</h2>
-      <ol class="ap-motivos">
-        <li class="ap-motivo" data-ap>
-          <figure><img src="assets/apoio/fale-f1-monza-2004-73.jpg" alt="Pit stop da McLaren visto de cima em Monza, 2004" width="1920" height="1440" loading="lazy" decoding="async" style="object-position:50% 45%"></figure>
-          <div><h3>Manutenção do projeto</h3><p>Ajude a cobrir custos relacionados ao domínio, hospedagem e manutenção do site.</p></div>
-        </li>
-        <li class="ap-motivo" data-ap>
-          <figure><img src="assets/apoio/the-hungarian-formula-one-grand-prix-in.jpg" alt="Ayrton Senna à frente de Nigel Mansell na Hungria, 1988" width="1920" height="1358" loading="lazy" decoding="async" class="ap-scan" style="object-position:50% 55%"></figure>
-          <div><h3>Multiplayer cooperativo</h3><p>Uma das ideias para o futuro é permitir que amigos compartilhem uma carreira automobilística.</p><p class="ap-ideia">Ideia para o futuro, sem data definida.</p></div>
-        </li>
-        <li class="ap-motivo" data-ap>
-          <figure><img src="assets/apoio/sebastien-buemi-2009-japan-2nd-free-practice.jpg" alt="Sébastien Buemi levantando uma nuvem de água em Suzuka, 2009" width="1920" height="1079" loading="lazy" decoding="async" style="object-position:60% 55%"></figure>
-          <div><h3>Saves na nuvem</h3><p>Planejamos permitir que jogadores salvem suas carreiras online e continuem em outros dispositivos.</p><p class="ap-ideia">Ideia para o futuro, sem data definida.</p></div>
-        </li>
-        <li class="ap-motivo ap-evolucao" data-ap>
-          <figure class="ap-tira">
-            <img src="assets/apoio/gro-er-preis-von-europa-1954-nurburgring.jpg" alt="Juan Manuel Fangio na Mercedes em Nürburgring, 1954" width="1920" height="1244" loading="lazy" decoding="async" style="object-position:55% 50%">
-            <img src="assets/apoio/1971-emerson-fittipaldi-lotus-72-kl.jpg" alt="Emerson Fittipaldi no Lotus 72, 1971" width="1217" height="810" loading="lazy" decoding="async" style="object-position:50% 50%">
-            <img src="assets/apoio/felipe-massa-2008-brazilian-grand-prix.jpg" alt="Felipe Massa no Grande Prêmio do Brasil, 2008" width="1920" height="1280" loading="lazy" decoding="async" style="object-position:50% 50%">
-          </figure>
-          <div><h3>Evolução do jogo</h3><p>O apoio pode contribuir para melhorias de interface, novos sistemas, conteúdo e infraestrutura.</p><p class="ap-ideia">De Fangio a Massa, como as corridas: uma melhoria de cada vez.</p></div>
-        </li>
-      </ol>
-    </section>
-
-    <section class="ap-pixsec" id="apoioPix" aria-label="Doação por Pix">
+    <div class="ap-meios-sec" id="apoioPix" aria-label="Como doar">
       <div id="apoioMeios"></div>
-    </section>
-
-    <section class="ap-gratis" aria-labelledby="apoioTranspT">
-      <div data-ap>
-        <h2 id="apoioTranspT">O Volante de Ouro continuará gratuito.</h2>
-        <p>As doações são totalmente opcionais. Você não precisa contribuir para jogar, acessar funcionalidades existentes ou aproveitar o Volante de Ouro.</p>
-      </div>
-      <figure class="ap-volante" data-ap><img src="assets/apoio/mclaren-mp4-23-steering-wheel-at-formula.jpg" alt="O volante da McLaren MP4-23, de 2008, numa exposição em Londres" width="1920" height="1280" loading="lazy" decoding="async"></figure>
-    </section>
+    </div>
 
     <footer class="ap-fim">
-      <figure class="ap-fim-foto" data-ap>
-        <img src="assets/apoio/suspended-starting-grid-2012-malaysia.jpg" alt="O grid parado pela chuva em Sepang, 2012" width="1920" height="1280" loading="lazy" decoding="async">
-      </figure>
-      <div class="ap-fim-tx" data-ap>
-        <h2>Obrigado por fazer parte do grid!</h2>
-        <p>Seja jogando, compartilhando ou contribuindo, você já faz parte da história do Volante de Ouro.</p>
-        <button class="btn btn-primary btn-lg" onclick="Doacao.irInicio()">Voltar ao menu principal</button>
-        <p class="ap-credito">Fotos (Wikimedia Commons): <a href="https://commons.wikimedia.org/wiki/File:Spa_2008_before_start.jpg" target="_blank" rel="noopener noreferrer">Spa 2008</a>, Mark McArdle, CC BY-SA 2.0; <a href="https://commons.wikimedia.org/wiki/File:Fale_F1_Monza_2004_73.jpg" target="_blank" rel="noopener noreferrer">Monza 2004</a>, Fabio Alessandro Locati, CC BY-SA 3.0; <a href="https://commons.wikimedia.org/wiki/File:The_Hungarian_Formula_One_Grand_Prix_in_Budapest_in_1988_(JOKAMAA2H-6).tif" target="_blank" rel="noopener noreferrer">Hungria 1988</a>, Mauritz Antin, CC BY 4.0; <a href="https://commons.wikimedia.org/wiki/File:Sebastien_Buemi_2009_Japan_2nd_Free_Practice.jpg" target="_blank" rel="noopener noreferrer">Suzuka 2009</a>, Morio, CC BY-SA 3.0; <a href="https://commons.wikimedia.org/wiki/File:Gro%C3%9Fer_Preis_von_Europa_-1954_N%C3%BCrburgring,_Juan_Manuel_Fangio,_Mercedes_(3)x.JPG" target="_blank" rel="noopener noreferrer">Nürburgring 1954</a>, Agridecumantes, CC BY-SA 3.0; <a href="https://commons.wikimedia.org/wiki/File:1971_Emerson_Fittipaldi,_Lotus_72_(kl).JPG" target="_blank" rel="noopener noreferrer">Fittipaldi 1971</a>, Lothar Spurzem, CC BY-SA 3.0; <a href="https://commons.wikimedia.org/wiki/File:Felipe_Massa_2008_Brazilian_Grand_Prix.jpg" target="_blank" rel="noopener noreferrer">Interlagos 2008</a>, diogo dubiella, CC BY-SA 2.0; <a href="https://commons.wikimedia.org/wiki/File:McLaren_MP4-23_Steering_Wheel_at_Formula_1_Exhibition,_London.jpg" target="_blank" rel="noopener noreferrer">volante McLaren MP4-23</a>, Hullian111, CC BY-SA 4.0; <a href="https://commons.wikimedia.org/wiki/File:Suspended_starting_grid_2012_Malaysia.jpg" target="_blank" rel="noopener noreferrer">Sepang 2012</a>, Morio, CC BY-SA 3.0.</p>
-      </div>
+      <button class="btn btn-contorno" onclick="Doacao.irInicio()">Voltar ao menu principal</button>
+      <p class="ap-credito">Foto: <a href="https://commons.wikimedia.org/wiki/File:McLaren_MP4-23_Steering_Wheel_at_Formula_1_Exhibition,_London.jpg" target="_blank" rel="noopener noreferrer">volante da McLaren MP4-23</a>, Hullian111, CC BY-SA 4.0, Wikimedia Commons.</p>
     </footer>
   </div>
 </section>
@@ -2694,16 +2617,17 @@ html[data-theme="light"] .chx-capa.sem-foto::before{background:rgba(11,12,14,.45
 <script src="assets/i18n/complete-driver.js" defer></script>
 <script src="assets/i18n/complete-chief.js" defer></script>
 <script src="assets/i18n/complete-common.js" defer></script>
-<script src="assets/i18n/novidades.js?v=20261106-c7a1" defer></script>
+<script src="assets/i18n/novidades.js?v=20261117-apoio" defer></script>
 <script src="assets/i18n/presenca.js" defer></script>
 <script src="assets/i18n/runtime.js?v=20261103-i18n" defer></script>
 <script src="assets/presenca-web.js?v=20261021-movimento" defer></script>
 <script src="assets/multiplayer.js?v=20261103-quali2" defer></script>
 <script src="assets/trilho.js?v=20261105-trilho5" defer></script>
 <script src="assets/painel-piloto.js?v=20261105-c2d4" defer></script>
+<script src="assets/apoio-pagina.js?v=20261117-apoio3" defer></script>
 <script src="assets/corrida2d.js?v=20261106-c9a1" defer></script>
 <!-- apoio ao projeto: a configuração fica toda neste arquivo; vazio, o botão não aparece -->
-<script src="assets/doacao.js"></script>
+<script src="assets/doacao.js?v=20261117-kofi"></script>
 <script>
 /* ══════════════════════════════════════════════════════════════════
    VOLANTE DE OURO — simulador de carreira no automobilismo

@@ -11,7 +11,7 @@ const ok = (c, m) => { n++; if(!c){ falhas++; console.log('  ✗ ' + m); } else 
 
 const CONF = path.join(__dirname, '..', 'assets', 'doacao.js');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-ok(fs.existsSync(CONF) && /<script src="assets\/doacao\.js"><\/script>\s*<script>/.test(html), 'a configuração fica num arquivo só e carrega antes do jogo');
+ok(fs.existsSync(CONF) && /<script src="assets\/doacao\.js(\?v=[\w-]+)?"><\/script>\s*<script>/.test(html), 'a configuração fica num arquivo só e carrega antes do jogo');
 
 /* o menu: o item está dentro do nav do topo (o mesmo que abre no botão de menu do celular) */
 {
@@ -39,9 +39,13 @@ const PAGINA = (html.match(/<section class="screen" id="scr-apoio"[\s\S]*?(?=<!-
   ok(J.run(`(() => { const o = window.VDO_DOACAO.pix.copiaecola; window.VDO_DOACAO.pix.copiaecola = o.replace('SAO PAULO', 'SAO PAULX'); const x = Doacao.config(); window.VDO_DOACAO.pix.copiaecola = o; return !x.pix.copia && !x.pix.qr; })()`), 'um código adulterado (CRC errado) é recusado');
   J.run(`document.body.dataset.tela = 'intro'; Doacao.pagina();`);
   const m = J.E('apoioMeios').innerHTML, mot = PAGINA;
-  ok(/Faça parte dessa história/.test(m) && /Copiar chave Pix/.test(m) && !/apoioCopiarCC|Copiar Pix Copia e Cola/.test(m) && /apoio-qr/.test(m), 'a página mostra o cartão do Pix com QR Code, chave e só o botão de copiar a chave');
+  ok(/No Brasil: Pix/.test(m) && /Copiar chave Pix/.test(m) && !/apoioCopiarCC|Copiar Pix Copia e Cola/.test(m) && /apoio-qr/.test(m), 'a página mostra o Pix para o Brasil com QR Code, chave e só o botão de copiar a chave');
+  ok(c.link.url === 'https://ko-fi.com/patobix' && /Fora do Brasil: Ko-fi/.test(m) && /href="https:\/\/ko-fi\.com\/patobix" target="_blank" rel="noopener noreferrer"/.test(m) && /Doar pelo Ko-fi/.test(m) && /ko-fi\.com\/patobix</.test(m),
+     'e o Ko-fi do projeto para quem está fora do Brasil, abrindo ko-fi.com/patobix numa página externa');
+  ok(/class="ap-meios ap-meios-2"/.test(m) && m.indexOf('ap-meio-pix') < m.indexOf('ap-meio-link'), 'os dois caminhos lado a lado (em português, o Pix primeiro)');
   ok(/Abra o aplicativo do seu banco/.test(m) && /Confira os dados do destinatário/.test(m), 'com as instruções para doar por Pix');
-  ok((mot.match(/<li class="ap-motivo/g) || []).length === 4 && (mot.match(/Ideia para o futuro, sem data definida/g) || []).length === 2, 'os quatro motivos, cada um com foto real, e os planos marcados como ideia, sem data nem promessa');
+  ok(/Um simulador gratuito de carreira no automobilismo/.test(mot) && /sete categorias, com grids reais de 1950 a 2026/.test(mot) && (mot.match(/<img /g) || []).length === 1 && /Hullian111, CC BY-SA 4\.0/.test(mot),
+     'só o que importa: a descrição do jogo e uma foto real, com crédito');
   J.run(`navigator.clipboard = { writeText: t => { globalThis._cc = t; return Promise.resolve(); } }; Doacao.copiar();`);
   ok(J.run('globalThis._cc') === c.pix.chave, '"Copiar chave Pix" copia só a chave');
 }
@@ -59,8 +63,8 @@ const PAGINA = (html.match(/<section class="screen" id="scr-apoio"[\s\S]*?(?=<!-
   ok(J.E('navApoio').getAttribute('aria-current') === 'page', 'o item do menu fica marcado como página atual');
   ok(J.E('apoioVoltarTx').textContent === 'Voltar ao início', 'vindo da abertura, o botão volta ao início');
   const pag = PAGINA;
-  ok(/continuará gratuito/.test(pag) && /totalmente opcionais/.test(pag) && /Obrigado por fazer parte do grid/.test(pag) && /Doacao\.irInicio\(\)/.test(pag),
-     'a página diz que o jogo segue gratuito e que doar é opcional, agradece e tem o botão de voltar ao menu principal');
+  ok(/Jogar continua de graça/.test(pag) && /Doar é opcional e não dá vantagem no jogo/.test(pag) && /Doacao\.irInicio\(\)/.test(pag),
+     'a página diz que o jogo segue gratuito e que doar é opcional e não dá vantagem, e tem o botão de voltar ao menu principal');
   J.run('Doacao.voltar();');
   ok(J.run('document.body.dataset.tela') === 'intro' && J.E('navApoio').getAttribute('aria-current') == null, 'voltar leva de novo à abertura');
 }

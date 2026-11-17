@@ -24,9 +24,10 @@ window.VDO_DOACAO = {
     qrcode: 'assets/pix-qrcode.png'
   },
   link: {
-    /* opcional: página de doação numa plataforma externa, com https:// */
-    url: '',
-    /* o nome da plataforma, mostrado no botão (ex.: 'Ko-fi', 'Apoia.se') */
-    nome: ''
+    /* opcional: página de doação numa plataforma externa, com https://.
+       Aparece como o caminho para quem está fora do Brasil. */
+    url: 'https://ko-fi.com/patobix',
+    /* o nome da plataforma, mostrado no título e no botão (ex.: 'Ko-fi', 'Apoia.se') */
+    nome: 'Ko-fi'
   }
 };

@@ -4,6 +4,20 @@
    Gerado a partir das tabelas de tradução revisadas; os nomes próprios ficam fora. */
 (function(){
   const rows = [
+    /* apoie o projeto: a página refeita só com o jogo, o Pix e o Ko-fi (2026-11-17) */
+    ["Apoie o Volante de Ouro.", "Support Volante de Ouro.", "Apoya Volante de Ouro.", "Volante de Ouroを支援しよう。"],
+    ["Um simulador gratuito de carreira no automobilismo, feito para o navegador.", "A free motorsport career simulator, made for the browser.", "Un simulador gratuito de carrera en el automovilismo, hecho para el navegador.", "ブラウザで遊べる、無料のモータースポーツ・キャリアシミュレーター。"],
+    ["Você é piloto ou chefe de equipe em sete categorias, com grids reais de 1950 a 2026.", "Be a driver or a team principal in seven series, with real grids from 1950 to 2026.", "Sé piloto o jefe de equipo en siete categorías, con parrillas reales de 1950 a 2026.", "7つのカテゴリーで、1950年から2026年までの実際のグリッドを舞台に、ドライバーかチーム代表として戦おう。"],
+    ["Jogar continua de graça.", "Playing stays free.", "Jugar sigue siendo gratis.", "プレイはこれからも無料です。"],
+    ["As doações ajudam a pagar o domínio e a hospedagem e a manter o jogo crescendo.", "Donations help pay for the domain and hosting and keep the game growing.", "Las donaciones ayudan a pagar el dominio y el alojamiento y a que el juego siga creciendo.", "寄付はドメインとサーバーの費用、そしてゲームの成長に使われます。"],
+    ["Doar é opcional e não dá vantagem no jogo.", "Donating is optional and gives no advantage in the game.", "Donar es opcional y no da ninguna ventaja en el juego.", "寄付は任意で、ゲーム内で有利になることはありません。"],
+    ["Como doar", "How to donate", "Cómo donar", "寄付の方法"],
+    ["No Brasil: Pix", "In Brazil: Pix", "En Brasil: Pix", "ブラジル国内：Pix"],
+    ["Fora do Brasil: {0}", "Outside Brazil: {0}", "Fuera de Brasil: {0}", "ブラジル国外：{0}"],
+    ["Fora do Brasil", "Outside Brazil", "Fuera de Brasil", "ブラジル国外"],
+    ["Para quem mora em outro país: uma doação no valor que você escolher.", "If you live in another country: donate any amount you choose.", "Si vives en otro país: dona el monto que elijas.", "海外にお住まいの方へ：好きな金額で寄付できます。"],
+    ["Doar pelo {0}", "Donate on {0}", "Donar por {0}", "{0}で寄付する"],
+    ["volante da McLaren MP4-23", "McLaren MP4-23 steering wheel", "volante del McLaren MP4-23", "マクラーレンMP4-23のステアリング"],
     /* corrida 2D: o box é o jogador que entra (2026-11-06) */
     ["A equipe chama: entre nos boxes nesta volta ({0})", "The team calls: pit this lap ({0})", "El equipo llama: entra en boxes en esta vuelta ({0})", "チームから：このラップでピットへ（{0}）"],
     ["Entrada dos boxes à esquerda em {0} m ({1})", "Pit entry on the left in {0} m ({1})", "Entrada a boxes a la izquierda en {0} m ({1})", "ピット入口は左、あと{0} m（{1}）"],
