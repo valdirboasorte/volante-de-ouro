@@ -17,6 +17,15 @@
         "value": "chakra petch",
         "createdAt": "2026-11-05T07:30:52.469Z",
         "reason": "Claude: user's brief asked for geometric, futuristic type in the Formula E theme; loaded only when that theme is active"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "assets/corrida2d.css"
+        ],
+        "createdAt": "2026-11-18T07:31:16.478Z",
+        "reason": "Claude triage: L39 is .c2d-aviso::before, a 3px top bar (not a side tab) carrying the flag colour of who speaks (race control red, track-limits chequer); intentional, predates this session"
       }
     ]
   }

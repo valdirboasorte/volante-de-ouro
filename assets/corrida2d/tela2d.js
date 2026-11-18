@@ -520,7 +520,7 @@
       }
       const curta = toque && !faixa && (peq || alt < 520);
       const max = faixa ? Math.max(3, Math.min(cfg.n, Math.floor((larg - 24) / (peq ? 92 : 148))))
-                : curta ? Math.max(3, Math.min(cfg.n, peq ? 7 : 5, Math.floor(((T.tqTopo || alt - 130) - (peq ? T.torreTopo || 290 : T.esqFim || 130) - 18 - (cfg.cab ? 28 : 0)) / 24.5)))
+                : curta ? Math.max(3, Math.min(cfg.n, 7, Math.floor(((T.tqTopo || alt - 100) - (peq ? T.torreTopo || 200 : T.esqFim || 70) - 14 - (cfg.cab ? 20 : 0)) / 17.5)))
                         : Math.max(5, Math.min(cfg.n, Math.floor((alt - (larg < 560 ? 340 : 270)) / 23)));
       let idx = tor.map((_, k) => k);
       if(tor.length > max){
