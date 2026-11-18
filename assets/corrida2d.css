@@ -411,3 +411,104 @@ html.c2d-aberto body > :not(.c2d), html.c2d-aberto body > :not(.c2d) *{ animatio
   .c2d[data-torre="faixa"] .c2d-torre li em{ display:none }
   .c2d[data-torre="faixa"].c2d-com-toque .c2d-torre{ position:absolute; right:0; top:0 }
 }
+
+/* ═══ celular com os botões na tela: o painel compacto ═══
+   Tudo menor e mais leve, para a pista aparecer: a caixa da volta só com volta e posição, o cronômetro
+   e o mapa pequenos no alto, o velocímetro numa linha só, a torre estreita e os botões translúcidos.
+   (as cores continuam as do tema da época: aqui só mudam o tamanho e o lugar) */
+@media (max-width: 560px), (max-height: 520px){
+  .c2d.c2d-com-toque{ --m-ms:max(8px, env(safe-area-inset-top)); --m-me:max(8px, env(safe-area-inset-left)); --m-md:max(8px, env(safe-area-inset-right)); --m-mapa:64px; --m-fx:0px }
+  .c2d.c2d-com-toque[data-torre="faixa"]{ --m-fx:30px }
+  .c2d.c2d-com-toque .c2d-hud{ padding:calc(var(--m-ms) + var(--m-fx)) var(--m-md) 8px var(--m-me) }
+  .c2d.c2d-com-toque .c2d-pausar{ top:calc(var(--m-ms) + var(--m-fx)); left:var(--m-me); width:32px; height:32px; border-radius:8px; font-size:12px; background:rgba(11,12,14,.62); border-color:rgba(255,255,255,.14) }
+
+  /* o alto: volta e posição, cronômetro, mapa */
+  .c2d.c2d-com-toque .c2d-topo{ gap:6px; align-items:flex-start }
+  .c2d.c2d-com-toque .c2d-caixa{ padding:4px 8px; border-radius:min(var(--h-r), 8px) }
+  .c2d.c2d-com-toque .c2d-esq{ flex:0 0 auto; min-width:0; max-width:none; margin-left:38px }
+  .c2d.c2d-com-toque .c2d-esq .c2d-linha{ gap:7px; justify-content:space-between }
+  .c2d.c2d-com-toque .c2d-esq .c2d-rot{ font-size:8.5px; letter-spacing:.06em }
+  .c2d.c2d-com-toque .c2d-num{ font-size:15px; line-height:1.15 }
+  .c2d.c2d-com-toque .c2d-sessao{ display:none }
+  .c2d.c2d-com-toque .c2d-ref{ margin-top:1px; font-size:10px } .c2d.c2d-com-toque .c2d-ref .c2d-rot{ font-size:8px }
+  .c2d.c2d-com-toque .c2d-cron{ min-width:0; display:grid; grid-template-columns:auto auto; column-gap:5px; align-items:baseline; justify-content:center }
+  .c2d.c2d-com-toque .c2d-tempo{ font-size:17px; line-height:1.1 }
+  .c2d.c2d-com-toque .c2d-delta{ min-height:0; font-size:10px }
+  .c2d.c2d-com-toque .c2d-delta:empty{ display:none }
+  .c2d.c2d-com-toque .c2d-setores, .c2d.c2d-com-toque .c2d-pares{ grid-column:1 / -1 }
+  .c2d.c2d-com-toque .c2d-setores{ gap:3px; margin:3px 0 2px } .c2d.c2d-com-toque .c2d-setores i{ height:3px }
+  .c2d.c2d-com-toque .c2d-pares{ font-size:10.5px; gap:0 6px; line-height:1.25 } .c2d.c2d-com-toque .c2d-pares .c2d-rot{ font-size:8px; letter-spacing:.06em }
+  .c2d.c2d-com-toque .c2d-mapa{ width:var(--m-mapa); height:var(--m-mapa); border-radius:8px; background:rgba(11,12,14,.42); border-color:rgba(255,255,255,.08) }
+
+  /* o velocímetro: giro numa risca, velocidade, marcha e o resto na mesma linha */
+  .c2d.c2d-com-toque .c2d-baixo{ display:flex; flex-wrap:wrap; align-items:center; gap:1px 8px; padding:4px 9px 5px; border-radius:min(var(--h-r), 8px) }
+  .c2d.c2d-com-toque .c2d-rpm{ flex:1 0 100%; gap:2px; justify-content:flex-start }
+  .c2d.c2d-com-toque .c2d-rpm i{ width:auto; flex:1 1 0; max-width:9px; height:3px; border-radius:1px }
+  .c2d.c2d-com-toque .c2d-velo{ white-space:nowrap }
+  .c2d.c2d-com-toque .c2d-velo b{ font-size:21px } .c2d.c2d-com-toque .c2d-velo span{ font-size:9px; margin-left:2px }
+  .c2d.c2d-com-toque .c2d-marcha{ font-size:19px; min-width:14px }
+  .c2d.c2d-com-toque .c2d-extra{ flex:0 1 auto; flex-wrap:wrap; justify-content:flex-start; gap:3px 6px; font-size:11px }
+  .c2d.c2d-com-toque .c2d-pneu{ gap:4px }
+  .c2d.c2d-com-toque .c2d-pneu i{ width:15px; height:15px; border-width:2px; font-size:8.5px; box-shadow:0 0 0 1.5px currentColor }
+  .c2d.c2d-com-toque .c2d-boost{ min-height:22px; line-height:22px; padding:0 6px; font-size:10.5px; border-radius:5px }
+  .c2d.c2d-com-toque .c2d-danos{ grid-template-columns:5px 9px 5px; grid-template-rows:7px 10px 7px; gap:1.5px; padding:3px 4px }
+
+  .c2d.c2d-com-toque .c2d-boxbtn{ min-width:52px; height:28px; padding:0 10px; border-radius:8px; font-size:11.5px; background:rgba(11,12,14,.7) }
+
+  /* a torre estreita */
+  .c2d.c2d-com-toque .c2d-torre{ --t-w:126px; --t-fs:11px; padding:3px }
+  .c2d.c2d-com-toque .c2d-torre li{ min-height:15px; padding-top:1px; padding-bottom:1px; gap:4px }
+  .c2d.c2d-com-toque .c2d-torre li b{ flex-basis:16px; line-height:15px }
+  .c2d.c2d-com-toque .c2d-torre li i{ height:11px }
+  .c2d.c2d-com-toque .c2d-torre li u{ min-width:18px; line-height:14px }
+  .c2d.c2d-com-toque .c2d-torre li s[class^="p-"]{ width:13px; height:13px; line-height:11px }
+  .c2d.c2d-com-toque .c2d-torre li.cab{ padding:2px 5px; font-size:.78em }
+  .c2d.c2d-com-toque .c2d-torre li.est{ padding:2px 5px; font-size:.78em }
+  .c2d.c2d-com-toque .c2d-torre li.corte{ margin-top:3px }
+
+  /* avisos, luzes e bandeira menores */
+  .c2d.c2d-com-toque .c2d-aviso{ font-size:11px; line-height:1.25; padding:5px 9px 4px; border-radius:5px; gap:1px; box-shadow:0 4px 12px rgba(0,0,0,.28) }
+  .c2d.c2d-com-toque .c2d-aviso::before{ height:2px }
+  .c2d.c2d-com-toque .c2d-av-rot{ font-size:8.5px; letter-spacing:.12em }
+  .c2d.c2d-com-toque .c2d-luzes{ gap:6px; padding:6px 8px; border-radius:9px }
+  .c2d.c2d-com-toque .c2d-luzes i{ width:18px; height:18px }
+  .c2d.c2d-com-toque .c2d-bandeira{ font-size:12px; padding:6px 11px; border-radius:8px }
+  .c2d.c2d-com-toque .c2d-contagem b{ font-size:64px } .c2d.c2d-com-toque .c2d-contagem span{ font-size:13px }
+
+  /* os botões: menores, translúcidos, sem moldura pesada */
+  .c2d.c2d-com-toque .c2d-toque{ gap:8px; padding:0 var(--m-md) max(10px, env(safe-area-inset-bottom)) var(--m-me) }
+  .c2d.c2d-com-toque .c2d-tq-dir-grupo, .c2d.c2d-com-toque .c2d-tq-ped-grupo{ gap:8px }
+  .c2d.c2d-com-toque .c2d-tq{ width:58px; height:58px; border-radius:14px; border-width:1.5px; background:rgba(12,13,15,.3); border-color:rgba(255,255,255,.16); font-size:20px; color:rgba(238,240,242,.9) }
+  .c2d.c2d-com-toque .c2d-tq.on{ background:rgba(240,193,46,.3); border-color:#f0c12e }
+  .c2d.c2d-com-toque .c2d-tq-freio, .c2d.c2d-com-toque .c2d-tq-acel{ width:64px; height:92px; font-size:9.5px; letter-spacing:.06em; display:flex; align-items:flex-end; justify-content:center; padding-bottom:12px }
+  .c2d.c2d-com-toque .c2d-tq-freio{ border-color:rgba(226,35,26,.42); background:linear-gradient(rgba(226,35,26,.12), rgba(12,13,15,.3)) }
+  .c2d.c2d-com-toque .c2d-tq-acel{ border-color:rgba(34,196,110,.42); background:linear-gradient(rgba(34,196,110,.12), rgba(12,13,15,.3)) }
+  .c2d.c2d-com-toque .c2d-tq-freio.on{ background:rgba(226,35,26,.4); border-color:#e2231a } .c2d.c2d-com-toque .c2d-tq-acel.on{ background:rgba(34,196,110,.38); border-color:#22c46e }
+  .c2d.c2d-com-toque .c2d-faixa{ width:clamp(170px, 42vw, 260px); height:58px; border-radius:14px; border-width:1.5px; background-color:rgba(12,13,15,.3); border-color:rgba(255,255,255,.16); font-size:10px }
+}
+
+/* em pé: o velocímetro logo abaixo do alto, à esquerda; o box à direita; a torre à direita e os avisos à esquerda */
+@media (max-width: 560px){
+  .c2d.c2d-com-toque{ --m-y0:calc(var(--m-ms) + var(--m-fx) + var(--m-mapa) + 6px) }
+  .c2d.c2d-com-toque .c2d-baixo, .c2d.c2d-com-toque[data-torre="faixa"] .c2d-baixo{ position:absolute; left:var(--m-me); right:auto; top:var(--m-y0); bottom:auto; transform:none; max-width:calc(100vw - 2 * 8px - 66px) }
+  .c2d.c2d-com-toque .c2d-boxbtn{ top:var(--m-y0); right:var(--m-md) }
+  .c2d.c2d-com-toque .c2d-torre, .c2d.c2d-com-toque[data-torre="faixa"] .c2d-torre{ margin:0 }
+  .c2d.c2d-com-toque:not([data-torre="faixa"]) .c2d-torre{ position:absolute; left:auto; right:var(--m-md); top:var(--torre-topo, calc(var(--m-y0) + 48px)) }
+  .c2d.c2d-com-toque .c2d-luzes{ left:var(--m-me); top:var(--torre-topo, calc(var(--m-y0) + 48px)); transform:none }
+  .c2d.c2d-com-toque .c2d-aviso{ left:var(--m-me); top:calc(var(--torre-topo, calc(var(--m-y0) + 48px)) + 40px); transform:none; width:auto; align-items:flex-start; text-align:left;
+    max-width:calc(100vw - 126px - 2 * 8px - 10px) }
+  .c2d.c2d-com-toque[data-torre="faixa"] .c2d-aviso{ max-width:calc(100vw - 16px) }
+  .c2d.c2d-com-toque .c2d-bandeira{ top:44% }
+}
+
+/* deitado: o alto em três partes, a torre à esquerda, o velocímetro embaixo entre as setas e os pedais */
+@media (max-height: 520px) and (min-width: 561px){
+  .c2d.c2d-com-toque{ --m-mapa:72px; --m-y0:calc(var(--m-ms) + var(--m-fx) + var(--m-mapa) + 6px) }
+  .c2d.c2d-com-toque .c2d-baixo{ top:auto; bottom:max(8px, env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); max-width:calc(100vw - 2 * (2 * 64px + 8px + 16px)) }
+  .c2d.c2d-com-toque .c2d-baixo .c2d-extra{ justify-content:center }
+  .c2d.c2d-com-toque .c2d-boxbtn{ top:var(--m-y0); right:var(--m-md) }
+  .c2d.c2d-com-toque:not([data-torre="faixa"]) .c2d-torre{ position:absolute; left:var(--m-me); top:var(--esq-fim, calc(var(--m-ms) + 52px)); margin:0 }
+  .c2d.c2d-com-toque .c2d-aviso{ top:var(--m-y0); max-width:min(420px, calc(100vw - 2 * 150px)) }
+  .c2d.c2d-com-toque .c2d-luzes{ top:46% }
+  .c2d.c2d-com-toque .c2d-bandeira{ top:30% }
+}
