@@ -22,7 +22,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
   --pp-entrada:pp-e-base;
   /* as tabelas e janelas de antes, que moram nas páginas, herdam o ambiente */
   --bg:var(--pp-fundo); --rail:var(--pp-trilho); --s1:var(--pp-painel); --s2:var(--pp-painel2); --s3:#272b32; --s4:#323740;
-  --ink:var(--pp-tinta); --soft:var(--pp-suave); --faint:var(--pp-fraca); --gold:var(--pp-cor); --accent-txt:var(--pp-cor);
+  --ink:var(--pp-tinta); --soft:var(--pp-suave); --faint:var(--pp-fraca);
   --rule:rgba(255,255,255,.08); --rule2:rgba(255,255,255,.14); --regua:rgba(255,255,255,.07); --regua-forte:rgba(255,255,255,.15);
 }
 .pp{color-scheme:dark; color:var(--pp-tinta); background:var(--pp-fundo)}
@@ -279,7 +279,7 @@ body[data-tela="career"]:not(.pp-antigo) #conteudo{padding-bottom:0}
 .pp table.rt tbody tr.next{border-left:0; background:color-mix(in srgb, var(--pp-cor) 10%, transparent)}
 .pp table.rt th,.pp table.st th,.pp table.hs th{background:var(--pp-painel)}
 .pp table.st tr.me{background:color-mix(in srgb, var(--pp-cor) 16%, transparent)}
-.pp .post{border-radius:calc(var(--pp-raio) * .5); border-left:0; background:var(--pp-painel2)}
+.pp .post{border-radius:calc(var(--pp-raio) * .5); background:var(--pp-painel2)}
 .pp-movel{display:none}
 
 /* ═══ F1: telemetria, carbono e cortes em ângulo ═══ */
@@ -482,7 +482,7 @@ body.pp-modo .ov .btn:active{transform:scale(.97)}
 @media (hover:hover) and (pointer:fine){ body.pp-modo .ov .btn-primary:hover,body.pp-modo .ov .btn-gold:hover{filter:brightness(1.08)} }
 body.pp-modo .ov .res-nar,body.pp-modo .ov .offer,body.pp-modo .ov .dil,body.pp-modo .ov .post,body.pp-modo .ov .ch-card,body.pp-modo .ov .sty,body.pp-modo .ov .mini > div{
   background:var(--pp-painel2); border-radius:calc(var(--pp-raio) * .5)}
-body.pp-modo .ov .res-nar,body.pp-modo .ov .post{border-left-color:var(--pp-cor)}
+body.pp-modo .ov .res-nar{border-left-color:var(--pp-cor)}
 body.pp-modo .ov .res-nar em{color:var(--pp-cor)}
 body.pp-modo .ov .offer,body.pp-modo .ov .dil{transition:background-color .15s var(--ease-out), transform .12s var(--ease-out)}
 body.pp-modo .ov .offer:active,body.pp-modo .ov .dil:active{transform:scale(.99)}
@@ -531,7 +531,6 @@ body.pp-modo .ov .yr-b:active,body.pp-modo .ov .ch-opt:active{transform:scale(.9
 body.pp-modo .ov .yr-b.sel,body.pp-modo .ov .ch-opt.sel{background:var(--pp-acao); color:var(--pp-acao-tx)}
 body.pp-modo[data-pp-tema="f1"] .ov .yr-b,body.pp-modo[data-pp-tema="f1"] .ov .ch-opt{border-radius:0}
 body.pp-modo .ov .aj-leg{background:var(--pp-painel); border-radius:calc(var(--pp-raio) * .5)}
-body.pp-modo .ov .aj-exp span{color:var(--pp-cor)}
 body.pp-modo .ov .lbl{color:var(--pp-suave)}
 /* o aviso flutuante */
 body.pp-modo .toast{background:var(--pp-painel2); color:var(--pp-tinta); border:1px solid var(--pp-borda2); border-radius:calc(var(--pp-raio) * .6);
