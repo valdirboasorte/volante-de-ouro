@@ -7,17 +7,17 @@
    A ficha que identifica o jogador fica no localStorage (vdo_mp). É uma identidade de
    teste, não uma conta: quem tiver a ficha ocupa a vaga, e limpar os dados do site a
    perde. O botão aparece com o servidor local (127.0.0.1) e, no site oficial (servidor em
-   mp.volantedeouro.com), por enquanto só para quem abriu o link com ?mp=1: o aparelho lembra
-   (?mp=0 esquece). Com ABERTO_A_TODOS, aparece para todo mundo. Em outra origem, só quando
-   VDO_MP_SERVIDOR for definido.
+   mp.volantedeouro.com), para todo mundo (ABERTO_A_TODOS, desde 21/11/2026). Com ele em false,
+   só para quem abriu o link com ?mp=1: o aparelho lembra (?mp=0 esquece). Em outra origem, só
+   quando VDO_MP_SERVIDOR for definido.
    Para testar dois jogadores no mesmo navegador: ?mpperfil=2 usa outra ficha. */
 (function(){
   'use strict';
   const local = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
   const oficial = /^(www\.)?volantedeouro\.com$/.test(location.hostname);
   const SERVIDOR = local ? 'http://127.0.0.1:8787' : String(window.VDO_MP_SERVIDOR || (oficial ? 'https://mp.volantedeouro.com' : ''));
-  /* em teste: no site oficial, o botão só para quem tem o link (?mp=1) */
-  const ABERTO_A_TODOS = false;
+  /* no site oficial, o botão aparece para todo mundo (false: só para quem tem o link ?mp=1) */
+  const ABERTO_A_TODOS = true;
   const comLink = (() => {
     const q = new URLSearchParams(location.search).get('mp');
     try {

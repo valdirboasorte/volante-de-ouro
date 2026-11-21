@@ -6,7 +6,8 @@ autoridade: os navegadores mandam pedidos e mostram o que ele responde.
 
 **Publicado em 31/10/2026, em teste:** o servidor está em `https://mp.volantedeouro.com`
 (plano Workers Paid: o motor não cabe nos 10 ms de CPU do plano gratuito). No site, o botão
-Multiplayer só aparece com o link `https://volantedeouro.com/?mp=1`. Para desenvolver, o
+Multiplayer aparece para todo mundo desde 21/11/2026 (antes, só com o link
+`https://volantedeouro.com/?mp=1`). Para desenvolver, o
 mesmo servidor roda no seu computador com `wrangler dev`. Ver [Publicar](#publicar).
 
 ## Fases
@@ -367,10 +368,10 @@ O servidor de produção usa `wrangler.producao.jsonc`:
 - só o site oficial abre salas;
 - sem as rotas e mensagens de teste.
 
-A página já aponta para esse endereço quando roda em volantedeouro.com. Por enquanto o botão
-**Multiplayer** só aparece para quem abrir `https://volantedeouro.com/?mp=1`: o aparelho
-lembra, e `?mp=0` esquece. Para abrir a todos, `ABERTO_A_TODOS = true` em
-`assets/multiplayer.js`.
+A página já aponta para esse endereço quando roda em volantedeouro.com. Desde 21/11/2026 o
+botão **Multiplayer** aparece para todo mundo (`ABERTO_A_TODOS = true` em
+`assets/multiplayer.js`). Com `false`, só para quem abrir `https://volantedeouro.com/?mp=1`:
+o aparelho lembra, e `?mp=0` esquece.
 
 ```bash
 cd multiplayer
