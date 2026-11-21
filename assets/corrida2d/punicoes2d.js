@@ -27,6 +27,9 @@
   const C2D = raiz.C2D;
   const { lim } = C2D;
 
+  /* quem pilota de verdade: o seu carro, ou (no servidor do multiplayer, rede2d.js) qualquer humano */
+  const ehEu = (S, c) => !!c && (c === S.eu || !!c.humano);
+
   const T5 = { t: 'tempo', s: 5 }, T10 = { t: 'tempo', s: 10 }, T20 = { t: 'tempo', s: 20 };
   const DT = { t: 'dt' }, SG = { t: 'sg', s: 10 }, DSQ = { t: 'dsq' }, NADA = null;
 
@@ -103,7 +106,7 @@
       else { caso.a = j.culpado; caso.b = j.vitima; caso.tipo = j.tipo; }
       caso.posA0 = caso.a.pos; caso.posB0 = caso.b.pos; caso.vB0 = Math.max(1, caso.b.v); caso.danoB0 = caso.b.dano || 0; caso.rodou = false;
       S.pun.casos.push(caso);
-      if(A === S.eu || B === S.eu){ const o = A === S.eu ? B : A; S.eventos.push({ t: S.t, tipo: 'investigacao', a: S.eu.id, b: o.id, txt: 'Toque com ' + (o.nome || o.id) + ' em análise' }); }
+      for(const [eu, o] of [[A, B], [B, A]]) if(ehEu(S, eu)){ S.eventos.push({ t: S.t, tipo: 'investigacao', a: eu.id, b: o.id, txt: 'Toque com ' + (o.nome || o.id) + ' em análise' }); }
     },
     /* a culpa, como o comissário olharia o replay: batida por trás é de quem vem atrás; lado a
        lado, de quem fechou a porta (só um dos dois foi para cima do outro); quem já vinha
@@ -155,7 +158,7 @@
         if(k.feito) continue;
         const c = k.c, alvos = k.alvos.filter(o => o.estado === 'pista' && !o.box);
         const aindaNaFrente = alvos.some(o => c.pos < o.pos);
-        if(!aindaNaFrente || c.estado !== 'pista'){ k.feito = true; if(c === S.eu && c.estado === 'pista') S.eventos.push({ t: S.t, tipo: 'investigacao', a: c.id, txt: 'Posição devolvida: sem punição' }); continue; }
+        if(!aindaNaFrente || c.estado !== 'pista'){ k.feito = true; if(ehEu(S, c) && c.estado === 'pista') S.eventos.push({ t: S.t, tipo: 'investigacao', a: c.id, txt: 'Posição devolvida: sem punição' }); continue; }
         if(S.t > k.ate){ k.feito = true; C2D.Punicoes.aplicar(S, c, k.motivo === 'sc' ? pun.sis.scPasse : pun.sis.vantagem, k.motivo, alvos[0]); }
       }
     },
@@ -173,11 +176,11 @@
         const passados = S.ordem.filter(o => o !== c && o.pos > c.pos && antes.get(o) < a && o.estado === 'pista' && !o.box && !C2D.Punicoes.lento(o));
         if(!passados.length) continue;
         let motivo = null;
-        if((S.sc || S.vsc) && c === S.eu && pun.sis.scPasse) motivo = 'sc';
+        if((S.sc || S.vsc) && ehEu(S, c) && pun.sis.scPasse) motivo = 'sc';
         else if(pun.sis.vantagem && c.tForaUlt != null && S.t - c.tForaUlt < 1.2) motivo = 'vantagem';
         if(!motivo || pun.devolver.some(k => k.c === c && k.motivo === motivo)) continue;
         pun.devolver.push({ c, alvos: passados, motivo, ate: S.t + janela, feito: false });
-        if(c === S.eu) S.eventos.push({ t: S.t, tipo: 'investigacao', a: c.id, txt: (motivo === 'sc' ? 'Ultrapassagem sob safety car' : 'Ganhou posição por fora da pista') + ': devolva a posição em ' + janela + ' s' });
+        if(ehEu(S, c)) S.eventos.push({ t: S.t, tipo: 'investigacao', a: c.id, txt: (motivo === 'sc' ? 'Ultrapassagem sob safety car' : 'Ganhou posição por fora da pista') + ': devolva a posição em ' + janela + ' s' });
       }
     },
     /* carro que se arrasta (quebrado, destruído, voltando à pista): pode ser passado */
@@ -187,7 +190,7 @@
     decidir(S, k){
       k.feito = true;
       const pun = S.pun, a = k.a, b = k.b;
-      const avisa = txt => { if(a === S.eu || b === S.eu) S.eventos.push({ t: S.t, tipo: 'investigacao', a: S.eu.id, txt }); };
+      const avisa = txt => { for(const eu of [a, b]) if(ehEu(S, eu)) S.eventos.push({ t: S.t, tipo: 'investigacao', a: eu.id, txt }); };
       if(k.incidente){ avisa('Incidente de corrida: sem punição'); return; }
       if(a.estado === 'fora'){ return; }
       let g = 0;

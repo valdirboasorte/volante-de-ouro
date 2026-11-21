@@ -26,7 +26,15 @@ const VERSAO = versaoDosBlocos(blocos);
 const DADOS = ['historico.js', 'nascimentos.js', 'escalacoes.js', 'vencedores.js', 'tracados.js', 'tracados-aprox.js', 'tracados-svg.js']
   .map(f => path.join(RAIZ, 'dados', f)).filter(f => fs.existsSync(f));
 /* depois do jogo, como na página: a idade real de cada piloto (fora dos blocos, então fora do hash) */
-const DEPOIS = ['assets/idades.js', 'assets/correcoes-chefe.js', 'assets/pistas-correcoes.js'].map(f => path.join(RAIZ, f)).filter(f => fs.existsSync(f));
+/* (e o passado do piloto real que alguém assume: S.passado sai montado do servidor, como na página) */
+const DEPOIS = ['assets/idades.js', 'assets/correcoes-chefe.js', 'assets/pistas-correcoes.js', 'assets/passado-piloto.js'].map(f => path.join(RAIZ, f)).filter(f => fs.existsSync(f));
+/* a física da corrida 2D, para a sala rodar a corrida 2D em rede (Fase 7): só a simulação, sem o
+   desenho. Ela fica no window da página falsa (J.amb.C2D) e não muda nada do motor. VERSAO_2D é a
+   versão dos módulos (o V de assets/corrida2d.js): a tela confere antes de correr. */
+const MODULOS_2D = ['nucleo', 'pista2d', 'carro2d', 'dano2d', 'ia2d', 'regras2d', 'arte2d', 'estilos2d', 'sessao2d', 'boxes2d', 'punicoes2d', 'boost2d', 'carreira2d', 'rede2d']
+  .map(m => path.join(RAIZ, 'assets', 'corrida2d', m + '.js')).filter(f => fs.existsSync(f));
+const VERSAO_2D = ((lf(fs.readFileSync(path.join(RAIZ, 'assets', 'corrida2d.js'), 'utf8')).match(/const V = '([^']+)'/) || [])[1]) || 'dev';
+DEPOIS.push(...MODULOS_2D);
 const codigo = DADOS.map(f => lf(fs.readFileSync(f, 'utf8'))).concat(blocos, DEPOIS.map(f => lf(fs.readFileSync(f, 'utf8'))));
 
 /* os nomes declarados no topo de cada arquivo (coluna 0), para devolver todos */
@@ -49,8 +57,10 @@ const acesso = [...declarados].map(([n, tipo]) =>
 const saida = `/* GERADO por multiplayer/ferramentas/gerar-motor.mjs a partir do index.html e de dados/.
    Não edite: rode o gerador de novo. */
 export const VERSAO_JOGO = '${VERSAO}';
+export const VERSAO_2D = '${VERSAO_2D}';
 export function criarMotor(amb){
   const { ${AMBIENTE.join(', ')} } = amb;
+  amb.Corrida2D = { V: '${VERSAO_2D}' };
 ${codigo.join('\n;\n')}
 ;
   return {

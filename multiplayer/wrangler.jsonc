@@ -12,7 +12,7 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Sala"] }],
   "vars": {
     /* origens das páginas que podem abrir salas (o jogo servido localmente) */
-    "ORIGENS": "http://127.0.0.1:4338,http://localhost:4338",
+    "ORIGENS": "http://127.0.0.1:4338,http://localhost:4338,http://127.0.0.1:4321,http://localhost:4321",
     /* rota de medição do motor, só no desenvolvimento */
     "VIABILIDADE": "1",
     /* mensagens e campos só de teste (__falhar, falhas na vista); nunca em produção */

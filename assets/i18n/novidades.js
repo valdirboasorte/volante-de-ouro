@@ -2621,7 +2621,26 @@
     ["DRS: a menos de 1 s do carro da frente na detecção, aperte Shift (ou toque em DRS) na zona · ERS: segure Q (ou toque em ERS) para usar a bateria; ela recarrega nas freadas","DRS: within 1 s of the car ahead at the detection point, press Shift (or tap DRS) in the zone · ERS: hold Q (or tap ERS) to use the battery; it recharges under braking","DRS: a menos de 1 s del coche de delante en la detección, pulsa Shift (o toca DRS) en la zona · ERS: mantén Q (o toca ERS) para usar la batería; se recarga en las frenadas","DRS：検知ポイントで前の車から1秒以内なら、ゾーンで Shift を押す（または DRS をタップ） · ERS：Q を押し続ける（または ERS をタップ）とバッテリーを使う。ブレーキングで充電される"],
     ["ERS: segure Q (ou toque em ERS) para usar a bateria; ela recarrega nas freadas · Aero ativa: segure Shift nas retas · a menos de 1 s do carro da frente na detecção, o Modo Ultrapassagem dá energia extra","ERS: hold Q (or tap ERS) to use the battery; it recharges under braking · Active aero: hold Shift on the straights · within 1 s of the car ahead at the detection point, Overtake Mode gives extra energy","ERS: mantén Q (o toca ERS) para usar la batería; se recarga en las frenadas · Aero activa: mantén Shift en las rectas · a menos de 1 s del coche de delante en la detección, el Modo Adelantamiento da energía extra","ERS：Q を押し続ける（または ERS をタップ）とバッテリーを使う。ブレーキングで充電される · アクティブエアロ：ストレートで Shift を押し続ける · 検知ポイントで前の車から1秒以内なら、オーバーテイクモードで追加エネルギー"],
     ["Motor superaquecido: alivie a pressão do turbo","Engine overheating: ease off the turbo boost","Motor sobrecalentado: baja la presión del turbo","エンジンがオーバーヒート：ターボの過給圧を下げて"],
-    ["Modo Ultrapassagem: energia extra na bateria","Overtake Mode: extra energy in the battery","Modo Adelantamiento: energía extra en la batería","オーバーテイクモード：バッテリーに追加エネルギー"]
+    ["Modo Ultrapassagem: energia extra na bateria","Overtake Mode: extra energy in the battery","Modo Adelantamiento: energía extra en la batería","オーバーテイクモード：バッテリーに追加エネルギー"],
+    /* multiplayer: a corrida 2D pilotando e o piloto real na sala (2026-11-21) */
+    ["Pilotando (2D)", "Driving (2D)", "Pilotando (2D)", "自分で運転（2D）"],
+    ["Cada um pilota o próprio carro na mesma pista, contra a IA nos outros carros. A largada espera todos no grid.", "Each player drives their own car on the same track, against the AI in the other cars. The start waits for everyone on the grid.", "Cada uno pilota su propio coche en la misma pista, contra la IA en los demás coches. La salida espera a todos en la parrilla.", "全員が同じコースで自分のマシンを運転し、ほかのマシンはAIが走らせる。スタートは全員がグリッドにそろうまで待つ。"],
+    ["Ou assuma um piloto de verdade do grid", "Or take over a real driver from the grid", "O asume un piloto real de la parrilla", "または実在のドライバーを引き継ぐ："],
+    ["ele começa na equipe real, com os títulos, as vitórias e as provas de antes somados à carreira.", "they start in their real team, with their earlier titles, wins and races added to the career.", "empieza en su equipo real, con los títulos, las victorias y las carreras de antes sumados a la trayectoria.", "実際のチームから始まり、それまでのタイトル・勝利・出走数がキャリアに加算される。"],
+    ["Piloto real", "Real driver", "Piloto real", "実在のドライバー"],
+    ["Assumir este piloto", "Take over this driver", "Asumir este piloto", "このドライバーを引き継ぐ"],
+    ["Você vai correr como", "You will race as", "Vas a correr como", "あなたが走るドライバー："],
+    ["(piloto real)", "(real driver)", "(piloto real)", "（実在のドライバー）"],
+    ["Menu", "Menu", "Menú", "メニュー"],
+    ["A corrida não para no multiplayer: com o menu aberto, a equipe leva o seu carro.", "The race does not stop in multiplayer: while the menu is open, the team drives your car.", "La carrera no se detiene en multijugador: con el menú abierto, el equipo lleva tu coche.", "マルチプレイではレースは止まらない。メニューを開いている間はチームがマシンを走らせる。"],
+    ["Pedir para pular até o fim", "Ask to skip to the finish", "Pedir saltar hasta el final", "最後までスキップを提案する"],
+    ["Sem conexão com a sala: reconectando…", "No connection to the room: reconnecting…", "Sin conexión con la sala: reconectando…", "ルームとの接続が切れた：再接続中…"],
+    ["Conexão instável: a equipe está com o seu carro", "Unstable connection: the team is driving your car", "Conexión inestable: el equipo lleva tu coche", "接続が不安定：チームがマシンを走らせている"],
+    ["Esperando os outros pilotos chegarem ao grid…", "Waiting for the other drivers to reach the grid…", "Esperando a que los otros pilotos lleguen a la parrilla…", "ほかのドライバーがグリッドにそろうのを待っている…"],
+    ["Todos no grid: as luzes acendem em instantes", "Everyone on the grid: the lights come on in a moment", "Todos en la parrilla: las luces se encienden enseguida", "全員グリッドに着いた：まもなくシグナル点灯"],
+    ["Você pediu para pular até o fim: falta o voto dos outros", "You asked to skip to the finish: waiting for the others to vote", "Pediste saltar hasta el final: falta el voto de los demás", "最後までスキップを提案した：ほかのプレイヤーの投票待ち"],
+    ["A corrida 2D não carregou nesta página: recarregue.", "The 2D race did not load on this page: reload it.", "La carrera 2D no cargó en esta página: recárgala.", "このページで2Dレースを読み込めなかった：再読み込みしてください。"],
+    ["Não deu para abrir a corrida 2D nesta tela. A equipe leva o seu carro até o fim.", "The 2D race could not open on this screen. The team will drive your car to the finish.", "No se pudo abrir la carrera 2D en esta pantalla. El equipo llevará tu coche hasta el final.", "この画面では2Dレースを開けなかった。チームがゴールまでマシンを走らせる。"]
   ];
   for(const [lang,column] of [['en',1],['es',2],['ja',3]]){
     const locale=window.VDO_LOCALES[lang];

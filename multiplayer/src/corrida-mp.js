@@ -34,8 +34,8 @@ const clone = o => o === undefined ? undefined : structuredClone(o);
    modo 'preparar': cada corrida com humano vira uma definição (a entrada e os donos dos carros)
    e segue com uma chegada rápida, descartada (o processamento roda numa cópia do mundo).
    modo 'concluir': cada corrida recebe a chegada da corrida ao vivo. */
-export function ligarCorridas(J, modo, resultados, { semVivo, qualiAoVivo } = {}){
-  const ctl = { modo, defs: [], k: 0, contexto: null, resultados: resultados || {}, divergencias: [], faltas: [], sessoes: [], qualiAoVivo: !!qualiAoVivo };
+export function ligarCorridas(J, modo, resultados, { semVivo, qualiAoVivo, c2d } = {}){
+  const ctl = { modo, defs: [], k: 0, contexto: null, resultados: resultados || {}, divergencias: [], faltas: [], sessoes: [], qualiAoVivo: !!qualiAoVivo, c2d: c2d || null };
   /* a classificação ao vivo do chefe (sessao-mp.js): a sessão que falta, criada no meio da passada */
   ctl.novaSessao = arg => {
     /* uma sessão só com quem está simulando não é ao vivo: ela roda rápida, nas duas passadas */
@@ -71,7 +71,10 @@ export function ligarCorridas(J, modo, resultados, { semVivo, qualiAoVivo } = {}
     ent.carros.forEach(c => { const x = cx.extras && cx.extras[c.id]; if(x) Object.assign(c, x); });
     const donos = {};
     ent.carros.forEach((c, i) => { if(c.ctrl) donos[i] = cx.donos[c.id]; });
-    return correr(ent, donos, M, { serie: sea.isTop ? J.Engine.serie().short : sea.cat, chefe: false });
+    const info = { serie: sea.isTop ? J.Engine.serie().short : sea.cat, chefe: false };
+    /* a sala da corrida 2D (Fase 7): cada humano pilota o próprio carro (corrida2d-mp.js) */
+    if(modo === 'preparar' && ctl.c2d) info.c2d = definir2d(J, sea, ent, donos, ctl.c2d);
+    return correr(ent, donos, M, info);
   };
   /* modo chefe: Chefe.correr, na perspectiva do anfitrião (a outra equipe humana é a 'EU2') */
   J.Chefe.mpCorrida = M => {
@@ -93,6 +96,31 @@ export function ligarCorridas(J, modo, resultados, { semVivo, qualiAoVivo } = {}
   J.mpCorridas = ctl;
   return ctl;
 }
+/* a definição da corrida 2D (assets/corrida2d/rede2d.js, no motor gerado), ou null: pista que a 2D
+   não monta (estradas longas) corre ao vivo na clássica */
+function definir2d(J, sea, ent, donos, cfg){
+  const C2D = J.amb && J.amb.C2D;
+  if(!C2D || !C2D.Rede) return null;
+  try{
+    if(C2D.Pista.suporta && !C2D.Pista.suporta(ent.trkId, ent.ano)) return null;
+    const E = J.Engine, carR = {}, nums = {};
+    ent.carros.forEach(c => {
+      const f = sea.field.find(x => x.id === c.id);
+      /* o acerto e a equipe de cada humano no carro dele (o do outro lado veio nos extras) */
+      if(f && f.isMe){
+        carR[c.id] = ((E.setupEfeito && E.setupEfeito(sea, sea.round)) || {}).carR || 0;
+        if(E.bonusGente) carR[c.id] += E.bonusGente().car || 0;
+        if(J.S && J.S.driver && J.S.driver.num != null) nums[c.id] = J.S.driver.num;
+      }
+      else if(typeof c.carR === 'number') carR[c.id] = c.carR;
+    });
+    return C2D.Rede.definir({ sea, ent, donos, carR, nums, dist: cfg.dist, nivelIA: cfg.ia, cat: sea.cat, gp: ent.gp ? 'GP ' + ent.gp : '' });
+  }catch(e){
+    console.log(JSON.stringify({ ev: 'erro', motivo: 'definir2d', erro: String((e && (e.stack || e.message)) || e).slice(0, 300) }));
+    return null;
+  }
+}
+
 export function desligarCorridas(J){
   delete J.Engine.mpCorrida; delete J.Chefe.mpCorrida; delete J.mpCorridas;
 }

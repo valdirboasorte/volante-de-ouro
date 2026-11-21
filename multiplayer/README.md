@@ -19,6 +19,7 @@ mesmo servidor roda no seu computador com `wrangler dev`. Ver [Publicar](#public
 | 4 | Modo piloto com dois pilotos humanos | feita (local; as corridas ainda pelo caminho rápido) |
 | 5 | Corridas ao vivo no servidor | feita e publicada (botão só com o link ?mp=1) |
 | 6 | Robustez e testes com dois aparelhos | em andamento (parte 1 publicada em 31/10/2026) |
+| 7 | A carreira de piloto atual (folha nova, piloto real) e a corrida 2D com todos pilotando | feita localmente, não publicada |
 
 ## Rodar
 
@@ -408,6 +409,205 @@ sem publicar (1,7 MB comprimido).
 - a limpeza das salas paradas;
 - o aviso quando o outro jogador cai no meio da corrida;
 - o reserva no carro do convidado machucado numa temporada dividida.
+
+## A carreira de piloto atual e a corrida 2D (Fase 7)
+
+Local, ainda não publicada. A sala de piloto passa a ter a carreira de um jogador inteira: a folha
+nova do piloto (`assets/painel-piloto.js`), o piloto real com o passado dele
+(`assets/passado-piloto.js`) e a corrida interativa 2D, com cada jogador pilotando o próprio carro
+na mesma pista, contra a IA nos outros carros.
+
+### No lobby
+
+- **Corridas:** "Pilotando (2D)", "Ao vivo" (a clássica, em passo travado) ou "Rápidas". Na 2D, o
+  anfitrião escolhe a distância (de 10% a 100% da prova) e o nível dos rivais (Fácil a Lenda).
+  - Na configuração: `config.corrida2d`, `config.dist2d` (0,1, 0,2, 0,35, 0,5 ou 1) e
+    `config.ia2d` (`facil`, `medio`, `dificil` ou `lenda`).
+  - Pista que a 2D não monta (as estradas longas, acima de 26 km) corre ao vivo na clássica.
+- **Piloto real:** além do piloto criado, cada um pode assumir um piloto de verdade do grid da
+  série e do ano da sala (`escolherPiloto { piloto: { real: nome } }`, com o nome como está em
+  `eraOfSeries(ano, serie).pilots`).
+  - O mesmo piloto não pode ser de dois jogadores.
+  - Mudar a série ou o ano tira as escolhas de piloto real.
+  - O servidor monta a carreira com `Game.startTakeOver`: a equipe real e `S.passado`, porque
+    `passado-piloto.js` agora entra no motor gerado.
+  - A folha, as estatísticas e as conquistas mostram a carreira somada, como no jogo solo
+    (testado com Verstappen e Hamilton em 2023, e com Leclerc no navegador).
+
+### A arquitetura da 2D em rede: a sala com a IA, cada jogador dono do próprio carro
+
+A corrida clássica é em passo travado: o mesmo `Gp` em todo lugar, com as ordens marcadas num
+passo futuro. Isso não serve para a 2D, por três motivos:
+- a física roda a 120 passos por segundo, com toques, e é caótica: um erro de arredondamento vira
+  outra corrida. O Safari usa outra biblioteca para seno e cosseno, e o resultado diverge;
+- o estado é grande e tem sorteios dentro de funções (a IA, a sessão), então guardar e voltar o
+  estado (o rollback) é caro e frágil;
+- e o que mais pesa: atrasar o volante para todos esperarem as ordens (input delay) estraga a
+  pilotagem.
+
+Também não dá para a tela do anfitrião rodar a IA: aba no fundo para o `requestAnimationFrame`, e a
+IA de todos pararia junto. Então:
+
+- **A sala** (o Durable Object, `src/corrida2d-mp.js`) roda a sessão oficial a 120 passos por
+  segundo, com a física da 2D que agora entra no motor gerado (`MODULOS_2D` em
+  `ferramentas/gerar-motor.mjs`, mais `assets/corrida2d/rede2d.js`).
+  - A sala decide os carros da IA, o safety car, as bandeiras, as punições, a ordem e o resultado.
+  - Os carros humanos lá são **fantoches** (`c.remoto`): andam com o estado que o dono manda.
+- **Cada tela** roda a mesma sessão (`C2D.Rede.Cliente`).
+  - O carro do jogador tem a física local: o comando não espera a rede, atraso zero no volante.
+  - Todos os outros carros são fantoches, levados até o "agora".
+- **O relógio** é o tempo de prova da sala. A tela estima a diferença para o relógio dela pelo
+  eco, como no NTP: pega a amostra de menor ida e volta entre as 24 últimas, e a estimativa anda
+  devagar (2 ms por quadro) e só pula quando erra mais de 150 ms. A tela roda a sessão no agora da
+  sala.
+- **O fantoche**:
+  - chega como `[sTot, d, x, y, rumo, ângulo com a pista, vx, vy, giro, ṡ, ḋ, aceleração,
+    esterço, acelerador, freio, deslize, bits]`, em números inteiros;
+  - fica no x, y exato e anda pela pista: s + ṡ·t e d + ḋ·t, com a curva da pista. Na curva ele
+    segue a curva, coisa que uma reta não faz;
+  - é levado até 0,8 s adiante: perda no TCP segura os pacotes de trás por meio segundo. Depois
+    disso, espera;
+  - recebe a correção suavizada, com τ de 120 ms e no máximo 25 m/s além do carro (não vira
+    puxão). Erro maior que 14 m (o box, a volta à pista) pula de uma vez.
+- **Os toques:** cada lado resolve só os pares em que entra um carro que ele simula.
+  - A sala resolve a IA contra a IA e a IA contra o humano. A tela resolve o próprio carro contra
+    qualquer outro.
+  - O dano do fantoche é do lado que o simula. As peças soltas chegam na meta (`ms`).
+  - O toque entre dois humanos, a tela conta para a sala (`tq`), e a sala julga a punição com os
+    dois fantoches dela.
+- **As punições** são todas da sala.
+  - Drive-through e stop-and-go de um humano viram o tempo da regra na hora, porque cumprir no box
+    dependeria da tela do dono.
+  - Os avisos de limites de pista nascem na tela do dono e a sala soma as punições.
+- **Quem some** (caiu, aba no fundo, menu aberto) não trava ninguém.
+  - Sem estado do dono por 1 s, a sala assume o carro com a IA (`assumir`).
+  - A tela que volta pega o carro do ponto em que a sala deixou, com as voltas, o cronômetro, o
+    pneu e as peças, e avisa (`ad`). A sala então devolve.
+  - A tela só pega de volta depois de meio segundo em dia com o relógio da sala, e nunca com o
+    carro no pit lane. Assim a aba no fundo, a 1 quadro por segundo, não fica trocando o carro de
+    mão.
+  - Com o menu aberto, a equipe leva o carro (a prova não para).
+- **O resultado** é o `C2D.Corrida.resultado`, no formato de `Gp.resultado`.
+  - Ele entra na rodada como a chegada ao vivo da clássica: `ligarCorridas` no modo `'concluir'`,
+    depois `vivoDe`, `Gp.chegada` e `Engine.runRace`, nos dois campeonatos.
+  - A definição da corrida (`C2D.Rede.definir`) é a mesma conta da 2D do jogo solo
+    (`carreira2d.js`): o carro de cada equipe vira o fator de tempo de volta, o talento vira a
+    competência da IA, o azar sorteado vira o destino do carro e o tempo do dia vem de `Gp.clima`.
+    O acerto e a equipe de cada humano (`carR`) vêm da perspectiva dele.
+
+### Protocolo da 2D
+
+Tudo pelo WebSocket da sala.
+
+- **`corridaInicio` / `corridaEstado`:** as corridas 2D trazem `modo: '2d'`, a definição (`c2d`)
+  e o quadro inteiro (`quadro`). As fases são:
+  - `carregando`: espera todos mandarem `pronto2d`, até 60 s;
+  - `correndo`: 3 s de contagem e as luzes;
+  - `fim`.
+- **Da tela:**
+  - `c2dEu { k, ts, tl, e, m?, ad?, tq? }`: o estado do carro, ~30 por segundo;
+    - não tem `id` nem resposta, e não grava no storage;
+    - tem limite próprio de 60 por segundo, fora do limite comum de 20 mensagens a cada 10 s.
+  - `corrida { tipo: 'pronto2d' | 'pular' | 'abandonar' }`. O `pular` do anfitrião com
+    `forcar` leva a corrida ao fim para todos.
+- **Da sala:**
+  - `c2dQ`: o quadro de todos os carros, a cada ~50 ms. Traz:
+    - `t2`: o tempo do estado;
+    - `tq`: a hora do envio, para o eco;
+    - `e`: os carros que andaram;
+    - `m`: só as metas que mudaram, e todas a cada 2 s;
+    - `g`: a prova (luzes, bandeira, safety car, fim);
+    - `ev`: os eventos;
+    - `pun`: as decisões da direção de prova;
+    - `eco`.
+  - `c2dH`: o estado de um humano, repassado na hora aos outros, sem esperar o tique.
+- **O tique** da sala é de 50 ms. O temporizador do Durable Object atrasa às vezes, então o quadro
+  também sai quando chega o estado de um jogador e já passaram 60 ms. O último quadro, com a ordem
+  final, sai uma vez quando a corrida acaba por voto.
+- **Reinício do servidor:** a cada 2 s a sala guarda uma foto (posição, meta e prova de cada carro).
+  Ao voltar, a corrida segue dessa foto. É aproximado (até 2 s atrás), não exato como na clássica.
+
+### O que foi testado na Fase 7
+
+- **`node testes/corrida2d-mp.mjs [atraso] [variação] [perda%]`**, sem servidor HTTP. São a sala
+  e duas telas num relógio falso, com uma rede de mentira: atraso, variação e perda. A perda vira
+  um pacote 200 a 300 ms atrasado que segura os de trás, como no TCP. Os dois robôs pilotam e a
+  tela 1 some 4 s logo depois da largada. São 15 verificações:
+  - a corrida 2D tem os dois humanos;
+  - a definição só tem dados;
+  - os fantoches estão certos;
+  - o relógio acha o da sala;
+  - a sala assume e devolve;
+  - quem sumiu não perde volta;
+  - o resultado entra na rodada sem divergência;
+  - o top 10 da rodada é o da 2D;
+  - a posição na carreira de cada um é a da 2D.
+
+  | Rede | Erro do outro humano (p95) | Erro da IA (p95) | Salto por quadro (p99) | Relógio (p95) |
+  |---|---|---|---|---|
+  | perfeita | 0,27 m | 0,43 m | < 0,1 m | 0 ms |
+  | 40 ms ±15, 1% de perda | 0,84 m | 0,67 m | < 0,1 m | 3 ms |
+  | 100 ms ±40, 3% de perda | 2,2 m | 1,1 m | < 0,1 m | 7 ms |
+
+  O carro tem 5 m. Um erro de 1 m a 250 km/h são 15 ms de prova.
+- **`node testes/corrida2d-sala.mjs [atraso] [variação] [perda%] [segundos]`**, contra um
+  `wrangler dev` próprio (porta 8792). São dois clientes Node com a sessão 2D inteira e robôs no
+  volante, com a mesma rede de mentira. O teste confere:
+  - a 2D ligada no lobby;
+  - a largada esperando os dois;
+  - uma queda de verdade do WebSocket por 3 s, com a mesma ficha: a sala assume e devolve o carro;
+  - o voto dos dois para pular;
+  - a rodada processada;
+  - a posição da 2D na carreira de cada um.
+
+  Com 40 ms ±15 e 1% de perda, ele mediu:
+  - a ida e volta medida pelo eco: ~100 ms;
+  - recebido por tela: ~30 KB/s;
+  - as duas telas veem o mesmo carro da IA no mesmo lugar: p95 de 0,3 a 0,4 m;
+  - o outro humano: p95 de 0,95 m quando a máquina estava livre.
+
+  Quando o próprio teste trava (outro programa pesado no computador), a cadência e o erro do
+  humano saem como "não verificável".
+- **`node testes/piloto-real-mp.mjs`**, 9 verificações:
+  - Verstappen e Hamilton em 2023: a equipe real, `S.passado`, a mesma temporada sem ninguém
+    repetido e três rodadas;
+  - a carreira somada é a de antes mais a de agora;
+  - um piloto real e um criado na mesma sala, cada um no calendário da sua categoria.
+- **No navegador** (`127.0.0.1:4321`, `wrangler dev` em 8787), com um segundo jogador robô no
+  Node:
+  - lobby com "Pilotando (2D)" e o piloto real;
+  - a folha nova com o passado do Leclerc: vice em 2022, campeão da F2 e da GP3;
+  - a corrida 2D no Bahrein 2024 com o Norris do outro jogador, que andou liso: a 45 quadros por
+    segundo, o salto além do movimento ficou em p99 0,17 m e no máximo 0,32 m;
+  - o menu sem pausa;
+  - o pulo até o fim;
+  - no GP Bahrein, Leclerc largou em P3, chegou em P1 e somou 25 pontos, com 6 vitórias na
+    carreira somada. O Norris chegou em 2º, também na carreira dele.
+
+  Na Bélgica, com piloto criado, a mesma coisa, em 16º.
+
+### Limites que ficam
+
+- **Classificação e treino** continuam calculados no multiplayer. A 2D é só o domingo.
+- **Todos os humanos da sala correm na 2D.** Quem não quer pilotar abre o menu: a equipe leva o
+  carro.
+- **Sem pulo do safety car (a cortina) e sem câmera lenta**, porque o tempo é um só para todos.
+- **Toque entre dois humanos:** cada um sente o toque no próprio carro, com a posição estimada do
+  outro (de 0,3 a 2 m de erro). Com a rede ruim, um pode ver um toque que o outro não sentiu.
+- **Drive-through e stop-and-go de humano viram tempo.** Cumprir no box não existe na rede.
+- **Ajudas** (freio assistido, danos reduzidos, câmera) são de cada um, como no jogo solo.
+- **Reinício do servidor no meio da 2D:** a corrida volta da foto de até 2 s antes. Não há refazer
+  exato.
+- **Versão:** os módulos da 2D ficam fora do hash da página. Por isso a 2D publicada precisa sair
+  junto com o Worker (`VERSAO_2D` no motor gerado; a tela tem `Corrida2D.V`). Uma tela com cache
+  velho pode ter outra física, mas não diverge, porque cada lado simula o seu.
+- **Medido só aqui:**
+  - a Cloudflare de verdade e dois aparelhos (celular e Safari);
+  - com 8 jogadores, cada estado é repassado a 7 telas;
+  - o custo da sala: 20 carros a 120 passos por segundo, uns 20 ms de CPU por segundo no Node.
+- **Falhas que já existiam:** `testes/piloto-mp.mjs` tem 2 falhas em "categorias diferentes"
+  (16 e 21 anos acabam na mesma categoria em 2025). Elas já falham no HEAD limpo, sem estas
+  mudanças.
 
 ## Como o motor roda no servidor
 

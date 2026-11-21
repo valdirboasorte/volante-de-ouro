@@ -64,6 +64,8 @@
     /* um passo de toda a sessão; inp é o comando do jogador */
     passo(S, inp, dt){
       const P = S.P;
+      /* em rede (rede2d.js): os carros que este lado não simula vão para o lugar do fim do passo */
+      if(S.rede && S.rede.antes) S.rede.antes(S, dt);
       if(S.estado === 'luzes') C2D.Sessao.largada(S, dt);
       if(S.estado === 'lancada' && !C2D.Boost.lancada(S)){ S.estado = 'pista'; S.verdeEm = S.t; S.eventos.push({ t: S.t, tipo: 'verde' }); }
       const largou = S.estado !== 'luzes';
@@ -79,6 +81,8 @@
       S.amb.semPassar = !!(S.sc || S.vsc || S.estado === 'lancada');
       if(S.regras) for(const c of S.carros) c.teto = S.estado === 'lancada' ? C2D.Boost.vPace(S, c) : (S.sc || S.vsc) && c.estado === 'pista' ? C2D.Boxes.tetoSC(S, c) : Infinity;
       for(const c of S.carros){
+        /* o fantoche da rede: quem pilota é o outro lado (a física e a volta dele são de lá) */
+        if(c.remoto) continue;
         /* quem abandonou e já parou sai da conta */
         /* (e os fiscais tiram o carro da pista: parado, ele some depois de um instante, em vez de
            ficar como fantasma no meio do caminho; o seu carro continua lá, a câmera está nele) */
@@ -139,6 +143,7 @@
       if(C2D.Dano) C2D.Dano.processar(S, dt);
       S.t += dt; S.passos++;
       if(corrida){ C2D.Corrida.depois(S, dt); if(S.regras) C2D.Boxes.controle(S); }
+      if(S.rede && S.rede.depois) S.rede.depois(S, dt);
     },
 
     /* passagens pela linha e pelos setores, com o instante exato */

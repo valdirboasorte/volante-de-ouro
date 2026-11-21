@@ -84,20 +84,21 @@
       </div>
       <div class="c2d-menu" hidden>
         <div class="c2d-menu-caixa">
-          <h2>Pausa</h2>
+          <h2>${opc.rede ? 'Menu' : 'Pausa'}</h2>
+          ${opc.rede ? '<p class="c2d-rede-nota" style="margin:-4px 0 10px;font-size:13px;opacity:.8">A corrida não para no multiplayer: com o menu aberto, a equipe leva o seu carro.</p>' : ''}
           <button class="c2d-btn c2d-btn-ouro" data-m="continuar" type="button">Continuar</button>
-          ${opc.tipo === 'corrida' ? '<button class="c2d-btn" data-m="simular" type="button">Simular até a bandeirada</button>' : opc.aoFim ? '' : '<button class="c2d-btn" data-m="reiniciar" type="button">Recomeçar</button>'}
+          ${opc.rede ? '<button class="c2d-btn" data-m="simular" type="button">Pedir para pular até o fim</button>' : opc.tipo === 'corrida' ? '<button class="c2d-btn" data-m="simular" type="button">Simular até a bandeirada</button>' : opc.aoFim ? '' : '<button class="c2d-btn" data-m="reiniciar" type="button">Recomeçar</button>'}
           <div class="c2d-opcoes">
             <label><input type="checkbox" data-o="freioAuto"> Freio assistido</label>
             <label><input type="checkbox" data-o="linha"> Linha de trajetória</label>
             <label><input type="checkbox" data-o="danosRed"> Danos reduzidos no meu carro</label>
             <label><input type="checkbox" data-o="boxAuto"> Box automático (a equipe chama)</label>
-            <label><input type="checkbox" data-o="pularSC"> Pular o safety car (avança até a relargada)</label>
+            ${opc.rede ? '' : `<label><input type="checkbox" data-o="pularSC"> Pular o safety car (avança até a relargada)</label>
             <label class="c2d-op-sel">Limites de pista <select data-o="limites"><option value="tolerante">Tolerante</option><option value="rigoroso">Rigoroso</option><option value="desligado">Desligado</option></select></label>
-            <label class="c2d-op-sel">Punições (regras da época) <select data-o="punicoes"><option value="tolerante">Tolerante</option><option value="rigoroso">Rigoroso</option><option value="desligado">Desligado</option></select></label>
+            <label class="c2d-op-sel">Punições (regras da época) <select data-o="punicoes"><option value="tolerante">Tolerante</option><option value="rigoroso">Rigoroso</option><option value="desligado">Desligado</option></select></label>`}
             <small class="c2d-pun-info" style="display:block;opacity:.72;font-size:12px;line-height:1.35;margin:-2px 0 6px"></small>
             <label class="c2d-op-sel">Distância da câmera <select data-o="zoom"><option value="2.8">Colada no carro</option><option value="2.2">Bem perto</option><option value="1.6">Perto</option><option value="1.25">Média</option><option value="1">Longe</option></select></label>
-            <label class="c2d-op-sel">Velocidade do jogo <select data-o="ritmo"><option value="1">100%</option><option value="0.85">85%</option><option value="0.7">70%</option></select></label>
+            ${opc.rede ? '' : '<label class="c2d-op-sel">Velocidade do jogo <select data-o="ritmo"><option value="1">100%</option><option value="0.85">85%</option><option value="0.7">70%</option></select></label>'}
             <label><input type="checkbox" data-o="abs"> Freio ABS</label>
             <label><input type="checkbox" data-o="tc"> Controle de tração</label>
             <label><input type="checkbox" data-o="estab"> Controle de estabilidade</label>
@@ -230,8 +231,10 @@
       const { el, opc, p } = T;
       const assist = { abs: p.abs, tc: p.tc, estab: p.estab, direcao: p.direcao, freioAuto: p.freioAuto };
       const carros = (opc.carros || [{ id: 'ME', me: true, nome: opc.nome || 'Você', cor: opc.cor }]).map(o => o.me ? Object.assign({}, o, { assist, danoMult: p.danosRed ? .3 : 1, boxAuto: !!p.boxAuto }) : o);
-      const S = T.S = C2D.Sessao.criar({ trkId: opc.trkId, ano: opc.ano, sk: opc.sk, nivel: opc.nivel, cat: opc.cat, tipo: opc.tipo, semente: opc.semente || 7,
+      /* no multiplayer (rede2d.js) a sessão é a da rede: os outros carros são fantoches e o relógio é o da sala */
+      const S = T.S = opc.rede ? opc.rede.sessao(carros) : C2D.Sessao.criar({ trkId: opc.trkId, ano: opc.ano, sk: opc.sk, nivel: opc.nivel, cat: opc.cat, tipo: opc.tipo, semente: opc.semente || 7,
         voltas: opc.voltas, w: opc.w || 0, carros, boxes: opc.boxes, clima: opc.clima, limites: p.limites, punicoes: p.punicoes });
+      if(opc.rede){ T.rel = opc.rede.relogio; T.escala = 1; }
       C2D.Tela.infoPunicoes(T);
       /* o grafismo da categoria e da época (hud2d.js): o tema vai no elemento, o CSS faz o resto */
       const H = T.hud = C2D.Hud.de(opc.sk, opc.ano, opc.nivel, S.P.kart);
@@ -240,7 +243,7 @@
       T.abrev = new Map(S.carros.map(c => [c, H.torre.nome === 'sobrenome' ? C2D.Hud.sobrenome(c.nome || c.id) : C2D.Tela.abreviar(c.nome || c.id)]));
       T.linhasTorre = [];
       T.R = C2D.Render.criar($(el, '.c2d-mundo'), S.P, { camera: p.camera });
-      T.R.S = S; T.R.linha = !!p.linha; T.escala = +p.ritmo || 1; T.R.zoom = +p.zoom || 1.6;
+      T.R.S = S; T.R.linha = !!p.linha; T.escala = opc.rede ? 1 : +p.ritmo || 1; T.R.zoom = +p.zoom || 1.6;
       $(el, '.c2d-mundo').addEventListener('wheel', ev => { ev.preventDefault(); C2D.Tela.acao(T, ev.deltaY < 0 ? 'zoomMais' : 'zoomMenos'); }, { passive: false });
       /* a dica da largada: quais ajudas estão ligadas e onde mudar */
       T.dicaAte = (p.freioAuto || p.linha) ? 9 : 0;
@@ -263,7 +266,7 @@
       usarToque(toqueProvavel());
       el.addEventListener('pointerdown', ev => { if(ev.pointerType === 'touch') usarToque(true); }, true);
       C2D.Tela.aplicarFaixa(T);
-      $(el, '.c2d-pausar').addEventListener('click', () => C2D.Tela.pausar(T, !T.pausa));
+      $(el, '.c2d-pausar').addEventListener('click', () => C2D.Tela.acao(T, 'pausa'));
       $(el, '.c2d-voltar').addEventListener('click', () => { C2D.Sessao.voltarPista(T.S, T.S.eu); });
       const bb = $(el, '.c2d-boxbtn'); if(bb) bb.addEventListener('click', () => C2D.Tela.acao(T, 'box'));
       el.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => C2D.Tela.menu(T, b.dataset.m)));
@@ -274,7 +277,8 @@
         i.addEventListener('change', () => C2D.Tela.opcao(T, k, i.checked));
       });
       /* aba no fundo: pausa */
-      T.visib = () => { if(document.hidden) C2D.Tela.pausar(T, true); };
+      /* (no multiplayer a corrida não para: a sala assume o carro enquanto a aba está escondida) */
+      T.visib = () => { if(document.hidden && !opc.rede) C2D.Tela.pausar(T, true); };
       document.addEventListener('visibilitychange', T.visib);
       T.redim = () => { C2D.Render.redimensionar(T.R); T.M = C2D.Render.minimapa($(el, '.c2d-mapa'), S.P); };
       window.addEventListener('resize', T.redim);
@@ -319,7 +323,7 @@
         if((!(S.sc || S.vsc) || S.acabou) && agora - T.scDesde > 1400) C2D.Tela.fimSC(T);
       } else if(!T.pausa && !T.fimMostrado){
         /* a cortina só abre quando o jogador já está na fila do safety car */
-        if(S.tipo === 'corrida' && T.p.pularSC && (S.sc || S.vsc) && S.eu.estado === 'pista' && !S.acabou){
+        if(S.tipo === 'corrida' && T.p.pularSC && !T.opc.rede && (S.sc || S.vsc) && S.eu.estado === 'pista' && !S.acabou){
           T.filaSC = T.filaSC || {};
           if(C2D.Corrida.naFilaSC(S, S.eu, dtReal, T.filaSC, T.R.scS)){ T.filaSC = null; C2D.Tela.inicioSC(T); }
         } else T.filaSC = null;
@@ -453,7 +457,9 @@
       const evLim = (() => { const ev = S.eventos; for(let k = ev.length - 1; k >= 0 && S.t - ev[k].t < 3.5; k--) if(ev[k].a === c.id && ev[k].tipo === 'limites') return ev[k]; return null; })();
       /* nas luzes, a ferramenta da época (DRS, KERS, ERS, turbo...) e a tecla; depois, as ajudas */
       const dicaEra = S.estado === 'luzes' && C2D.Boost && S.boost ? C2D.Boost.dica(S) : '';
-      if(dicaEra) aviso = dicaEra;
+      const avRede = T.opc.rede && T.opc.rede.aviso ? T.opc.rede.aviso(T) : '';
+      if(avRede) aviso = avRede;
+      else if(dicaEra) aviso = dicaEra;
       else if(S.t < (T.dicaAte || 0) && !T.fimSessao) aviso = 'Freio assistido e linha de trajetória ligados · mude na pausa (II ou Esc)';
       else if(S.estado === 'luzes') aviso = C2D.Boost && S.boost ? C2D.Boost.dica(S) : '';
       else if(S.estado === 'lancada') aviso = 'Largada lançada: siga o pace car';
@@ -703,7 +709,7 @@
     },
 
     acao(T, a){
-      if(a === 'pausa') return C2D.Tela.pausar(T, !T.pausa);
+      if(a === 'pausa') return C2D.Tela.pausar(T, T.opc.rede ? !T.menuRede : !T.pausa);
       if(T.pausa) return;
       if(a === 'reset' && C2D.Sessao.podeVoltar(T.S, T.S.eu)) C2D.Sessao.voltarPista(T.S, T.S.eu);
       if(a === 'box' && T.S.tipo === 'corrida' && T.S.regras && !T.S.P.kart){
@@ -727,6 +733,16 @@
       }
     },
     pausar(T, v){
+      if(T.opc.rede){
+        T.menuRede = !!v;
+        T.el.querySelector('.c2d-menu').hidden = !v;
+        T.el.classList.toggle('c2d-pausado', !!v);
+        const c = T.S && T.S.eu;
+        if(c && v && !c.autopiloto){ c.autoMenu = true; c.iaAntesMenu = c.ia || null; c.ia = C2D.IA.criar({ ritmo: .92, semente: 98 }); c.autopiloto = true; }
+        else if(c && !v && c.autoMenu){ c.autoMenu = false; c.autopiloto = false; c.ia = c.iaAntesMenu; c.iaAntesMenu = null; }
+        if(T.E) C2D.Entrada.ler(T.E, 0);
+        return;
+      }
       T.pausa = !!v;
       T.el.querySelector('.c2d-menu').hidden = !T.pausa;
       T.el.classList.toggle('c2d-pausado', T.pausa);
@@ -734,6 +750,9 @@
     },
     menu(T, m){
       if(m === 'continuar') return C2D.Tela.pausar(T, false);
+      /* no multiplayer: pular só com o voto de todos (o anfitrião leva até o fim); sair é abandonar */
+      if(T.opc.rede && m === 'simular'){ C2D.Tela.pausar(T, false); if(T.opc.rede.pular) T.opc.rede.pular(T); return; }
+      if(T.opc.rede && m === 'sair' && !T.S.acabou && T.S.eu.estado === 'pista'){ if(T.opc.rede.sair) T.opc.rede.sair(T); return C2D.Tela.fechar(); }
       if(m === 'simular'){
         /* o carro do jogador segue no piloto automático, no ritmo do nível dos rivais */
         const c = T.S.eu; c.ia = c.ia || C2D.IA.criar({ ritmo: (C2D.NIVEIS[T.opc.nivelRivais] || C2D.NIVEIS.medio).ritmo, semente: 99 }); c.autopiloto = true;
@@ -779,6 +798,8 @@
       if(!document.getElementById('c2dGaragem')) C2D.Tela.fundoParado(false);
       C2D.Tela.aberta = null;
       const S = T.S, c = S && S.eu;
+      /* no multiplayer o resultado é o da sala (chega na rodada): a tela só avisa que fechou */
+      if(T.opc.rede){ if(!semAviso && T.opc.rede.fechou) T.opc.rede.fechou(T); return null; }
       if(S && S.tipo === 'corrida'){
         /* saiu antes da bandeirada: o carro do jogador abandona e o resto da corrida é simulado */
         if(!S.acabou){

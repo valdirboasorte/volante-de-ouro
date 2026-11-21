@@ -197,6 +197,8 @@
     tentarDeNovo(){ MP.falhas = 0; MP.tentativas = 0; MP.conectar(); },
 
     receber(m){
+      /* a corrida 2D: o quadro da sala e o estado do outro humano, com a hora em que chegaram */
+      if(m.t === 'c2dQ' || m.t === 'c2dH') return MP.c2dMsg(m, performance.now());
       if(m.t === 'estado' || m.t === 'sala'){
         if(typeof m.v === 'number' && m.v < MP.v) return;
         if(typeof m.v === 'number') MP.v = m.v;
@@ -434,6 +436,7 @@
       /* a corrida começa com a tela da sessão ainda aberta (o fim da Q3): ela fecha antes */
       if(MP.cor.sessao && Sessao.S){ Sessao.mp = null; Sessao.fechar_tela(); MP.cor.sessao = null; }
       const t = MP.cor.tela;
+      if(t && t.modo2d && t.k === minha.k && MP.cor.aberta){ MP.c2dMsg(minha.quadro, performance.now()); return; }
       /* a mesma corrida já na tela (o servidor mandou de novo depois de uma queda): só junta o que faltava */
       if(t && t.k === minha.k && MP.cor.aberta && !t.refazer){
         minha.log.forEach(e => MP.corridaEntrada(t, e));
@@ -454,7 +457,7 @@
     abrirCorrida(c){
       const eu = MP.meuSlot();
       /* piloto: antes da largada, o resultado da classificação (o grid da corrida e o que a janela rendeu) */
-      if(!c.chefe && c.fase === 'largada' && MP.cor.qualiVisto !== c.k && typeof S !== 'undefined' && S && S.season){
+      if(!c.chefe && (c.fase === 'largada' || c.fase === 'carregando') && MP.cor.qualiVisto !== c.k && typeof S !== 'undefined' && S && S.season){
         MP.cor.qualiVisto = c.k;
         const carros = c.ent.carros.slice().sort((a, b) => a.grid - b.grid);
         const meus = new Set(Object.keys(c.donos).filter(i => ehDono(c.donos[i], eu)).map(i => c.ent.carros[i].id));
@@ -468,6 +471,7 @@
         if(b) b.onclick = () => { UI.close(); MP.enviar('corridaSync'); };
         return;
       }
+      if(c.modo === '2d') return MP.abrirCorrida2D(c);
       const t = MP.cor.tela = { k: c.k, R: Gp.criar(JSON.parse(JSON.stringify(c.ent))), passo: 0, fila: [], vistos: new Set(),
         liberado: c.liberado, fase: c.fase, somas: {}, somasServ: {}, donos: c.donos,
         meus: new Set(Object.keys(c.donos).filter(i => ehDono(c.donos[i], eu)).map(Number)),
@@ -542,7 +546,8 @@
       const ses = MP.cor.sessao && (m.corridas || []).find(x => x.sessao && x.k === MP.cor.sessao.k);
       if(ses){ MP.sessaoEstado(ses); return; }
       const t = MP.cor.tela, c = t && (m.corridas || []).find(x => x.k === t.k);
-      if(c){ t.liberado = Math.max(t.liberado, c.liberado); MP.corridaFase(t, c); }
+      if(c && t.modo2d) t.fase = c.fase;
+      else if(c){ t.liberado = Math.max(t.liberado, c.liberado); MP.corridaFase(t, c); }
       const ov = el('aovivo');
       if(ov && MP.cor.aberta) ov.querySelectorAll('.av-vel [data-v]').forEach(b => b.classList.toggle('on', +b.dataset.v === m.vel));
       /* a barra de quem não está na pista mostra a volta (uma vez por segundo basta) */
@@ -662,6 +667,99 @@
         }
       };
     },
+    /* ── a corrida 2D (Fase 7): cada jogador pilota o próprio carro ──
+       A sala roda a sessão oficial (a IA, o safety car, as bandeiras, o resultado); esta tela simula o
+       carro do jogador e manda o estado dele ~30 vezes por segundo; os outros carros vêm da sala e
+       andam levados até o agora (assets/corrida2d/rede2d.js). O resultado chega pela rodada. */
+    abrirCorrida2D(c){
+      const eu = MP.meuSlot(), d = c.c2d;
+      if(typeof Corrida2D === 'undefined' || !d){ UI.toast('A corrida 2D não carregou nesta página: recarregue.'); return; }
+      const t = MP.cor.tela = { k: c.k, modo2d: true, fase: c.fase, donos: c.donos, R2: null, fila: [],
+        pediuPular: (c.votos || []).map(String).includes(String(eu)) };
+      MP.cor.aberta = true;
+      UI.limparFila(); UI.close();
+      MP.barra();
+      Corrida2D.carregar().then(C2D => {
+        if(!MP.cor || MP.cor.tela !== t) return;
+        if(!C2D.Rede) throw new Error('rede2d.js não carregou');
+        const R = t.R2 = C2D.Rede.Cliente(d, { slot: eu, k: c.k, enviar: m => MP.enviarSolto(m) });
+        R.receber(c.quadro, performance.now());
+        t.fila.forEach(x => R.receber(x.m, x.em)); t.fila = [];
+        const meu = d.carros.find(o => o.dono === String(eu));
+        let mods;
+        try { mods = C2D.Carreira.mods(false); if(meu && meu.pneuMult) mods.pneu = meu.pneuMult; } catch(e){ mods = undefined; }
+        const nome = typeof S !== 'undefined' && S && S.driver ? S.driver.name : null;
+        const carros = d.carros.map(o => o.dono === String(eu) ? Object.assign({}, o, { me: true, mods, nome: nome || o.nome }) : o);
+        C2D.Tela.abrirCorrida({ trkId: d.trkId, ano: d.ano, sk: d.sk, nivel: d.nivel, cat: d.cat, voltas: d.N, carros, w: d.w, clima: d.clima, boxes: d.boxes,
+          titulo: 'Corrida', gp: d.gp, nivelRivais: d.nivelIA, textoConcluir: 'Ver o resultado', textoSair: 'Abandonar a corrida',
+          rede: MP.adaptador2d(t, R) });
+      }).catch(e => {
+        console.error(e);
+        UI.toast('Não deu para abrir a corrida 2D nesta tela. A equipe leva o seu carro até o fim.');
+        if(MP.cor && MP.cor.tela === t){ MP.cor.aberta = false; MP.cor.tela = null; }
+        MP.barra();
+      });
+    },
+    /* o que a tela da 2D pede no multiplayer (C2D.Tela com opc.rede) */
+    adaptador2d(t, R){
+      const k = t.k;
+      return {
+        sessao(carrosTela){
+          const S2 = R.sessao(carrosTela);
+          MP.enviar('corrida', { k, tipo: 'pronto2d', dados: {} });
+          return S2;
+        },
+        relogio: R.relogio,
+        aviso(){
+          if(MP.con !== 'conectado') return 'Sem conexão com a sala: reconectando…';
+          if(R.assumido) return 'Conexão instável: a equipe está com o seu carro';
+          const pub = MP.cor && MP.cor.corridas && MP.cor.corridas[k];
+          if(!R.iniciou || (pub && pub.fase === 'carregando')) return 'Esperando os outros pilotos chegarem ao grid…';
+          if(R.S && R.S.t <= 0) return 'Todos no grid: as luzes acendem em instantes';
+          if(t.pediuPular) return 'Você pediu para pular até o fim: falta o voto dos outros';
+          return '';
+        },
+        pular(){
+          if(MP.sala && MP.sala.anfitriao === MP.meuSlot()){
+            MP.enviar('corrida', { k, tipo: 'pular', dados: { quer: true, forcar: true } }).then(r => { if(r.erro && r.erro !== 'fim') UI.toast(erroTxt(r.erro)); });
+            return UI.toast('Você é o anfitrião: a corrida vai até o fim para todos.');
+          }
+          t.pediuPular = !t.pediuPular;
+          MP.enviar('corrida', { k, tipo: 'pular', dados: { quer: t.pediuPular } }).then(r => { if(r.erro && r.erro !== 'fim') UI.toast(erroTxt(r.erro)); });
+          UI.toast(t.pediuPular ? 'Você pediu para pular até o fim. A corrida pula quando todos pedirem.' : 'Pedido para pular cancelado.');
+        },
+        sair(){ MP.enviar('corrida', { k, tipo: 'abandonar', dados: {} }); },
+        fechou(){ MP.corridaFechou(); }
+      };
+    },
+    /* as mensagens da 2D: para a tela aberta daquela corrida (as que chegam antes de ela abrir esperam) */
+    c2dMsg(m, em){
+      const t = MP.cor && MP.cor.tela;
+      if(!t || !t.modo2d || t.k !== m.k) return;
+      if(t.R2) t.R2.receber(m, em); else { t.fila.push({ m, em }); if(t.fila.length > 60) t.fila.shift(); }
+    },
+    /* sem id e sem resposta (o estado do carro, ~30 por segundo) */
+    enviarSolto(m){ if(MP.ws && MP.ws.readyState === 1) try { MP.ws.send(JSON.stringify(m)); } catch(e){} },
+    /* o lobby da sala de piloto: como as corridas acontecem */
+    configCorridasPiloto(s, souAnf){
+      const cfg = s.config || {}, ligado = MP.con === 'conectado' ? '' : ' disabled';
+      const modo = cfg.aoVivo === false ? 'rapida' : cfg.corrida2d ? '2d' : 'vivo';
+      const MODOS_C = [['2d', 'Pilotando (2D)', '{ aoVivo: true, corrida2d: true }'], ['vivo', 'Ao vivo', '{ aoVivo: true, corrida2d: false }'], ['rapida', 'Rápidas', '{ aoVivo: false, corrida2d: false }']];
+      const DESC = { '2d': 'Cada um pilota o próprio carro na mesma pista, contra a IA nos outros carros. A largada espera todos no grid.',
+                     vivo: 'Todos assistem e comandam a mesma corrida, no relógio da sala.', rapida: 'A corrida é calculada na hora, sem transmissão.' };
+      const DIST = [[0.1, 'Sprint (10%)'], [0.2, 'Curta (20%)'], [0.35, 'Média (35%)'], [0.5, 'Longa (50%)'], [1, 'Completa (100%)']];
+      const NIV = [['facil', 'Fácil'], ['medio', 'Médio'], ['dificil', 'Difícil'], ['lenda', 'Lenda']];
+      const dist = DIST.some(x => x[0] === cfg.dist2d) ? cfg.dist2d : 0.2, ia = NIV.some(x => x[0] === cfg.ia2d) ? cfg.ia2d : 'medio';
+      const nomeDe = (l, v) => (l.find(x => x[0] === v) || [, ''])[1];
+      return `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">Corridas</span>
+          ${souAnf ? `<div class="mp-vels">${MODOS_C.map(([k, n, c]) => `<button class="btn btn-sm ${k === modo ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar(${c})"${ligado}>${n}</button>`).join('')}</div>`
+                   : `<b>${nomeDe(MODOS_C, modo)}</b>`}
+          <span class="sv-desc">${DESC[modo]}</span></div></div>
+        ${modo === '2d' ? `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">Distância na 2D</span>
+          ${souAnf ? `<div class="mp-vels">${DIST.map(([v, n]) => `<button class="btn btn-sm ${v === dist ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar({ dist2d: ${v} })"${ligado}>${n}</button>`).join('')}</div>` : `<b>${nomeDe(DIST, dist)}</b>`}</div></div>
+        <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Rivais na pista</span>
+          ${souAnf ? `<div class="mp-vels">${NIV.map(([v, n]) => `<button class="btn btn-sm ${v === ia ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar({ ia2d: '${v}' })"${ligado}>${n}</button>`).join('')}</div>` : `<b>${nomeDe(NIV, ia)}</b>`}</div></div>` : ''}`;
+    },
     ordemCorrida(t, tipo, dados){
       MP.enviar('corrida', { k: t.k, tipo, dados }).then(r => { if(r.erro && r.erro !== 'fim') UI.toast(erroTxt(r.erro)); });
     },
@@ -760,7 +858,30 @@
           <div class="field"><label class="lbl" for="mpPEstilo">Estilo</label><select id="mpPEstilo">${estilos.map(k => `<option value="${esc(k)}"${k === (meu.estilo || 'equilibrado') ? ' selected' : ''}>${esc(typeof STYLES !== 'undefined' && STYLES[k] && STYLES[k].nome ? STYLES[k].nome : k)}</option>`).join('')}</select></div>
         </div>
         <button class="btn btn-contorno btn-sm" onclick="MP.escolherPiloto()"${ligado}>Salvar meu piloto</button>
-        ${outros.map(({ j, p }) => `<p class="mut mp-ajuda"><span data-i18n-ignore>${esc(j.nome)}</span>: ${p ? `<span data-i18n-ignore>${esc(p.nome)}</span>, ${p.idade} <span>anos</span>` : '<span>ainda escolhendo o piloto</span>'}</p>`).join('')}`;
+        ${MP.formPilotoReal(s, eu, serie, ano, ligado)}
+        ${outros.map(({ j, p }) => `<p class="mut mp-ajuda"><span data-i18n-ignore>${esc(j.nome)}</span>: ${p ? `<span data-i18n-ignore>${esc(p.nome)}</span>${p.real ? ' <span>(piloto real)</span>' : ''}${p.idade ? `, ${p.idade} <span>anos</span>` : ''}` : '<span>ainda escolhendo o piloto</span>'}</p>`).join('')}`;
+    },
+    /* assumir um piloto real do grid da série e do ano da sala: ele chega com a equipe dele e com a
+       carreira de antes (assets/passado-piloto.js, montado no servidor) */
+    formPilotoReal(s, eu, serie, ano, ligado){
+      const cfg = s.config || {}, meu = (cfg.pilotos || {})[eu] || {};
+      const tomados = new Set(Object.entries(cfg.pilotos || {}).filter(([k, p]) => String(k) !== String(eu) && p && p.real).map(([, p]) => p.real));
+      let lista = [];
+      try {
+        const era = eraOfSeries(ano, serie);
+        lista = era.pilots.filter(x => (!x[3] || ano >= x[3]) && (!x[4] || ano <= x[4])).slice().sort((a, b) => b[2] - a[2]);
+      } catch(e){ lista = []; }
+      if(!lista.length) return '';
+      return `<p class="mut mp-ajuda"><span>Ou assuma um piloto de verdade do grid</span> <b data-i18n-ignore>${esc(String(ano))}</b>: <span>ele começa na equipe real, com os títulos, as vitórias e as provas de antes somados à carreira.</span></p>
+        <div class="mp-form"><div class="field"><label class="lbl" for="mpPReal">Piloto real</label><select id="mpPReal" data-i18n-ignore>${lista.map(x => `<option value="${esc(x[0])}"${x[0] === meu.real ? ' selected' : ''}${tomados.has(x[0]) ? ' disabled' : ''}>${esc(x[0])}</option>`).join('')}</select></div></div>
+        <button class="btn btn-contorno btn-sm" onclick="MP.assumirReal()"${ligado}>Assumir este piloto</button>
+        ${meu.real ? `<p class="mut mp-ajuda"><span>Você vai correr como</span> <b data-i18n-ignore>${esc(meu.real)}</b>.</p>` : ''}`;
+    },
+    async assumirReal(){
+      const v = (el('mpPReal') || {}).value;
+      if(!v) return;
+      const r = await MP.enviar('escolherPiloto', { piloto: { real: v } });
+      if(r.erro) UI.toast(erroTxt(r.erro));
     },
     /* no lobby de uma sala de chefe: o campeonato (do anfitrião) e a equipe de cada um */
     configChefe(s, souAnf, eu){
@@ -937,7 +1058,8 @@
           <div class="sv-item"><div class="sv-tx"><span class="sv-modo">Velocidade das corridas</span>
             ${souAnf ? `<div class="mp-vels">${VELS.map(n => `<button class="btn btn-sm ${n === vel ? 'btn-primary' : 'btn-ghost'}" onclick="MP.velocidade(${n})"${MP.con === 'conectado' ? '' : ' disabled'}>${n}×</button>`).join('')}</div>`
                      : `<b>${vel}×</b>`}</div></div>` : ''}
-          ${s && s.modo !== 'teste' ? `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">Corridas</span>
+          ${s && s.modo === 'piloto' ? MP.configCorridasPiloto(s, souAnf) : ''}
+          ${s && s.modo !== 'teste' && s.modo !== 'piloto' ? `<div class="sv-item"><div class="sv-tx"><span class="sv-modo">Corridas</span>
             ${souAnf ? `<div class="mp-vels">${[[true, 'Ao vivo'], [false, 'Rápidas']].map(([v, n]) => `<button class="btn btn-sm ${(s.config.aoVivo !== false) === v ? 'btn-primary' : 'btn-ghost'}" onclick="MP.configurar({ aoVivo: ${v} })"${MP.con === 'conectado' ? '' : ' disabled'}>${n}</button>`).join('')}</div>`
                      : `<b>${s.config.aoVivo !== false ? 'Ao vivo' : 'Rápidas'}</b>`}
             <span class="sv-desc">${s.config.aoVivo !== false ? 'Todos assistem e comandam a mesma corrida, no relógio da sala.' : 'A corrida é calculada na hora, sem transmissão.'}</span></div></div>` : ''}

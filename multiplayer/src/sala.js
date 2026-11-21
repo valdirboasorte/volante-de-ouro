@@ -26,6 +26,7 @@ import { criarRegrasChefe } from './regras-chefe.js';
 import { criarRegrasPiloto } from './regras-piloto.js';
 import { criarRnd } from './aleatorio.js';
 import { ligarCorridas, desligarCorridas, Corrida, LARGADA_MS } from './corrida-mp.js';
+import { Corrida2D, CARREGAR_MS } from './corrida2d-mp.js';
 
 const MAX_JOGADORES = 8;              // até 8 por sala nesta etapa (o servidor ainda vai ser medido para mais)
 const MIN_JOGADORES = 2;
@@ -43,6 +44,9 @@ const SERIES_CHEFE = ['f1', 'indy', 'wec', 'stock', 'nascar', 'dtm', 'fe'];   //
 const CONFIG_CHEFE = () => ({ velocidade: 8, sk: 'f1', ano: 2024, equipes: {} });
 const SERIES_PILOTO = ['f1', 'indy', 'wec', 'stock', 'nascar', 'dtm', 'fe'];
 const CONFIG_PILOTO = () => ({ velocidade: 8, serie: 'f1', ano: 2024, pilotos: {} });
+/* a corrida 2D (Fase 7): cada um pilota o próprio carro; distância (fração da prova) e nível da IA */
+const DIST_2D = [0.1, 0.2, 0.35, 0.5, 1];
+const IA_2D = ['facil', 'medio', 'dificil', 'lenda'];
 const IDADE_MIN = 14, IDADE_MAX = 30;
 const RE_CC = /^[A-Z]{2}$/;
 const MAX_ACOES_VISTAS = 200;         // ids de ação lembrados para não repetir uma ação reenviada
@@ -51,6 +55,10 @@ const ESPERA_TETO_MS = 600000;        // e no máximo 10 min entre tentativas
 const ESPERA_RECUPERAR_MS = 300;      // processamento que ficou pendente quando a sala acordou
 const FALHAS_AVISO = 5;
 const TIQUE_MS = 100;                 // o relógio da corrida ao vivo
+const TIQUE_2D_MS = 50;               // o relógio da corrida 2D
+const QUADRO_2D_MS = 45;              // um quadro de todos os carros a cada ~50 ms: no tique, ou quando chega o
+                                      // estado de um jogador (o temporizador do Durable Object atrasa às vezes)
+const LIMITE_2D = 60;                 // estados do carro (c2dEu) por segundo, por jogador
 const MARCA_MS = 200;                 // o andamento (passo liberado) para as telas
 const SOMA_MS = 2000;                 // a conferência do estado
 const SALVAR_MS = 2000;               // o passo da corrida guardado, para refazer depois de um reinício
@@ -329,6 +337,8 @@ export class Sala extends DurableObject {
     let msg = null, invalido = false;
     try{ msg = JSON.parse(mensagem); }catch(e){ invalido = true; }
     const id = msg && typeof msg === 'object' ? idSeguro(msg.id) : undefined;
+    /* o estado do carro na corrida 2D: ~30 por segundo, com limite próprio e sem resposta */
+    if(!invalido && msg && typeof msg === 'object' && msg.t === 'c2dEu') return this.c2dEu(ws, slot, msg);
 
     const lim = this.conferirLimite(slot);
     if(lim !== 'ok'){
@@ -656,10 +666,19 @@ export class Sala extends DurableObject {
   comCorridas(regras, N, modo, resultados){
     const s = this.sala, J = this.motor(), p = s.partida;
     if(modo === 'preparar') p.semVivo = Object.keys(p.auto || {});
-    const ctl = ligarCorridas(J, modo, resultados, { semVivo: p.semVivo || [], qualiAoVivo: regras.nome === 'chefe' });
+    const ctl = ligarCorridas(J, modo, resultados, { semVivo: p.semVivo || [], qualiAoVivo: regras.nome === 'chefe', c2d: this.config2d(regras) });
     try{ return { ctl, r: regras.processar(structuredClone(this.mundo), N, criarRnd(s.codigo, N)) }; }
     finally{ desligarCorridas(J); }
   }
+
+  /* a sala de piloto com a corrida 2D: o que a definição de cada corrida precisa saber */
+  config2d(regras){
+    const c = this.sala.config || {};
+    if(regras.nome !== 'piloto' || !c.corrida2d) return null;
+    return { dist: DIST_2D.includes(c.dist2d) ? c.dist2d : 0.2, ia: IA_2D.includes(c.ia2d) ? c.ia2d : 'medio' };
+  }
+  /* uma corrida da rodada: a 2D (cada um no seu carro) ou a clássica em passo travado */
+  novaCorrida(J, d, salvo){ return d.c2d ? new Corrida2D(J, d, salvo) : new Corrida(J, d, salvo); }
 
   estadoCorrida(){ return { vel: this.corridaVel, corridas: [...this.corridas.values()].map(c => c.salvo()) }; }
   publicoCorrida(agora){ return { t: 'corridaEstado', vel: this.corridaVel, corridas: [...this.corridas.values()].map(c => c.publico(agora)) }; }
@@ -669,7 +688,7 @@ export class Sala extends DurableObject {
     this.corridas = new Map();
     const simula = new Set(p.semVivo || []);
     for(const d of defs){
-      const c = new Corrida(J, d); c.prazo = agora + LARGADA_MS;
+      const c = this.novaCorrida(J, d); c.prazo = agora + (c.modo2d ? CARREGAR_MS : LARGADA_MS);
       for(const sl of d.slots) if(simula.has(String(sl))){ c.largadas[sl] = { auto: true }; c.votos[sl] = true; }
       Object.keys(d.donos).forEach(i => { if(c.donosDe(i).every(x => simula.has(x))) c.ordemDaSala(Number(i), { equipe: true }); });
       this.corridas.set(d.chave, c);
@@ -732,7 +751,7 @@ export class Sala extends DurableObject {
     this.corridas = new Map();
     this.corridaVel = est.vel || 8;
     for(const d of defs){
-      const c = new Corrida(J, d, (est.corridas || []).find(x => x.chave === d.chave));
+      const c = this.novaCorrida(J, d, (est.corridas || []).find(x => x.chave === d.chave));
       if(c.fase === 'largada' || c.fase === 'pergunta') c.prazo = Math.max(c.prazo, agora + 5000);
       c.relogio = agora;
       this.corridas.set(d.chave, c);
@@ -745,9 +764,10 @@ export class Sala extends DurableObject {
   ligarRelogio(){
     if(this.relogio) return;
     this.ultMarca = 0; this.ultSoma = Date.now(); this.ultSalvo = Date.now();
+    const ms = this.corridas && [...this.corridas.values()].some(c => c.modo2d) ? TIQUE_2D_MS : TIQUE_MS;
     this.relogio = setInterval(() => {
       this.tique().catch(e => log('erro', this.sala && this.sala.codigo, { motivo: 'tique', erro: textoErro(e) }));
-    }, TIQUE_MS);
+    }, ms);
     this.ctx.storage.setAlarm(Date.now() + VIGIA_MS);
   }
   desligarRelogio(){ if(this.relogio){ clearInterval(this.relogio); this.relogio = null; } }
@@ -781,9 +801,12 @@ export class Sala extends DurableObject {
       if(!p || p.estado !== 'corrida'){ this.desligarRelogio(); return; }
       let mudou = false;
       for(const c of this.corridas.values()){
-        if(c.fase === 'fim') continue;
-        const novas = c.fase === 'correndo' ? this.conferirAusentes(c, agora) : [];
+        /* a 2D que acabou fora do tique (o voto para pular, o anfitrião): o último quadro, com a ordem final */
+        if(c.fase === 'fim'){ if(c.modo2d && !c.quadroFinal){ c.quadroFinal = true; this.difundir(c.quadro(agora)); } continue; }
+        const novas = c.fase === 'correndo' && !c.modo2d ? this.conferirAusentes(c, agora) : [];
         const mud = c.avancar(agora, this.corridaVel);
+        /* a 2D: o quadro de todos os carros a cada tique (antes da largada, duas vezes por segundo) */
+        if(c.modo2d && ((c.fase === 'correndo' && agora - (c.ultQuadro || 0) >= QUADRO_2D_MS) || mud.fase || agora - (c.ultQuadro || 0) >= 500)) this.quadro2d(c, agora);
         for(const e of novas.concat(mud.novas)) this.difundir({ t: 'corridaLog', k: c.def.chave, e });
         if(novas.length || mud.novas.length || mud.fase) mudou = true;
         if(mud.soma) c.ultimaSoma = mud.soma;
@@ -865,6 +888,35 @@ export class Sala extends DurableObject {
     await this.ctx.storage.put('corridaEst', this.estadoCorrida());
   }
 
+  /* o estado do carro de um jogador na corrida 2D (c2dEu): sem storage e sem resposta; o repasse
+     (c2dH) vai na hora para os outros, sem esperar o tique */
+  c2dEu(ws, slot, msg){
+    const agora = Date.now();
+    const l = this.limites2d || (this.limites2d = new Map());
+    let q = l.get(slot);
+    if(!q || agora - q.ini >= 1000){ q = { ini: agora, n: 0 }; l.set(slot, q); }
+    if(++q.n > LIMITE_2D) return;
+    const p = this.sala.partida;
+    if(!p || p.estado !== 'corrida' || !this.corridas) return;
+    const c = typeof msg.k === 'string' ? this.corridas.get(msg.k) : null;
+    if(!c || !c.modo2d) return;
+    let r = null;
+    try{ r = c.eu(slot, msg, agora); }
+    catch(e){ log('erro', this.sala.codigo, { motivo: 'c2dEu', erro: textoErro(e) }); return; }
+    if(r) this.difundir(r, ws);
+    /* o quadro não espera o tique atrasado: a corrida anda até agora e vai para todos */
+    if(c.fase === 'correndo' && agora - (c.ultQuadro || 0) >= QUADRO_2D_MS + 15){
+      try{ const mud = c.avancar(agora); this.quadro2d(c, agora); if(mud.fase && c.fase === 'fim') this.tique().catch(() => {}); }
+      catch(e){ log('erro', this.sala.codigo, { motivo: 'c2dQuadro', erro: textoErro(e) }); }
+    }
+  }
+  /* o quadro de todos os carros de uma corrida 2D, para todos (o último, com a ordem final, uma vez) */
+  quadro2d(c, agora){
+    c.ultQuadro = agora;
+    if(c.fase === 'fim') c.quadroFinal = true;
+    this.difundir(c.quadro(agora));
+  }
+
   /* a velocidade da transmissão: qualquer um que está correndo muda para todos (não muda o resultado) */
   async velocidadeCorrida(ws, slot, msg, id){
     const p = this.sala.partida;
@@ -908,11 +960,17 @@ export class Sala extends DurableObject {
          lobby. O ano precisa ter uma era do jogo e existir na série. Os pilotos escolhidos ficam. */
       if(c.velocidade !== undefined && !VELOCIDADES.includes(c.velocidade)) return this.erro(ws, 'config', id);
       if(c.aoVivo !== undefined && typeof c.aoVivo !== 'boolean') return this.erro(ws, 'config', id);
+      if(c.corrida2d !== undefined && typeof c.corrida2d !== 'boolean') return this.erro(ws, 'config', id);
+      if(c.dist2d !== undefined && !DIST_2D.includes(c.dist2d)) return this.erro(ws, 'config', id);
+      if(c.ia2d !== undefined && !IA_2D.includes(c.ia2d)) return this.erro(ws, 'config', id);
       if(c.serie !== undefined && !SERIES_PILOTO.includes(c.serie)) return this.erro(ws, 'config', id);
       if(c.ano !== undefined && !Number.isInteger(c.ano)) return this.erro(ws, 'config', id);
       const novo = Object.assign({}, s.config);
       if(c.velocidade !== undefined) novo.velocidade = c.velocidade;
       if(c.aoVivo !== undefined) novo.aoVivo = c.aoVivo;
+      if(c.corrida2d !== undefined) novo.corrida2d = c.corrida2d;
+      if(c.dist2d !== undefined) novo.dist2d = c.dist2d;
+      if(c.ia2d !== undefined) novo.ia2d = c.ia2d;
       if(c.serie !== undefined) novo.serie = c.serie;
       if(c.ano !== undefined) novo.ano = c.ano;
       if(novo.serie !== s.config.serie || novo.ano !== s.config.ano){
@@ -923,6 +981,10 @@ export class Sala extends DurableObject {
           ok = novo.ano >= J.ERAS[0].y && novo.ano <= 2100 && !!era && J.ERAS.includes(era) && novo.ano >= J.SERIES[novo.serie].from;
         }catch(e){ ok = false; }
         if(!ok) return this.erro(ws, 'config', id);
+        /* o piloto real escolhido era do grid de outra série ou de outro ano: sai */
+        const ps = Object.assign({}, novo.pilotos || {});
+        for(const k of Object.keys(ps)) if(ps[k] && ps[k].real) delete ps[k];
+        novo.pilotos = ps;
       }
       s.config = novo;
     }else{
@@ -1013,6 +1075,24 @@ export class Sala extends DurableObject {
     const p = msg.piloto;
     if(!p || typeof p !== 'object' || Array.isArray(p)) return this.erro(ws, 'piloto', id);
     const jogador = s.jogadores.find(j => j.slot === slot);
+    /* um piloto real do grid da série e do ano da sala (cada um só por um jogador) */
+    if(p.real !== undefined){
+      if(typeof p.real !== 'string' || p.real.length > 60) return this.erro(ws, 'piloto', id);
+      let linha = null;
+      try{
+        const era = this.motor().eraOfSeries(s.config.ano, s.config.serie), ano = s.config.ano;
+        linha = era.pilots.find(x => x[0] === p.real && (!x[3] || ano >= x[3]) && (!x[4] || ano <= x[4])) || null;
+      }catch(e){ linha = null; }
+      if(!linha) return this.erro(ws, 'piloto', id);
+      if(Object.entries(s.config.pilotos || {}).some(([k, q]) => Number(k) !== slot && q && q.real === p.real)) return this.erro(ws, 'piloto', id);
+      s.config.pilotos = s.config.pilotos || {};
+      s.config.pilotos[slot] = { real: linha[0], nome: linha[0], cc: linha[1], estilo: 'equilibrado' };
+      s.v++;
+      await this.salvar();
+      this.enviar(ws, { t: 'ok', id });
+      this.difundir({ t: 'sala', v: s.v, sala: this.vista() });
+      return;
+    }
     if(p.nome !== undefined && p.nome !== null && typeof p.nome !== 'string') return this.erro(ws, 'piloto', id);
     const nome = limparNome(p.nome) || limparNome(jogador && jogador.nome);
     const estilo = p.estilo === undefined || p.estilo === null ? 'equilibrado' : p.estilo;

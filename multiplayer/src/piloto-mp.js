@@ -136,6 +136,16 @@ export function comSemente(J, rnd, fn){
 /* uma carreira nova, como o formulário do jogo faria (sempre no modo rápido: sem telas de inverno) */
 function criarPiloto(J, c){
   J.S = null;
+  /* um piloto real do grid daquele ano (Game.startTakeOver): a equipe real e a carreira de antes (S.passado) */
+  if(c.real){
+    const antes = J.Saves.antesDeNovo;
+    J.Saves.antesDeNovo = () => true;
+    try { J.Game.startTakeOver(c.serie, c.ano, c.real); } finally { J.Saves.antesDeNovo = antes; }
+    J.UI.limparFila(); J.UI.close();
+    if(!J.S || !J.S.real) throw new Error('piloto real não montado: ' + c.real);
+    J.S.opts.fast = true;
+    return J.S;
+  }
   const ano = c.ano, era = J.ERAS.indexOf(J.Engine.eraOf(ano));
   Object.assign(J.UI, { eraSel: era < 0 ? J.ERAS.length - 1 : era, year: ano, serie: c.serie, country: c.cc || 'BR',
     style: c.estilo || 'equilibrado', modo: c.modo || 'classico', origem: c.origem || 'media' });
@@ -242,6 +252,10 @@ function extrasDoCarro(J, sea){
   x.largadaNata = !!(E.temTraco && E.temTraco('largada'));
   const esc = sea.pneusLargada && sea.pneusLargada.rd === sea.round ? sea.pneusLargada.carros || {} : {};
   if(esc.ME) x.pneuIni = esc.ME;
+  /* para a corrida 2D (Fase 7): o acerto e a equipe dele no carro, e o número dele */
+  x.carR = ((E.setupEfeito && E.setupEfeito(sea, sea.round)) || {}).carR || 0;
+  if(E.bonusGente) x.carR += E.bonusGente().car || 0;
+  if(J.S && J.S.driver && J.S.driver.num != null) x.num = J.S.driver.num;
   return x;
 }
 
