@@ -19,7 +19,7 @@ mesmo servidor roda no seu computador com `wrangler dev`. Ver [Publicar](#public
 | 4 | Modo piloto com dois pilotos humanos | feita (local; as corridas ainda pelo caminho rápido) |
 | 5 | Corridas ao vivo no servidor | feita e publicada (botão só com o link ?mp=1) |
 | 6 | Robustez e testes com dois aparelhos | em andamento (parte 1 publicada em 31/10/2026) |
-| 7 | A carreira de piloto atual (folha nova, piloto real) e a corrida 2D com todos pilotando | feita localmente, não publicada |
+| 7 | A carreira de piloto atual (folha nova, piloto real) e a corrida 2D com todos pilotando | publicada em 21/11/2026 |
 
 ## Rodar
 
@@ -412,7 +412,8 @@ sem publicar (1,7 MB comprimido).
 
 ## A carreira de piloto atual e a corrida 2D (Fase 7)
 
-Local, ainda não publicada. A sala de piloto passa a ter a carreira de um jogador inteira: a folha
+**Publicada em 21/11/2026** (commit 33843a9 na main e na multiplayer, Worker d5c4c08c; conferido no ar: versão
+47f424fc50d7f5d0, sala criada com a 2D ligada e piloto real aceito). A sala de piloto passa a ter a carreira de um jogador inteira: a folha
 nova do piloto (`assets/painel-piloto.js`), o piloto real com o passado dele
 (`assets/passado-piloto.js`) e a corrida interativa 2D, com cada jogador pilotando o próprio carro
 na mesma pista, contra a IA nos outros carros.
